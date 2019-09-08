@@ -24,11 +24,11 @@ o	Prior combination of multiple views because they are considered together to ex
 
 In co-training, each classifier trains only on the features of a single view. We maximize the agreement on the predictions of two classifiers on the labeled dataset and minimize the disagreement on the predictions of the two classifiers on the unlabeled dataset. This allows the classifiers to learn from each other and reach an optimal solution. The unlabeled set is considered to be the validation set. In each iteration, the learner on one view labels unlabeled data, which is then used to train the other learner. Two optimal classifiers can be obtained by solving the objective problem to measure the agreement on two distinct views. If a validation set is not provided, we train the classifier on each view and validate the combination of views on the same training set (see Kumar and Daume III, 2011).
 
-![co-training](https://drive.google.com/file/d/1NvMcBiG3k_vfksqM_fiy8RdKGtRDW-6e/view?usp=sharing)
+![co-training](https://user-images.githubusercontent.com/27905822/64492047-88b65700-d23d-11e9-8219-7b797fd0bfa4.png)
 
 In multiple-kernel learning, we use a set of kernel functions and allow an algorithm to choose suitable kernels and the kernel combination. Each kernel corresponds to different inputs coming from different representations, combining kernels is a way to integrate multiple views of information. 
 
-![multiple kernel learning](link-to-image)
+![multiple kernel learning](https://user-images.githubusercontent.com/27905822/64492048-88b65700-d23d-11e9-9b28-dbeee5d294ac.png)
 
 There are two categories of ways in which the combination of kernels can be made:
 •	Linear combination methods
@@ -44,7 +44,7 @@ o	Polynomial
 
 In subspace-learning, we assume the input views are generated from a latent subspace to obtain the latent subspace. In single-view learning, PCA is the simplest technique to exploit the subspace from single-view data. In multi-view learning, we use Canonical correlation analysis (CCA) to perform subspace learning. CCA outputs one optimal projection on each view by maximizing the correlation between the two views in the subspace. If datasets exhibit non-linearities, we must use the kernel variate of CCA, called KCCA, which first maps each data point to a higher space in which linear CCA operates. CCA and KCCA exploit the subspace in an unsupervised way, so label information is ignored.
 
-![subspace learning](link-to-image)
+![subspace learning](https://user-images.githubusercontent.com/27905822/64492049-88b65700-d23d-11e9-8887-bd96b793cdbf.png)
 
 
 
