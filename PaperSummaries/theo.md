@@ -24,7 +24,7 @@ o	Prior combination of multiple views because they are considered together to ex
 
 In co-training, each classifier trains only on the features of a single view. We maximize the agreement on the predictions of two classifiers on the labeled dataset and minimize the disagreement on the predictions of the two classifiers on the unlabeled dataset. This allows the classifiers to learn from each other and reach an optimal solution. The unlabeled set is considered to be the validation set. In each iteration, the learner on one view labels unlabeled data, which is then used to train the other learner. Two optimal classifiers can be obtained by solving the objective problem to measure the agreement on two distinct views. If a validation set is not provided, we train the classifier on each view and validate the combination of views on the same training set (see Kumar and Daume III, 2011).
 
-![co-training](link-to-image)
+![co-training](https://drive.google.com/file/d/1NvMcBiG3k_vfksqM_fiy8RdKGtRDW-6e/view?usp=sharing)
 
 In multiple-kernel learning, we use a set of kernel functions and allow an algorithm to choose suitable kernels and the kernel combination. Each kernel corresponds to different inputs coming from different representations, combining kernels is a way to integrate multiple views of information. 
 
