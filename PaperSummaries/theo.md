@@ -1,24 +1,50 @@
 # A Survey on Multi-view Learning
 ### Chang Xu, Dacheng Tao, Chao Xu
-https://arxiv.org/abs/1304.5634
+https://arxiv.org/pdf/1304.5634.pdf
 
 # Summary
 
+## Introduction
 Multi-view data is data from multiple sources or different feature subsets. Three groups of multi-view learning approaches are (1) co-training, (2) multiple kernel learning and (3) subspace learning. Co-training algorithms train alternately to maximize the mutual agreement on two distinct views of the data. Multiple kernel learning algorithms combine kernels that correspond to different views to improve performance. Subspace learning algorithms generate a latent subspaces shared by multiple views by assuming that the input views are generated from this latent subspace. These approaches all exploit either the consensus principle or complementary principle. 
 
-Conventional ML algorithms concatenate all multiple views into a single view to adapt to the learning setting. This causes over-fitting and is not meaningful because each view has a specific statistical property. Multi-view learning introduces a function to model a particular view and jointly optimizes all functions to exploit the redundant views of the same input data and improve the learning performance.
+## Section 3- View Combination
+Conventional ML algorithms concatenate all multiple views into a single view to adapt to a single-view learning setting. This causes over-fitting and is not meaningful because each view has a specific statistical property. We use advanced methods of combining multiple views to achieve an improvement in learning performance.
 
-Success of co-training algorithms relies on (a) sufficiency- each view is sufficient for classification on its own, (b) compatibility- the target function of both views predict the same label for co-occurring features with a high probability and (c) conditional independence- views are conditionally independent given the label. 
+To summarize the various approaches that combine multiple views:
+•	Co-training style algorithms
+o	Train separate learners on distinct views and then optimized to be consistent across views
+o	A late combination of multiple views because the views are considered independently when training the base learners.
+•	Multiple kernel learning
+o	Calculate separate kernels on each view and then are combined with a kernel-based method
+o	Intermediate combination of multiple views because kernels (views) are combined just before or during the training of the learner
+•	Subspace learning-based approach
+o	Aim to obtain an appropriate subspace by assuming input views are generated from a latent view
+o	Prior combination of multiple views because they are considered together to exploit the shared subspace.
 
-Consensus principle aims to maximize the agreement on multiple distinct views. Complementary principle states that in a multi-view setting, each view of the data may contain some knowledge that other views don’t have. Therefore, multiple views can be employed to comprehensively and accurately describe the data.
 
-Priority for multi-view learning is the acquisition of redundant views. Multiple view generation not only obtains the views of different attributes, but also involves ensuring the views sufficiently represent the data and satisfy the assumptions required for learning.
+In co-training, each classifier trains only on the features of a single view. We maximize the agreement on the predictions of two classifiers on the labeled dataset and minimize the disagreement on the predictions of the two classifiers on the unlabeled dataset. This allows the classifiers to learn from each other and reach an optimal solution. The unlabeled set is considered to be the validation set. In each iteration, the learner on one view labels unlabeled data, which is then used to train the other learner. Two optimal classifiers can be obtained by solving the objective problem to measure the agreement on two distinct views. If a validation set is not provided, we train the classifier on each view and validate the combination of views on the same training set (see Kumar and Daume III, 2011).
 
-Instead of providing a single representative set of features, feature set partitioning decomposes the original set of features into multiple disjoint subsets to construct each view. Simple way to convert from single to multiple views is randomly split original feature set into different views at random. Sub setting feature set in a way that adheres to the multi-view learning paradigm is not trivial—depends on chosen learner and the data domain. Look into random subspace method (RSM), Pseudo Multi-view Co-training (PMC), genetic algorithms (GAs), several kernel functions. View construction methods can be categorized into 3 classes. (1) construct MV from meta data through random approaches. (2) reshape or decompose the original single-view feature into multiple views (matrix representations or kernel functions). (3) methods that perform feature set partitioning automatically such as PMC. In MV feature selection, the relationships between MV should be considered besides the information within each view.
+![co-training](link-to-image)
 
-After constructing multiple views, need to evaluate these views and ensure effectiveness for MV learning algorithms. Approaches that analyze relationships between multiple views.
+In multiple-kernel learning, we use a set of kernel functions and allow an algorithm to choose suitable kernels and the kernel combination. Each kernel corresponds to different inputs coming from different representations, combining kernels is a way to integrate multiple views of information. 
 
-Co-training style algorithms usually train separate but correlated learners on each view and outputs of learners are forced to be similar on same validation points. Under consensus principle, the goal of each iteration is to max the consistency of 2 learners on the validation set. Maximizing agreement on predictions of two classifiers on the labeled dataset and minimizing the disagreement on the predictions of two classifiers on unlabeled dataset. Classifiers learn from each other and reach an optimal solution.
+![multiple kernel learning](link-to-image)
 
-Co-training proposed for semi-supervised learning—access to labeled and unlabeled data. Each example can be partitioned into two distinct views and makes 3 assumptions for success- sufficiency, compatibility, and conditional independence.
+There are two categories of ways in which the combination of kernels can be made:
+•	Linear combination methods
+o	Direct summation kernel- gives equal preference to all kernels
+♣	Lanckriet et al. (2002, 2004)
+o	Weighted summation kernel- versions approach in the way they place restrictions on kernel weights
+♣	Gonen and Alpaydin (2008)
+•	Nonlinear combination methods
+o	Exponentiation and power
+♣	Varma and Babu (2009)
+o	Polynomial
+♣	Cortes et al. (2009)
+
+In subspace-learning, we assume the input views are generated from a latent subspace to obtain the latent subspace. In single-view learning, PCA is the simplest technique to exploit the subspace from single-view data. In multi-view learning, we use Canonical correlation analysis (CCA) to perform subspace learning. CCA outputs one optimal projection on each view by maximizing the correlation between the two views in the subspace. If datasets exhibit non-linearities, we must use the kernel variate of CCA, called KCCA, which first maps each data point to a higher space in which linear CCA operates. CCA and KCCA exploit the subspace in an unsupervised way, so label information is ignored.
+
+![subspace learning](link-to-image)
+
+
 
