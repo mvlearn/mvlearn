@@ -19,13 +19,13 @@ https://arxiv.org/abs/1304.5634
 
 ### Complementary Principle
 
-	* **Idea**: each view contains knowledge not captured by other views
-	* co-training algorithms (semi-supervised)
-	* Combine different learners on same data
- * Multiple kernel learning learns different measures of similarity
- * Concatenation of all views -> overfitting on small $n$ and ignores independent statistical properties of views
- * Can learn low-dim representation to generate missing data from a view
- * Multiview spectral embedding (MSE)
+* **Idea**: each view contains knowledge not captured by other views
+* co-training algorithms (semi-supervised)
+* Combine different learners on same data
+* Multiple kernel learning learns different measures of similarity
+* Concatenation of all views -> overfitting on small $n$ and ignores independent statistical properties of views
+* Can learn low-dim representation to generate missing data from a view
+* Multiview spectral embedding (MSE)
 
 Need to keep in mind both consensus/complementary principles for effective learners
 
