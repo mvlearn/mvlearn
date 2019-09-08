@@ -1,6 +1,6 @@
 # A Survey on Multi-view Learning
 ### Chang Xu, Dacheng Tao, Chao Xu
-link: https://arxiv.org/abs/1304.5634
+https://arxiv.org/abs/1304.5634
 
 # Summary
 
