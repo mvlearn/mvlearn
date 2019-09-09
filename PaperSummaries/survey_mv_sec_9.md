@@ -20,7 +20,10 @@ URL: https://arxiv.org/abs/1304.5634
  
 ### 2. Principles on Multi-view Learning
 * Consensus Principle
+  * By minimizing the disagreement rate of two hypotheses, the error rate of each hypothesis will be minimized.
 * Complementary Principle
+  * If the examples labeled by the classifier h1 on one view are to be useful for the classifier h2 on the other view, h1 should contain some information that h2 does not know.  
+  * The two classifiers will exchange information and learn from each other until they are very similar and performance is maximized
 
 ### 9. Performance Evaluation
 * Datasets
