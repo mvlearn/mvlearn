@@ -1,8 +1,18 @@
+<<<<<<< HEAD
 # Contributing to multiview
 
 (adopted from scikit-learn)
 
 ## Submitting a bug report or a feature request
+=======
+Contributing to multiview
+======================
+
+(adopted from scikit-learn)
+
+Submitting a bug report or a feature request
+--------------------------------------------
+>>>>>>> Contributing draft
 
 We use GitHub issues to track all bugs and feature requests; feel free to open
 an issue if you have found a bug or wish to see a feature implemented.
@@ -24,7 +34,12 @@ following rules before submitting:
 
 .. _filing_bugs:
 
+<<<<<<< HEAD
 ### How to make a good bug report
+=======
+How to make a good bug report
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
 
 When you submit an issue to `Github
 <https://github.com/neurodata/multiview/issues>`__, please do your best to
@@ -55,7 +70,12 @@ feedback:
   <https://help.github.com/articles/creating-and-highlighting-code-blocks>`_
   for more details.
 
+<<<<<<< HEAD
 ## Contributing Code
+=======
+Contributing Code
+-----------------
+>>>>>>> Contributing draft
 
 The preferred workflow for contributing to multiview is to fork the main
 repository on GitHub, clone, and develop on a branch. Steps: 
@@ -98,7 +118,12 @@ repository on GitHub, clone, and develop on a branch. Steps:
 
       $ git push -u origin my-feature
 
+<<<<<<< HEAD
 ### Pull Request Checklist
+=======
+Pull Request Checklist
+~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
 
 We recommended that your contribution complies with the following rules
 before you submit a pull request: 
@@ -138,16 +163,29 @@ before you submit a pull request:
       $ pip install black
       $ black path/to/module.py
 
+<<<<<<< HEAD
 ## Guidelines
 
 ### Coding Guidelines
+=======
+Guidelines
+----------
+
+Coding Guidelines
+~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
 
 Uniformly formatted code makes it easier to share code ownership. multiview
 package closely follows the official Python guidelines detailed in
 `PEP8 <https://www.python.org/dev/peps/pep-0008/>`__ that detail how
 code should be formatted and indented. Please read it and follow it.
 
+<<<<<<< HEAD
 ### Docstring Guidelines
+=======
+Docstring Guidelines
+~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
 
 Properly formatted docstrings is required for documentation generation
 by Sphinx. The pygraphstats package closely follows the numpydoc
@@ -193,11 +231,19 @@ estimator.fit(Xs)
 
 ```
 
+<<<<<<< HEAD
 The former case corresponds to the supervised case and the latter to the unsupervised case. In unsupervised cases, y takes on a default value of `None` and is ignored. Xs corresponds to a list of data matrices and y to a list of sample labels. The samples across views in Xs and y are matched. Note that data matrices in Xs must have the same number of samples (rows) but the number of features (columns) may differ.
 
 | **Parameters** | **Format**                                         |
 | -------------- | -------------------------------------------------- |
 | Xs             | list of array-likes <br>&nbsp;&nbsp;- Xs shape: (n_views,) <br>&nbsp;&nbsp;- Xs[i] shape: (n_samples, n_features_i)           |
+=======
+The former case corresponds to the supervised case and the latter to the unsupervised case. In unsupervised cases, y takes on a default value of `None` and is ignored. Xs corresponds to a list of data matrices and y to a list of sample labels. The samples across views in Xs and y are matched.
+
+| **Parameters** | **Format**                                         |
+| -------------- | -------------------------------------------------- |
+| Xs             | array-like, shape (n_views, n_samples, n_features) |
+>>>>>>> Contributing draft
 | y              | array, shape (n_samples,)                          |
 | kwargs         | optional data-dependent parameters.                |
 
@@ -221,4 +267,8 @@ and if the fit method must be called first,
 new_data = transformer.fit_transform(data)
 ```
 
+<<<<<<< HEAD
 It may be more efficient in some cases to compute the latter example rather than call `fit` and `transform` separately.
+=======
+It may be more efficient in some cases to compute the latter example rather than call `fit` and `transform` separately.
+>>>>>>> Contributing draft
