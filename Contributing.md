@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Contributing to multiview
 
 (adopted from scikit-learn)
@@ -12,6 +13,13 @@ Contributing to multiview
 
 Submitting a bug report or a feature request
 --------------------------------------------
+>>>>>>> Contributing draft
+=======
+# Contributing to multiview
+
+(adopted from scikit-learn)
+
+## Submitting a bug report or a feature request
 >>>>>>> Contributing draft
 
 We use GitHub issues to track all bugs and feature requests; feel free to open
@@ -35,10 +43,14 @@ following rules before submitting:
 .. _filing_bugs:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### How to make a good bug report
 =======
 How to make a good bug report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
+=======
+### How to make a good bug report
 >>>>>>> Contributing draft
 
 When you submit an issue to `Github
@@ -71,10 +83,14 @@ feedback:
   for more details.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Contributing Code
 =======
 Contributing Code
 -----------------
+>>>>>>> Contributing draft
+=======
+## Contributing Code
 >>>>>>> Contributing draft
 
 The preferred workflow for contributing to multiview is to fork the main
@@ -119,10 +135,14 @@ repository on GitHub, clone, and develop on a branch. Steps:
       $ git push -u origin my-feature
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Pull Request Checklist
 =======
 Pull Request Checklist
 ~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
+=======
+### Pull Request Checklist
 >>>>>>> Contributing draft
 
 We recommended that your contribution complies with the following rules
@@ -164,6 +184,7 @@ before you submit a pull request:
       $ black path/to/module.py
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Guidelines
 
 ### Coding Guidelines
@@ -174,6 +195,11 @@ Guidelines
 Coding Guidelines
 ~~~~~~~~~~~~~~~~~
 >>>>>>> Contributing draft
+=======
+## Guidelines
+
+### Coding Guidelines
+>>>>>>> Contributing draft
 
 Uniformly formatted code makes it easier to share code ownership. multiview
 package closely follows the official Python guidelines detailed in
@@ -181,10 +207,14 @@ package closely follows the official Python guidelines detailed in
 code should be formatted and indented. Please read it and follow it.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Docstring Guidelines
 =======
 Docstring Guidelines
 ~~~~~~~~~~~~~~~~~~~~
+>>>>>>> Contributing draft
+=======
+### Docstring Guidelines
 >>>>>>> Contributing draft
 
 Properly formatted docstrings is required for documentation generation
