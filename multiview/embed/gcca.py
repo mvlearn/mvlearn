@@ -44,7 +44,7 @@ def gcca(data, percent_var=0.9, rank_tolerance=None, n_components=None, tall=Fal
     
     X1 = np.random.normal(0,1,size=(10,100))
     X2 = np.random.normal(0,1,size=(10,200))
-    projections = gcca([X1, X2])
+    projections = gcca(data=[X1, X2])
     
     Parameters
     ----------
