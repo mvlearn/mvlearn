@@ -9,8 +9,8 @@ LARGE_VAL = 10000000
 ITER_THRESH = 5
 
 def get_data():
-    news_groups_all = fetch_20newsgroups(subset='all')
-    news_data = news_groups_all.data
+    #news_groups_all = fetch_20newsgroups(subset='all')
+    #news_data = news_groups_all.data
 
     #Load in the vectorized news group data from scikit-learn package
     vectorized_news = fetch_20newsgroups_vectorized(subset='all')
@@ -74,9 +74,12 @@ def iterate_clusters(data, partitions, k):
     #Recompute cluster centers
     new_centers = list()
     for clust in range(k):
-        print(np.sum(partitions == clust))
-        summed_vec = np.sum(data[(partitions == clust)], axis = 0) 
-        vec = summed_vec / np.linalg.norm(summed_vec)
+        #print(np.sum(partitions == clust))
+        summed_vec = np.sum(data[(partitions == clust)], axis = 0)
+        magnitude = np.linalg.norm(summed_vec)
+        if (magnitude == 0):
+            magnitude = 1
+        vec = summed_vec / magnitude 
         new_centers.append(vec)
     new_centers = np.vstack(new_centers)
         
@@ -93,13 +96,19 @@ def final_clusters(v_data, v_partitions, c_centers, k):
     for clust in range(k):
         part_indices = (v_partitions[0] == clust) * (v_partitions[1] == clust)
         #View 1
-        summed_vec1 = np.sum(v_data[0][part_indices], axis = 0) 
-        vec1 = summed_vec1 / np.linalg.norm(summed_vec1)
+        summed_vec1 = np.sum(v_data[0][part_indices], axis = 0)
+        magnitudes1 =  np.linalg.norm(summed_vec1)
+        if(magnitudes1 == 0):
+            magnitudes1 = 1
+        vec1 = summed_vec1 / magnitudes1
         v1_consensus.append(vec1)
 
         #View 2
         summed_vec2 = np.sum(v_data[1][part_indices], axis = 0) 
-        vec2 = summed_vec2 / np.linalg.norm(summed_vec2)
+        magnitudes2 =  np.linalg.norm(summed_vec2)
+        if(magnitudes2 == 0):
+            magnitudes2 = 1
+        vec2 = summed_vec2 / magnitudes2
         v2_consensus.append(vec2)
         
     v1_consensus = np.vstack(v1_consensus)
@@ -109,6 +118,8 @@ def final_clusters(v_data, v_partitions, c_centers, k):
     v2_arcos = np.arccos(np.matmul(v_data[1], np.transpose(v2_consensus)))
     dist_metric = v1_arcos + v2_arcos
     new_partitions = np.argmin(dist_metric,axis = 1).flatten()
+    for clust in range(k):
+        print(np.sum(new_partitions == clust)) 
     return new_partitions
     
 def compute_entropy(partitions, labels, k, num_classes):
@@ -130,6 +141,7 @@ def compute_entropy(partitions, labels, k, num_classes):
         part_entropy = part_entropy * part_size / num_examples
         total_entropy += part_entropy
     print(total_entropy)
+    return total_entropy
 
 def compute_entropy2(partitions, labels, k, num_classes):
     
@@ -149,13 +161,11 @@ def compute_entropy2(partitions, labels, k, num_classes):
         total_entropy += part_entropy
     print(total_entropy)
 
-def spherical_kmeans(v_data, labels, k = 5):
+def spherical_kmeans(v_data, labels, k = 60):
 
     #Initialize cluster centers, partitions, and loop params
-    indices = np.random.choice(v_data[0].shape[0], k)
-    c_centers2 = v_data[1][indices]
-    print(c_centers2.shape)
-    #c_centers2 = np.random.random((k, v_data[0].shape[1]))
+    
+    c_centers2 = np.random.random((k, v_data[0].shape[1]))
     c_centers2 /= np.linalg.norm(c_centers2, axis=1).reshape((-1, 1))
     c_centers = [None, c_centers2]
     
@@ -164,6 +174,7 @@ def spherical_kmeans(v_data, labels, k = 5):
     objective = [LARGE_VAL, LARGE_VAL]
     iter_stall = 0
     iter_num = 0
+    entropy = 0
 
     while(iter_stall < ITER_THRESH):
         iter_num += 1
@@ -180,16 +191,15 @@ def spherical_kmeans(v_data, labels, k = 5):
 
         #Obtain evaluation metrics
         f_clusters = final_clusters(v_data, v_partitions, c_centers, k)
-        compute_entropy(f_clusters, labels, k, 5)
+        entropy = compute_entropy(f_clusters, labels, k, 5)
 
-
-
-def single_spherical_kmeans(v_data, labels, k = 10):
+    return entropy
+        
+def single_spherical_kmeans(v_data, labels, k = 60):
 
     #Initialize cluster centers, partitions, and loop params
     v_data = np.concatenate(v_data, axis = 1)
     c_centers = np.random.random((k, v_data.shape[1]))
-    
     partitions = initialize_partitions(v_data, c_centers)
     objective = LARGE_VAL
     iter_stall = 0
@@ -202,6 +212,7 @@ def single_spherical_kmeans(v_data, labels, k = 10):
         c_centers, partitions = iterate_clusters(v_data, partitions, k)
         o_funct = compute_objective(v_data, c_centers, partitions)
         iter_stall += 1
+        
         #Recompute objective function
         if(o_funct < objective):
             objective = o_funct
@@ -209,7 +220,17 @@ def single_spherical_kmeans(v_data, labels, k = 10):
 
         #Obtain evaluation metrics
         compute_entropy2(partitions, labels, k, 5)
+
+def plotResults():
     
+    v1_data, v2_data, labels = get_data()
+    entropies = list()
+    for num in range(1, 11):
+        ent = spherical_kmeans([v1_data, v2_data], labels, num)
+        entropies.append(ent)
+
+    
+        
 def main():
     v1_data, v2_data, labels = get_data()
     #single_spherical_kmeans([v1_data, v2_data], labels)
