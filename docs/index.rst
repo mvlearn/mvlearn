@@ -1,4 +1,4 @@
-Welcome to multiview's documentation!
+Welcome to multiview-ndd's documentation!
 =====================================
 
 .. automodule:: multiview.example.example

@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'multiview'
-copyright = '2019, multiview'
+project = 'multiview-ndd'
+copyright = '2019, multiview-ndd'
 author = 'multiview'
 
 # The full version, including alpha/beta/rc tags
