@@ -19,7 +19,6 @@ def example_function(param = "param"):
     Returns
     -------
     string
-        Hi gavin
         Whatever param is set to.
     """
     print("Hello world")
