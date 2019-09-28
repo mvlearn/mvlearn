@@ -1,27 +1,23 @@
 """
-example_alex.py
+example.py
 ====================================
 Example of how to contribute code to multiview.
 """
 
 
-def example_function_alex(param1 = "param1", param2 = "param2" ):
-    """
-    Concatenates two input strings and returns the result. Also prints "Wat".
-
+def example_function(param = "param"):
+        """
+    Prints hello world and returns param.
+    Good link on how to write these napolean docs: 
+    https://sphinxcontrib-napoleon.readthedocs.io/en/latest/
     Parameters
     ----------
-    param1
-        The first input string
-    param2 
-        The second input string
-        
-
+    param
+        A string to be prtined. Very creative.
     Returns
     -------
     string
-        A string resulting from concatenating param1 and param2.
+        Whatever param is set to.
     """
-    print("Wat")
-    param = param1 + param2
+    print("Hello world")
     return param
