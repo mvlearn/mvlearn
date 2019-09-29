@@ -7,7 +7,7 @@ https://arxiv.org/pdf/1304.5634.pdf
 ## Introduction
 Multi-view data is data from multiple sources or different feature subsets. Three groups of multi-view learning approaches are (1) co-training, (2) multiple kernel learning and (3) subspace learning. Co-training algorithms train alternately to maximize the mutual agreement on two distinct views of the data. Multiple kernel learning algorithms combine kernels that correspond to different views to improve performance. Subspace learning algorithms generate a latent subspaces shared by multiple views by assuming that the input views are generated from this latent subspace. These approaches all exploit either the consensus principle or complementary principle. 
 
-## Section 3- View Combination
+## Section 4- View Combination
 Conventional ML algorithms concatenate all multiple views into a single view to adapt to a single-view learning setting. This causes over-fitting and is not meaningful because each view has a specific statistical property. We use advanced methods of combining multiple views to achieve an improvement in learning performance.
 
 To summarize the various approaches that combine multiple views:
