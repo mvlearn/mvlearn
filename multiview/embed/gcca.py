@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from .base import BaseEmbed
-from ..utils import check_Xs
+from ..utils.utils import check_Xs
 
 import numpy as np
 from scipy import linalg, stats

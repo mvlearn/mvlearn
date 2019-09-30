@@ -37,6 +37,7 @@ def check_Xs(Xs):
     elif Xs.ndim == 2:
         Xs = Xs.reshape((1, Xs.shape[0], Xs.shape[1]))
 
+    return(Xs)
 
 def check_Xs_y(Xs, y):
     """
