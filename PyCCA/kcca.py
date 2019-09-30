@@ -465,8 +465,8 @@ class UnscaledKCCA(KCCA):
 
 if __name__ == "__main__":
     from kernels import DiagGaussianKernel
-    x1 = numpy.random.rand(20, 40) #100 x 20 matrix with rand values between 0 and 1
-    x2 = numpy.random.rand(20, 30) #100 x 30 matrix with rand values between 0 and 1
+    x1 = numpy.random.rand(200, 100) #100 x 20 matrix with rand values between 0 and 1
+    x2 = numpy.random.rand(200, 150) #100 x 30 matrix with rand values between 0 and 1
     kernel = LinearKernel() #initialize a linear kernel class
     cca = KCCA(kernel, kernel,
                     regularization=1e-5,
@@ -476,6 +476,7 @@ if __name__ == "__main__":
                     scaler2=lambda x:x).fit(x1,x2)
 
     print("Done ",  cca.beta_) #prints the highest beta
+    #beta is the correlation coefficient 
 
     orig_y1 = cca.y1_ #dot product of K1 and alpha1
     orig_y2 = cca.y2_ #dot product of K2 and alpha2
