@@ -474,9 +474,10 @@ if __name__ == "__main__":
                     method='kettering_method',
                     scaler1=lambda x:x,
                     scaler2=lambda x:x).fit(x1,x2)
+    #fitting finds the optimal canonical vectors to maximize the correlation of variates
 
-    print("Done ",  cca.beta_) #prints the highest beta
-    #beta is the correlation coefficient 
+    print("Done ",  cca.beta_) #prints the highest beta for the first variate
+    #beta is the correlation coefficient between variates
 
     orig_y1 = cca.y1_ #dot product of K1 and alpha1
     orig_y2 = cca.y2_ #dot product of K2 and alpha2
@@ -488,3 +489,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.figure()
     plt.scatter(y1,y2)
+    plt.xlabel('Canonical Variate 1')
+    plt.ylabel('Canonical Variate 2')
+    plt.title('Mode')
+
