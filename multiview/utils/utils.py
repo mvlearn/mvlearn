@@ -18,13 +18,15 @@ from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(Xs):
+def check_Xs(Xs,multiview=False):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
+    multiview : boolean, default (False)
+        Throws error if just 1 data matrix
 
     Returns
     -------
@@ -32,18 +34,24 @@ def check_Xs(Xs):
         The converted and validated X.
     """
     if not isinstance(Xs, list):
-        assert isinstance(
-            Xs, np.ndarray
-        ), "If not list, input must be of type np.ndarray"
+        if not isinstance(Xs, np.ndarray):
+            msg = "If not list, input must be of type np.ndarray"
+            raise ValueError(msg)
         if Xs.ndim == 2:
             Xs = [Xs]
         else:
             Xs = list(Xs)
 
+    if len(Xs) == 0:
+        msg = "Length of input list must be greater than 0"
+        raise ValueError(msg)
+    if multiview and len(Xs) == 1:
+        msg = "Must provide at least two data matrices"
+        raise ValueError(msg)
     return [check_array(X, allow_nd=False) for X in Xs]
 
 
-def check_Xs_y(Xs, y):
+def check_Xs_y(Xs, y, multiview=False):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters
@@ -60,7 +68,7 @@ def check_Xs_y(Xs, y):
     y_converted : object
         The converted and validated y.
     """
-    Xs_converted = check_array(Xs)
+    Xs_converted = check_Xs(Xs,multiview=multiview)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted

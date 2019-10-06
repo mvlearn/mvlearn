@@ -85,7 +85,7 @@ class GCCA(BaseEmbed):
         tall : boolean, default=False
             Set to true if n_samples > n_features, speeds up SVD
         """
-        Xs = check_Xs(Xs)
+        Xs = check_Xs(Xs, multiview=True)
         n = Xs[0].shape[0]
 
         data = [self._preprocess(x) for x in Xs]
@@ -166,8 +166,8 @@ class GCCA(BaseEmbed):
 
         Returns
         -------
-        X_transformed : array-like
-            2D if view_idx not None, otherwise same shape as Xs
+        Xs_transformed : array-like
+            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
         """
         Xs = check_Xs(Xs)
         if view_idx is not None:
@@ -182,3 +182,29 @@ class GCCA(BaseEmbed):
                     for x, proj in zip(Xs, self._projection_mats)
                 ]
             )
+
+    def fit_transform(
+        self,
+        Xs,
+        **fit_params
+    ):
+        """
+        Fit to data, then transform it.
+
+        Fits transformer to Xs optional parameters fit_params and returns a transformed version of the Xs.
+        Parameters
+        ----------
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to. Each sample will receive its own embedding.
+        Returns
+        -------
+        Xs_transformed : array-like
+            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
+        """
+
+        return self.fit(Xs, **fit_params).transform(Xs)
+        
+
+

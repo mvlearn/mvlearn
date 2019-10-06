@@ -6,7 +6,6 @@ from multiview.embed.gcca import GCCA
 import sklearn
 from sklearn.decomposition import PCA
 import numpy as np
-import matplotlib.pyplot as plt
 
 ## Generate data with 2 views
 np.random.seed(0)
