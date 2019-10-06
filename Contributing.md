@@ -193,11 +193,11 @@ estimator.fit(Xs)
 
 ```
 
-The former case corresponds to the supervised case and the latter to the unsupervised case. In unsupervised cases, y takes on a default value of `None` and is ignored. Xs corresponds to a list of data matrices and y to a list of sample labels. The samples across views in Xs and y are matched.
+The former case corresponds to the supervised case and the latter to the unsupervised case. In unsupervised cases, y takes on a default value of `None` and is ignored. Xs corresponds to a list of data matrices and y to a list of sample labels. The samples across views in Xs and y are matched. Note that data matrices in Xs must have the same number of samples (rows) but the number of features (columns) may differ.
 
 | **Parameters** | **Format**                                         |
 | -------------- | -------------------------------------------------- |
-| Xs             | array-like, shape (n_views, n_samples, n_features) |
+| Xs             | list of array-likes <br>&nbsp;&nbsp;- Xs shape: (n_views,) <br>&nbsp;&nbsp;- Xs[i] shape: (n_samples, n_features_i)           |
 | y              | array, shape (n_samples,)                          |
 | kwargs         | optional data-dependent parameters.                |
 
