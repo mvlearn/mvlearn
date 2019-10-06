@@ -43,7 +43,9 @@ class BaseEmbed(BaseEstimator):
         A method to fit to multiview data.
         Parameters
         ----------
-        Xs: array-like, shape (n_views, n_samples, n_features)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional 
         Returns
         -------
@@ -58,7 +60,9 @@ class BaseEmbed(BaseEstimator):
         Transform data
         Parameters
         ----------
-        Xs: array-like, shape (n_views, n_samples, n_features)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
         """
 
         return
@@ -68,7 +72,9 @@ class BaseEmbed(BaseEstimator):
         """
         Fit an embeddor to the data and transform it
         ----------
-        Xs: array-like, shape (n_views, n_samples, n_features)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional 
         """
         return

@@ -25,6 +25,7 @@ X0 = PCA(n_components=projs.shape[2]).fit_transform(X[0])
 X1 = PCA(n_components=projs.shape[2]).fit_transform(X[1])
 
 ## Print Distances
-print(f'Raw Distance: {np.linalg.norm(X[0] - X[1])}')
-print(f'PCA Distance: {np.linalg.norm(X0[0] - X1[1])}')
-print(f'GCCA Distance: {np.linalg.norm(projs[0] - projs[1])}')
+print(f"Raw Distance: {np.linalg.norm(X[0] - X[1])}")
+print(f"PCA Distance: {np.linalg.norm(X0[0] - X1[1])}")
+print(f"GCCA Distance: {np.linalg.norm(projs[0] - projs[1])}")
+

@@ -72,7 +72,9 @@ class GCCA(BaseEmbed):
         
         Parameters
         ----------
-        Xs : array-like, shape (n_views, n_samples, n_features)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
         percent_var : percent, default=0.9
             Explained variance for rank selection during initial SVD of each sample.
@@ -84,7 +86,7 @@ class GCCA(BaseEmbed):
             Set to true if n_samples > n_features, speeds up SVD
         """
         Xs = check_Xs(Xs)
-        n = Xs.shape[1]
+        n = Xs[0].shape[0]
 
         data = [self._preprocess(x) for x in Xs]
 
@@ -155,7 +157,9 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs : array-like, shape (n_views, n_samples, n_features)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function
         view_idx: int
             The index of the view whose projection to use on Xs. For a single view.

@@ -20,7 +20,7 @@ import numpy as np
 
 def check_Xs(Xs):
     """
-    Checks Xs and sets it to be of dimension 3
+    Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
     ----------
     Xs : nd-array, list
@@ -31,13 +31,17 @@ def check_Xs(Xs):
     Xs_converted : object
         The converted and validated X.
     """
-    Xs = check_array(Xs, allow_nd=True)
-    if Xs.ndim > 3:
-        Xs = Xs.reshape((Xs.shape[0], Xs.shape[1], -1))
-    elif Xs.ndim == 2:
-        Xs = Xs.reshape((1, Xs.shape[0], Xs.shape[1]))
+    if not isinstance(Xs, list):
+        assert isinstance(
+            Xs, np.ndarray
+        ), "If not list, input must be of type np.ndarray"
+        if Xs.ndim == 2:
+            Xs = [Xs]
+        else:
+            Xs = list(Xs)
 
-    return(Xs)
+    return [check_array(X, allow_nd=False) for X in Xs]
+
 
 def check_Xs_y(Xs, y):
     """
@@ -56,8 +60,7 @@ def check_Xs_y(Xs, y):
     y_converted : object
         The converted and validated y.
     """
-    Xs = check_array(Xs)
-    Xs_converted, y_converted = check_X_y(np.swapaxes(Xs, 0, 1), y, allow_nd=True)
-    Xs_converted = np.swapaxes(Xs_converted, 0, 1)
+    Xs_converted = check_array(Xs)
+    _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
