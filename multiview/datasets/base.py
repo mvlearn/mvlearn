@@ -20,22 +20,21 @@ def load_UCI_multifeature():
 
     Parameters
     ----------
-    return_labels : bool, optional (default=False)
-        whether to have a second return value which is an array of
-        cell type labels for each node in the adjacency matrix
+
     Returns
     -------
-    graph : np.ndarray
-        Adjacency matrix of the connectome
+    data : list of np.ndarray, each of size (2000,n_features)
+        List of length 6 with each element being the data for one of the
+        views.
+
     labels : np.ndarray
-        Only returned if ``return_labels`` is true. Array of
-        string labels for each cell (vertex)
+        Array of labels for the digit
+
     References
     ----------
-    .. [1] Eichler, K., Li, F., Litwin-Kumar, A., Park, Y., Andrade, I.,
-           Schneider-Mizell, C. M., ... & Fetter, R. D. (2017). The
-           complete connectome of a learning and memory centre in an insect
-           brain. Nature, 548(7666), 175.
+    [1] M. van Breukelen, R.P.W. Duin, D.M.J. Tax, and J.E. den Hartog, 
+    Handwritten digit recognition by combined classifiers, Kybernetika, 
+    vol. 34, no. 4, 1998, 381-386
     """
 
     module_path = dirname(__file__)
