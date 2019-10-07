@@ -11,10 +11,8 @@ AUTHOR = ("Richard Guo", "Ronan Perry", "Gavin Mischler", "Theo Lee", "Alexander
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/NeuroDataDesign/multiview"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
-REQUIRED_PACKAGES = [
-    "numpy>=1.8.1",
-    "scikit-learn>=0.19.1",
-]
+with open("requirements.txt", "r") as f:
+    REQUIRED_PACKAGES = f.read()
 
 # Find multiview version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
