@@ -32,6 +32,9 @@ class CTClassifier(object):
     h2 : classifier object
         The classifier used on view 2.
 
+    n_views_ : int
+        The number of views supported by the multi-view classifier
+
     classes_ : array-like of shape (n_classes,)
         Unique class labels.
 
@@ -40,14 +43,14 @@ class CTClassifier(object):
 
     p_ : int
         Number of positive examples (second label in classes_) to pull from
-        unlabeled and give "label" at each training round.
+        unlabeled_pool and give "label" at each training round.
 
     n_ : int
         Number of positive examples (second label in classes_) to pull from
-        unlabeled and give "label" at each training round.
+        unlabeled_pool and give "label" at each training round.
 
-    unlabeled_pool_size_ : int
-        Size of pool of unlabeled examples to classify at each iteration.
+    unlabeled_pool_pool_size_ : int
+        Size of pool of unlabeled_pool examples to classify at each iteration.
 
     num_iter_ : int
         Maximum number of training iterations to run.
@@ -55,8 +58,7 @@ class CTClassifier(object):
 
     References
     ----------
-
-    [1] Blum, A., & Mitchell, T. (1998, July). Combining labeled and unlabeled
+    [1] Blum, A., & Mitchell, T. (1998, July). Combining labeled and unlabeled_pool
         data with co-training. In Proceedings of the eleventh annual
         conference on Computational learning theory (pp. 92-100). ACM.
 
@@ -80,10 +82,9 @@ class CTClassifier(object):
 
         self.h1 = h1
         self.h2 = h2
+        self.n_views_ = 2 # only 2 view learning supported
 
-        np.random.seed(random_state)
-
-        
+        self.random_state = random_state
 
         # for testing
         self.partial_error_ = []
@@ -92,7 +93,7 @@ class CTClassifier(object):
         self.class_name = "CTClassifier"
 
 
-    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_size=75, num_iter=50, y_train_full=None, X1_test=None, X2_test=None, y_test=None):
+    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_pool_size=75, num_iter=50, y_train_full=None, X1_test=None, X2_test=None, y_test=None):
         """
         Fit the classifier object to the data in Xs, y.
 
@@ -106,25 +107,25 @@ class CTClassifier(object):
             n2_features)
 
         y : array-like of shape (n_samples,)
-            The labels of the training data. Unlabeled examples should have
+            The labels of the training data. unlabeled_pool examples should have
             label np.nan.
 
         p : int, optional (default=None)
-            The number of positive classifications from the unlabeled
+            The number of positive classifications from the unlabeled_pool
             training set which will be given a positive "label". If None, the
             default is the floor of the ratio of positive to negative examples
             in the labeled training data (at least 1). If only one of p or n
             is not None, the other will be set to be the same.
 
         n : int, optional (default=None)
-            The number of negative classifications from the unlabeled
+            The number of negative classifications from the unlabeled_pool
             training set which will be given a negative "label". If None, the
             default is the floor of the ratio of positive to negative examples
             in the labeled training data (at least 1). If only one of p or n
             is not None, the other will be set to be the same.
 
-        unlabeled_pool_size : int, optional (default=75)
-            The number of unlabeled samples which will be kept in a separate pool
+        unlabeled_pool_pool_size : int, optional (default=75)
+            The number of unlabeled_pool samples which will be kept in a separate pool
             for classification and selection by the updated classifier at each
             training iteration.
 
@@ -132,12 +133,21 @@ class CTClassifier(object):
             The maximum number of training iterations to run.
 
         """
+        #TODO: input validation
+        #TODO: make sure classifiers agree 
+
+        if len(Xs) != self.n_views_:
+            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
+                             .format(self.class_name, self.n_views_,
+                                len(Xs)))
 
         X1 = Xs[0]
         X2 = Xs[1]
 
-        # convert to numpy array
-        y = np.asarray(y)
+        y = np.array(y)
+
+        np.random.seed(self.random_state)
+
 
         # if not exactly 2 classes, raise error
         self.classes_ = set(y[~np.isnan(y)])
@@ -173,43 +183,37 @@ class CTClassifier(object):
             self.n_ = n
 
 
-        self.unlabeled_pool_size_ = unlabeled_pool_size
+        self.unlabeled_pool_pool_size_ = unlabeled_pool_pool_size
         self.num_iter_ = num_iter
 
         print(self.n_)
         print(self.p_)
 
-        assert(self.p_ > 0 and self.n_ > 0 and self.num_iter_ > 0 and self.unlabeled_pool_size_ > 0)
-
-        #the set of unlabeled samples
+        # the set of unlabeled_pool samples
         U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
 
-        #we randomize here, and then just take from the back so we don't have to sample every time
-        np.random.seed(10)
+        # shuffle unlabeled_pool data for easy random access    
         np.random.shuffle(U)
 
-        #this is U' in paper
-        unlabeled = U[-min(len(U), self.unlabeled_pool_size_):]
+        unlabeled_pool = U[-min(len(U), self.unlabeled_pool_pool_size_):]
 
-        #the samples that are initially labeled
+        # labeled samples
         L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
 
-        #remove the samples in unlabeled from U
-        U = U[:-len(unlabeled)]
+        # remove the pool from overall unlabeled data
+        U = U[:-len(unlabeled_pool)]
 
-        it = 0 #number of cotraining iterations we've done so far
+        # rounds of co-training
+        it = 0
 
-        #loop until we have assigned labels to everything in U or we hit our iteration break condition
         while it < self.num_iter_ and U:
             it += 1
 
-
             self.h1.fit(X1[L], y[L])
             self.h2.fit(X2[L], y[L])
-            print(len(L))
 
-            y1_prob = self.h1.predict_log_proba(X1[unlabeled])
-            y2_prob = self.h2.predict_log_proba(X2[unlabeled])
+            y1_prob = self.h1.predict_log_proba(X1[unlabeled_pool])
+            y2_prob = self.h2.predict_log_proba(X2[unlabeled_pool])
 
             n, p = [], []
             accurate_guesses_h1 = 0
@@ -234,21 +238,21 @@ class CTClassifier(object):
                 if y2_prob[i,1] > np.log(0.5):
                     p.append(i)
 
-            #label the samples and remove the newly added samples from unlabeled
-            y[[unlabeled[x] for x in p]] = 1
-            y[[unlabeled[x] for x in n]] = 0
+            # create new labels for new additions to the labeled group
+            y[[unlabeled_pool[x] for x in n]] = self.classes_[0]
+            y[[unlabeled_pool[x] for x in p]] = self.classes_[1]
+            L.extend([unlabeled_pool[x] for x in p])
+            L.extend([unlabeled_pool[x] for x in n])
 
-            L.extend([unlabeled[x] for x in p])
-            L.extend([unlabeled[x] for x in n])
+            # remove newly labeled samples from unlabeled_pool
+            unlabeled_pool = [elem for elem in unlabeled_pool if not (elem in p or elem in n)]
 
-            unlabeled = [elem for elem in unlabeled if not (elem in p or elem in n)]
-
-            #add new elements to unlabeled
-            add_counter = 0 #number we have added from U to unlabeled
+            #add new elements to unlabeled_pool
+            add_counter = 0 #number we have added from U to unlabeled_pool
             num_to_add = len(p) + len(n)
             while add_counter != num_to_add and U:
                 add_counter += 1
-                unlabeled.append(U.pop())
+                unlabeled_pool.append(U.pop())
 
 
             # if input testing data as well, find the incrememtal update on accuracy
@@ -258,25 +262,12 @@ class CTClassifier(object):
                 y_pred = self.predict([X1, X2])
                 self.partial_train_error_.append(1-accuracy_score(y_train_full, y_pred))
 
-
-            #TODO: Handle the case where the classifiers fail to agree on any of the samples (i.e. both n and p are empty)
-
-
-        #fit the final model
+        # fit the overall model on fully "labeled" data
         self.h1.fit(X1[L], y[L])
         self.h2.fit(X2[L], y[L])
 
         return (self.partial_train_error_, self.partial_error_)
 
-
-    #TODO: Move this outside of the class into a util file.
-    def supports_proba(self, clf, x):
-        """Checks if a given classifier supports the 'predict_proba' method, given a single vector x"""
-        try:
-            clf.predict_proba([x])
-            return True
-        except:
-            return False
 
     def predict(self, Xs):
         """
@@ -301,21 +292,23 @@ class CTClassifier(object):
 
         """
 
+        if len(Xs) != self.n_views_:
+            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
+                             .format(self.class_name, self.n_views_,
+                                len(Xs)))
         X1 = Xs[0]
         X2 = Xs[1]
 
-        if len(Xs) != self.n_classes_:
-            raise ValueError("{0:s} must provide {1:d} classes; got classes"
-                             .format(self.class_name, self.n_classes_,
-                                len(Xs)))
+        if X1.shape[0] != X2.shape[0]:
+            raise ValueError("2 provided views have incompatible dimensions, "
+                             " they must have the same number of samples.")
 
         y1 = self.h1.predict(X1)
         y2 = self.h2.predict(X2)
 
-        proba_supported = self.supports_proba(self.h1, X1[0]) and self.supports_proba(self.h2, X2[0])
-
         #fill y_pred with -1 so we can identify the samples in which the classifiers failed to agree
-        y_pred = np.asarray([-1] * X1.shape[0])
+        y_pred = np.zeros(X1.shape[0],)
+        #y_pred = np.asarray([-1] * X1.shape[0])
         num_disagree = 0
         num_agree = 0
 
@@ -323,26 +316,15 @@ class CTClassifier(object):
             if y1_i == y2_i:
                 y_pred[i] = y1_i
                 num_agree += 1
-            elif proba_supported:
+            else:
                 y1_probs = self.h1.predict_proba([X1[i]])[0]
                 y2_probs = self.h2.predict_proba([X2[i]])[0]
                 sum_y_probs = [prob1 + prob2 for (prob1, prob2) in zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
-                y_pred[i] = sum_y_probs.index(max_sum_prob)
+                y_pred[i] = self.classes_[sum_y_probs.index(max_sum_prob)]
                 num_disagree += 1
-            else:
-                #the classifiers disagree and don't support probability, so we guess
-                y_pred[i] = random.randint(0, 1)
-
-        print("agree: " + str(num_agree))
-        print("disagree: " + str(num_disagree))
-
-
-        #check that we did everything right
-        assert not (-1 in y_pred)
 
         return y_pred
-
 
     def predict_proba(self, Xs):
         """
@@ -365,23 +347,21 @@ class CTClassifier(object):
 
         """
 
+        if len(Xs) != self.n_views_:
+            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
+                             .format(self.class_name, self.n_views_,
+                                len(Xs)))
+
         X1 = Xs[0]
         X2 = Xs[1]
-
-        if len(Xs) != self.n_classes_:
-            raise ValueError("{0:s} must provide {1:d} classes; got classes"
-                             .format(self.class_name, self.n_classes_,
-                                len(Xs)))
 
         y_proba = np.full((X1.shape[0], self.n_classes_), -1)
 
         y1_proba = self.h1.predict_proba(X1)
         y2_proba = self.h2.predict_proba(X2)
 
-        for i, (y1_i_dist, y2_i_dist) in enumerate(zip(y1_proba, y2_proba)):
-            y_proba[i][0] = (y1_i_dist[0] + y2_i_dist[0]) / 2
-            y_proba[i][1] = (y1_i_dist[1] + y2_i_dist[1]) / 2
+        for i, (y1_proba_set, y2_proba_set) in enumerate(zip(y1_proba, y2_proba)):
+            y_proba[i][0] = (y1_proba_set[0] + y2_proba_set[0]) / 2
+            y_proba[i][1] = (y1_proba_set[1] + y2_proba_set[1]) / 2
 
-        _epsilon = 0.0001
-        assert all(abs(sum(y_dist) - 1) <= _epsilon for y_dist in y_proba)
         return y_proba
