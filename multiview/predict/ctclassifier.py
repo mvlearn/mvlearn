@@ -125,16 +125,16 @@ class CTClassifier(object):
             is not None, the other will be set to be the same.
 
         unlabeled_pool_pool_size : int, optional (default=75)
-            The number of unlabeled_pool samples which will be kept in a separate pool
-            for classification and selection by the updated classifier at each
-            training iteration.
+            The number of unlabeled_pool samples which will be kept in a
+            separate pool for classification and selection by the updated
+            classifier at each training iteration.
 
         num_iter : int, optional (default=50)
             The maximum number of training iterations to run.
 
         """
         #TODO: input validation
-        #TODO: make sure classifiers agree 
+        #TODO: make sure classifiers agree
 
         if len(Xs) != self.n_views_:
             raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
@@ -150,7 +150,7 @@ class CTClassifier(object):
 
 
         # if not exactly 2 classes, raise error
-        self.classes_ = set(y[~np.isnan(y)])
+        self.classes_ = list(set(y[~np.isnan(y)]))
         self.n_classes_ = len(self.classes_)
         if self.n_classes_ > 2:
             raise ValueError("{0:s} supports only binary classification. "
@@ -166,8 +166,12 @@ class CTClassifier(object):
         # If only 1 of p or n is not None, set them equal
         if (p is not None and n is None):
             n = p
+            self.p_ = p
+            self.n_ = n
         elif (p is None and n is not None):
             p = n
+            self.p_ = p
+            self.n_ = n
         elif (p is None and n is None):
             num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
             num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
@@ -192,7 +196,7 @@ class CTClassifier(object):
         # the set of unlabeled_pool samples
         U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
 
-        # shuffle unlabeled_pool data for easy random access    
+        # shuffle unlabeled_pool data for easy random access
         np.random.shuffle(U)
 
         unlabeled_pool = U[-min(len(U), self.unlabeled_pool_pool_size_):]
@@ -306,9 +310,7 @@ class CTClassifier(object):
         y1 = self.h1.predict(X1)
         y2 = self.h2.predict(X2)
 
-        #fill y_pred with -1 so we can identify the samples in which the classifiers failed to agree
         y_pred = np.zeros(X1.shape[0],)
-        #y_pred = np.asarray([-1] * X1.shape[0])
         num_disagree = 0
         num_agree = 0
 
@@ -361,5 +363,3 @@ class CTClassifier(object):
         y2_proba = self.h2.predict_proba(X2)
 
         return (y1_proba + y2_proba) * .5
-
-        
