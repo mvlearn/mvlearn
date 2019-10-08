@@ -360,8 +360,6 @@ class CTClassifier(object):
         y1_proba = self.h1.predict_proba(X1)
         y2_proba = self.h2.predict_proba(X2)
 
-        for i, (y1_proba_set, y2_proba_set) in enumerate(zip(y1_proba, y2_proba)):
-            y_proba[i][0] = (y1_proba_set[0] + y2_proba_set[0]) / 2
-            y_proba[i][1] = (y1_proba_set[1] + y2_proba_set[1]) / 2
+        return (y1_proba + y2_proba) * .5
 
-        return y_proba
+        
