@@ -1,7 +1,24 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from .base import BaseCoTrainEstimator
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
+from ..utils.utils import check_Xs
+from ..utils.utils import check_Xs_y_nan_allowed
 
-class CTClassifier(object):
+class CTClassifier(BaseCoTrainEstimator):
     """
     Co-Training Classifier
 
@@ -31,6 +48,9 @@ class CTClassifier(object):
 
     h2 : classifier object
         The classifier used on view 2.
+
+    class_name: string
+        The name of the class: CTClassifier.
 
     n_views_ : int
         The number of views supported by the multi-view classifier
@@ -67,7 +87,9 @@ class CTClassifier(object):
 
     def __init__(self, h1=None, h2=None, random_state=0):
 
-        # if not given, set as gaussian naive bayes estimators
+        super().__init__()
+
+        # if not given, set classifiers gaussian naive bayes estimators
         if h1 is None:
             h1 = GaussianNB()
         if h2 is None:
@@ -78,35 +100,28 @@ class CTClassifier(object):
         if (not hasattr(h1, 'predict_proba') or not hasattr(h2, 'predict_proba'
             )):
             raise AttributeError("Co-training classifier must be initialized "
-                "with classifiers supporting the predict_proba() function.")
+                "with classifiers supporting predict_proba().")
 
         self.h1 = h1
         self.h2 = h2
         self.n_views_ = 2 # only 2 view learning supported
 
         self.random_state = random_state
-
-        # for testing
-        self.partial_error_ = []
-        # for testing with training data
-        self.partial_train_error_ = []
         self.class_name = "CTClassifier"
 
 
-    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_pool_size=75, num_iter=50, y_train_full=None, X1_test=None, X2_test=None, y_test=None):
+    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_pool_size=75, num_iter=50):
         """
         Fit the classifier object to the data in Xs, y.
 
         Parameters
         ----------
-        Xs : list of numpy arrays (each must have same first dimension)
-            The list should be length 2 (since only 2 view data is currently
-            supported for co-training). View 1 (X1) is the first element in
-            the list and should have shape (n_samples, n1_features). View 2 (X2)
-            is the second element in the list and should have shape (n-samples,
-            n2_features)
+        Xs : list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of the different views of data to train on.
 
-        y : array-like of shape (n_samples,)
+        y : array, shape (n_samples,)
             The labels of the training data. unlabeled_pool examples should have
             label np.nan.
 
@@ -133,14 +148,11 @@ class CTClassifier(object):
             The maximum number of training iterations to run.
 
         """
-        #TODO: input validation
-        #TODO: make sure classifiers agree
 
-        if len(Xs) != self.n_views_:
-            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
-                             .format(self.class_name, self.n_views_,
-                                len(Xs)))
 
+        Xs, y = check_Xs_y_nan_allowed(Xs, y, multiview=True, num_classes=2, classification=True)
+
+        # extract the multiple views given
         X1 = Xs[0]
         X2 = Xs[1]
 
@@ -148,20 +160,17 @@ class CTClassifier(object):
 
         np.random.seed(self.random_state)
 
-
-        # if not exactly 2 classes, raise error
         self.classes_ = list(set(y[~np.isnan(y)]))
         self.n_classes_ = len(self.classes_)
-        if self.n_classes_ > 2:
-            raise ValueError("{0:s} supports only binary classification. "
-                             "y contains {1:d} classes"
-                             .format(self.class_name, self.n_classes_))
-        if self.n_classes_ == 1:
-            raise ValueError("{0:s} requires 2 classes; got 1 class"
-                             .format(self.class_name))
-        if self.n_classes_ == 0:
-            raise ValueError("Insufficient labeled data")
-
+        # if self.n_classes_ > 2:
+        #     raise ValueError("{0:s} supports only binary classification. "
+        #                      "y contains {1:d} labels"
+        #                      .format(self.class_name, self.n_classes_))
+        # if self.n_classes_ == 1:
+        #     raise ValueError("{0:s} requires 2 classes; got 1 class label"
+        #                      .format(self.class_name))
+        # if self.n_classes_ == 0:
+        #     raise ValueError("Insufficient labeled data")
 
         # If only 1 of p or n is not None, set them equal
         if (p is not None and n is None):
@@ -172,50 +181,47 @@ class CTClassifier(object):
             p = n
             self.p_ = p
             self.n_ = n
+        # if both are none, set as ratio of one class to the other
         elif (p is None and n is None):
             num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
             num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
             p_over_n_ratio = num_class_p // num_class_n
             if p_over_n_ratio > 1:
-                self.p_ = p_over_n_ratio
-                self.n_ = 1
+                self.p_, self.n_ = p_over_n_ratio, 1
             else:
-                self.n_ = num_class_n // num_class_p
-                self.p_ = 1
+                self.n_, self.p_ = num_class_n // num_class_p, 1
         else:
-            self.p_ = p
-            self.n_ = n
-
+            self.p_, self.n_ = p, n
 
         self.unlabeled_pool_pool_size_ = unlabeled_pool_pool_size
         self.num_iter_ = num_iter
 
-        print(self.n_)
-        print(self.p_)
-
-        # the set of unlabeled_pool samples
+        # the full set of unlabeled samples
         U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
 
         # shuffle unlabeled_pool data for easy random access
         np.random.shuffle(U)
 
+        # the small pool of unlabled samples to draw from in training
         unlabeled_pool = U[-min(len(U), self.unlabeled_pool_pool_size_):]
 
-        # labeled samples
+        # the labeled samples
         L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
 
         # remove the pool from overall unlabeled data
         U = U[:-len(unlabeled_pool)]
 
-        # rounds of co-training
+        # number of rounds of co-training
         it = 0
 
         while it < self.num_iter_ and U:
             it += 1
 
+            # fit each model to its respective view
             self.h1.fit(X1[L], y[L])
             self.h2.fit(X2[L], y[L])
 
+            # predict log probability for greater spread in confidence
             y1_prob = self.h1.predict_log_proba(X1[unlabeled_pool])
             y2_prob = self.h2.predict_log_proba(X2[unlabeled_pool])
 
@@ -225,19 +231,17 @@ class CTClassifier(object):
             wrong_guesses_h1 = 0
             wrong_guesses_h2 = 0
 
-
+            # take the most confident labeled examples from the
+            # unlabeled pool in each category and put them in L
             for i in (y1_prob[:,0].argsort())[-self.n_:]:
                 if y1_prob[i,0] > np.log(0.5):
                     n.append(i)
-
             for i in (y1_prob[:,1].argsort())[-self.p_:]:
                 if y1_prob[i,1] > np.log(0.5):
                     p.append(i)
-
             for i in (y2_prob[:,0].argsort())[-self.n_:]:
                 if y2_prob[i,0] > np.log(0.5):
                     n.append(i)
-
             for i in (y2_prob[:,1].argsort())[-self.p_:]:
                 if y2_prob[i,1] > np.log(0.5):
                     p.append(i)
@@ -259,18 +263,9 @@ class CTClassifier(object):
                 unlabeled_pool.append(U.pop())
 
 
-            # if input testing data as well, find the incrememtal update on accuracy
-            if X1_test is not None and X2_test is not None and y_test is not None:
-                y_pred = self.predict([X1_test, X2_test])
-                self.partial_error_.append(1-accuracy_score(y_test, y_pred))
-                y_pred = self.predict([X1, X2])
-                self.partial_train_error_.append(1-accuracy_score(y_train_full, y_pred))
-
         # fit the overall model on fully "labeled" data
         self.h1.fit(X1[L], y[L])
         self.h2.fit(X2[L], y[L])
-
-        return (self.partial_train_error_, self.partial_error_)
 
 
     def predict(self, Xs):
@@ -286,7 +281,6 @@ class CTClassifier(object):
             is the second element in the list and should have shape (n-samples,
             n2_features)
 
-
         Returns
         -------
         y_pred : array-like (n_samples,)
@@ -295,6 +289,8 @@ class CTClassifier(object):
             from predict_proba()
 
         """
+
+        Xs = check_Xs(Xs, multiview=True)
 
         if len(Xs) != self.n_views_:
             raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
@@ -307,24 +303,27 @@ class CTClassifier(object):
             raise ValueError("2 provided views have incompatible dimensions, "
                              " they must have the same number of samples.")
 
+        # predict each view independently
         y1 = self.h1.predict(X1)
         y2 = self.h2.predict(X2)
 
+        # initialize 
         y_pred = np.zeros(X1.shape[0],)
         num_disagree = 0
         num_agree = 0
 
+        # predict samples based on trained classifiers
         for i, (y1_i, y2_i) in enumerate(zip(y1, y2)):
+            # if classifiers agree, use their prediction
             if y1_i == y2_i:
                 y_pred[i] = y1_i
-                num_agree += 1
+            # if classifiers don't agree, take the more confident
             else:
                 y1_probs = self.h1.predict_proba([X1[i]])[0]
                 y2_probs = self.h2.predict_proba([X2[i]])[0]
                 sum_y_probs = [prob1 + prob2 for (prob1, prob2) in zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
                 y_pred[i] = self.classes_[sum_y_probs.index(max_sum_prob)]
-                num_disagree += 1
 
         return y_pred
 
@@ -349,6 +348,8 @@ class CTClassifier(object):
 
         """
 
+        Xs = check_Xs(Xs, multiview=True)
+
         if len(Xs) != self.n_views_:
             raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
                              .format(self.class_name, self.n_views_,
@@ -358,8 +359,8 @@ class CTClassifier(object):
         X2 = Xs[1]
 
         y_proba = np.full((X1.shape[0], self.n_classes_), -1)
-
+        # predict each probability independently
         y1_proba = self.h1.predict_proba(X1)
         y2_proba = self.h2.predict_proba(X2)
-
+        # return the average probability for the sample
         return (y1_proba + y2_proba) * .5
