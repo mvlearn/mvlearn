@@ -27,7 +27,6 @@ class CTClassifier(BaseCoTrainEstimator):
     satisfy the 3 conditions for multi-view co-training (sufficiency,
     compatibility, conditional independence) as detailed in [1].
 
-
     Parameters
     ----------
     h1 : classifier object
@@ -74,7 +73,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
     num_iter_ : int
         Maximum number of training iterations to run.
-
 
     References
     ----------
@@ -149,7 +147,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
         """
 
-
         Xs, y = check_Xs_y_nan_allowed(Xs, y, multiview=True, num_classes=2, classification=True)
 
         # extract the multiple views given
@@ -162,15 +159,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
         self.classes_ = list(set(y[~np.isnan(y)]))
         self.n_classes_ = len(self.classes_)
-        # if self.n_classes_ > 2:
-        #     raise ValueError("{0:s} supports only binary classification. "
-        #                      "y contains {1:d} labels"
-        #                      .format(self.class_name, self.n_classes_))
-        # if self.n_classes_ == 1:
-        #     raise ValueError("{0:s} requires 2 classes; got 1 class label"
-        #                      .format(self.class_name))
-        # if self.n_classes_ == 0:
-        #     raise ValueError("Insufficient labeled data")
 
         # If only 1 of p or n is not None, set them equal
         if (p is not None and n is None):
@@ -339,7 +327,6 @@ class CTClassifier(BaseCoTrainEstimator):
             the list and should have shape (n_samples, n1_features). View 2 (X2)
             is the second element in the list and should have shape (n-samples,
             n2_features)
-
 
         Returns
         -------
