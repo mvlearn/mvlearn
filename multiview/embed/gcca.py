@@ -20,8 +20,6 @@ from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
 
-from tqdm import tqdm
-
 
 class GCCA(BaseEmbed):
     """
@@ -60,13 +58,7 @@ class GCCA(BaseEmbed):
         return X2
 
     def fit(
-        self,
-        Xs,
-        percent_var=0.9,
-        rank_tolerance=None,
-        n_components=None,
-        tall=False,
-        verbose=False,
+        self, Xs, percent_var=0.9, rank_tolerance=None, n_components=None, tall=False
     ):
         """
         
@@ -95,7 +87,7 @@ class GCCA(BaseEmbed):
         Vall = []
         ranks = []
 
-        for x in tqdm(data, disable=(not verbose)):
+        for x in data:
             # Preprocess
             x[np.isnan(x)] = 0
 
@@ -183,11 +175,7 @@ class GCCA(BaseEmbed):
                 ]
             )
 
-    def fit_transform(
-        self,
-        Xs,
-        **fit_params
-    ):
+    def fit_transform(self, Xs, **fit_params):
         """
         Fit to data, then transform it.
 
@@ -205,6 +193,4 @@ class GCCA(BaseEmbed):
         """
 
         return self.fit(Xs, **fit_params).transform(Xs)
-        
-
 
