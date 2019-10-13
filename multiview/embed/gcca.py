@@ -57,10 +57,40 @@ class GCCA(BaseEmbed):
         X2 -= mu
         return X2
 
+    def _check_inputs(self, fraction_var, sv_tolerance, n_components, size):
+        if fraction_var is None:
+            pass
+        elif not isinstance(fraction_var, float) and not isinstance(fraction_var, int):
+            raise TypeError("fraction_var must be an integer or float")
+        elif fraction_var <= 0 or fraction_var > 1:
+            raise ValueError("fraction_var must be in (0,1]")
+
+        if sv_tolerance is None:
+            pass
+        elif not isinstance(sv_tolerance, int):
+            raise TypeError("sv_tolerance must be an integer")
+        elif sv_tolerance <= 0:
+            raise ValueError("sv_tolerance must be greater than 0")
+
+        if n_components is None:
+            pass
+        elif not isinstance(n_components, int):
+            raise TypeError("n_components must be an integer")
+        elif n_components <= 0:
+            raise ValueError("n_components must be greater than 0")
+        elif n_components > min(size):
+            raise ValueError("n_components must be less than or equal to the minimum input rank")
+
     def fit(
-        self, Xs, percent_var=0.9, rank_tolerance=None, n_components=None, tall=False
+        self, Xs, fraction_var=0.9, sv_tolerance=None, n_components=None, tall=False
     ):
         """
+        Calculates a projection from each view to a latentent space such that the sum of 
+        pariwise latent space correlations is maximized. Each view 'X' is normalized and the
+        left singular vectors of 'X^T X' are calculated using SVD. The number of singular 
+        vectors kept is determined by either the percent variance explained, a given rank
+        threshold, or a given number of components. The singular vectors kept are concatenated
+        and SVD of that is taken and used to calculated projects for each view.
         
         Parameters
         ----------
@@ -68,17 +98,33 @@ class GCCA(BaseEmbed):
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
-        percent_var : percent, default=0.9
+        fraction_var : percent, default=0.9
             Explained variance for rank selection during initial SVD of each sample.
-        rank_tolerance : float, optional, default=None
+        sv_tolerance : float, optional, default=None
             Singular value threshold for rank selection during initial SVD of each sample.
         n_components : int (postivie), optional, default=None
             Rank to truncate to during initial SVD of each sample.
         tall : boolean, default=False
             Set to true if n_samples > n_features, speeds up SVD
+
+        Attributes
+        ----------
+        _projection_mats : list of arrays
+            A projection matrix for each view, from the given space to the latent space
+        self._ranks : list of ints
+            number of left singular vectors kept for each view during the first SVD
         """
+
         Xs = check_Xs(Xs, multiview=True)
         n = Xs[0].shape[0]
+        min_m = min(X.shape[1] for X in Xs)
+
+        self._check_inputs(
+            fraction_var=fraction_var,
+            sv_tolerance=sv_tolerance,
+            n_components=n_components,
+            size = (n, min_m)
+        )
 
         data = [self._preprocess(x) for x in Xs]
 
@@ -102,13 +148,13 @@ class GCCA(BaseEmbed):
             Sall.append(s)
             Vall.append(v)
             # Dimensions to reduce to
-            if rank_tolerance:
-                rank = sum(s > rank_tolerance)
+            if sv_tolerance:
+                rank = sum(s > sv_tolerance)
             elif n_components:
                 rank = n_components
             else:
                 s2 = np.square(s)
-                rank = sum(np.cumsum(s2 / sum(s2)) < percent_var) + 1
+                rank = sum(np.cumsum(s2 / sum(s2)) < fraction_var) + 1
             ranks.append(rank)
 
             u = ut.T[:, :rank]

@@ -18,7 +18,7 @@ from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(Xs,multiview=False):
+def check_Xs(Xs, multiview=False):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -68,7 +68,7 @@ def check_Xs_y(Xs, y, multiview=False):
     y_converted : object
         The converted and validated y.
     """
-    Xs_converted = check_Xs(Xs,multiview=multiview)
+    Xs_converted = check_Xs(Xs, multiview=multiview)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
