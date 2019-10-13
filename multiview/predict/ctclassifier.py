@@ -18,6 +18,7 @@ from sklearn.naive_bayes import GaussianNB
 from ..utils.utils import check_Xs
 from ..utils.utils import check_Xs_y_nan_allowed
 
+
 class CTClassifier(BaseCoTrainEstimator):
     """
     Co-Training Classifier
@@ -82,7 +83,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
     """
 
-
     def __init__(self, h1=None, h2=None, random_state=0):
 
         super().__init__()
@@ -93,10 +93,9 @@ class CTClassifier(BaseCoTrainEstimator):
         if h2 is None:
             h2 = GaussianNB()
 
-
         # verify that h1 and h2 have predict_proba
-        if (not hasattr(h1, 'predict_proba') or not hasattr(h2, 'predict_proba'
-            )):
+        if (not hasattr(h1, 'predict_proba') or not 
+        		hasattr(h2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                 "with classifiers supporting predict_proba().")
 
@@ -108,7 +107,8 @@ class CTClassifier(BaseCoTrainEstimator):
         self.class_name = "CTClassifier"
 
 
-    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_pool_size=75, num_iter=50):
+    def fit(self, Xs, y, p=None, n=None, unlabeled_pool_pool_size=75, 
+    		num_iter=50):
         """
         Fit the classifier object to the data in Xs, y.
 
@@ -147,7 +147,8 @@ class CTClassifier(BaseCoTrainEstimator):
 
         """
 
-        Xs, y = check_Xs_y_nan_allowed(Xs, y, multiview=True, num_classes=2, classification=True)
+        Xs, y = check_Xs_y_nan_allowed(Xs, y, multiview=True,
+        	num_views=self.n_views_, num_classes=2)
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -221,17 +222,17 @@ class CTClassifier(BaseCoTrainEstimator):
 
             # take the most confident labeled examples from the
             # unlabeled pool in each category and put them in L
-            for i in (y1_prob[:,0].argsort())[-self.n_:]:
-                if y1_prob[i,0] > np.log(0.5):
+            for i in (y1_prob[:, 0].argsort())[-self.n_:]:
+                if y1_prob[i, 0] > np.log(0.5):
                     n.append(i)
-            for i in (y1_prob[:,1].argsort())[-self.p_:]:
-                if y1_prob[i,1] > np.log(0.5):
+            for i in (y1_prob[:, 1].argsort())[-self.p_:]:
+                if y1_prob[i, 1] > np.log(0.5):
                     p.append(i)
-            for i in (y2_prob[:,0].argsort())[-self.n_:]:
-                if y2_prob[i,0] > np.log(0.5):
+            for i in (y2_prob[:, 0].argsort())[-self.n_:]:
+                if y2_prob[i, 0] > np.log(0.5):
                     n.append(i)
-            for i in (y2_prob[:,1].argsort())[-self.p_:]:
-                if y2_prob[i,1] > np.log(0.5):
+            for i in (y2_prob[:, 1].argsort())[-self.p_:]:
+                if y2_prob[i, 1] > np.log(0.5):
                     p.append(i)
 
             # create new labels for new additions to the labeled group
@@ -241,7 +242,8 @@ class CTClassifier(BaseCoTrainEstimator):
             L.extend([unlabeled_pool[x] for x in n])
 
             # remove newly labeled samples from unlabeled_pool
-            unlabeled_pool = [elem for elem in unlabeled_pool if not (elem in p or elem in n)]
+            unlabeled_pool = [elem for elem in unlabeled_pool 
+                if not (elem in p or elem in n)]
 
             #add new elements to unlabeled_pool
             add_counter = 0 #number we have added from U to unlabeled_pool
@@ -262,12 +264,10 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : list of numpy arrays (each with the same first dimension)
-            The list should be length 2 (since only 2 view data is currently
-            supported for co-training). View 1 (X1) is the first element in
-            the list and should have shape (n_samples, n1_features). View 2 (X2)
-            is the second element in the list and should have shape (n-samples,
-            n2_features)
+        Xs : list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of the different views of data to predict.
 
         Returns
         -------
@@ -278,12 +278,12 @@ class CTClassifier(BaseCoTrainEstimator):
 
         """
 
-        Xs = check_Xs(Xs, multiview=True)
+        Xs = check_Xs(Xs, multiview=True, enforce_views=self.n_views_)
 
         if len(Xs) != self.n_views_:
             raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
-                             .format(self.class_name, self.n_views_,
-                                len(Xs)))
+                .format(self.class_name, self.n_views_, len(Xs)))
+
         X1 = Xs[0]
         X2 = Xs[1]
 
@@ -295,7 +295,7 @@ class CTClassifier(BaseCoTrainEstimator):
         y1 = self.h1.predict(X1)
         y2 = self.h2.predict(X2)
 
-        # initialize 
+        # initialize
         y_pred = np.zeros(X1.shape[0],)
         num_disagree = 0
         num_agree = 0
@@ -309,7 +309,8 @@ class CTClassifier(BaseCoTrainEstimator):
             else:
                 y1_probs = self.h1.predict_proba([X1[i]])[0]
                 y2_probs = self.h2.predict_proba([X2[i]])[0]
-                sum_y_probs = [prob1 + prob2 for (prob1, prob2) in zip(y1_probs, y2_probs)]
+                sum_y_probs = [prob1 + prob2 for (prob1, prob2) 
+                    in zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
                 y_pred[i] = self.classes_[sum_y_probs.index(max_sum_prob)]
 
@@ -321,12 +322,10 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : list of numpy arrays (each with the same first dimension)
-            The list should be length 2 (since only 2 view data is currently
-            supported for co-training). View 1 (X1) is the first element in
-            the list and should have shape (n_samples, n1_features). View 2 (X2)
-            is the second element in the list and should have shape (n-samples,
-            n2_features)
+        Xs : list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of the different views of data to predict.
 
         Returns
         -------
@@ -335,12 +334,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         """
 
-        Xs = check_Xs(Xs, multiview=True)
-
-        if len(Xs) != self.n_views_:
-            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
-                             .format(self.class_name, self.n_views_,
-                                len(Xs)))
+        Xs = check_Xs(Xs, multiview=True, enforce_views=self.n_views_)
 
         X1 = Xs[0]
         X2 = Xs[1]

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from abc import abstractmethod
-
-import numpy as np 
+import numpy as np
 from sklearn.base import BaseEstimator
 
 class BaseCoTrainEstimator(BaseEstimator):
@@ -84,3 +83,4 @@ class BaseCoTrainEstimator(BaseEstimator):
         """
 
         return self
+        
