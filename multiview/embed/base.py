@@ -40,14 +40,11 @@ class BaseEmbed(BaseEstimator):
     @abstractmethod
     def fit(self, Xs, y=None):
         """
-        A method to fit to multiview data.
-        Parameters
+        A method to fit to multiview data. Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional 
-        Returns
+        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+            (n_samples, n_features_i) y : array, shape (n_samples,), optional
+            Returns
         -------
         self: obj
         """
@@ -75,6 +72,6 @@ class BaseEmbed(BaseEstimator):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional 
+        y : array, shape (n_samples,), optional
         """
         return

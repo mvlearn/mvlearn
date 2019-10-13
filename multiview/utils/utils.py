@@ -57,7 +57,7 @@ def check_Xs_y(Xs, y, multiview=False):
     Parameters
     ----------
     Xs : nd-array, list
-        Input data.
+        Input data. F
     y : nd-array, list
         Labels.
 

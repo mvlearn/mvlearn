@@ -23,11 +23,13 @@ from sklearn.preprocessing import normalize
 
 class GCCA(BaseEmbed):
     """
-    An implementation of Generalized Canonical Correalation Analysis.Computes individual 
-    projections into a common subspace such that the correlations between pairwise projections 
-    are minimized (ie. maximize pairwise correlation). Reduces to CCA in the case of two samples.
-    
-    See https://www.sciencedirect.com/science/article/pii/S1053811912001644?via%3Dihub
+    An implementation of Generalized Canonical Correalation Analysis.Computes
+    individual projections into a common subspace such that the correlations
+    between pairwise projections are minimized (ie. maximize pairwise
+    correlation). Reduces to CCA in the case of two samples.
+
+    See https://www.sciencedirect.com/science/article/pii/S1053811912001644?
+    via%3Dihub
     for relevant details.
     """
 
@@ -39,7 +41,7 @@ class GCCA(BaseEmbed):
         """
         Subtracts the row means and divides by the row standard deviations.
         Then subtracts column means.
-        
+
         Parameters
         ----------
         X : array-like, shape (n_observations, n_features)
@@ -60,7 +62,9 @@ class GCCA(BaseEmbed):
     def _check_inputs(self, fraction_var, sv_tolerance, n_components, size):
         if fraction_var is None:
             pass
-        elif not isinstance(fraction_var, float) and not isinstance(fraction_var, int):
+        elif not isinstance(fraction_var, float) and not isinstance(
+            fraction_var, int
+        ):
             raise TypeError("fraction_var must be an integer or float")
         elif fraction_var <= 0 or fraction_var > 1:
             raise ValueError("fraction_var must be in (0,1]")
@@ -80,41 +84,45 @@ class GCCA(BaseEmbed):
             raise ValueError("n_components must be greater than 0")
         elif n_components > min(size):
             raise ValueError(
-                "n_components must be less than or equal to the minimum input rank"
+                "n_components must be less than or equal to the \
+                    minimum input rank"
             )
 
     def fit(
-        self, Xs, fraction_var=0.9, sv_tolerance=None, n_components=None, tall=False
+        self,
+        Xs,
+        fraction_var=0.9,
+        sv_tolerance=None,
+        n_components=None,
+        tall=False,
     ):
         """
-        Calculates a projection from each view to a latentent space such that the sum of 
-        pariwise latent space correlations is maximized. Each view 'X' is normalized and the
-        left singular vectors of 'X^T X' are calculated using SVD. The number of singular 
-        vectors kept is determined by either the percent variance explained, a given rank
-        threshold, or a given number of components. The singular vectors kept are concatenated
+        Calculates a projection from each view to a latentent space such that
+        the sum of pariwise latent space correlations is maximized. Each view
+        'X' is normalized and the left singular vectors of 'X^T X' are
+        calculated using SVD. The number of singular vectors kept is determined
+        by either the percent variance explained, a given rank threshold, or a
+        given number of components. The singular vectors kept are concatenated
         and SVD of that is taken and used to calculated projects for each view.
-        
+
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each sample will receive its own embedding.
-        fraction_var : percent, default=0.9
-            Explained variance for rank selection during initial SVD of each sample.
-        sv_tolerance : float, optional, default=None
-            Singular value threshold for rank selection during initial SVD of each sample.
-        n_components : int (postivie), optional, default=None
-            Rank to truncate to during initial SVD of each sample.
-        tall : boolean, default=False
-            Set to true if n_samples > n_features, speeds up SVD
+        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+            (n_samples, n_features_i) The data to fit to. Each sample will
+            receive its own embedding. fraction_var : percent, default=0.9
+            Explained variance for rank selection during initial SVD of each
+            sample. sv_tolerance : float, optional, default=None Singular value
+            threshold for rank selection during initial SVD of each sample.
+            n_components : int (postivie), optional, default=None Rank to
+            truncate to during initial SVD of each sample. tall : boolean,
+            default=False Set to true if n_samples > n_features, speeds up SVD
 
         Attributes
         ----------
-        _projection_mats : list of arrays
-            A projection matrix for each view, from the given space to the latent space
-        self._ranks : list of ints
-            number of left singular vectors kept for each view during the first SVD
+        _projection_mats : list of arrays A projection matrix for each view,
+            from the given space to the latent space self._ranks : list of ints
+            number of left singular vectors kept for each view during the first
+            SVD
         """
 
         Xs = check_Xs(Xs, multiview=True)
@@ -197,22 +205,22 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function
-        view_idx: int
-            The index of the view whose projection to use on Xs. For a single view.
+        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+            (n_samples, n_features_i) The data to embed based on the prior fit
+            function view_idx: int The index of the view whose projection to
+            use on Xs. For a single view.
 
         Returns
         -------
-        Xs_transformed : array-like
-            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
+        Xs_transformed : array-like 2D if view_idx not None, otherwise
+            (n_views, n_samples, n_components)
         """
         Xs = check_Xs(Xs)
         if view_idx is not None:
             try:
-                return self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
+                return (
+                    self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
+                )
             except IndexError:
                 print(f"view_idx: {view_idx} invalid")
         else:
@@ -227,17 +235,15 @@ class GCCA(BaseEmbed):
         """
         Fit to data, then transform it.
 
-        Fits transformer to Xs optional parameters fit_params and returns a transformed version of the Xs.
-        Parameters
+        Fits transformer to Xs optional parameters fit_params and returns a
+        transformed version of the Xs. Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each sample will receive its own embedding.
-        Returns
+        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+            (n_samples, n_features_i) The data to fit to. Each sample will
+            receive its own embedding. Returns
         -------
-        Xs_transformed : array-like
-            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
+        Xs_transformed : array-like 2D if view_idx not None, otherwise
+            (n_views, n_samples, n_components)
         """
 
         return self.fit(Xs, **fit_params).transform(Xs)

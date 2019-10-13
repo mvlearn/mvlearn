@@ -1,7 +1,4 @@
 import sys
-
-sys.path.append("../")
-
 import pytest
 from multiview.embed.base import BaseEmbed
 
