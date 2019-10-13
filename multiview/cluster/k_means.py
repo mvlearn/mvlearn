@@ -1,6 +1,6 @@
 import numpy as np
 from .base_cluster import BaseCluster
-
+from ..utils.cluster_utils import check_Xs
 
 class KMeans(BaseCluster):
 
@@ -45,18 +45,36 @@ class KMeans(BaseCluster):
 
     def __init__(self, k=5, random_state=None, max_iter=None):
 
-        super().__init__()
+        super().__init__() 
+        
+        if not isinstance(k, int):
+            msg = 'k must be a positive integer'
+            raise ValueError(msg)
+        if (k < 1):    
+            msg = 'k must be a positive integer'
+            raise ValueError(msg)
+        
+        if max_iter is not None:
+            msg = 'max_iter must be a positive integer'
+            if not isinstance(max_iter, int):
+                raise ValueError(msg)
+            if (max_iter < 1):
+                raise ValueError(msg)
+            self._max_iter = max_iter
+
+        if random_state is not None:
+            msg = 'random_state must be convertible to a 32 bit unsigned integer'
+            try:
+                random_state = int(random_state)
+            except ValueError:
+                raise ValueError(msg)
+            np.random.seed(random_state)
+        
         self._centroids = None
         self._k = k
         self._random_state = random_state
+        self._max_iter = np.inf
         
-        self._max_iter = max_iter
-        if not max_iter:
-            self._max_iter = np.inf
-
-        # Number of centroids must be greater than 0
-        # Max iter must be greater than 0
-
     def _compute_distance(self, X, centers):
 
         '''
@@ -106,11 +124,16 @@ class KMeans(BaseCluster):
             function after which the algorithm will terminate.
 
         '''
+        
+        Xs = check_Xs(Xs)
 
-        # Check that input has 2 views
-        # Check that the arrays have same number of features
-        # Check if array-like
-
+        if not isinstance(patience, int):
+            msg = 'patience must be a nonegative integer'
+            raise ValueError(msg)
+        if (patience < 0):
+            msg = 'patience must be a nonnegative integer'
+            raise ValueError(msg)
+        
         indices = np.random.choice(Xs[1].shape[0], self._k)
         centers = Xs[1][indices]
         self._centroids = [None, centers]
@@ -132,8 +155,11 @@ class KMeans(BaseCluster):
             new_centers = list()
             for cl in range(self._k):
                 mask = (partitions[(view + 1) % 2] == cl)
-                cent = np.mean(Xs[view][mask], axis=0)
-                new_centers.append(cent)
+                if (np.sum(mask) == 0):
+                    new_centers.append(self._centroids[view][cl])
+                else:
+                    cent = np.mean(Xs[view][mask], axis=0)
+                    new_centers.append(cent)
             self._centroids[view] = np.vstack(new_centers)
 
             distances = self._compute_distance(Xs[view], self._centroids[view])
@@ -152,7 +178,29 @@ class KMeans(BaseCluster):
                 iter_stall = 0
             else:
                 iter_stall += 1
+                
+        v1_consensus = list()
+        v2_consensus = list()
 
+        for clust in range(self._k):
+
+            v1_distances = self._compute_distance(Xs[0], self._centroids[0])
+            v1_partitions = np.argmin(v1_distances, axis=0).flatten()
+            v2_distances = self._compute_distance(Xs[1], self._centroids[1])
+            v2_partitions = np.argmin(v2_distances, axis=0).flatten()
+
+            part_indices = (v1_partitions == clust) * (v2_partitions == clust)
+
+            if (np.sum(part_indices) != 0):
+                cent1 = np.mean(Xs[0][part_indices], axis=0)
+                v1_consensus.append(cent1)
+                
+                cent2 = np.mean(Xs[1][part_indices], axis=0)
+                v2_consensus.append(cent2)
+
+        self._centroids[0] = np.vstack(v1_consensus)
+        self._centroids[1] = np.vstack(v2_consensus)
+                
         return self
 
     def predict(self, Xs):
@@ -176,29 +224,11 @@ class KMeans(BaseCluster):
             The predicted cluster labels for each sample.
 
         '''
+        
+        Xs = check_Xs(Xs)
 
-        v1_consensus = list()
-        v2_consensus = list()
-
-        for clust in range(self._k):
-
-            v1_distances = self._compute_distance(Xs[0], self._centroids[0])
-            v1_partitions = np.argmin(v1_distances, axis=0).flatten()
-            v2_distances = self._compute_distance(Xs[1], self._centroids[1])
-            v2_partitions = np.argmin(v2_distances, axis=0).flatten()
-
-            part_indices = (v1_partitions == clust) * (v2_partitions == clust)
-            cent1 = np.mean(Xs[0][part_indices], axis=0)
-            v1_consensus.append(cent1)
-
-            # View 2
-            cent2 = np.mean(Xs[1][part_indices], axis=0)
-            v2_consensus.append(cent2)
-
-        v1_consensus = np.vstack(v1_consensus)
-        v2_consensus = np.vstack(v2_consensus)
-        dist1 = self._compute_distance(Xs[0], v1_consensus)
-        dist2 = self._compute_distance(Xs[1], v2_consensus)
+        dist1 = self._compute_distance(Xs[0], self._centroids[0])
+        dist2 = self._compute_distance(Xs[1], self._centroids[1])
         dist_metric = dist1 + dist2
         predictions = np.argmin(dist_metric, axis=0).flatten()
 
