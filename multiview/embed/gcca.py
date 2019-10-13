@@ -79,7 +79,9 @@ class GCCA(BaseEmbed):
         elif n_components <= 0:
             raise ValueError("n_components must be greater than 0")
         elif n_components > min(size):
-            raise ValueError("n_components must be less than or equal to the minimum input rank")
+            raise ValueError(
+                "n_components must be less than or equal to the minimum input rank"
+            )
 
     def fit(
         self, Xs, fraction_var=0.9, sv_tolerance=None, n_components=None, tall=False
@@ -123,7 +125,7 @@ class GCCA(BaseEmbed):
             fraction_var=fraction_var,
             sv_tolerance=sv_tolerance,
             n_components=n_components,
-            size = (n, min_m)
+            size=(n, min_m),
         )
 
         data = [self._preprocess(x) for x in Xs]
@@ -239,4 +241,3 @@ class GCCA(BaseEmbed):
         """
 
         return self.fit(Xs, **fit_params).transform(Xs)
-

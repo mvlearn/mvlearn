@@ -55,20 +55,20 @@ def test_output():
 def test_bad_inputs():
     np.random.seed(1)
     test_mat = np.array([[1, 2], [3, 4]])
-    mat_good = np.ones((2,4,2))
+    mat_good = np.ones((2, 4, 2))
 
     fit_params = [
-        ({'Xs':[[]]}, ValueError), # Empty input
-        ({'Xs':test_mat}, ValueError), # Single matrix input
-        ({'Xs':mat_good, 'fraction_var': 'fail'}, TypeError),
-        ({'Xs':mat_good, 'fraction_var': -1}, ValueError),
-        ({'Xs':mat_good, 'n_components': 'fail'}, TypeError),
-        ({'Xs':mat_good, 'n_components': -1}, ValueError),
-        ({'Xs':mat_good, 'sv_tolerance': 'fail'}, TypeError),
-        ({'Xs':mat_good, 'sv_tolerance': -1}, ValueError),
-        ({'Xs':mat_good, 'n_components': mat_good.shape[1]}, ValueError)
+        ({"Xs": [[]]}, ValueError),  # Empty input
+        ({"Xs": test_mat}, ValueError),  # Single matrix input
+        ({"Xs": mat_good, "fraction_var": "fail"}, TypeError),
+        ({"Xs": mat_good, "fraction_var": -1}, ValueError),
+        ({"Xs": mat_good, "n_components": "fail"}, TypeError),
+        ({"Xs": mat_good, "n_components": -1}, ValueError),
+        ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
+        ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
+        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
     ]
 
-    for (kwargs,error) in fit_params:
+    for (kwargs, error) in fit_params:
         with pytest.raises(error):
             GCCA().fit(**kwargs)
