@@ -17,7 +17,7 @@ from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(Xs,multiview=False, enforce_views=None):
+def check_Xs(Xs, multiview=False, enforce_views=None):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -74,13 +74,14 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     y_converted : object
         The converted and validated y.
     """
-    Xs_converted = check_Xs(Xs,multiview=multiview, enforce_views=enforce_views)
+    Xs_converted = check_Xs(Xs,multiview=multiview,
+        enforce_views=enforce_views)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
 
-def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None, 
-    num_classes=None, classification=False):
+def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
+        num_classes=None, classification=False):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters
@@ -105,7 +106,7 @@ def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
     """
 
     Xs_converted = check_Xs(Xs, multiview=multiview, enforce_views=num_views)
-    
+
     y_converted = np.array(y)
     if len(y_converted) != Xs_converted[0].shape[0]:
             raise ValueError("Incompatible label size")
@@ -115,7 +116,8 @@ def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
         classes = list(set(y[~np.isnan(y)]))
         n_classes = len(classes)
         if n_classes != num_classes:
-            raise ValueError("Wrong number of class labels. Expected {}, found {}"
+            raise ValueError("Wrong number of class labels. Expected {},\
+             found {}"
                              .format(num_classes, n_classes))
 
     return Xs, y

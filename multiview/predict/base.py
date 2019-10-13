@@ -16,6 +16,7 @@ from abc import abstractmethod
 import numpy as np
 from sklearn.base import BaseEstimator
 
+
 class BaseCoTrainEstimator(BaseEstimator):
     """
     A base class for multiview co-training.
@@ -83,4 +84,3 @@ class BaseCoTrainEstimator(BaseEstimator):
         """
 
         return self
-        
