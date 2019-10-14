@@ -6,9 +6,6 @@ import numpy as np
 from scipy.linalg import eigh
 
 
-__copyright__ = 'Copyright 2016, UC Berkeley, Gallant lab.'
-
-
 class _CCABase(object):
     def __init__(self, numCV=None, reg=None, regs=None, numCC=None,
                  numCCs=None, kernelcca=True, ktype=None, verbose=False,
@@ -96,121 +93,6 @@ class _CCABase(object):
                 if di == 0:
                     setattr(self, key, [])
                 self.__getattribute__(key).append(value.value)
-
-
-class CCACrossValidate(_CCABase):
-    """
-    Attributes:
-        numCV (int): number of cross-validation folds
-        regs (list or numpy.array): regularization param array.
-                                   Default: np.logspace(-3, 1, 10)
-        numCCs (list or numpy.array): list of numbers of canonical dimensions
-                                     to keep. Default is np.range(5, 10).
-        kernelcca (bool): kernel or non-kernel CCA. Default is True.
-        ktype (string): type of kernel used if kernelcca is True.
-                        Value can be 'linear' (default) or 'gaussian'.
-        verbose (bool): default is True.
-    Returns:
-        ws (list): canonical weights
-        comps (list): canonical components
-        cancorrs (list): correlations of the canonical components
-                         on the training dataset
-        corrs (list): correlations on the validation dataset
-        preds (list): predictions on the validation dataset
-        ev (list): explained variance for each canonical dimension
-    """
-
-    def __init__(self, numCV=None, regs=None, numCCs=None, kernelcca=True,
-                 ktype=None, verbose=True, select=0.2, cutoff=1e-15,
-                 gausigma=1.0, degree=2):
-        numCV = 10 if numCV is None else numCV
-        regs = np.array(np.logspace(-3, 1, 10)) if regs is None else regs
-        numCCs = np.arange(5, 10) if numCCs is None else numCCs
-        super(CCACrossValidate, self).__init__(numCV=numCV, regs=regs,
-                                               numCCs=numCCs,
-                                               kernelcca=kernelcca,
-                                               ktype=ktype, verbose=verbose,
-                                               select=select, cutoff=cutoff,
-                                               gausigma=gausigma,
-                                               degree=degree)
-
-    def train(self, data, parallel=True):
-        """
-        Train CCA with cross-validation for a set of regularization
-        coefficients and/or numbers of CCs
-        Attributes:
-            data (list): training data matrices
-                         (number of samples X number of features).
-                         Number of samples must match across datasets.
-            parallel (bool): use joblib to train cross-validation folds
-                             in parallel
-        """
-        nT = data[0].shape[0]
-        chunklen = 10 if nT > 50 else 1
-        nchunks = int(0.2 * nT / chunklen)
-        indchunks = zip(*[iter(range(nT))] * chunklen)
-        corr_mat = np.zeros((len(self.regs), len(self.numCCs)))
-        selection = max(int(self.select * min([d.shape[1] for d in data])), 1)
-        for ri, reg in enumerate(self.regs):
-            for ci, numCC in enumerate(self.numCCs):
-                running_corr_mean_sum = 0.
-                if parallel:
-                    fold_corr_means = joblib.Parallel(n_jobs=self.numCV)(
-                        joblib.delayed(train_cvfold)(
-                            data=data, reg=reg, numCC=numCC,
-                            kernelcca=self.kernelcca, ktype=self.ktype,
-                            gausigma=self.gausigma, degree=self.degree,
-                            cutoff=self.cutoff, selection=selection)
-                        for fold in range(self.numCV))
-                    running_corr_mean_sum += sum(fold_corr_means)
-                else:
-                    for cvfold in range(self.numCV):
-                        fold_corr_mean = train_cvfold(
-                            data=data, reg=reg, numCC=numCC,
-                            kernelcca=self.kernelcca, ktype=self.ktype,
-                            gausigma=self.gausigma, degree=self.degree,
-                            cutoff=self.cutoff, selection=selection)
-                        running_corr_mean_sum += fold_corr_mean
-
-                corr_mat[ri, ci] = running_corr_mean_sum / self.numCV
-        best_ri, best_ci = np.where(corr_mat == corr_mat.max())
-        self.best_reg = self.regs[best_ri[0]]
-        self.best_numCC = self.numCCs[best_ci[0]]
-
-        comps = kcca(data, self.best_reg, self.best_numCC,
-                     kernelcca=self.kernelcca, ktype=self.ktype,
-                     gausigma=self.gausigma, degree=self.degree)
-        self.cancorrs, self.ws, self.comps = recon(data, comps,
-                                                   kernelcca=self.kernelcca)
-        if len(data) == 2:
-            self.cancorrs = self.cancorrs[np.nonzero(self.cancorrs)]
-        return self
-
-def train_cvfold(data, reg, numCC, kernelcca, ktype, gausigma, degree,
-                 cutoff, selection):
-    """
-    Train a cross-validation fold of CCA
-    """
-    nT = data[0].shape[0]
-    chunklen = 10 if nT > 50 else 1
-    nchunks = int(0.2 * nT / chunklen)
-    indchunks = list(zip(*[iter(range(nT))] * chunklen))
-    np.random.shuffle(indchunks)
-    heldinds = [ind for chunk in indchunks[:nchunks]
-                for ind in chunk]
-    notheldinds = list(set(range(nT)) - set(heldinds))
-    comps = kcca([d[notheldinds] for d in data], reg, numCC,
-                 kernelcca=kernelcca, ktype=ktype,
-                 gausigma=gausigma, degree=degree)
-    cancorrs, ws, ccomps = recon([d[notheldinds] for d in data], comps,
-                                 kernelcca=kernelcca)
-    preds, corrs = predict([d[heldinds] for d in data], ws, cutoff=cutoff)
-    fold_corr_mean = []
-    for corr in corrs:
-        corr_idx = np.argsort(corr)[::-1]
-        corr_mean = corr[corr_idx][:selection].mean()
-        fold_corr_mean.append(corr_mean)
-    return np.mean(fold_corr_mean)
 
 
 class CCA(_CCABase):
