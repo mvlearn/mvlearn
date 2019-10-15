@@ -109,11 +109,13 @@ class GCCA(BaseEmbed):
         ----------
         Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
             (n_samples, n_features_i) The data to fit to. Each sample will
-            receive its own embedding. fraction_var : percent, default=0.9
+            receive its own embedding.
+        fraction_var : percent, default=0.9
             Explained variance for rank selection during initial SVD of each
-            sample. sv_tolerance : float, optional, default=None Singular value
+            sample.
+        sv_tolerance : float, optional, default=None Singular value
             threshold for rank selection during initial SVD of each sample.
-            n_components : int (postivie), optional, default=None Rank to
+        n_components : int (positive), optional, default=None Rank to
             truncate to during initial SVD of each sample. tall : boolean,
             default=False Set to true if n_samples > n_features, speeds up SVD
 

@@ -49,12 +49,13 @@ def test_output():
     use_fit()
 
 
-def test_bad_inputs():
-    np.random.seed(1)
-    test_mat = np.array([[1, 2], [3, 4]])
-    mat_good = np.ones((2, 4, 2))
+test_mat = np.array([[1, 2], [3, 4]])
+mat_good = np.ones((2, 4, 2))
 
-    fit_params = [
+
+@pytest.mark.parameterize(
+    "params,err",
+    [
         ({"Xs": [[]]}, ValueError),  # Empty input
         ({"Xs": test_mat}, ValueError),  # Single matrix input
         ({"Xs": mat_good, "fraction_var": "fail"}, TypeError),
@@ -64,8 +65,9 @@ def test_bad_inputs():
         ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
         ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
         ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
-    ]
-
-    for (kwargs, error) in fit_params:
-        with pytest.raises(error):
-            GCCA().fit(**kwargs)
+    ],
+)
+def test_bad_inputs(params, err):
+    np.random.seed(1)
+    with pytest.raises(err):
+        GCCA().fit(**params)
