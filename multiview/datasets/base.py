@@ -2,7 +2,7 @@ from os.path import dirname, join
 import numpy as np
 
 
-def load_UCImultifeature(select_labeled=[0,1,2,3,4,5,6,7,8,9]):
+def load_UCImultifeature(select_labeled="all"):
     """
     Load the UCI multiple features dataset, taken from
     https://archive.ics.uci.edu/ml/datasets/Multiple+Features
@@ -21,7 +21,7 @@ def load_UCImultifeature(select_labeled=[0,1,2,3,4,5,6,7,8,9]):
     Parameters
     ----------
     select_labeled : optional, array-like, shape (n_features,) default (all)
-        A list of the examples that the user wants by label. If not 
+        A list of the examples that the user wants by label. If not
         specified, all examples in the dataset are returned. Repeated labels
         are ignored.
 
@@ -41,6 +41,9 @@ def load_UCImultifeature(select_labeled=[0,1,2,3,4,5,6,7,8,9]):
     vol. 34, no. 4, 1998, 381-386
     """
 
+    if select_labeled == "all":
+        select_labeled = range(10);
+
     select_labeled = list(set(select_labeled))
 
     if len(select_labeled) < 1 or len(select_labeled) > 10:
@@ -51,17 +54,17 @@ def load_UCImultifeature(select_labeled=[0,1,2,3,4,5,6,7,8,9]):
     folder = "UCImultifeature"
     filenames = ["mfeat-fou.csv", "mfeat-fac.csv", "mfeat-kar.csv",
                  "mfeat-pix.csv", "mfeat-zer.csv", "mfeat-mor.csv"]
-                 
+
     data = []
     for filename in filenames:
         csv_file = join(module_path, folder, filename)
         datatemp = np.genfromtxt(csv_file, delimiter=',')
-        data.append(datatemp[1:,:-1])
-        labels = datatemp[1:,-1]
+        data.append(datatemp[1:, :-1])
+        labels = datatemp[1:, -1]
 
     selected_data = []
     for i in range(6):
-        datatemp = np.zeros((200*len(select_labeled),data[i].shape[1]))
+        datatemp = np.zeros((200*len(select_labeled), data[i].shape[1]))
         if i == 0:
             selected_labels = np.zeros(200*len(select_labeled),)
         for j, label in enumerate(select_labeled):
@@ -69,7 +72,7 @@ def load_UCImultifeature(select_labeled=[0,1,2,3,4,5,6,7,8,9]):
             if label not in range(10):
                 raise ValueError("Bad label: labels must be  in 0, 1, 2,.. 9")
             indices = np.nonzero(labels==label)
-            datatemp[j*200:(j+1)*200,:] = data[i][indices,:]
+            datatemp[j * 200 : (j+1) * 200, :] = data[i][indices, :]
             selected_labels[j*200:(j+1)*200] = labels[indices]
         selected_data.append(datatemp)
 
