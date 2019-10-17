@@ -98,6 +98,7 @@ def check_Xs_y(
 
     return Xs_converted, y_converted
 
+
 def check_compatible_view_samples(Xs):
     for i, X in enumerate(Xs):
         if i == 0:
@@ -106,6 +107,7 @@ def check_compatible_view_samples(Xs):
             if X.shape[0] != length:
                 raise ValueError("Incompatible views: each view must have "
                                  "the same number of examples")
+
 
 def check_Xs_y_nan_allowed(
         Xs,
