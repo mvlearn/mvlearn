@@ -2,7 +2,8 @@ import numpy as np
 from .base_cluster import BaseCluster
 from ..utils.cluster_utils import check_Xs
 
-class KMeans(BaseCluster):
+
+class MultiviewKMeans(BaseCluster):
 
     '''
     An implementation of Multi-View K-Means using the co-EM algorithm.
@@ -30,9 +31,6 @@ class KMeans(BaseCluster):
         The seed for the random number generator used during centroid
         initialization.
 
-    _max_iter : int
-        The maximum number of iterations to run the EM algorithm.
-
     _centroids : list of array_likes
         - _centroids shape: (2,)
         - _centroids[0] shape: (n_clusters, n_features_i)
@@ -43,38 +41,26 @@ class KMeans(BaseCluster):
 
     '''
 
-    def __init__(self, k=5, random_state=None, max_iter=None):
+    def __init__(self, k=5, random_state=None):
 
-        super().__init__() 
-        
-        if not isinstance(k, int):
+        super().__init__()
+
+        if not (isinstance(k, int) and k > 0):
             msg = 'k must be a positive integer'
             raise ValueError(msg)
-        if (k < 1):    
-            msg = 'k must be a positive integer'
-            raise ValueError(msg)
-        
-        if max_iter is not None:
-            msg = 'max_iter must be a positive integer'
-            if not isinstance(max_iter, int):
-                raise ValueError(msg)
-            if (max_iter < 1):
-                raise ValueError(msg)
-            self._max_iter = max_iter
 
         if random_state is not None:
-            msg = 'random_state must be convertible to a 32 bit unsigned integer'
+            msg = 'random_state must be convertible to 32 bit unsigned integer'
             try:
                 random_state = int(random_state)
             except ValueError:
                 raise ValueError(msg)
             np.random.seed(random_state)
-        
+
         self._centroids = None
         self._k = k
         self._random_state = random_state
-        self._max_iter = np.inf
-        
+
     def _compute_distance(self, X, centers):
 
         '''
@@ -105,7 +91,7 @@ class KMeans(BaseCluster):
         distances = np.vstack(distances)
         return distances
 
-    def fit(self, Xs, patience=5):
+    def fit(self, Xs, patience=5, max_iter=None):
 
         '''
         Fit the cluster centroids to the data.
@@ -123,17 +109,25 @@ class KMeans(BaseCluster):
             The number of EM iterations with no decrease in the objective
             function after which the algorithm will terminate.
 
+        max_iter: int, optional (default=None)
+            The maximum number of EM iterations to run before
+            termination.
+
         '''
-        
+
         Xs = check_Xs(Xs)
 
-        if not isinstance(patience, int):
-            msg = 'patience must be a nonegative integer'
-            raise ValueError(msg)
-        if (patience < 0):
+        if not (isinstance(patience, int) and (patience > 0)):
             msg = 'patience must be a nonnegative integer'
             raise ValueError(msg)
-        
+
+        if max_iter is not None:
+            if not (isinstance(max_iter, int) and (max_iter > 0)):
+                msg = 'max_iter must be a positive integer'
+                raise ValueError(msg)
+        else:
+            max_iter = np.inf
+
         indices = np.random.choice(Xs[1].shape[0], self._k)
         centers = Xs[1][indices]
         self._centroids = [None, centers]
@@ -146,7 +140,7 @@ class KMeans(BaseCluster):
         iter_num = 0
         entropy = 0
 
-        while(iter_stall < patience and iter_num < self._max_iter):
+        while(iter_stall < patience and iter_num < max_iter):
             iter_num += 1
             view = (iter_num + 1) % 2
 
@@ -167,9 +161,9 @@ class KMeans(BaseCluster):
 
             # Recompute the objective function
             o_funct = 0
-            for clust in range(self._k):
-                vecs = Xs[view][(partitions[view] == clust)]
-                dist = np.linalg.norm(vecs - self._centroids[view][clust], axis=1)
+            for cl in range(self._k):
+                vecs = Xs[view][(partitions[view] == cl)]
+                dist = np.linalg.norm(vecs - self._centroids[view][cl], axis=1)
                 o_funct += np.sum(dist)
 
             # Track of number of iterations without improvement
@@ -178,7 +172,7 @@ class KMeans(BaseCluster):
                 iter_stall = 0
             else:
                 iter_stall += 1
-                
+
         v1_consensus = list()
         v2_consensus = list()
 
@@ -194,13 +188,13 @@ class KMeans(BaseCluster):
             if (np.sum(part_indices) != 0):
                 cent1 = np.mean(Xs[0][part_indices], axis=0)
                 v1_consensus.append(cent1)
-                
+
                 cent2 = np.mean(Xs[1][part_indices], axis=0)
                 v2_consensus.append(cent2)
 
         self._centroids[0] = np.vstack(v1_consensus)
         self._centroids[1] = np.vstack(v2_consensus)
-                
+
         return self
 
     def predict(self, Xs):
@@ -213,10 +207,9 @@ class KMeans(BaseCluster):
         Xs : list of array_likes
             - Xs shape: (2,)
             - Xs[0] shape: (n_samples, n_features_i)
-            This list must be of size 2, corresponding to the two views of the data.
-            The two views can each have a different number of features, but they must
-            have the same number of samples.
-
+            This list must be of size 2, corresponding to the two
+            views of the data. The two views can each have a different
+            number of features, but they must have the same number of samples.
 
         Returns
         -------
@@ -224,7 +217,7 @@ class KMeans(BaseCluster):
             The predicted cluster labels for each sample.
 
         '''
-        
+
         Xs = check_Xs(Xs)
 
         dist1 = self._compute_distance(Xs[0], self._centroids[0])
@@ -234,7 +227,7 @@ class KMeans(BaseCluster):
 
         return predictions
 
-    def fit_predict(self, Xs, patience=5):
+    def fit_predict(self, Xs, patience=5, max_iter=None):
 
         '''
         Fit the cluster centroids to the data and then
@@ -245,18 +238,25 @@ class KMeans(BaseCluster):
         Xs : list of array_likes
             - Xs shape: (2,)
             - Xs[0] shape: (n_samples, n_features_i)
-            This list must be of size 2, corresponding to the two views of the data.
-            The two views can each have a different number of features, but they must
-            have the same number of samples.
-
+            This list must be of size 2, corresponding to the two views
+            of the data. The two views can each have a different number
+            of features, but they must have the same number of samples.
 
         Returns
         -------
         predictions : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
 
+        patience: int, optional (default=5)
+            The number of EM iterations with no decrease in the objective
+            function after which the algorithm will terminate.
+
+        max_iter: int, optional (default=None)
+            The maximum number of EM iterations to run before
+            termination.
+
         '''
 
-        self.fit(Xs)
+        self.fit(Xs, patience, max_iter)
         partitions = self.predict(Xs)
         return partitions

@@ -16,6 +16,7 @@ import warnings
 import numpy as np
 from sklearn.utils import check_array
 
+
 def check_Xs(Xs):
 
     '''
@@ -26,7 +27,7 @@ def check_Xs(Xs):
         - Xs shape (2,)
         - Xs[0] shape (n_samples, n_features_i)
         The data from two views.
-    
+
 
     Returns
     -------
@@ -34,7 +35,7 @@ def check_Xs(Xs):
         The data as a list of numpy ndarrays
 
     '''
-    
+
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
             msg = "If not list, input must be of type np.ndarray"
