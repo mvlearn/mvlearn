@@ -129,9 +129,9 @@ def test_predict_n(data):
         for j in range(2):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
 
-def test_predict_unlabeled_pool_pool_size(data):
+def test_predict_unlabeled_pool_size(data):
 
-    data['clf_test'].fit(data['random_data'], data['random_labels'], unlabeled_pool_pool_size=20)
+    data['clf_test'].fit(data['random_data'], data['random_labels'], unlabeled_pool_size=20)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
 
