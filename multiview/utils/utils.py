@@ -18,10 +18,10 @@ import numpy as np
 
 
 def check_Xs(
-    Xs,
-    multiview=False,
-    enforce_views=None
-    ):
+        Xs,
+        multiview=False,
+        enforce_views=None
+        ):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -61,11 +61,11 @@ def check_Xs(
 
 
 def check_Xs_y(
-    Xs,
-    y,
-    multiview=False,
-    enforce_views=None
-    ):
+        Xs,
+        y,
+        multiview=False,
+        enforce_views=None
+        ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
     Parameters
@@ -91,13 +91,13 @@ def check_Xs_y(
 
 
 def check_Xs_y_nan_allowed(
-    Xs,
-    y,
-    multiview=False,
-    num_views=None,
-    num_classes=None,
-    classification=False
-    ):
+        Xs,
+        y,
+        multiview=False,
+        num_views=None,
+        num_classes=None,
+        classification=False
+        ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters
