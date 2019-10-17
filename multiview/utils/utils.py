@@ -17,7 +17,11 @@ from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(Xs, multiview=False, enforce_views=None):
+def check_Xs(
+    Xs,
+    multiview=False,
+    enforce_views=None
+    ):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -56,7 +60,12 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
     return [check_array(X, allow_nd=False) for X in Xs]
 
 
-def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
+def check_Xs_y(
+    Xs,
+    y,
+    multiview=False,
+    enforce_views=None
+    ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
     Parameters
@@ -75,14 +84,20 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
         The converted and validated y.
     """
     Xs_converted = check_Xs(Xs, multiview=multiview,
-        					enforce_views=enforce_views)
+                            enforce_views=enforce_views)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
 
 
-def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
-        					num_classes=None, classification=False):
+def check_Xs_y_nan_allowed(
+    Xs,
+    y,
+    multiview=False,
+    num_views=None,
+    num_classes=None,
+    classification=False
+    ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters

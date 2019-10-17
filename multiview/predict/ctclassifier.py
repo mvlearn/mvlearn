@@ -83,10 +83,12 @@ class CTClassifier(BaseCoTrainEstimator):
 
     """
 
-    def __init__(self,
-                h1=None,
-                h2=None,
-                random_state=0):
+    def __init__(
+                 self,
+                 h1=None,
+                 h2=None,
+                 random_state=0
+                 ):
 
         super().__init__()
 
@@ -110,13 +112,15 @@ class CTClassifier(BaseCoTrainEstimator):
         self.random_state = random_state
         self.class_name = "CTClassifier"
 
-    def fit(self,
+    def fit(
+            self,
             Xs,
             y,
             p=None,
             n=None,
             unlabeled_pool_size=75,
-            num_iter=50):
+            num_iter=50
+            ):
         """
         Fit the classifier object to the data in Xs, y.
 
@@ -156,9 +160,9 @@ class CTClassifier(BaseCoTrainEstimator):
         """
 
         Xs, y = check_Xs_y_nan_allowed(Xs, y,
-                                    multiview=True,
-                                    num_views=self.n_views_,
-                                    num_classes=2)
+                                       multiview=True,
+                                       num_views=self.n_views_,
+                                       num_classes=2)
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -317,8 +321,8 @@ class CTClassifier(BaseCoTrainEstimator):
             else:
                 y1_probs = self.h1.predict_proba([X1[i]])[0]
                 y2_probs = self.h2.predict_proba([X2[i]])[0]
-                sum_y_probs = [prob1 + prob2 for (prob1, prob2)
-                            in zip(y1_probs, y2_probs)]
+                sum_y_probs = [prob1 + prob2 for (prob1, prob2) in 
+                               zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
                 y_pred[i] = self.classes_[sum_y_probs.index(max_sum_prob)]
 
