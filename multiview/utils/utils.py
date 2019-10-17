@@ -20,7 +20,8 @@ import numpy as np
 def check_Xs(
         Xs,
         multiview=False,
-        enforce_views=None
+        enforce_views=None,
+        check_compatible_views=False
         ):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
@@ -29,9 +30,11 @@ def check_Xs(
     Xs : nd-array, list
         Input data.
     multiview : boolean, default (False)
-        Throws error if just 1 data matrix
+        If True, throws error if just 1 data matrix.
     enforce_views: int, default (None)
         Number of views required. if None, then not enforced.
+    enforce_compatible_views : boolean, default (False)
+        If true, throws error if views not all equal in first dimension.
     Returns
     -------
     Xs_converted : object
@@ -49,6 +52,10 @@ def check_Xs(
     if len(Xs) == 0:
         msg = "Length of input list must be greater than 0"
         raise ValueError(msg)
+
+    if check_compatible_views:
+        check_compatible_view_samples(Xs)
+
     if multiview:
         if len(Xs) == 1:
             msg = "Must provide at least two data matrices"
@@ -64,7 +71,8 @@ def check_Xs_y(
         Xs,
         y,
         multiview=False,
-        enforce_views=None
+        enforce_views=None,
+        check_compatible_views=False
         ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
@@ -84,11 +92,20 @@ def check_Xs_y(
         The converted and validated y.
     """
     Xs_converted = check_Xs(Xs, multiview=multiview,
-                            enforce_views=enforce_views)
+                            enforce_views=enforce_views,
+                            check_compatible_views=check_compatible_views)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
 
+def check_compatible_view_samples(Xs):
+    for i, X in enumerate(Xs):
+        if i == 0:
+            length = X.shape[0]
+        else:
+            if X.shape[0] != length:
+                raise ValueError("Incompatible views: each view must have "
+                                 "the same number of examples")
 
 def check_Xs_y_nan_allowed(
         Xs,
@@ -96,7 +113,8 @@ def check_Xs_y_nan_allowed(
         multiview=False,
         num_views=None,
         num_classes=None,
-        classification=False
+        classification=False,
+        check_compatible_views=False
         ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
@@ -121,11 +139,15 @@ def check_Xs_y_nan_allowed(
         The converted and validated y.
     """
 
-    Xs_converted = check_Xs(Xs, multiview=multiview, enforce_views=num_views)
+    Xs_converted = check_Xs(Xs,
+                            multiview=multiview,
+                            enforce_views=num_views,
+                            check_compatible_views=check_compatible_views)
 
     y_converted = np.array(y)
     if len(y_converted) != Xs_converted[0].shape[0]:
-        raise ValueError("Incompatible label size")
+        raise ValueError("Incompatible label length {len(y_converted)} for "
+                         " data with {Xs_converted[0].shape[0]} samples")
 
     if num_classes is not None:
         # if not exactly correct number of class labels, raise error

@@ -49,30 +49,66 @@ def test_no_wrong_view_number(data):
 
         data['clf_test'].fit(Xs, data['random_labels'])
 
-def test_over_two_classes(data):
+def test_fit_incompatible_views(data):
+    X1 = np.ones((100,10))
+    X2 = np.zeros((99,10))
+    with pytest.raises(ValueError):
+        data['clf_test'].fit([X1, X2], data['random_labels'])
+
+def test_fit_over_two_classes(data):
     with pytest.raises(ValueError):
         random_labels_bad = np.floor(2*np.random.rand(100,)+2)
         random_labels_bad[:-10] = np.nan
         random_labels_bad[0] = 10
         data['clf_test'].fit(data['random_data'], random_labels_bad)
 
-def test_one_class(data):
+def test_fit_one_class(data):
     with pytest.raises(ValueError):
         random_labels_bad = np.floor(np.random.rand(100,))
         random_labels_bad[:-10] = np.nan
         data['clf_test'].fit(data['random_data'], random_labels_bad)
 
-def test_zero_classes(data):
+def test_fit_zero_classes(data):
+    with pytest.raises(ValueError):
+        random_labels_bad = np.zeros((100,))
+        random_labels_bad[:] = np.nan
+        data['clf_test'].fit(data['random_data'], random_labels_bad)
+
+def test_predict_incompatible_views(data):
+    X1 = np.ones((100,10))
+    X2 = np.zeros((99,10))
+    with pytest.raises(ValueError):
+        data['clf_test'].predict([X1, X2])
+
+def test_predict_over_two_classes(data):
+    data['clf_test'].fit(data['random_data'], data['random_labels'])
+    bad_data = []
+    for i in range(3):
+        bad_data.append(np.ones((100,10)))
+    with pytest.raises(ValueError):
+        random_labels_bad = np.ones((100,))
+        data['clf_test'].predict(bad_data)
+
+def test_predict_one_class(data):
+    data['clf_test'].fit(data['random_data'], data['random_labels'])
+    bad_data = []
+    bad_data.append(np.zeros((100,10)))
     with pytest.raises(ValueError):
         random_labels_bad = np.zeros(100)
-        data['clf_test'].fit(data['random_data'], random_labels_bad)
+        data['clf_test'].predict(bad_data)
+
+def test_predict_zero_classes(data):
+    data['clf_test'].fit(data['random_data'], data['random_labels'])
+    bad_data = []
+    with pytest.raises(ValueError):
+        random_labels_bad = np.zeros(100)
+        data['clf_test'].predict(bad_data)
 
 '''
 FUNCTION TESTING
 '''
 
 def test_predict_default(data):
-
     data['clf_test'].fit(data['random_data'], data['random_labels'])
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
@@ -89,10 +125,9 @@ def test_predict_default(data):
 
     for i in range(data['N_test']):
         for j in range(2):
-            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_p(data):
-
     data['clf_test'].fit(data['random_data'], data['random_labels'], p=12)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
@@ -109,10 +144,9 @@ def test_predict_p(data):
 
     for i in range(data['N_test']):
         for j in range(2):
-            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_n(data):
-
     data['clf_test'].fit(data['random_data'], data['random_labels'], n=9)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
@@ -129,11 +163,11 @@ def test_predict_n(data):
 
     for i in range(data['N_test']):
         for j in range(2):
-            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_unlabeled_pool_size(data):
-
-    data['clf_test'].fit(data['random_data'], data['random_labels'], unlabeled_pool_size=20)
+    data['clf_test'].fit(data['random_data'], data['random_labels'], 
+                         unlabeled_pool_size=20)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
 
@@ -149,10 +183,9 @@ def test_predict_unlabeled_pool_size(data):
 
     for i in range(data['N_test']):
         for j in range(2):
-            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_num_iter(data):
-
     data['clf_test'].fit(data['random_data'], data['random_labels'], num_iter=9)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
@@ -169,13 +202,15 @@ def test_predict_num_iter(data):
 
     for i in range(data['N_test']):
         for j in range(2):
-            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.000001
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 """
 BASE CLASS TESTING
 """
 
 def test_base_ctclassifier():
-
     base_clf = BaseCoTrainEstimator()
     assert isinstance(base_clf, BaseEstimator)
+    base_clf.fit([],[])
+    base_clf.predict([])
+    base_clf.predict_proba([])
