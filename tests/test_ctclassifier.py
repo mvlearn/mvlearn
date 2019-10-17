@@ -108,6 +108,26 @@ def test_predict_zero_classes(data):
 FUNCTION TESTING
 '''
 
+def test_fit_defaultclassifier(data):
+    clf = CTClassifier(random_state=10)
+    clf.fit(data['random_data'], data['random_labels'])
+    y_pred_test = clf.predict(data['random_test'])
+    y_pred_prob = clf.predict_proba(data['random_test'])
+
+    truth = [2., 3., 2., 2., 2.]
+    truth_proba = [[0.88555037, 0.11444963],
+    [0.05650123, 0.94349877],
+    [0.50057741, 0.49942259],
+    [0.89236186, 0.10763814],
+    [0.95357416, 0.04642584]]
+
+    for i in range(data['N_test']):
+        assert y_pred_test[i] == truth[i]
+
+    for i in range(data['N_test']):
+        for j in range(2):
+            assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
+
 def test_predict_default(data):
     data['clf_test'].fit(data['random_data'], data['random_labels'])
     y_pred_test = data['clf_test'].predict(data['random_test'])
@@ -127,7 +147,35 @@ def test_predict_default(data):
         for j in range(2):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
-def test_predict_p(data):
+def test_predict_check_p_n(data):
+    labels1 = np.zeros(100,)
+    labels1[:5] = 4 # 5 "negative"
+    labels1[5:15] = 6 # 10 "positive"
+    labels1[15:] = np.nan
+    clf = CTClassifier()
+    clf.fit(data['random_data'], labels1)
+    assert clf.p_ == 2
+    assert clf.n_ == 1
+
+    labels2 = np.zeros(100,)
+    labels2[:5] = 6 # 5 "positive"
+    labels2[5:15] = 4 # 10 "negative"
+    labels2[15:] = np.nan
+    clf = CTClassifier()
+    clf.fit(data['random_data'], labels2)
+    assert clf.p_ == 1
+    assert clf.n_ == 2
+
+    labels1 = np.zeros(100,)
+    labels1[:5] = 4 # 5 "negative"
+    labels1[5:15] = 6 # 10 "positive"
+    labels1[15:] = np.nan
+    clf = CTClassifier()
+    clf.fit(data['random_data'], labels1, p=4, n=3)
+    assert clf.p_ == 4
+    assert clf.n_ == 3
+
+def test_predict_set_p(data):
     data['clf_test'].fit(data['random_data'], data['random_labels'], p=12)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
@@ -146,7 +194,7 @@ def test_predict_p(data):
         for j in range(2):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
-def test_predict_n(data):
+def test_predict_set_n(data):
     data['clf_test'].fit(data['random_data'], data['random_labels'], n=9)
     y_pred_test = data['clf_test'].predict(data['random_test'])
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])

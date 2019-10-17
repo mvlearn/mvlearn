@@ -296,16 +296,8 @@ class CTClassifier(BaseCoTrainEstimator):
                       enforce_views=self.n_views_,
                       check_compatible_views=True)
 
-        if len(Xs) != self.n_views_:
-            raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
-                             .format(self.class_name, self.n_views_, len(Xs)))
-
         X1 = Xs[0]
         X2 = Xs[1]
-
-        if X1.shape[0] != X2.shape[0]:
-            raise ValueError("2 provided views have incompatible dimensions, "
-                             " they must have the same number of samples.")
 
         # predict each view independently
         y1 = self.h1.predict(X1)
