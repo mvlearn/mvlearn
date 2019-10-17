@@ -74,14 +74,15 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     y_converted : object
         The converted and validated y.
     """
-    Xs_converted = check_Xs(Xs,multiview=multiview,
-        enforce_views=enforce_views)
+    Xs_converted = check_Xs(Xs, multiview=multiview,
+        					enforce_views=enforce_views)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
 
+
 def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
-        num_classes=None, classification=False):
+        					num_classes=None, classification=False):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters
@@ -109,7 +110,7 @@ def check_Xs_y_nan_allowed(Xs, y, multiview=False, num_views=None,
 
     y_converted = np.array(y)
     if len(y_converted) != Xs_converted[0].shape[0]:
-            raise ValueError("Incompatible label size")
+        raise ValueError("Incompatible label size")
 
     if num_classes is not None:
         # if not exactly correct number of class labels, raise error

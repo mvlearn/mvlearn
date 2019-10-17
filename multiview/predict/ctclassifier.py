@@ -84,9 +84,9 @@ class CTClassifier(BaseCoTrainEstimator):
     """
 
     def __init__(self,
-        h1=None,
-        h2=None,
-        random_state=0):
+                h1=None,
+                h2=None,
+                random_state=0):
 
         super().__init__()
 
@@ -97,10 +97,11 @@ class CTClassifier(BaseCoTrainEstimator):
             h2 = GaussianNB()
 
         # verify that h1 and h2 have predict_proba
-        if (not hasattr(h1, 'predict_proba') 
-            or not hasattr(h2, 'predict_proba')):
+        if (not hasattr(h1, 'predict_proba')
+                or not hasattr(h2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
-                            "with classifiers supporting predict_proba().")
+                                "with classifiers supporting "
+                                "predict_proba().")
 
         self.h1 = h1
         self.h2 = h2
@@ -113,7 +114,7 @@ class CTClassifier(BaseCoTrainEstimator):
             Xs,
             y,
             p=None,
-            n=None, 
+            n=None,
             unlabeled_pool_size=75,
             num_iter=50):
         """
@@ -155,9 +156,9 @@ class CTClassifier(BaseCoTrainEstimator):
         """
 
         Xs, y = check_Xs_y_nan_allowed(Xs, y,
-                                        multiview=True,
-                                        num_views=self.n_views_,
-                                        num_classes=2)
+                                    multiview=True,
+                                    num_views=self.n_views_,
+                                    num_classes=2)
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -252,7 +253,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
             # remove newly labeled samples from unlabeled_pool
             unlabeled_pool = [elem for elem in unlabeled_pool
-                                if not (elem in p or elem in n)]
+                            if not (elem in p or elem in n)]
 
             # add new elements to unlabeled_pool
             add_counter = 0
@@ -289,7 +290,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         if len(Xs) != self.n_views_:
             raise ValueError("{0:s} must provide {1:d} views; got {2:d} views"
-                        .format(self.class_name, self.n_views_, len(Xs)))
+                            .format(self.class_name, self.n_views_, len(Xs)))
 
         X1 = Xs[0]
         X2 = Xs[1]
@@ -317,7 +318,7 @@ class CTClassifier(BaseCoTrainEstimator):
                 y1_probs = self.h1.predict_proba([X1[i]])[0]
                 y2_probs = self.h2.predict_proba([X2[i]])[0]
                 sum_y_probs = [prob1 + prob2 for (prob1, prob2)
-                                in zip(y1_probs, y2_probs)]
+                            in zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
                 y_pred[i] = self.classes_[sum_y_probs.index(max_sum_prob)]
 
