@@ -42,7 +42,7 @@ def load_UCImultifeature(select_labeled="all"):
     """
 
     if select_labeled == "all":
-        select_labeled = range(10);
+        select_labeled = range(10)
 
     select_labeled = list(set(select_labeled))
 
@@ -71,8 +71,8 @@ def load_UCImultifeature(select_labeled="all"):
             # user specified a bad label
             if label not in range(10):
                 raise ValueError("Bad label: labels must be  in 0, 1, 2,.. 9")
-            indices = np.nonzero(labels==label)
-            datatemp[j * 200 : (j+1) * 200, :] = data[i][indices, :]
+            indices = np.nonzero(labels == label)
+            datatemp[j * 200: (j+1) * 200, :] = data[i][indices, :]
             selected_labels[j*200:(j+1)*200] = labels[indices]
         selected_data.append(datatemp)
 
