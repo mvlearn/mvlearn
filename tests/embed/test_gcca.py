@@ -53,7 +53,7 @@ test_mat = np.array([[1, 2], [3, 4]])
 mat_good = np.ones((2, 4, 2))
 
 
-@pytest.mark.parameterize(
+@pytest.mark.parametrize(
     "params,err",
     [
         ({"Xs": [[]]}, ValueError),  # Empty input
