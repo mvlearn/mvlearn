@@ -218,6 +218,9 @@ class CTClassifier(BaseCoTrainEstimator):
         # number of rounds of co-training
         it = 0
 
+        # machine epsilon
+        eps = np.finfo(float).eps
+
         while it < self.num_iter_ and U:
             it += 1
 
@@ -226,8 +229,9 @@ class CTClassifier(BaseCoTrainEstimator):
             self.h2.fit(X2[L], y[L])
 
             # predict log probability for greater spread in confidence
-            y1_prob = self.h1.predict_log_proba(X1[unlabeled_pool])
-            y2_prob = self.h2.predict_log_proba(X2[unlabeled_pool])
+
+            y1_prob = np.log(self.h1.predict_proba(X1[unlabeled_pool]) + eps)
+            y2_prob = np.log(self.h2.predict_proba(X2[unlabeled_pool]) + eps)
 
             n, p = [], []
             accurate_guesses_h1 = 0
