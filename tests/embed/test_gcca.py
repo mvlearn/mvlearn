@@ -97,7 +97,7 @@ Xs = np.random.normal(0, 1, size=(2, 4, 6))
         ({"Xs": mat_good, "n_components": -1}, ValueError),
         ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
         ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError)
+        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
     ],
 )
 def test_bad_inputs(params, err):
