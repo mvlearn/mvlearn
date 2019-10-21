@@ -27,30 +27,63 @@ def test_output():
         Xs = _get_Xs(n)
 
         projs = GCCA().fit_transform(Xs)
+        dists = _compute_dissimilarity(projs)
+
+        # Checks up to 7 decimal points
+        assert_almost_equal(np.zeros((n, n)), dists)
+
+    def use_fit_view_idx():
+        n = 2
+        Xs = _get_Xs(n)
+
+        gcca = GCCA().fit(Xs)
+        projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
 
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit():
+    def use_fit_tall():
         n = 2
         Xs = _get_Xs(n)
 
-        gcca = GCCA().fit(Xs)
-        projs = gcca.fit_transform(Xs)
+        projs = GCCA().fit_transform(Xs, tall=True)
+        dists = _compute_dissimilarity(projs)
 
+        # Checks up to 7 decimal points
+        assert_almost_equal(np.zeros((n, n)), dists)
+
+    def use_fit_n_components():
+        n = 2
+        Xs = _get_Xs(n)
+
+        projs = GCCA().fit_transform(Xs, fraction_var=None, n_components=3)
+        dists = _compute_dissimilarity(projs)
+
+        # Checks up to 7 decimal points
+        assert_almost_equal(np.zeros((n, n)), dists)
+
+    def use_fit_sv_tolerance():
+        n = 2
+        Xs = _get_Xs(n)
+
+        projs = GCCA().fit_transform(Xs, sv_tolerance=1)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
     use_fit_transform()
-    use_fit()
+    use_fit_tall()
+    use_fit_n_components()
+    use_fit_sv_tolerance()
+    use_fit_view_idx()
 
 
 test_mat = np.array([[1, 2], [3, 4]])
 mat_good = np.ones((2, 4, 2))
+Xs = np.random.normal(0, 1, size=(2, 4, 6))
 
 
 @pytest.mark.parametrize(
@@ -64,7 +97,7 @@ mat_good = np.ones((2, 4, 2))
         ({"Xs": mat_good, "n_components": -1}, ValueError),
         ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
         ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
+        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError)
     ],
 )
 def test_bad_inputs(params, err):

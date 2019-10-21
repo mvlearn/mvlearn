@@ -32,5 +32,13 @@ def test_bad_inputs():
         check_Xs(test_Xs, multiview=True)
 
     with pytest.raises(ValueError):
+        "Nonlist input"
+        check_Xs('wrong', multiview=True)
+
+    with pytest.raises(ValueError):
         "Test empty input"
-        check_Xs_y(test_Xs, test_y, multiview=True)
+        check_Xs([], multiview=True)
+
+    with pytest.raises(ValueError):
+        "Test different number of samples"
+        check_Xs([test_Xs, [[1, 2]]], multiview=True)

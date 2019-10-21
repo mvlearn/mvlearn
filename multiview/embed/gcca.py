@@ -107,7 +107,7 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+        Xs: list of array-likes - Xs shape: (n_views,), Xs[i] shape:
             (n_samples, n_features_i) The data to fit to. Each sample will
             receive its own embedding.
         fraction_var : percent, default=0.9
@@ -207,24 +207,19 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
+        Xs: list of array-likes - Xs shape: (n_views,),  Xs[i] shape:
             (n_samples, n_features_i) The data to embed based on the prior fit
-            function view_idx: int The index of the view whose projection to
+            function. If view_idx defined, Xs is shape (n_samples, n_features)
+        view_idx: int The index of the view whose projection to
             use on Xs. For a single view.
 
         Returns
         -------
-        Xs_transformed : array-like 2D if view_idx not None, otherwise
-            (n_views, n_samples, n_components)
+        Xs_transformed : array-like 2D if view_idx not None, shape same as Xs
         """
         Xs = check_Xs(Xs)
         if view_idx is not None:
-            try:
-                return (
-                    self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
-                )
-            except IndexError:
-                print(f"view_idx: {view_idx} invalid")
+            return self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
         else:
             return np.array(
                 [

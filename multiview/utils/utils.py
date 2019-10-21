@@ -48,7 +48,14 @@ def check_Xs(Xs, multiview=False):
     if multiview and len(Xs) == 1:
         msg = "Must provide at least two data matrices"
         raise ValueError(msg)
-    return [check_array(X, allow_nd=False) for X in Xs]
+
+    Xs_converted = [check_array(X, allow_nd=False) for X in Xs]
+
+    if not len(set([X.shape[0] for X in Xs_converted])) == 1:
+        msg = "All views must have the same number of samples"
+        raise ValueError(msg)
+
+    return Xs_converted
 
 
 def check_Xs_y(Xs, y, multiview=False):
