@@ -107,9 +107,10 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes - Xs shape: (n_views,), Xs[i] shape:
-            (n_samples, n_features_i) The data to fit to. Each sample will
-            receive its own embedding.
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to. Each sample will receive its own embedding.
         fraction_var : percent, default=0.9
             Explained variance for rank selection during initial SVD of each
             sample.
@@ -207,16 +208,22 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes - Xs shape: (n_views,),  Xs[i] shape:
-            (n_samples, n_features_i) The data to embed based on the prior fit
-            function. If view_idx defined, Xs is shape (n_samples, n_features)
-        view_idx: int The index of the view whose projection to
-            use on Xs. For a single view.
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data to embed based on the prior fit function. If
+            view_idx defined, Xs is 2D, single view
+        view_idx: int
+            The index of the view whose projection to use on Xs.
+            For transforming a single view inpu.
 
         Returns
         -------
-        Xs_transformed : array-like 2D if view_idx not None, shape same as Xs
+        Xs_transformed : array-like 2D
+            if view_idx not None, shape same as Xs
         """
+        if self._projection_mats is None:
+            raise RuntimeError("Must call fit function before transform")
         Xs = check_Xs(Xs)
         if view_idx is not None:
             return self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
@@ -233,11 +240,16 @@ class GCCA(BaseEmbed):
         Fit to data, then transform it.
 
         Fits transformer to Xs optional parameters fit_params and returns a
-        transformed version of the Xs. Parameters
+        transformed version of the Xs.
+
+        Parameters
         ----------
-        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
-            (n_samples, n_features_i) The data to fit to. Each sample will
-            receive its own embedding. Returns
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to. Each sample will receive its own embedding.
+
+        Returns
         -------
         Xs_transformed : array-like 2D if view_idx not None, otherwise
             (n_views, n_samples, n_components)

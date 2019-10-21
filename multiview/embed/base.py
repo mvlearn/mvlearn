@@ -35,38 +35,56 @@ class BaseEmbed(BaseEstimator):
     @abstractmethod
     def fit(self, Xs, y=None):
         """
-        A method to fit to multiview data. Parameters
-        ----------
-        Xs: list of array-likes - Xs shape: (n_views,) - Xs[i] shape:
-            (n_samples, n_features_i) y : array, shape (n_samples,), optional
-            Returns
-        -------
-        self: obj
-        """
+        A method to fit model to multiview data.
 
-        return self
-
-    @abstractmethod
-    def transform(self, Xs):
-        """
-        Transform data
         Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        self: obj
         """
 
-        return
+        pass
+
+    @abstractmethod
+    def transform(self, Xs):
+        """
+        Transform data
+
+        Parameters
+        ----------
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+
+        Returns
+        -------
+        Xs_transformed : list of array-likes, shape
+            (n_views, n_samples, n_components)
+        """
+
+        pass
 
     @abstractmethod
     def fit_transform(self, Xs, y=None):
         """
         Fit an embeddor to the data and transform it
+
+        Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        Xs_transformed : list of array-likes, shape
+            (n_views, n_samples, n_components)
         """
         return

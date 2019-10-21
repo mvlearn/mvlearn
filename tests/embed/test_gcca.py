@@ -104,3 +104,9 @@ def test_bad_inputs(params, err):
     np.random.seed(1)
     with pytest.raises(err):
         GCCA().fit(**params)
+
+
+def test_no_fit(params={"Xs": mat_good}, err=RuntimeError):
+    np.random.seed(1)
+    with pytest.raises(err):
+        GCCA().transform(**params)
