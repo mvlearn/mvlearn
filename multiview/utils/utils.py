@@ -13,16 +13,12 @@
 # limitations under the License.
 
 import warnings
+
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(
-        Xs,
-        multiview=False,
-        enforce_views=None,
-        check_compatible_views=False
-        ):
+def check_Xs(Xs, multiview=False, enforce_views=None):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -30,11 +26,10 @@ def check_Xs(
     Xs : nd-array, list
         Input data.
     multiview : boolean, default (False)
-        If True, throws error if just 1 data matrix.
-    enforce_views: int, default (None)
-        Number of views required. if None, then not enforced.
-    enforce_compatible_views : boolean, default (False)
-        If true, throws error if views not all equal in first dimension.
+        Throws error if just 1 data matrix
+    enforce_views : int, default (not checked)
+        If provided, ensures this number of views in Xs. Otherwise not
+        checked.
     Returns
     -------
     Xs_converted : object
@@ -52,10 +47,6 @@ def check_Xs(
     if len(Xs) == 0:
         msg = "Length of input list must be greater than 0"
         raise ValueError(msg)
-
-    if check_compatible_views:
-        check_compatible_view_samples(Xs)
-
     if multiview:
         if len(Xs) == 1:
             msg = "Must provide at least two data matrices"
@@ -64,26 +55,30 @@ def check_Xs(
             msg = "Wrong number of views. Expected {enforce_views} " \
                 " but found {len(Xs)}"
             raise ValueError(msg)
-    return [check_array(X, allow_nd=False) for X in Xs]
+
+    Xs_converted = [check_array(X, allow_nd=False) for X in Xs]
+
+    if not len(set([X.shape[0] for X in Xs_converted])) == 1:
+        msg = "All views must have the same number of samples"
+        raise ValueError(msg)
+
+    return Xs_converted
 
 
-def check_Xs_y(
-        Xs,
-        y,
-        multiview=False,
-        enforce_views=None,
-        check_compatible_views=False
-        ):
+def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     """
-    Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+    Checks Xs and y for consistent length. Xs is set to be of dimension 3
     Parameters
     ----------
     Xs : nd-array, list
-        Input data.
+        Input data. F
     y : nd-array, list
         Labels.
-    enforce_views: int, default (None)
-        Number of views required. if None, then not enforced.
+    multiview : boolean, default (False)
+        Throws error if just 1 data matrix
+    enforce_views : int, default (not checked)
+        If provided, ensures this number of views in Xs. Otherwise not
+        checked.
     Returns
     -------
     Xs_converted : object
@@ -92,31 +87,17 @@ def check_Xs_y(
         The converted and validated y.
     """
     Xs_converted = check_Xs(Xs, multiview=multiview,
-                            enforce_views=enforce_views,
-                            check_compatible_views=check_compatible_views)
+                            enforce_views=enforce_views)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted
-
-
-def check_compatible_view_samples(Xs):
-    for i, X in enumerate(Xs):
-        if i == 0:
-            length = X.shape[0]
-        else:
-            if X.shape[0] != length:
-                raise ValueError("Incompatible views: each view must have "
-                                 "the same number of examples")
-
 
 def check_Xs_y_nan_allowed(
         Xs,
         y,
         multiview=False,
-        num_views=None,
-        num_classes=None,
-        classification=False,
-        check_compatible_views=False
+        enforce_views=None,
+        num_classes=None
         ):
     """
     Checks Xs and y for consistent length. Xs is set to be of dimension 3
@@ -128,8 +109,9 @@ def check_Xs_y_nan_allowed(
         Labels.
     multiview : boolean, default (False)
         Throws error if just 1 data matrix
-    num_views: int, default (None)
-        Number of views required. if None, then not enforced.
+    enforce_views : int, default (not checked)
+        If provided, ensures this number of views in Xs. Otherwise not
+        checked.
     num_classes: int, default (None)
         Number of classes that must appear in the labels. If none, then
         not checked.
@@ -143,8 +125,7 @@ def check_Xs_y_nan_allowed(
 
     Xs_converted = check_Xs(Xs,
                             multiview=multiview,
-                            enforce_views=num_views,
-                            check_compatible_views=check_compatible_views)
+                            enforce_views=enforce_views)
 
     y_converted = np.array(y)
     if len(y_converted) != Xs_converted[0].shape[0]:
@@ -157,7 +138,6 @@ def check_Xs_y_nan_allowed(
         n_classes = len(classes)
         if n_classes != num_classes:
             raise ValueError("Wrong number of class labels. Expected {},\
-             found {}"
-                             .format(num_classes, n_classes))
+             found {}".format(num_classes, n_classes))
 
-    return Xs, y
+    return Xs_converted, y_converted
