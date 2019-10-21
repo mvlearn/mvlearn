@@ -1,6 +1,6 @@
-#Implements the Partial Least Squares view construction method
-#by wrapping the PLS regression function from sklearn. View
-#construction generates a new projection of the data.
+# Implements the Partial Least Squares view construction method
+# by wrapping the PLS regression function from sklearn. View
+# construction generates a new projection of the data.
 
 from sklearn.cross_decomposition import PLSRegression
 
