@@ -37,7 +37,7 @@ class GCCA(BaseEmbed):
         super().__init__()
         self._projection_mats = None
 
-    def _preprocess(self, X):
+    def _center(self, X):
         """
         Subtracts the row means and divides by the row standard deviations.
         Then subtracts column means.
@@ -49,44 +49,15 @@ class GCCA(BaseEmbed):
 
         Returns
         -------
-        X2 : preprocessed data matrix
+        centered_X : preprocessed data matrix
         """
 
         # Mean along rows using sample mean and sample std
-        X2 = stats.zscore(X, axis=1, ddof=1)
+        centered_X = stats.zscore(X, axis=1, ddof=1)
         # Mean along columns
-        mu = np.mean(X2, axis=0)
-        X2 -= mu
-        return X2
-
-    def _check_inputs(self, fraction_var, sv_tolerance, n_components, size):
-        if fraction_var is None:
-            pass
-        elif not isinstance(fraction_var, float) and not isinstance(
-            fraction_var, int
-        ):
-            raise TypeError("fraction_var must be an integer or float")
-        elif fraction_var <= 0 or fraction_var > 1:
-            raise ValueError("fraction_var must be in (0,1]")
-
-        if sv_tolerance is None:
-            pass
-        elif not isinstance(sv_tolerance, int):
-            raise TypeError("sv_tolerance must be an integer")
-        elif sv_tolerance <= 0:
-            raise ValueError("sv_tolerance must be greater than 0")
-
-        if n_components is None:
-            pass
-        elif not isinstance(n_components, int):
-            raise TypeError("n_components must be an integer")
-        elif n_components <= 0:
-            raise ValueError("n_components must be greater than 0")
-        elif n_components > min(size):
-            raise ValueError(
-                "n_components must be less than or equal to the \
-                    minimum input rank"
-            )
+        mu = np.mean(centered_X, axis=0)
+        centered_X -= mu
+        return centered_X
 
     def fit(
         self,
@@ -103,7 +74,8 @@ class GCCA(BaseEmbed):
         calculated using SVD. The number of singular vectors kept is determined
         by either the percent variance explained, a given rank threshold, or a
         given number of components. The singular vectors kept are concatenated
-        and SVD of that is taken and used to calculated projects for each view.
+        and SVD of that is taken and used to calculated projections for each
+        view.
 
         Parameters
         ----------
@@ -114,11 +86,13 @@ class GCCA(BaseEmbed):
         fraction_var : percent, default=0.9
             Explained variance for rank selection during initial SVD of each
             sample.
-        sv_tolerance : float, optional, default=None Singular value
-            threshold for rank selection during initial SVD of each sample.
-        n_components : int (positive), optional, default=None Rank to
-            truncate to during initial SVD of each sample. tall : boolean,
-            default=False Set to true if n_samples > n_features, speeds up SVD
+        sv_tolerance : float, optional, default=None
+            Singular value threshold for rank selection during initial SVD of
+            each sample.
+        n_components : int (positive), optional, default=None
+            Rank to truncate to during initial SVD of each sample.
+        tall : boolean, default=False
+            Set to true if n_samples > n_features, speeds up SVD
 
         Attributes
         ----------
@@ -139,7 +113,7 @@ class GCCA(BaseEmbed):
             size=(n, min_m),
         )
 
-        data = [self._preprocess(x) for x in Xs]
+        data = [self._center(x) for x in Xs]
 
         Uall = []
         Sall = []
@@ -162,10 +136,34 @@ class GCCA(BaseEmbed):
             Vall.append(v)
             # Dimensions to reduce to
             if sv_tolerance:
+                if sv_tolerance is None:
+                    pass
+                elif not isinstance(sv_tolerance, int):
+                    raise TypeError("sv_tolerance must be an integer")
+                elif sv_tolerance <= 0:
+                    raise ValueError("sv_tolerance must be greater than 0")
+
                 rank = sum(s > sv_tolerance)
             elif n_components:
+                if not isinstance(n_components, int):
+                    raise TypeError("n_components must be an integer")
+                elif n_components <= 0:
+                    raise ValueError("n_components must be greater than 0")
+                elif n_components > min((n, min_m)):
+                    raise ValueError(
+                        "n_components must be less than or equal to the \
+                            minimum input rank"
+                    )
+
                 rank = n_components
             else:
+                if not isinstance(fraction_var, float) and not isinstance(
+                    fraction_var, int
+                ):
+                    raise TypeError("fraction_var must be an integer or float")
+                elif fraction_var <= 0 or fraction_var > 1:
+                    raise ValueError("fraction_var must be in (0,1]")
+
                 s2 = np.square(s)
                 rank = sum(np.cumsum(s2 / sum(s2)) < fraction_var) + 1
             ranks.append(rank)
@@ -226,11 +224,11 @@ class GCCA(BaseEmbed):
             raise RuntimeError("Must call fit function before transform")
         Xs = check_Xs(Xs)
         if view_idx is not None:
-            return self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
+            return self._center(Xs[0]) @ self._projection_mats[view_idx]
         else:
             return np.array(
                 [
-                    self._preprocess(x) @ proj
+                    self._center(x) @ proj
                     for x, proj in zip(Xs, self._projection_mats)
                 ]
             )
