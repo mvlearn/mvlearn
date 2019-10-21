@@ -27,14 +27,26 @@ class BaseCoTrainEstimator(BaseEstimator):
     ----------
     BaseEstimator : Estimator abstract class
         The sklearn base estimator class.
+
+    estimator1 : estimator object
+        The estimator object which will be trained on view 1 of the data.
+
+    estimator2 : estimator object
+        The estimator object which will be trained on view 2 of the data.
+        Does not need to be of the same type as estimator1.
+
     Attributes
     ----------
     See Also
     --------
     """
 
-    def __init__(self):
-        pass
+    def __init__(self,
+                 estimator1=None,
+                 estimator2=None
+                 ):
+        self.estimator1 = estimator1
+        self.estimator2 = estimator2
 
     @abstractmethod
     def fit(self, Xs, y):

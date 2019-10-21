@@ -32,23 +32,23 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Parameters
     ----------
-    classifier1 : classifier object
+    estimator1 : classifier object
         The classifier object which will be trained on view 1 of the data.
         This classifier should support the predict_proba() function so that
         classification probabilities can be computed and co-training can be
         performed effectively.
 
-    classifier2 : classifier object
+    estimator2 : classifier object
         The classifier object which will be trained on view 2 of the data.
-        Does not need to be of the same type as classifier1, but should support
+        Does not need to be of the same type as estimator1, but should support
         predict_proba().
 
     Attributes
     ----------
-    classifier1 : classifier object
+    estimator1 : classifier object
         The classifier used on view 1.
 
-    classifier2 : classifier object
+    estimator2 : classifier object
         The classifier used on view 2.
 
     class_name: string
@@ -91,28 +91,26 @@ class CTClassifier(BaseCoTrainEstimator):
 
     def __init__(
                  self,
-                 classifier1=None,
-                 classifier2=None,
+                 estimator1=None,
+                 estimator2=None,
                  random_state=0
                  ):
 
-        super().__init__()
+        super().__init__(estimator1, estimator2)
 
-        # if not given, set classifiers gaussian naive bayes estimators
-        if classifier1 is None:
-            classifier1 = GaussianNB()
-        if classifier2 is None:
-            classifier2 = GaussianNB()
+        # if not given, set classifiers as gaussian naive bayes estimators
+        if self.estimator1 is None:
+            self.estimator1 = GaussianNB()
+        if self.estimator2 is None:
+            self.estimator2 = GaussianNB()
 
-        # verify that classifier1 and classifier2 have predict_proba
-        if (not hasattr(classifier1, 'predict_proba')
-                or not hasattr(classifier2, 'predict_proba')):
+        # verify that estimator1 and estimator2 have predict_proba
+        if (not hasattr(self.estimator1, 'predict_proba')
+                or not hasattr(self.estimator2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
 
-        self.classifier1 = classifier1
-        self.classifier2 = classifier2
         self.n_views_ = 2  # only 2 view learning supported currently
 
         self.random_state = random_state
@@ -234,21 +232,21 @@ class CTClassifier(BaseCoTrainEstimator):
             it += 1
 
             # fit each model to its respective view
-            self.classifier1.fit(X1[L], y[L])
-            self.classifier2.fit(X2[L], y[L])
+            self.estimator1.fit(X1[L], y[L])
+            self.estimator2.fit(X2[L], y[L])
 
             # predict log probability for greater spread in confidence
 
-            y1_prob = np.log(self.classifier1.
-                predict_proba(X1[unlabeled_pool]) + eps)
-            y2_prob = np.log(self.classifier2.
-                predict_proba(X2[unlabeled_pool]) + eps)
+            y1_prob = np.log(self.estimator1.
+                             predict_proba(X1[unlabeled_pool]) + eps)
+            y2_prob = np.log(self.estimator2.
+                             predict_proba(X2[unlabeled_pool]) + eps)
 
             n, p = [], []
-            accurate_guesses_classifier1 = 0
-            accurate_guesses_classifier2 = 0
-            wrong_guesses_classifier1 = 0
-            wrong_guesses_classifier2 = 0
+            accurate_guesses_estimator1 = 0
+            accurate_guesses_estimator2 = 0
+            wrong_guesses_estimator1 = 0
+            wrong_guesses_estimator2 = 0
 
             # take the most confident labeled examples from the
             # unlabeled pool in each category and put them in L
@@ -283,8 +281,8 @@ class CTClassifier(BaseCoTrainEstimator):
                 unlabeled_pool.append(U.pop())
 
         # fit the overall model on fully "labeled" data
-        self.classifier1.fit(X1[L], y[L])
-        self.classifier2.fit(X2[L], y[L])
+        self.estimator1.fit(X1[L], y[L])
+        self.estimator2.fit(X2[L], y[L])
 
     def predict(self, Xs):
         """
@@ -313,8 +311,8 @@ class CTClassifier(BaseCoTrainEstimator):
         X2 = Xs[1]
 
         # predict each view independently
-        y1 = self.classifier1.predict(X1)
-        y2 = self.classifier2.predict(X2)
+        y1 = self.estimator1.predict(X1)
+        y2 = self.estimator2.predict(X2)
 
         # initialize
         y_pred = np.zeros(X1.shape[0],)
@@ -328,8 +326,8 @@ class CTClassifier(BaseCoTrainEstimator):
                 y_pred[i] = y1_i
             # if classifiers don't agree, take the more confident
             else:
-                y1_probs = self.classifier1.predict_proba([X1[i]])[0]
-                y2_probs = self.classifier2.predict_proba([X2[i]])[0]
+                y1_probs = self.estimator1.predict_proba([X1[i]])[0]
+                y2_probs = self.estimator2.predict_proba([X2[i]])[0]
                 sum_y_probs = [prob1 + prob2 for (prob1, prob2) in
                                zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
@@ -363,7 +361,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         y_proba = np.full((X1.shape[0], self.n_classes_), -1)
         # predict each probability independently
-        y1_proba = self.classifier1.predict_proba(X1)
-        y2_proba = self.classifier2.predict_proba(X2)
+        y1_proba = self.estimator1.predict_proba(X1)
+        y2_proba = self.estimator2.predict_proba(X2)
         # return the average probability for the sample
         return (y1_proba + y2_proba) * .5
