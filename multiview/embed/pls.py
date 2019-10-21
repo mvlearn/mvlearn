@@ -19,7 +19,9 @@
 from sklearn.cross_decomposition import PLSRegression
 
 
-def PLS_embedding(X, Y, n_components=2, return_embedding=True):
+def partial_least_squares_embedding(
+    X, Y, n_components=2, return_embedding=True
+):
     """
     Calculates the Partial Least Squares embedding of the data X given the
     target (covariates) Y using the NIPALS algorithm implemented by sklearn.
@@ -32,9 +34,18 @@ def PLS_embedding(X, Y, n_components=2, return_embedding=True):
     Y : array-like, shape = (n_samples, n_targets)
         Target vectors, where n_samples is the number of samples and
         n_targets is the number of response variables.
+    n_components : int, 2 (default)
+        The dimension of the embedded space
     return_embedding : boolean, True (default)
         whether to return the embedded data or the projection weights
 
+    Returns
+    -------
+    X_embedding : shape (n_samples, n_components), default
+        The embedded X data using the PLS weights.
+    OR (if return_embedding is False)
+    X_weights : shape (features, n_components)
+        The PLS feature weights to embed the data
     """
     pls = PLSRegression(n_components=n_components)
     pls.fit(X, Y)
