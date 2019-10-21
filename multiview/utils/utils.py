@@ -92,6 +92,7 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
 
     return Xs_converted, y_converted
 
+
 def check_Xs_y_nan_allowed(
         Xs,
         y,
