@@ -40,7 +40,6 @@ def random_subspace_method(X, n_features=None, n_views=1):
 
     """
 
-    # todo let max_features be float for probability
     _, cols = X.shape
 
     check_n_views(n_views)
