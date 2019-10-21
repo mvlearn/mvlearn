@@ -14,6 +14,7 @@ def test_good_input():
 
     def single_view_X():
         assert_equal(len(check_Xs(test_Xs, multiview=False)), 1)
+        assert_equal(len(check_Xs([test_Xs], multiview=False)), 1)
 
     def single_view_y():
         Xs, y = check_Xs_y(test_Xs, test_y, multiview=False)
