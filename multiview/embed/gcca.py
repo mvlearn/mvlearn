@@ -106,13 +106,6 @@ class GCCA(BaseEmbed):
         n = Xs[0].shape[0]
         min_m = min(X.shape[1] for X in Xs)
 
-        self._check_inputs(
-            fraction_var=fraction_var,
-            sv_tolerance=sv_tolerance,
-            n_components=n_components,
-            size=(n, min_m),
-        )
-
         data = [self._center(x) for x in Xs]
 
         Uall = []
