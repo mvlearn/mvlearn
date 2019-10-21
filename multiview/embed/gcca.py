@@ -129,9 +129,7 @@ class GCCA(BaseEmbed):
             Vall.append(v)
             # Dimensions to reduce to
             if sv_tolerance:
-                if sv_tolerance is None:
-                    pass
-                elif not isinstance(sv_tolerance, int):
+                if not isinstance(sv_tolerance, int):
                     raise TypeError("sv_tolerance must be an integer")
                 elif sv_tolerance <= 0:
                     raise ValueError("sv_tolerance must be greater than 0")
