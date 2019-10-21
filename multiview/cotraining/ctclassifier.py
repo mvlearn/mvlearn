@@ -168,9 +168,8 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Xs, y = check_Xs_y_nan_allowed(Xs, y,
                                        multiview=True,
-                                       num_views=self.n_views_,
-                                       num_classes=2,
-                                       check_compatible_views=True)
+                                       enforce_views=self.n_views_,
+                                       num_classes=2)
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -304,8 +303,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Xs = check_Xs(Xs,
                       multiview=True,
-                      enforce_views=self.n_views_,
-                      check_compatible_views=True)
+                      enforce_views=self.n_views_)
 
         X1 = Xs[0]
         X2 = Xs[1]
@@ -353,8 +351,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Xs = check_Xs(Xs,
                       multiview=True,
-                      enforce_views=self.n_views_,
-                      check_compatible_views=True)
+                      enforce_views=self.n_views_)
 
         X1 = Xs[0]
         X2 = Xs[1]
