@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# This is a base class for implementing multi-view estimators with
+# co-training.
 
 from abc import abstractmethod
 import numpy as np
@@ -22,6 +25,8 @@ class BaseCoTrainEstimator(BaseEstimator):
     A base class for multiview co-training.
     Parameters
     ----------
+    BaseEstimator : Estimator abstract class
+        The sklearn base estimator class.
     Attributes
     ----------
     See Also
@@ -30,11 +35,6 @@ class BaseCoTrainEstimator(BaseEstimator):
 
     def __init__(self):
         pass
-
-    @property
-    def _pairwise(self):
-        """This is for sklearn compliance."""
-        return True
 
     @abstractmethod
     def fit(self, Xs, y):
@@ -64,23 +64,7 @@ class BaseCoTrainEstimator(BaseEstimator):
             - Xs[i] shape: (n_samples, n_features_i)
         Returns
         -------
-        y_proba : array-like (n_samples, n_classes)
-        """
-
-        return self
-
-    @abstractmethod
-    def predict_proba(self, Xs):
-        """
-        A method to predict the probability of classes on multiview data.
-        Parameters
-        ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        Returns
-        -------
-        self: obj
+        y : array-like (n_samples, n_classes)
         """
 
         return self

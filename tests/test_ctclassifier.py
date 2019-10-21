@@ -1,11 +1,9 @@
 # Gavin Mischler
-# 10/8/2019
+# 10/21/2019
 
 import pytest
 import numpy as np
-from multiview.predict.ctclassifier import CTClassifier
-from multiview.predict.base import BaseCoTrainEstimator
-from sklearn.base import BaseEstimator
+from multiview.cotraining.ctclassifier import CTClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import RidgeClassifier
 
@@ -251,14 +249,3 @@ def test_predict_num_iter(data):
     for i in range(data['N_test']):
         for j in range(2):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
-
-"""
-BASE CLASS TESTING
-"""
-
-def test_base_ctclassifier():
-    base_clf = BaseCoTrainEstimator()
-    assert isinstance(base_clf, BaseEstimator)
-    base_clf.fit([],[])
-    base_clf.predict([])
-    base_clf.predict_proba([])
