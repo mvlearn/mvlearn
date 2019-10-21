@@ -239,8 +239,10 @@ class CTClassifier(BaseCoTrainEstimator):
 
             # predict log probability for greater spread in confidence
 
-            y1_prob = np.log(self.classifier1.predict_proba(X1[unlabeled_pool]) + eps)
-            y2_prob = np.log(self.classifier2.predict_proba(X2[unlabeled_pool]) + eps)
+            y1_prob = np.log(self.classifier1.
+                predict_proba(X1[unlabeled_pool]) + eps)
+            y2_prob = np.log(self.classifier2.
+                predict_proba(X2[unlabeled_pool]) + eps)
 
             n, p = [], []
             accurate_guesses_classifier1 = 0
