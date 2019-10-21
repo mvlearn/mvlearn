@@ -23,7 +23,7 @@ from sklearn.preprocessing import normalize
 
 class GCCA(BaseEmbed):
     """
-    An implementation of Generalized Canonical Correalation Analysis.Computes
+    An implementation of Generalized Canonical Correalation Analysis. Computes
     individual projections into a common subspace such that the correlations
     between pairwise projections are minimized (ie. maximize pairwise
     correlation). Reduces to CCA in the case of two samples.
