@@ -80,6 +80,9 @@ class CTClassifier(BaseCoTrainEstimator):
 
     num_iter_ : int
         Maximum number of training iterations to run.
+        
+    random_state : real number
+        The starting random seed for fit() and class operations.
 
     References
     ----------
@@ -114,7 +117,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
         self.n_views_ = 2  # only 2 view learning supported currently
 
-        self.random_state = random_state
         self.class_name = "CTClassifier"
 
     def fit(

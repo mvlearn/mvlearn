@@ -18,7 +18,6 @@
 from abc import abstractmethod
 import numpy as np
 from sklearn.base import BaseEstimator
-from ..utils.utils import check_Xs_y_nan_allowed
 
 
 class BaseCoTrainEstimator(BaseEstimator):
@@ -42,35 +41,8 @@ class BaseCoTrainEstimator(BaseEstimator):
     estimator2 : estimator object
         The estimator used on view 2.
 
-    class_name: string
-        The name of the class.
-
-    n_views_ : int
-        The number of views supported by the multi-view classifier
-
-    classes_ : array-like of shape (n_classes,)
-        Unique class labels.
-
-    n_classes_ : int
-        Number of unique classes.
-
-    p_ : int
-        Number of positive examples (second label in classes_) to pull from
-        unlabeled_pool and give "label" at each training round. When the
-        labels are 0 or 1, positive is defined as 1, and in general, positive
-        is the larger label.
-
-    n_ : int
-        Number of negative examples (second label in classes_) to pull from
-        unlabeled_pool and give "label" at each training round. when the
-        labels are 0 or 1, negative is defined as 0, and in general, negative
-        is the smaller label.
-
-    unlabeled_pool_size_ : int
-        Size of pool of unlabeled_pool examples to classify at each iteration.
-
-    num_iter_ : int
-        Maximum number of training iterations to run.
+    random_state : real number
+        The starting random seed for fit() and class operations.
     See Also
     --------
     """
