@@ -99,7 +99,7 @@ class BaseCoTrainEstimator(BaseEstimator):
         y_pred : array-like (n_samples,)
         """
 
-        return self     
+        return self
 
     @abstractmethod
     def predict(self, Xs):
