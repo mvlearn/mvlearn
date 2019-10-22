@@ -17,8 +17,7 @@
 from .base import BaseCoTrainEstimator
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
-from ..utils.utils import check_Xs
-from ..utils.utils import check_Xs_y_nan_allowed
+from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
 
 
 class CTClassifier(BaseCoTrainEstimator):
@@ -29,16 +28,17 @@ class CTClassifier(BaseCoTrainEstimator):
     described in [1]. This should ideally be used on 2 views of the input
     data which satisfy the 3 conditions for multi-view co-training
     (sufficiency, compatibility, conditional independence) as detailed in [1].
+    Extends BaseCoTrainEstimator.
 
     Parameters
     ----------
-    estimator1 : classifier object
+    estimator1 : classifier object, default (sklearn GaussianNB)
         The classifier object which will be trained on view 1 of the data.
         This classifier should support the predict_proba() function so that
         classification probabilities can be computed and co-training can be
         performed effectively.
 
-    estimator2 : classifier object
+    estimator2 : classifier object, default (sklearn GaussianNB)
         The classifier object which will be trained on view 2 of the data.
         Does not need to be of the same type as estimator1, but should support
         predict_proba().
@@ -52,7 +52,7 @@ class CTClassifier(BaseCoTrainEstimator):
         The classifier used on view 2.
 
     class_name: string
-        The name of the class: CTClassifier.
+        The name of the class.
 
     n_views_ : int
         The number of views supported by the multi-view classifier
@@ -96,7 +96,8 @@ class CTClassifier(BaseCoTrainEstimator):
                  random_state=0
                  ):
 
-        super().__init__(estimator1, estimator2)
+        # initialize a BaseCTEstimator object
+        super().__init__(estimator1, estimator2, random_state)
 
         # if not given, set classifiers as gaussian naive bayes estimators
         if self.estimator1 is None:
@@ -136,7 +137,7 @@ class CTClassifier(BaseCoTrainEstimator):
             A list of the different views of data to train on.
 
         y : array, shape (n_samples,)
-            The labels of the training data. unlabeled_pool examples should
+            The labels of the training data. Unlabeled_pool examples should
             have label np.nan.
 
         p : int, optional (default=None)
@@ -166,14 +167,12 @@ class CTClassifier(BaseCoTrainEstimator):
             The maximum number of training iterations to run.
         """
 
-        Xs, y = check_Xs_y_nan_allowed(Xs, y,
+        # verify Xs and y
+        Xs, y = check_Xs_y_nan_allowed(Xs,
+                                       y,
                                        multiview=True,
                                        enforce_views=self.n_views_,
                                        num_classes=2)
-
-        # extract the multiple views given
-        X1 = Xs[0]
-        X2 = Xs[1]
 
         y = np.array(y)
 
@@ -205,6 +204,10 @@ class CTClassifier(BaseCoTrainEstimator):
 
         self.unlabeled_pool_size_ = unlabeled_pool_size
         self.num_iter_ = num_iter
+
+        # extract the multiple views given
+        X1 = Xs[0]
+        X2 = Xs[1]
 
         # the full set of unlabeled samples
         U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
