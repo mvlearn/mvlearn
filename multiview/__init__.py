@@ -7,3 +7,5 @@ TODO: add better summary once MVP is determined
 """
 
 # Put top level functionalities in here
+
+__version__ = "0.0.1"
