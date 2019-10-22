@@ -7,7 +7,15 @@ PACKAGE_NAME = "multiview"
 DESCRIPTION = "A set of python modules for multiview learning"
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
-AUTHOR = ("Richard Guo", "Ronan Perry", "Gavin Mischler", "Theo Lee", "Alexander Chang", "Arman Koul", "Cameron Franz")
+AUTHOR = (
+    "Richard Guo",
+    "Ronan Perry",
+    "Gavin Mischler",
+    "Theo Lee",
+    "Alexander Chang",
+    "Arman Koul",
+    "Cameron Franz",
+)
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/NeuroDataDesign/multiview"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
