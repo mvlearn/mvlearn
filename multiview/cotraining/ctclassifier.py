@@ -80,7 +80,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
     num_iter_ : int
         Maximum number of training iterations to run.
-        
+
     random_state : real number
         The starting random seed for fit() and class operations.
 
