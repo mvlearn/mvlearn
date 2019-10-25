@@ -32,11 +32,6 @@ class BaseCluster(BaseEstimator):
     def __init__(self):
         pass
 
-    @property
-    def _pairwise(self):
-        """This is for sklearn compliance."""
-        return True
-
     @abstractmethod
     def fit(self, Xs, y=None):
 

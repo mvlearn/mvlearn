@@ -22,6 +22,21 @@ def test_samples_not_same():
         kmeans = MultiviewKMeans()
         kmeans.fit([view1, view2])
 
+
+def test_samples_not_list():
+    with pytest.raises(ValueError):
+        view1 = 1
+        view2 = 3
+        kmeans = MultiviewKMeans()
+        kmeans.fit([view1, view2])
+
+def test_samples_is_array():
+    with pytest.raises(ValueError):
+        view1 = np.random.random((5, 5))
+        view2 = np.random.random((5, 5))
+        kmeans = MultiviewKMeans()
+        kmeans.fit(np.array([view1, view2]))
+        
 def test_samples_not_2D_1():
     with pytest.raises(ValueError):
         view1 = np.random.random((5, 8, 7))
@@ -97,7 +112,7 @@ def test_predict(data):
     for ind in range(data['n_test']):
         assert cluster_pred[ind] == true_clusters[ind]
 
-
+     
 def test_predict_patience(data):
 
     data['kmeans'].fit(data['fit_data'], patience=10)
@@ -112,7 +127,6 @@ def test_predict_max_iter(data):
 
     data['kmeans'].fit(data['fit_data'], max_iter=4)
     cluster_pred = data['kmeans'].predict(data['test_data'])
-    print(cluster_pred)
     true_clusters = [4, 4, 1, 4, 4]
 
     for ind in range(data['n_test']):
@@ -136,3 +150,12 @@ def test_compute_distance():
         for ind2 in range(n_samples):
             assert np.abs(true_distances[ind1][ind2]
                           - distances[ind1][ind2]) < 0.000001
+
+
+
+def test_fit_predict(data):
+
+    cluster_pred = data['kmeans'].fit_predict(data['fit_data'])
+    true_clusters = [1, 2, 3, 3, 3]
+    for ind in range(5):
+        assert cluster_pred[ind] == true_clusters[ind]
