@@ -20,7 +20,7 @@ from sklearn.cross_decomposition import PLSRegression
 
 
 def partial_least_squares_embedding(
-    X, Y, n_components=2, return_embedding=True
+    X, Y, n_components=2, return_weights=False
 ):
     """
     Calculates the Partial Least Squares embedding of the data X given the
@@ -36,8 +36,8 @@ def partial_least_squares_embedding(
         n_targets is the number of response variables.
     n_components : int, 2 (default)
         The dimension of the embedded space
-    return_embedding : boolean, True (default)
-        whether to return the embedded data or the projection weights
+    return_weights : boolean, False (default)
+        whether to return the projection weights instead of embeddings
 
     Returns
     -------
@@ -49,7 +49,7 @@ def partial_least_squares_embedding(
     """
     pls = PLSRegression(n_components=n_components)
     pls.fit(X, Y)
-    if return_embedding:
-        return X @ pls.x_weights_
-    else:
+    if return_weights:
         return pls.x_weights_
+    else:
+        return X @ pls.x_weights_
