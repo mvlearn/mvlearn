@@ -2,6 +2,7 @@ import sys
 import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
+
 from multiview.utils.utils import check_Xs_y, check_Xs, check_Xs_y_nan_allowed
 
 
@@ -35,7 +36,6 @@ def test_good_input():
     single_view_X()
     single_view_y()
     single_view_y_nan_allowed()
-
 
 def test_bad_inputs():
     np.random.seed(1)

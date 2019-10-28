@@ -25,11 +25,14 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
     ----------
     Xs : nd-array, list
         Input data.
+
     multiview : boolean, default (False)
         Throws error if just 1 data matrix
+
     enforce_views : int, default (not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
+
     Returns
     -------
     Xs_converted : object
@@ -47,6 +50,7 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
     if len(Xs) == 0:
         msg = "Length of input list must be greater than 0"
         raise ValueError(msg)
+
     if multiview:
         if len(Xs) == 1:
             msg = "Must provide at least two data matrices"
@@ -72,10 +76,13 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     ----------
     Xs : nd-array, list
         Input data. F
+
     y : nd-array, list
         Labels.
+
     multiview : boolean, default (False)
-        Throws error if just 1 data matrix
+        Throws error if just 1 data matrix.
+
     enforce_views : int, default (not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
@@ -83,6 +90,7 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     -------
     Xs_converted : object
         The converted and validated X.
+
     y_converted : object
         The converted and validated y.
     """
@@ -116,6 +124,7 @@ def check_Xs_y_nan_allowed(
     num_classes: int, default (None)
         Number of classes that must appear in the labels. If none, then
         not checked.
+
     Returns
     -------
     Xs_converted : object
