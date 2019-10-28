@@ -20,16 +20,16 @@ from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
 
-from tqdm import tqdm
-
 
 class GCCA(BaseEmbed):
     """
-    An implementation of Generalized Canonical Correalation Analysis.Computes individual 
-    projections into a common subspace such that the correlations between pairwise projections 
-    are minimized (ie. maximize pairwise correlation). Reduces to CCA in the case of two samples.
-    
-    See https://www.sciencedirect.com/science/article/pii/S1053811912001644?via%3Dihub
+    An implementation of Generalized Canonical Correalation Analysis. Computes
+    individual projections into a common subspace such that the correlations
+    between pairwise projections are minimized (ie. maximize pairwise
+    correlation). Reduces to CCA in the case of two samples.
+
+    See https://www.sciencedirect.com/science/article/pii/S1053811912001644?
+    via%3Dihub
     for relevant details.
     """
 
@@ -37,11 +37,11 @@ class GCCA(BaseEmbed):
         super().__init__()
         self._projection_mats = None
 
-    def _preprocess(self, X):
+    def _center(self, X):
         """
         Subtracts the row means and divides by the row standard deviations.
         Then subtracts column means.
-        
+
         Parameters
         ----------
         X : array-like, shape (n_observations, n_features)
@@ -49,53 +49,71 @@ class GCCA(BaseEmbed):
 
         Returns
         -------
-        X2 : preprocessed data matrix
+        centered_X : preprocessed data matrix
         """
 
         # Mean along rows using sample mean and sample std
-        X2 = stats.zscore(X, axis=1, ddof=1)
+        centered_X = stats.zscore(X, axis=1, ddof=1)
         # Mean along columns
-        mu = np.mean(X2, axis=0)
-        X2 -= mu
-        return X2
+        mu = np.mean(centered_X, axis=0)
+        centered_X -= mu
+        return centered_X
 
     def fit(
         self,
         Xs,
-        percent_var=0.9,
-        rank_tolerance=None,
+        fraction_var=0.9,
+        sv_tolerance=None,
         n_components=None,
         tall=False,
-        verbose=False,
     ):
         """
-        
+        Calculates a projection from each view to a latentent space such that
+        the sum of pariwise latent space correlations is maximized. Each view
+        'X' is normalized and the left singular vectors of 'X^T X' are
+        calculated using SVD. The number of singular vectors kept is determined
+        by either the percent variance explained, a given rank threshold, or a
+        given number of components. The singular vectors kept are concatenated
+        and SVD of that is taken and used to calculated projections for each
+        view.
+
         Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
-        percent_var : percent, default=0.9
-            Explained variance for rank selection during initial SVD of each sample.
-        rank_tolerance : float, optional, default=None
-            Singular value threshold for rank selection during initial SVD of each sample.
-        n_components : int (postivie), optional, default=None
+        fraction_var : percent, default=0.9
+            Explained variance for rank selection during initial SVD of each
+            sample.
+        sv_tolerance : float, optional, default=None
+            Singular value threshold for rank selection during initial SVD of
+            each sample.
+        n_components : int (positive), optional, default=None
             Rank to truncate to during initial SVD of each sample.
         tall : boolean, default=False
             Set to true if n_samples > n_features, speeds up SVD
+
+        Attributes
+        ----------
+        _projection_mats : list of arrays A projection matrix for each view,
+            from the given space to the latent space self._ranks : list of ints
+            number of left singular vectors kept for each view during the first
+            SVD
         """
+
         Xs = check_Xs(Xs, multiview=True)
         n = Xs[0].shape[0]
+        min_m = min(X.shape[1] for X in Xs)
 
-        data = [self._preprocess(x) for x in Xs]
+        data = [self._center(x) for x in Xs]
 
         Uall = []
         Sall = []
         Vall = []
         ranks = []
 
-        for x in tqdm(data, disable=(not verbose)):
+        for x in data:
             # Preprocess
             x[np.isnan(x)] = 0
 
@@ -110,13 +128,37 @@ class GCCA(BaseEmbed):
             Sall.append(s)
             Vall.append(v)
             # Dimensions to reduce to
-            if rank_tolerance:
-                rank = sum(s > rank_tolerance)
+            if sv_tolerance:
+                if not isinstance(sv_tolerance, float) and not isinstance(
+                    sv_tolerance, int
+                ):
+                    raise TypeError("sv_tolerance must be numeric")
+                elif sv_tolerance <= 0:
+                    raise ValueError("sv_tolerance must be greater than 0")
+
+                rank = sum(s > sv_tolerance)
             elif n_components:
+                if not isinstance(n_components, int):
+                    raise TypeError("n_components must be an integer")
+                elif n_components <= 0:
+                    raise ValueError("n_components must be greater than 0")
+                elif n_components > min((n, min_m)):
+                    raise ValueError(
+                        "n_components must be less than or equal to the \
+                            minimum input rank"
+                    )
+
                 rank = n_components
             else:
+                if not isinstance(fraction_var, float) and not isinstance(
+                    fraction_var, int
+                ):
+                    raise TypeError("fraction_var must be an integer or float")
+                elif fraction_var <= 0 or fraction_var > 1:
+                    raise ValueError("fraction_var must be in (0,1]")
+
                 s2 = np.square(s)
-                rank = sum(np.cumsum(s2 / sum(s2)) < percent_var) + 1
+                rank = sum(np.cumsum(s2 / sum(s2)) < fraction_var) + 1
             ranks.append(rank)
 
             u = ut.T[:, :rank]
@@ -160,51 +202,48 @@ class GCCA(BaseEmbed):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function
+            The data to embed based on the prior fit function. If
+            view_idx defined, Xs is 2D, single view
         view_idx: int
-            The index of the view whose projection to use on Xs. For a single view.
+            The index of the view whose projection to use on Xs.
+            For transforming a single view inpu.
 
         Returns
         -------
-        Xs_transformed : array-like
-            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
+        Xs_transformed : array-like 2D
+            if view_idx not None, shape same as Xs
         """
+        if self._projection_mats is None:
+            raise RuntimeError("Must call fit function before transform")
         Xs = check_Xs(Xs)
         if view_idx is not None:
-            try:
-                return self._preprocess(Xs[0]) @ self._projection_mats[view_idx]
-            except IndexError:
-                print(f"view_idx: {view_idx} invalid")
+            return self._center(Xs[0]) @ self._projection_mats[view_idx]
         else:
             return np.array(
                 [
-                    self._preprocess(x) @ proj
+                    self._center(x) @ proj
                     for x, proj in zip(Xs, self._projection_mats)
                 ]
             )
 
-    def fit_transform(
-        self,
-        Xs,
-        **fit_params
-    ):
+    def fit_transform(self, Xs, **fit_params):
         """
         Fit to data, then transform it.
 
-        Fits transformer to Xs optional parameters fit_params and returns a transformed version of the Xs.
+        Fits transformer to Xs optional parameters fit_params and returns a
+        transformed version of the Xs.
+
         Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
+
         Returns
         -------
-        Xs_transformed : array-like
-            2D if view_idx not None, otherwise (n_views, n_samples, n_components)
+        Xs_transformed : array-like 2D if view_idx not None, otherwise
+            (n_views, n_samples, n_components)
         """
 
         return self.fit(Xs, **fit_params).transform(Xs)
-        
-
-

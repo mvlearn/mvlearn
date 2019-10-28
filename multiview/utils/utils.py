@@ -18,7 +18,7 @@ from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
-def check_Xs(Xs,multiview=False):
+def check_Xs(Xs, multiview=False):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -48,7 +48,14 @@ def check_Xs(Xs,multiview=False):
     if multiview and len(Xs) == 1:
         msg = "Must provide at least two data matrices"
         raise ValueError(msg)
-    return [check_array(X, allow_nd=False) for X in Xs]
+
+    Xs_converted = [check_array(X, allow_nd=False) for X in Xs]
+
+    if not len(set([X.shape[0] for X in Xs_converted])) == 1:
+        msg = "All views must have the same number of samples"
+        raise ValueError(msg)
+
+    return Xs_converted
 
 
 def check_Xs_y(Xs, y, multiview=False):
@@ -57,7 +64,7 @@ def check_Xs_y(Xs, y, multiview=False):
     Parameters
     ----------
     Xs : nd-array, list
-        Input data.
+        Input data. F
     y : nd-array, list
         Labels.
 
@@ -68,7 +75,7 @@ def check_Xs_y(Xs, y, multiview=False):
     y_converted : object
         The converted and validated y.
     """
-    Xs_converted = check_Xs(Xs,multiview=multiview)
+    Xs_converted = check_Xs(Xs, multiview=multiview)
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
     return Xs_converted, y_converted

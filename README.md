@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.com/NeuroDataDesign/multiview.svg?branch=master)](https://travis-ci.com/NeuroDataDesign/multiview)
 [![Documentation Status](https://readthedocs.org/projects/multiview/badge/?version=latest)](https://multiview.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/NeuroDataDesign/multiview/branch/master/graph/badge.svg)](https://codecov.io/gh/NeuroDataDesign/multiview)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3370841.svg)]()
 
 
 
