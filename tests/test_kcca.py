@@ -1,6 +1,6 @@
 #unit tests
 
-from multiview.embed import kcca
+from multiview.embed.kcca import KCCA
 import numpy as np
 
 x = np.array([[1.,1.,3.],[2.,3.,2.],[1.,1.,1.],[1.,1.,2.],
@@ -9,7 +9,7 @@ y = np.array([[4,4,-1.07846],[3,3,1.214359],[2,2,0.307180],
               [2,3,-0.385641],[2,1,-0.078461],[1,1,1.61436],
               [1,2,0.81436],[2,1,-0.06410],[1,2,1.54590]])
 
-testcca = kcca.KCCA(kernelcca = False, reg = 0.0001, numCC = 2)
+testcca = KCCA(kernelcca = False, reg = 0.0001, numCC = 2)
 testcca.train([x, y])
 
 print(testcca.comps_)
@@ -32,19 +32,19 @@ def test_numCC_ev_():
  
 # Test that linear kernel works
 def test_ktype_linear():
-    klinear = kcca.KCCA(ktype = 'linear', reg = 0.0001, numCC = 2, gausigma=2)
+    klinear = KCCA(ktype = 'linear', reg = 0.0001, numCC = 2, gausigma=2)
     klinear.train([x, y])
     assert len(klinear.comps_) == 2
     
 # Test that gaussian kernel works
 def test_ktype_gaussian():
-    kgauss = kcca.KCCA(ktype = 'gaussian', reg = 0.0001, numCC = 2, gausigma=2)
+    kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, numCC = 2, gausigma=2)
     kgauss.train([x, y])
     assert len(kgauss.comps_) == 2
     
 # Test that polynomial kernel works
 def test_ktype_polynomial():
-    kpoly = kcca.KCCA(ktype = 'poly', reg = 0.0001, numCC = 2, degree=3)
+    kpoly = KCCA(ktype = 'poly', reg = 0.0001, numCC = 2, degree=3)
     kpoly.train([x, y])
     assert len(kpoly.comps_) == 2
 
@@ -69,7 +69,7 @@ test2 = data2[1000//2:]
 
 # Test validate and prediction
 def test_validate():
-    cca = kcca.KCCA(kernelcca = False, reg = 0., numCC = 4)
+    cca = KCCA(kernelcca = False, reg = 0., numCC = 4)
     cca.train([train1, train2])
     testcorrs = cca.validate([test1, test2])
     assert len(testcorrs) == 2
