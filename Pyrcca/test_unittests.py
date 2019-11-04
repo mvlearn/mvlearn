@@ -67,11 +67,12 @@ train2 = data2[:1000//2]
 test1 = data1[1000//2:]
 test2 = data2[1000//2:]
 
-# Test prediction
+# Test validate and prediction
 def test_validate():
     cca = kcca.KCCA(kernelcca = False, reg = 0., numCC = 4)
     cca.train([train1, train2])
     testcorrs = cca.validate([test1, test2])
+    assert len(testcorrs) == 2
 
     
     
