@@ -223,6 +223,7 @@ def predict(vdata, ws_, cutoff=1e-15):
         corrs_.append(cs)
     return preds_, corrs_
 
+
 def kcca(
     data, reg=0.0, numCC=None, kernelcca=True, ktype="linear", gausigma=1.0, degree=2
 ):
