@@ -1,8 +1,9 @@
 """
 kcca.py
 ====================================
-Python module for regularized kernel canonical correlation analysis. 
-Code adopted from UC Berkeley, Gallant lab (https://github.com/gallantlab/pyrcca)
+Python module for regularized kernel canonical correlation analysis.
+Code adopted from UC Berkeley, Gallant lab
+(https://github.com/gallantlab/pyrcca)
 """
 
 import numpy as np
@@ -12,7 +13,7 @@ from scipy.linalg import eigh
 class KCCA(object):
     """
     Kernel CCA class initialization and methods
-    
+
     Parameters
     ----------
     reg
@@ -27,14 +28,15 @@ class KCCA(object):
     verbose
         Provides detailed explanation of results. Default is True. (Boolean)
     cutoff
-        Optional regularization parameter to perform spectral cutoff when 
-        computing the canonical weight pseudoinverse during held-out data prediction
+        Optional regularization parameter to perform spectral
+        cutoff when computing the canonical weight pseudoinverse
+        during held-out data prediction
         Default is 1x10^-15 (Float)
     gausigma
         Parameter if the kernel is a Gaussian kernel. (Float)
     degree
         Parameter if the kernel is a Polynomial kernel. (Integer)
-    
+
     Returns
     -------
     ws_
@@ -69,14 +71,14 @@ class KCCA(object):
         self.cutoff = cutoff
         self.gausigma = gausigma
         self.degree = degree
-        if self.kernelcca and self.ktype == None:
+        if self.kernelcca and self.ktype is None:
             self.ktype = "linear"
         self.verbose = verbose
 
     def train(self, data):
         """
         Trains CCA with given parameters
-        
+
         Parameters
         ----------
         reg
@@ -89,16 +91,17 @@ class KCCA(object):
             Type of kernel if kernelcca is True. (String)
             Value can be 'linear' (default), 'gaussian' or 'polynomial'.
         verbose
-            Provides detailed explanation of results. Default is True. (Boolean)
+            Provides detailed explanation of results.
+            Default is True. (Boolean)
         cutoff
-            Optional regularization parameter to perform spectral cutoff when 
-            computing the canonical weight pseudoinverse during held-out data prediction
-            Default is 1x10^-15 (Float)
+            Optional regularization parameter to perform spectral cutoff when
+            computing the canonical weight pseudoinverse during held-out
+            data prediction. Default is 1x10^-15 (Float)
         gausigma
             Parameter if the kernel is a Gaussian kernel. (Float)
         degree
             Parameter if the kernel is a Polynomial kernel. (Integer)
-        
+
         Returns
         -------
         ws_
@@ -106,7 +109,8 @@ class KCCA(object):
         comps_
             Canonical components (List)
         cancorrs_
-            Correlations of the canonical components on the training dataset (List)
+            Correlations of the canonical components on
+            the training dataset (List)
         """
         if self.verbose:
             print(
@@ -134,15 +138,15 @@ class KCCA(object):
 
     def validate(self, vdata):
         """
-        Tests how well the CCA mapping generalizes to the test data 
-        For each dimension in the test data, correlations between 
+        Tests how well the CCA mapping generalizes to the test data
+        For each dimension in the test data, correlations between
         predicted and actual data are computed.
-        
+
         Parameters
         ----------
         vdata
-            Standardized data (z-score) (Float)  
-        
+            Standardized data (z-score) (Float)
+
         Returns
         -------
         corrs_
@@ -157,12 +161,12 @@ class KCCA(object):
     def compute_ev(self, vdata):
         """
         Computes the explained variance for each canonical dimension
-        
+
         Parameters
         ----------
         vdata
-            Standardized data (z-score) (Float)  
-        
+            Standardized data (z-score) (Float)
+
         Returns
         -------
         ev_
@@ -177,7 +181,7 @@ class KCCA(object):
             if self.verbose:
                 print("Computing explained variance for component #%d" % ccs)
             preds_, corrs_ = predict(
-                vdata, [w[:, ccs - 1 : ccs] for w in self.ws_], self.cutoff
+                vdata, [w[:, ccs - 1: ccs] for w in self.ws_], self.cutoff
             )
             resids = [abs(d[0] - d[1]) for d in zip(vdata, preds_)]
             for s in range(nD):
@@ -191,14 +195,14 @@ def predict(vdata, ws_, cutoff=1e-15):
     """
     Get predictions for each dataset based on the other datasets
     and weights. Find correlations with actual dataset.
-    
+
     Parameters
     ----------
     vdata
         Standardized data (z-score) (Float)
     ws_
-        Canonical weights (List)    
-    
+        Canonical weights (List)
+
     Returns
     -------
     corrs_
@@ -225,12 +229,13 @@ def predict(vdata, ws_, cutoff=1e-15):
 
 
 def kcca(
-    data, reg=0.0, numCC=None, kernelcca=True, ktype="linear", gausigma=1.0, degree=2
+    data, reg=0.0, numCC=None, kernelcca=True,
+    ktype="linear", gausigma=1.0, degree=2
 ):
 
     """
     Sets up and solves the kernel CCA eigenproblem
-    
+
     Parameters
     ----------
     data
@@ -248,7 +253,7 @@ def kcca(
         Parameter if the kernel is a Gaussian kernel. (Float)
     degree
         Parameter if the kernel is a Polynomial kernel. (Integer)
-    
+
     Returns
     -------
     comp
@@ -257,7 +262,8 @@ def kcca(
     """
     if kernelcca:
         kernel = [
-            _make_kernel(d, ktype=ktype, gausigma=gausigma, degree=degree) for d in data
+            _make_kernel(d, ktype=ktype, gausigma=gausigma,
+                         degree=degree) for d in data
         ]
     else:
         kernel = [d.T for d in data]
@@ -276,13 +282,14 @@ def kcca(
     # Fill the left and right sides of the eigenvalue problem
     for i in range(nDs):
         RH[
-            sum(nFs[:i]) : sum(nFs[: i + 1]), sum(nFs[:i]) : sum(nFs[: i + 1])
+            sum(nFs[:i]): sum(nFs[: i + 1]), sum(nFs[:i]): sum(nFs[: i + 1])
         ] = crosscovs[i * (nDs + 1)] + reg * np.eye(nFs[i])
 
         for j in range(nDs):
             if i != j:
                 LH[
-                    sum(nFs[:j]) : sum(nFs[: j + 1]), sum(nFs[:i]) : sum(nFs[: i + 1])
+                    sum(nFs[:j]): sum(nFs[: j + 1]),
+                    sum(nFs[:i]): sum(nFs[: i + 1])
                 ] = crosscovs[nDs * j + i]
 
     LH = (LH + LH.T) / 2.0
@@ -295,21 +302,21 @@ def kcca(
     comp = []
     Vs = Vs[:, rindex]
     for i in range(nDs):
-        comp.append(Vs[sum(nFs[:i]) : sum(nFs[: i + 1]), :numCC])
+        comp.append(Vs[sum(nFs[:i]): sum(nFs[: i + 1]), :numCC])
     return comp
 
 
 def recon(data, comp, corronly=False, kernelcca=True):
     """
     Calculates canonical weights, correlations and components
-    
+
     Parameters
     ----------
     data
         Data of interest (Array)
     comp
         Component to determine the canonical weights (Array)
-        
+
     Returns
     -------
     corrs_
@@ -335,12 +342,12 @@ def recon(data, comp, corronly=False, kernelcca=True):
 def _zscore(d):
     """
     Calculates z-score of data
-    
+
     Parameters
     ----------
     d
         Data of interest (Array)
-        
+
     Returns
     -------
     z
@@ -353,12 +360,12 @@ def _zscore(d):
 def _demean(d):
     """
     Calculates difference from mean of the data
-    
+
     Parameters
     ----------
     d
         Data of interest (Array)
-        
+
     Returns
     -------
     diff
@@ -371,14 +378,14 @@ def _demean(d):
 def _listdot(d1, d2):
     """
     Calculates the dot product between two arrays
-    
+
     Parameters
     ----------
     d1
         Data of interest (Array)
     d1
         Data of interest (Array)
-        
+
     Returns
     -------
     ld
@@ -390,13 +397,14 @@ def _listdot(d1, d2):
 
 def _listcorr(a):
     """
-    Returns pairwise row correlations for all items in array as a list of matrices
-    
+    Returns pairwise row correlations for all items
+    in array as a list of matrices
+
     Parameters
     ----------
     a
         Matrix
-        
+
     Returns
     -------
     corrs_
@@ -416,19 +424,19 @@ def _listcorr(a):
 def _rowcorr(a, b):
     """
     Finds correlations between corresponding matrix rows (a and b)
-    
+
     Parameters
     ----------
     a
         Matrix row 1
     b
         Matrix row 2
-    
+
     Returns
     -------
     cs
         Correlations between corresponding rows (Array)
-        
+
     """
     cs = np.zeros((a.shape[0]))
     for idx in range(a.shape[0]):
@@ -442,7 +450,7 @@ def _make_kernel(d, normalize=True, ktype="linear", gausigma=1.0, degree=2):
       If ktype is 'linear', the kernel is a linear inner product
       If ktype is 'gaussian', the kernel is a Gaussian kernel, sigma = gausigma
       If ktype is 'poly', the kernel is a polynomial kernel with degree=degree
-    
+
     Parameters
     ----------
     d
@@ -453,8 +461,8 @@ def _make_kernel(d, normalize=True, ktype="linear", gausigma=1.0, degree=2):
     gausigma
         Parameter if the kernel is a Gaussian kernel. (Float)
     degree
-        Parameter if the kernel is a Polynomial kernel. (Integer)   
-    
+        Parameter if the kernel is a Polynomial kernel. (Integer)
+
     Returns
     -------
     kernel
