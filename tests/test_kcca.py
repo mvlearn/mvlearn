@@ -1,6 +1,6 @@
 #unit tests
 
-import kcca
+from multiview.embed import KCCA
 import numpy as np
 
 x = np.array([[1.,1.,3.],[2.,3.,2.],[1.,1.,1.],[1.,1.,2.],
