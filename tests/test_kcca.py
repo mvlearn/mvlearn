@@ -10,7 +10,7 @@ y = np.array([[4,4,-1.07846],[3,3,1.214359],[2,2,0.307180],
               [1,2,0.81436],[2,1,-0.06410],[1,2,1.54590]])
 
 testcca = KCCA(kernelcca = False, reg = 0.0001, numCC = 2)
-testcca.train([x, y])
+testcca.fit([x, y])
 
 print(testcca.comps_)
 
@@ -33,19 +33,19 @@ def test_numCC_ev_():
 # Test that linear kernel works
 def test_ktype_linear():
     klinear = KCCA(ktype = 'linear', reg = 0.0001, numCC = 2, gausigma=2)
-    klinear.train([x, y])
+    klinear.fit([x, y])
     assert len(klinear.comps_) == 2
     
 # Test that gaussian kernel works
 def test_ktype_gaussian():
     kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, numCC = 2, gausigma=2)
-    kgauss.train([x, y])
+    kgauss.fit([x, y])
     assert len(kgauss.comps_) == 2
     
 # Test that polynomial kernel works
 def test_ktype_polynomial():
     kpoly = KCCA(ktype = 'poly', reg = 0.0001, numCC = 2, degree=3)
-    kpoly.train([x, y])
+    kpoly.fit([x, y])
     assert len(kpoly.comps_) == 2
 
 
@@ -70,7 +70,7 @@ test2 = data2[1000//2:]
 # Test validate and prediction
 def test_validate():
     cca = KCCA(kernelcca = False, reg = 0., numCC = 4)
-    cca.train([train1, train2])
+    cca.fit([train1, train2])
     testcorrs = cca.validate([test1, test2])
     assert len(testcorrs) == 2
 

@@ -75,7 +75,7 @@ class KCCA(object):
             self.ktype = "linear"
         self.verbose = verbose
 
-    def train(self, data):
+    def fit(self, data):
         """
         Trains CCA with given parameters
 
