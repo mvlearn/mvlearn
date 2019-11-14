@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
+# A base class for multi-view clustering algorithms that apply the
+# co-EM framework.
 
 import numpy as np
 from abc import abstractmethod
@@ -40,6 +42,9 @@ class BaseCluster(BaseEstimator):
         Parameters
         ----------
         Xs: a list of numpy arrays
+
+        y : Ignored
+        not used, present here for API consistency by convention.
         '''
 
         return self
@@ -53,6 +58,8 @@ class BaseCluster(BaseEstimator):
         ----------
         Xs: a list of numpy arrays
 
+        y : Ignored
+        not used, present here for API consistency by convention.
         '''
         return
 
@@ -66,5 +73,7 @@ class BaseCluster(BaseEstimator):
         ----------
         Xs: a list of numpy arrays
 
+        y : Ignored
+        not used, present here for API consistency by convention.
         '''
         return

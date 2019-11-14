@@ -1,6 +1,24 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Implements multi-view kmeans clustering algorithm for data with 2-views.
+
+
 import numpy as np
 from .base_cluster import BaseCluster
-from ..utils.cluster_utils import check_Xs
+from ..utils.utils import check_Xs
+from sklearn.exceptions import NotFittedError
 
 
 class MultiviewKMeans(BaseCluster):
@@ -18,9 +36,6 @@ class MultiviewKMeans(BaseCluster):
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
-    max_iter : int (default=None)
-        The maximum number of iterations to run the EM algorithm.
-
     Attributes
     ----------
 
@@ -35,10 +50,13 @@ class MultiviewKMeans(BaseCluster):
         - _centroids shape: (2,)
         - _centroids[0] shape: (n_clusters, n_features_i)
         The cluster centroids for each of the two views. _centroids[0]
-        corresponds to the centroids of view 1 and _cnetroids[1] corresponds
+        corresponds to the centroids of view 1 and _centroids[1] corresponds
         to the centroids of view 2.
 
-
+    References
+    ----------
+    [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the
+    4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
     def __init__(self, k=5, random_state=None):
@@ -64,7 +82,7 @@ class MultiviewKMeans(BaseCluster):
     def _compute_distance(self, X, centers):
 
         '''
-        Computes the euclidean distance between each sample point
+        Computes the Euclidean distance between each sample point
         in the given view and each cluster centroid.
 
         Parameters
@@ -77,12 +95,13 @@ class MultiviewKMeans(BaseCluster):
         Returns
         -------
         distances : array-like (n_clusters, n_samples)
-            An array of euclidean distances between each
+            An array of Euclidean distances between each
             sample point and each cluster centroid.
 
         '''
 
         distances = list()
+
         for cl in range(self._k):
             dist = X - centers[cl]
             dist = np.linalg.norm(dist, axis=1)
@@ -115,7 +134,7 @@ class MultiviewKMeans(BaseCluster):
 
         '''
 
-        Xs = check_Xs(Xs)
+        Xs = check_Xs(Xs, enforce_views=2)
 
         if not (isinstance(patience, int) and (patience > 0)):
             msg = 'patience must be a nonnegative integer'
@@ -128,11 +147,15 @@ class MultiviewKMeans(BaseCluster):
         else:
             max_iter = np.inf
 
-        indices = np.random.choice(Xs[1].shape[0], self._k)
-        centers = Xs[1][indices]
-        self._centroids = [None, centers]
+        # Random initialization of centroids
+        indices1 = np.random.choice(Xs[0].shape[0], self._k)
+        centers1 = Xs[0][indices1]
+        indices2 = np.random.choice(Xs[1].shape[0], self._k)
+        centers2 = Xs[1][indices2]
+        self._centroids = [centers1, centers2]
 
-        distances = self._compute_distance(Xs[1], centers)
+        # Initializing partitions, objective function value, and loop variables
+        distances = self._compute_distance(Xs[1], centers2)
         parts = np.argmin(distances, axis=0).flatten()
         partitions = [None, parts]
         objective = [np.inf, np.inf]
@@ -140,15 +163,17 @@ class MultiviewKMeans(BaseCluster):
         iter_num = 0
         entropy = 0
 
+        # While objective is still decreasing and num of iterations < max_iter
         while(iter_stall < patience and iter_num < max_iter):
             iter_num += 1
+            pre_view = (iter_num) % 2
             view = (iter_num + 1) % 2
 
-            # Switch partitions, maximization, and expectation
-
+            # Switch partitions and compute maximization
             new_centers = list()
             for cl in range(self._k):
-                mask = (partitions[(view + 1) % 2] == cl)
+                # Isolate data points from each cluster to recompute centroids
+                mask = (partitions[pre_view] == cl)
                 if (np.sum(mask) == 0):
                     new_centers.append(self._centroids[view][cl])
                 else:
@@ -156,12 +181,15 @@ class MultiviewKMeans(BaseCluster):
                     new_centers.append(cent)
             self._centroids[view] = np.vstack(new_centers)
 
+            # Compute expectation
             distances = self._compute_distance(Xs[view], self._centroids[view])
             new_partitions = np.argmin(distances, axis=0).flatten()
 
             # Recompute the objective function
             o_funct = 0
             for cl in range(self._k):
+                # Collect data points in each cluster and compute within
+                # cluster distances
                 vecs = Xs[view][(partitions[view] == cl)]
                 dist = np.linalg.norm(vecs - self._centroids[view][cl], axis=1)
                 o_funct += np.sum(dist)
@@ -173,18 +201,19 @@ class MultiviewKMeans(BaseCluster):
             else:
                 iter_stall += 1
 
+        # Compute consensus vectors for final clustering
         v1_consensus = list()
         v2_consensus = list()
-
         for clust in range(self._k):
-
             v1_distances = self._compute_distance(Xs[0], self._centroids[0])
             v1_partitions = np.argmin(v1_distances, axis=0).flatten()
             v2_distances = self._compute_distance(Xs[1], self._centroids[1])
             v2_partitions = np.argmin(v2_distances, axis=0).flatten()
 
+            # Find data points in the same partition in both views
             part_indices = (v1_partitions == clust) * (v2_partitions == clust)
 
+            # Recompute centroids based on these data points
             if (np.sum(part_indices) != 0):
                 cent1 = np.mean(Xs[0][part_indices], axis=0)
                 v1_consensus.append(cent1)
@@ -194,6 +223,9 @@ class MultiviewKMeans(BaseCluster):
 
         self._centroids[0] = np.vstack(v1_consensus)
         self._centroids[1] = np.vstack(v2_consensus)
+
+        # Updates k if number of consensus clusters less than original k value
+        self._k = self._centroids[0].shape[0]
 
         return self
 
@@ -218,7 +250,11 @@ class MultiviewKMeans(BaseCluster):
 
         '''
 
-        Xs = check_Xs(Xs)
+        Xs = check_Xs(Xs, enforce_views=2)
+
+        if self._centroids is None:
+            msg = 'This MultiviewKMeans instance is not fitted yet.'
+            raise NotFittedError(msg)
 
         dist1 = self._compute_distance(Xs[0], self._centroids[0])
         dist2 = self._compute_distance(Xs[1], self._centroids[1])
@@ -242,11 +278,6 @@ class MultiviewKMeans(BaseCluster):
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.
 
-        Returns
-        -------
-        predictions : array-like, shape (n_samples,)
-            The predicted cluster labels for each sample.
-
         patience: int, optional (default=5)
             The number of EM iterations with no decrease in the objective
             function after which the algorithm will terminate.
@@ -255,8 +286,13 @@ class MultiviewKMeans(BaseCluster):
             The maximum number of EM iterations to run before
             termination.
 
+        Returns
+        -------
+        predictions : array-like, shape (n_samples,)
+            The predicted cluster labels for each sample.
+
         '''
 
         self.fit(Xs, patience, max_iter)
-        partitions = self.predict(Xs)
-        return partitions
+        predictions = self.predict(Xs)
+        return predictions
