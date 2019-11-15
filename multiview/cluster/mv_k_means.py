@@ -209,7 +209,7 @@ class MultiviewKMeans(BaseCluster):
             v1_partitions = np.argmin(v1_distances, axis=0).flatten()
             v2_distances = self._compute_distance(Xs[1], self._centroids[1])
             v2_partitions = np.argmin(v2_distances, axis=0).flatten()
-            
+
             # Find data points in the same partition in both views
             part_indices = (v1_partitions == clust) * (v2_partitions == clust)
 
