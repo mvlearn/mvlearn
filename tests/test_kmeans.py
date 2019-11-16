@@ -162,6 +162,17 @@ def test_predict_random(data_random):
         assert(cl >= 0 and cl < data_random['n_clusters'])
 
 
+def test_predict_random_small(data_random):
+
+    kmeans = data_random['kmeans']
+    kmeans.fit(data_random['fit_data'][:2])
+    cluster_pred = kmeans.predict(data_random['test_data'])
+
+    assert(data_random['n_test'] ==  cluster_pred.shape[0])
+
+    for cl in cluster_pred:
+        assert(cl >= 0 and cl < data_random['n_clusters'])
+
 def test_predict_deterministic():
 
     n_clusters = 2
