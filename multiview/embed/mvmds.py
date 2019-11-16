@@ -111,7 +111,7 @@ class MVMDS(BaseEmbed):
 
                 w = np.dot(pi, w)
 
-                q = w/ np.sqrt(np.dot(w.T, w))
+                q = w / np.sqrt(np.dot(w.T, w))
 
                 for yy in np.arange(views):
 
