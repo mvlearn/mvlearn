@@ -223,7 +223,6 @@ class MultiviewKMeans(BaseCluster):
 
         self._centroids[0] = np.vstack(v1_consensus)
         self._centroids[1] = np.vstack(v2_consensus)
-
         # Updates k if number of consensus clusters less than original k value
         self._k = self._centroids[0].shape[0]
 

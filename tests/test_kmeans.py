@@ -165,7 +165,8 @@ def test_predict_random(data_random):
 def test_predict_random_small(data_random):
 
     kmeans = data_random['kmeans']
-    kmeans.fit(data_random['fit_data'][:2])
+    input_data = [data_random['fit_data'][0][:2],data_random['fit_data'][1][:2]] 
+    kmeans.fit(input_data)
     cluster_pred = kmeans.predict(data_random['test_data'])
 
     assert(data_random['n_test'] ==  cluster_pred.shape[0])
