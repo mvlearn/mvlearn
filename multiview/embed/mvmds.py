@@ -19,12 +19,14 @@
 # limitations under the License.
 
 import sys
-sys.path.append("..")
 from base import BaseEmbed
 from utils.utils import check_Xs
 import warnings
 import numpy as np
 from sklearn.metrics import euclidean_distances
+
+sys.path.append("..")
+
 
 class MVMDS(BaseEmbed):
 
@@ -47,7 +49,7 @@ class MVMDS(BaseEmbed):
     def _cpc(self, n_components, x):
 
         """
-        Finds Stepwise Estimation of Common Principal Components as described 
+        Finds Stepwise Estimation of Common Principal Components as described
         by common Trendafilov implementations based on the following paper:
 
         https://www.sciencedirect.com/science/article/pii/S016794731000112X
@@ -78,10 +80,9 @@ class MVMDS(BaseEmbed):
         pi = np.eye(p)
 
         s = np.zeros((p, p))
-        
+
         it = 15
 
-        
         for i in np.arange(views):
             s = s + (n_num[i] * x[i])
 
@@ -104,8 +105,8 @@ class MVMDS(BaseEmbed):
                 s2 = np.zeros((p, p))
 
                 for yy in np.arange(views):
-                    s2 = s2 + (n_num[yy]*np.sum(np.array([n] * views)) * x[yy] / d[:, yy])
-
+                    d = n_num[yy] * np.sum(np.array([n] * views)) 
+                    s2 = s2 + (d * x[yy] / d[:, yy])
 
                 w = np.dot(s2, q)
 
@@ -123,9 +124,8 @@ class MVMDS(BaseEmbed):
 
         return(Components)
 
-   
     def fit(self, Xs, n_components):
-        
+
         """
         Calculates a dimensional reduction based on minimizing Euclidean 
         Distances of multiple views
@@ -145,20 +145,26 @@ class MVMDS(BaseEmbed):
         ----------
 
         components: A k-dimensional projection of shape [n,k]
-        
+
         """
-    
+
         if (n_components) > len(Xs[0]):
             n_components = len(Xs[0])
-            warnings.warn('The number of components you have requested is greater than the number of features in the dataset. '+ str(n_components) + " components were computed instead.")
-            
+            warnings.warn('The number of components you have requested is '
+                          + 'greater than the number of features in the '
+                          + 'dataset. ' + str(n_components)
+                          + ' components were computed instead.')
+
         if (n_components) <= 0:
-            raise ValueError("The number of components must be greater than 0 and less than the number of features")
+            raise ValueError('The number of components must be greater than 0 '
+                             + 'and less than the number of features')
 
         for i in Xs:
             for j  in Xs:
                 if i.shape[0] != j.shape[0]:
-                    raise ValueError("Input matrices must have the same number of samples")
+                    raise ValueError('Input matrices must have the same '
+                                     + 'number of samples')
+
         Xs = check_Xs(Xs, multiview = True)
 
         mat = np.ones(shape = (len(Xs), len(Xs[0]), len(Xs[0])))
@@ -167,8 +173,8 @@ class MVMDS(BaseEmbed):
             view = euclidean_distances(Xs[i])
             view_squared = np.power(np.array(view), 2)
 
-            J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape) #Centering matrix
-            B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)   #Double centered matrix B
+            J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
+            B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
             mat[i] = B
 
         self.components = self._cpc(n_components, mat)
@@ -193,7 +199,7 @@ class MVMDS(BaseEmbed):
         """
 
         Xs = check_Xs(Xs)
-        
+
         return Xs
 
     def fit_transform(self, Xs, n_components):
