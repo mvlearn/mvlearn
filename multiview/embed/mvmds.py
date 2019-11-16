@@ -17,16 +17,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-
-mvmds.py
-
-====================================
-
-
-Classical Multiview Multidimensional Scaling
-
-"""
 
 import sys
 sys.path.append("..")
@@ -38,7 +28,6 @@ from sklearn.metrics import euclidean_distances
 
 class MVMDS(BaseEmbed):
 
-
     """"
     Classical Multiview Multidimensional Scaling for jointly reducing
     the dimensions of multiple views of data. A euclidean distance matrix
@@ -46,7 +35,7 @@ class MVMDS(BaseEmbed):
     eigenvectors are returned based on the algorithm proposed by the
     following paper:
 
-    https://www.sciencedirect.com/science/article/pii/S016794731000112X 
+    https://www.sciencedirect.com/science/article/pii/S016794731000112X
 
     """
 
@@ -55,15 +44,13 @@ class MVMDS(BaseEmbed):
         super()._init_()
         self.components = None
 
-
-
-    def _cpc(self,n_components,x):
+    def _cpc(self, n_components, x):
 
         """
-        Finds Stepwise Estimation of Common Principal Components as described by
-        common Trendafilov implementations based on the following paper:
+        Finds Stepwise Estimation of Common Principal Components as described 
+        by common Trendafilov implementations based on the following paper:
 
-        https://www.sciencedirect.com/science/article/pii/S016794731000112X   
+        https://www.sciencedirect.com/science/article/pii/S016794731000112X
 
         Parameters
         ----------
@@ -73,7 +60,7 @@ class MVMDS(BaseEmbed):
         x: List of matrices, each with number of rows, n
 
         it: Number of common principal component stepwise iterations
-        
+
         Returns
         -------
 
@@ -86,11 +73,11 @@ class MVMDS(BaseEmbed):
 
         n_num = np.array([n] * views)/np.sum(np.array([n] * views))
 
-        Components = np.zeros((p,n_components))
+        Components = np.zeros((p, n_components))
 
         pi = np.eye(p)
 
-        s = np.zeros((p,p))
+        s = np.zeros((p, p))
         
         it = 15
 
@@ -98,51 +85,50 @@ class MVMDS(BaseEmbed):
         for i in np.arange(views):
             s = s + (n_num[i] * x[i])
 
+        e1, e2 = np.linalg.eigh(s)
 
-        e1,e2 = np.linalg.eigh(s)
 
-
-        q0 = e2[:,::-1]
-
+        q0 = e2[:, ::-1]
 
         for i in np.arange(n_components):
 
-            q = q0[:,i]
-            q = np.array(q).reshape(len(q),1)
-            d = np.zeros((1,views))
+            q = q0[:, i]
+            q = np.array(q).reshape(len(q), 1)
+            d = np.zeros((1, views))
 
             for j in np.arange(views):
 
-                d[:,j] = np.dot(np.dot(q.T,x[j]),q)
+                d[:, j] = np.dot(np.dot(q.T, x[j]), q)
 
             for j in np.arange(it):
-                s2 = np.zeros((p,p))
+                s2 = np.zeros((p, p))
 
                 for yy in np.arange(views):
-                    s2 = s2 + (n_num[yy]*np.sum(np.array([n] * views)) * x[yy] / d[:,yy])
+                    s2 = s2 + (n_num[yy]*np.sum(np.array([n] * views)) * x[yy] / d[:, yy])
 
 
-                w = np.dot(s2,q)
+                w = np.dot(s2, q)
 
-                w = np.dot(pi,w)
+                w = np.dot(pi, w)
 
-                q = w/ np.sqrt(np.dot(w.T,w))
+                q = w/ np.sqrt(np.dot(w.T, w))
 
                 for yy in np.arange(views):
 
-                    d[:,yy] = np.dot(np.dot(q.T,x[yy]),q)
+                    d[:, yy] = np.dot(np.dot(q.T, x[yy]), q)
 
-            Components[:,i] = q[:,0]
-            pi = pi - np.dot(q,q.T)
+            Components[:, i] = q[:, 0]
+            pi = pi - np.dot(q, q.T)
 
 
         return(Components)
 
    
-    def fit(self,Xs,n_components):
+    def fit(self, Xs, n_components):
         
         """
-        Calculates a dimensional reduction based on minimizing Euclidean Distances of multiple views
+        Calculates a dimensional reduction based on minimizing Euclidean 
+        Distances of multiple views
 
         Parameters
         ----------
@@ -173,24 +159,23 @@ class MVMDS(BaseEmbed):
             for j  in Xs:
                 if i.shape[0] != j.shape[0]:
                     raise ValueError("Input matrices must have the same number of samples")
-        Xs = check_Xs(Xs,multiview = True)
+        Xs = check_Xs(Xs, multiview = True)
 
-        mat = np.ones(shape = (len(Xs),len(Xs[0]),len(Xs[0])))
+        mat = np.ones(shape = (len(Xs), len(Xs[0]), len(Xs[0])))
 
         for i in range(len(Xs)):
             view = euclidean_distances(Xs[i])
-            view_squared = np.power(np.array(view),2)
+            view_squared = np.power(np.array(view), 2)
 
             J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape) #Centering matrix
-            B = -(1/2) * np.matmul(np.matmul(J,view_squared),J)   #Double centered matrix B
+            B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)   #Double centered matrix B
             mat[i] = B
 
-        self.components = self._cpc(n_components,mat)
+        self.components = self._cpc(n_components, mat)
         
         return self.components
 
-    def transform(self, Xs,n_components):
-        
+    def transform(self, Xs, n_components):
         
         """"
         Embeds data matrix(s) using fitted projection matrices
@@ -211,9 +196,8 @@ class MVMDS(BaseEmbed):
         
         return Xs
 
-    def fit_transform(self, Xs,n_components):
+    def fit_transform(self, Xs, n_components):
 
-        
         """"
         Embeds data matrix(s) using fitted projection matrices
 
@@ -231,4 +215,4 @@ class MVMDS(BaseEmbed):
         Components: Components of the dimensionally reduced Xs
 
         """
-        return self.fit(Xs,n_components)
+        return self.fit(Xs, n_components)
