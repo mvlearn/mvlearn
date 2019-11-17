@@ -19,13 +19,14 @@
 # limitations under the License.
 
 import sys
-from base import BaseEmbed
 from utils.utils import check_Xs
 import warnings
 import numpy as np
 from sklearn.metrics import euclidean_distances
 
 sys.path.append("..")
+from base import BaseEmbed
+
 
 
 class MVMDS(BaseEmbed):
