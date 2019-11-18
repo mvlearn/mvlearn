@@ -171,8 +171,10 @@ class GCCA(BaseEmbed):
                 s2 = np.square(s)
                 rank = sum(np.cumsum(s2 / sum(s2)) < fraction_var) + 1
             else:
-                elbows, _ = select_dimension(s, n_elbows=n_elbows,
-                                             threshold=None)
+                s = s[: int(np.ceil(np.log2(np.min(x.shape))))]
+                elbows, _ = select_dimension(
+                    s, n_elbows=n_elbows, threshold=None
+                )
                 print(elbows)
                 rank = elbows[-1]
 

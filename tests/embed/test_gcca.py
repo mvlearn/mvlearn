@@ -41,7 +41,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs)
+        projs = GCCA().fit_transform(Xs, fraction_var=0.9)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -51,7 +51,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        gcca = GCCA().fit(Xs)
+        gcca = GCCA().fit(Xs, fraction_var=0.9)
         projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
 
         dists = _compute_dissimilarity(projs)
@@ -97,14 +97,14 @@ def test_output():
         gcca = GCCA()
         projs = gcca.fit_transform(Xs, n_elbows=2)
 
-        assert_equal(gcca._ranks[0], 8)
+        assert_equal(gcca._ranks[0], 4)
 
     use_fit_transform()
     use_fit_tall()
     use_fit_n_components()
     use_fit_sv_tolerance()
-    use_fit_elbows()
     use_fit_view_idx()
+    use_fit_elbows()
 
 
 test_mat = np.array([[1, 2], [3, 4]])
@@ -127,12 +127,12 @@ Xs = np.random.normal(0, 1, size=(2, 4, 6))
     ],
 )
 def test_bad_inputs(params, err):
-    np.random.seed(1)
     with pytest.raises(err):
+        np.random.seed(1)
         GCCA().fit(**params)
 
 
 def test_no_fit(params={"Xs": mat_good}, err=RuntimeError):
-    np.random.seed(1)
     with pytest.raises(err):
+        np.random.seed(1)
         GCCA().transform(**params)
