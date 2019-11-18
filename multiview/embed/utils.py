@@ -173,4 +173,3 @@ def select_dimension(
         return elbows, values, likelihoods
     else:
         return elbows, values
-
