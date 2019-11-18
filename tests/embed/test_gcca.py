@@ -2,8 +2,23 @@ import sys
 import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
+from scipy.linalg import orth
 
 from multiview.embed.gcca import GCCA
+
+
+def generate_data(n=10, elbows=3, seed=1):
+    """
+    Generate data matrix with a specific number of elbows on scree plot
+    """
+    np.random.seed(seed)
+    x = np.random.binomial(1, 0.6, (n ** 2)).reshape(n, n)
+    xorth = orth(x)
+    d = np.zeros(xorth.shape[0])
+    for i in range(0, len(d), int(len(d) / (elbows + 1))):
+        d[:i] += 10
+    A = xorth.T.dot(np.diag(d)).dot(xorth)
+    return A, d
 
 
 def test_output():
@@ -48,7 +63,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, tall=True)
+        projs = GCCA().fit_transform(Xs, fraction_var=0.9, tall=True)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -58,7 +73,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, fraction_var=None, n_components=3)
+        projs = GCCA().fit_transform(Xs, n_components=3)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -74,10 +89,21 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
+    def use_fit_elbows():
+        n = 2
+        X, _ = generate_data(10, 3)
+        Xs = [X, X]
+
+        gcca = GCCA()
+        projs = gcca.fit_transform(Xs, n_elbows=2)
+
+        assert_equal(gcca._ranks[0], 8)
+
     use_fit_transform()
     use_fit_tall()
     use_fit_n_components()
     use_fit_sv_tolerance()
+    use_fit_elbows()
     use_fit_view_idx()
 
 

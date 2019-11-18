@@ -19,6 +19,7 @@ import numpy as np
 from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
+from multiview.embed.utils import select_dimension
 
 
 class GCCA(BaseEmbed):
@@ -26,7 +27,7 @@ class GCCA(BaseEmbed):
     An implementation of Generalized Canonical Correalation Analysis. Computes
     individual projections into a common subspace such that the correlations
     between pairwise projections are minimized (ie. maximize pairwise
-    correlation). Reduces to CCA in the case of two samples.
+    correlation). Reduces to CCA in the two sample case.
 
     See https://www.sciencedirect.com/science/article/pii/S1053811912001644?
     via%3Dihub
@@ -36,6 +37,7 @@ class GCCA(BaseEmbed):
     def __init__(self):
         super().__init__()
         self._projection_mats = None
+        self._ranks = None
 
     def _center(self, X):
         """
@@ -62,9 +64,10 @@ class GCCA(BaseEmbed):
     def fit(
         self,
         Xs,
-        fraction_var=0.9,
+        fraction_var=None,
         sv_tolerance=None,
         n_components=None,
+        n_elbows=2,
         tall=False,
     ):
         """
@@ -83,14 +86,22 @@ class GCCA(BaseEmbed):
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
-        fraction_var : percent, default=0.9
-            Explained variance for rank selection during initial SVD of each
-            sample.
         sv_tolerance : float, optional, default=None
-            Singular value threshold for rank selection during initial SVD of
-            each sample.
+            Selects the number of SVD components to keep for each view by
+            thresholding singular values. If none, another selection
+            method is used.
         n_components : int (positive), optional, default=None
-            Rank to truncate to during initial SVD of each sample.
+            If ``sv_tolerance=None``, selects the number of SVD components to
+            keep for each view. If none, another selection method is used.
+        fraction_var : float, default=None
+            If ``sv_tolerance=None``, and ``n_components=None``, selects the
+            number of SVD components to keep for each view by capturing enough
+            of the variance. If none, another selection method is used.
+        n_elbows : int, optional, default: 2
+            If ``fraction_var=None``, ``sv_tolerance=None``, and
+            ``n_components=None``, then compute the optimal embedding
+            dimension using :func:`~multiview.embed.gcca.select_dimension`.
+            Otherwise, ignored.
         tall : boolean, default=False
             Set to true if n_samples > n_features, speeds up SVD
 
@@ -149,7 +160,7 @@ class GCCA(BaseEmbed):
                     )
 
                 rank = n_components
-            else:
+            elif fraction_var:
                 if not isinstance(fraction_var, float) and not isinstance(
                     fraction_var, int
                 ):
@@ -159,6 +170,12 @@ class GCCA(BaseEmbed):
 
                 s2 = np.square(s)
                 rank = sum(np.cumsum(s2 / sum(s2)) < fraction_var) + 1
+            else:
+                elbows, _ = select_dimension(s, n_elbows=n_elbows,
+                                             threshold=None)
+                print(elbows)
+                rank = elbows[-1]
+
             ranks.append(rank)
 
             u = ut.T[:, :rank]
