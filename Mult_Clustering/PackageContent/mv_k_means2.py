@@ -53,13 +53,17 @@ class MultiviewKMeans(BaseCluster):
         corresponds to the centroids of view 1 and _centroids[1] corresponds
         to the centroids of view 2.
 
+    _distance_metric : string
+        The distance metric used for partitioning points into clusters and
+        computing the objective function
+
     References
     ----------
     [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the
     4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
-    def __init__(self, k=5, random_state=None):
+    def __init__(self, k=5, random_state=None, distance='Euclidean'):
 
         super().__init__()
 
@@ -74,16 +78,22 @@ class MultiviewKMeans(BaseCluster):
             except ValueError:
                 raise ValueError(msg)
             np.random.seed(random_state)
+
+        if distance not in ['Euclidean', 'Cosine']:
+            msg = 'must input a valid distance metric'
+            raise ValueError(msg)
             
         self._centroids = None
         self._k = k
         self._random_state = random_state
+        self._distance_metric = distance
 
     def _compute_distance(self, X, centers):
 
         '''
-        Computes the Euclidean distance between each sample point
-        in the given view and each cluster centroid. 
+        Computes the distance between each sample point
+        in the given view and each cluster centroid. The 
+        distance metric is either Euclidean or Cosine.
 
         Parameters
         ----------
@@ -95,7 +105,7 @@ class MultiviewKMeans(BaseCluster):
         Returns
         -------
         distances : array-like (n_clusters, n_samples)
-            An array of Euclidean distances between each
+            An array of distances between each
             sample point and each cluster centroid.
 
         '''
