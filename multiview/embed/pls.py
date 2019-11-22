@@ -17,6 +17,7 @@
 # construction generates a new projection of the data.
 
 from sklearn.cross_decomposition import PLSRegression
+import numpy as np
 
 
 def partial_least_squares_embedding(
@@ -49,7 +50,10 @@ def partial_least_squares_embedding(
     """
     pls = PLSRegression(n_components=n_components)
     pls.fit(X, Y)
+    W = pls.x_weights_
+    P = pls.x_loadings_
+    R = W @ np.linalg.pinv(P.T @ W)
     if return_weights:
-        return pls.x_weights_
+        return R
     else:
-        return X @ pls.x_weights_
+        return X @ R
