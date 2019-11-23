@@ -220,7 +220,7 @@ class MultiviewKMeans(BaseCluster):
 
                 cent2 = np.mean(Xs[1][part_indices], axis=0)
                 v2_consensus.append(cent2)
-
+        
         self._centroids[0] = np.vstack(v1_consensus)
         self._centroids[1] = np.vstack(v2_consensus)
         # Updates k if number of consensus clusters less than original k value
