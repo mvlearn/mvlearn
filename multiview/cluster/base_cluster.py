@@ -50,20 +50,6 @@ class BaseCluster(BaseEstimator):
         return self
 
     @abstractmethod
-    def predict(self, Xs, y=None):
-
-        '''
-        A method to predict cluster labels of multiview data.
-        Parameters
-        ----------
-        Xs: a list of numpy arrays
-
-        y : Ignored
-        not used, present here for API consistency by convention.
-        '''
-        return
-
-    @abstractmethod
     def fit_predict(self, Xs, y=None):
 
         '''
