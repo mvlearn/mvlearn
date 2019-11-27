@@ -18,6 +18,7 @@
 
 import numpy as np
 import scipy as sp
+from scipy.spatial.distance import cdist
 from sklearn.base import BaseEstimator
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError
@@ -58,6 +59,9 @@ class MultiviewSpectralClustering(BaseEstimator):
     _random_state : int
         The seed for the random number generator used during kmeans.
 
+    _info_view : int
+        The index of the most informative view.
+
     References
     ----------
     [1] Abhishek Kumar and Hal Daume. A Co-training Approach for Multiview
@@ -86,11 +90,21 @@ class MultiviewSpectralClustering(BaseEstimator):
                 raise ValueError(msg)
             np.random.seed(random_state)
 
+        self._info_view = None
+        if info_view is not None:
+            if (isinstance(info_view, int)
+                    and (info_view >= 0 and info_view < n_clusters)):
+                self._info_view = info_view
+            else:
+                msg = 'info_view must be an integer between 0 and n_clusters-1'
+                raise ValueError(msg)
+
         self._n_clusters = n_clusters
         self._n_views = n_views
         self._random_state = random_state
+        self._info_view = info_view
 
-    def gaussian_sim(self, X):
+    def _gaussian_sim(self, X):
 
         '''
         Computes the gaussian similarity kernel for a given matrix.
@@ -109,7 +123,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         '''
 
-        distances = sp.spatial.distance.cdist(X, X)
+        distances = cdist(X, X)
         sq_dists = np.square(distances)
         norm_dists = sq_dists / (2 * np.median(sq_dists))
         sims = np.exp(-norm_dists)
@@ -136,9 +150,9 @@ class MultiviewSpectralClustering(BaseEstimator):
         '''
 
         # Compute the normalized laplacian
-        d_mat = np.diag(np.sum(X_mat, axis=1))
+        d_mat = np.diag(np.sum(X, axis=1))
         d_alt = np.sqrt(np.linalg.inv(np.abs(d_mat)))
-        laplacian = d_alt @ X_mat @ d_alt
+        laplacian = d_alt @ X @ d_alt
 
         # Make the resulting matrix symmetric
         laplacian = (laplacian + np.transpose(laplacian)) / 2.0
@@ -175,21 +189,24 @@ class MultiviewSpectralClustering(BaseEstimator):
             The predicted cluster labels for each sample.
         '''
 
-        Xs = check_Xs(Xs, enforce_views=self._n_views)
+        Xs = check_Xs(Xs)
+        if len(Xs) != self._n_views:
+            msg = 'Length of Xs must be the same as n_views'
+            raise ValueError(msg)
 
         if not (isinstance(n_iter, int) and (n_iter > 0)):
             msg = 'n_iter must be a positive integer'
             raise ValueError(msg)
 
         # Compute the similarity matrices
-        sims = [self.gaussian_sim(dat) for dat in v_data]
+        sims = [self._gaussian_sim(X) for X in Xs]
 
         # Initialize matrices of eigenvectors
-        U_mats = [self.comp_eigs(sim, k) for sim in sims]
+        U_mats = [self._compute_eigs(sim) for sim in sims]
 
         # Iteratively compute new graph similarities, laplacians,
         # and eigenvectors
-        for iter in range(num_iter):
+        for iter in range(n_iter):
 
             # Compute the sums of the products of the spectral embeddings
             # and their transposes
@@ -197,17 +214,17 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_sum = np.sum(np.array(eig_sums), axis=0)
             new_sims = list()
 
-            for view in range(len(v_data)):
+            for view in range(self._n_views):
                 # Compute new graph similarity representation
                 mat1 = sims[view] @ (U_sum - eig_sums[view])
                 mat1 = (mat1 + np.transpose(mat1)) / 2.0
                 new_sims.append(mat1)
                 # Recompute eigenvectors
-                U_mats = [self.comp_eigs(sim, self._n_clusters)
+                U_mats = [self._compute_eigs(sim)
                           for sim in new_sims]
 
         # Row normalize
-        for view in range(len(v_data)):
+        for view in range(self._n_views):
             U_norm = np.linalg.norm(U_mats[view], axis=1).reshape((-1, 1))
             U_norm[U_norm == 0] = 1
             U_mats[view] /= U_norm
