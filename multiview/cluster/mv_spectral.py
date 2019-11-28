@@ -20,6 +20,7 @@ import numpy as np
 import scipy as sp
 from scipy.spatial.distance import cdist
 from sklearn.base import BaseEstimator
+from sklearn.cluster import KMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError
 
@@ -230,7 +231,8 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_mats[view] /= U_norm
 
         # Performing kmeans clustering
-        kmeans = KMeans(n_clusters=k, random_state=self._random_state)
+        kmeans = KMeans(n_clusters=self._n_clusters,
+                        random_state=self._random_state)
         predictions = None
         if self._info_view is not None:
             # Use a single view if one was previously designated
