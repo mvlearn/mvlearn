@@ -41,7 +41,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, fraction_var=0.9)
+        projs = GCCA(fraction_var=0.9).fit_transform(Xs)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -51,7 +51,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        gcca = GCCA().fit(Xs, fraction_var=0.9)
+        gcca = GCCA(fraction_var=0.9).fit(Xs)
         projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
 
         dists = _compute_dissimilarity(projs)
@@ -63,7 +63,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, fraction_var=0.9, tall=True)
+        projs = GCCA(fraction_var=0.9, tall=True).fit_transform(Xs)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -73,7 +73,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, n_components=3)
+        projs = GCCA(n_components=3).fit_transform(Xs)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -83,7 +83,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, sv_tolerance=1)
+        projs = GCCA(sv_tolerance=1).fit_transform(Xs)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -94,10 +94,10 @@ def test_output():
         X, _ = generate_data(10, 3)
         Xs = [X, X]
 
-        gcca = GCCA()
-        projs = gcca.fit_transform(Xs, n_elbows=2)
+        gcca = GCCA(n_elbows=2)
+        projs = gcca.fit_transform(Xs)
 
-        assert_equal(gcca._ranks[0], 4)
+        assert_equal(gcca.ranks_[0], 4)
 
     use_fit_transform()
     use_fit_tall()
@@ -113,26 +113,26 @@ Xs = np.random.normal(0, 1, size=(2, 4, 6))
 
 
 @pytest.mark.parametrize(
-    "params,err",
+    "Xs,params,err",
     [
-        ({"Xs": [[]]}, ValueError),  # Empty input
-        ({"Xs": test_mat}, ValueError),  # Single matrix input
-        ({"Xs": mat_good, "fraction_var": "fail"}, TypeError),
-        ({"Xs": mat_good, "fraction_var": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": "fail"}, TypeError),
-        ({"Xs": mat_good, "n_components": -1}, ValueError),
-        ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
-        ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
+        ({"Xs": [[]]}, {}, ValueError),  # Empty input
+        ({"Xs": test_mat}, {}, ValueError),  # Single matrix input
+        ({"Xs": mat_good}, {"fraction_var": "fail"}, TypeError),
+        ({"Xs": mat_good}, {"fraction_var": -1}, ValueError),
+        ({"Xs": mat_good}, {"n_components": "fail"}, TypeError),
+        ({"Xs": mat_good}, {"n_components": -1}, ValueError),
+        ({"Xs": mat_good}, {"sv_tolerance": "fail"}, TypeError),
+        ({"Xs": mat_good}, {"sv_tolerance": -1}, ValueError),
+        ({"Xs": mat_good}, {"n_components": mat_good.shape[1]}, ValueError)
     ],
 )
-def test_bad_inputs(params, err):
+def test_bad_inputs(Xs, params, err):
     with pytest.raises(err):
         np.random.seed(1)
-        GCCA().fit(**params)
+        GCCA(**params).fit(**Xs)
 
 
-def test_no_fit(params={"Xs": mat_good}, err=RuntimeError):
+def test_no_fit(Xs={"Xs": mat_good}, err=RuntimeError):
     with pytest.raises(err):
         np.random.seed(1)
-        GCCA().transform(**params)
+        GCCA().transform(**Xs)
