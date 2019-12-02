@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[66]:
-
-
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +13,12 @@
 # limitations under the License.
 
 import sys
-from utils.utils import check_Xs
+sys.path.append()
+from base import BaseEmbed
+from ..utils.utils import check_Xs
 import warnings
 import numpy as np
 from sklearn.metrics import euclidean_distances
-
-sys.path.append("..")
-from base import BaseEmbed
-
-
 
 class MVMDS(BaseEmbed):
 

@@ -33,7 +33,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs)
+        projs = MVMDS().fit_transform(Xs)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -43,8 +43,8 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        gcca = GCCA().fit(Xs)
-        projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
+        MVMDS = MVMDS().fit(Xs)
+        projs = [MVMDS.transform(Xs[i], view_idx=i) for i in range(n)]
 
         dists = _compute_dissimilarity(projs)
 
@@ -55,7 +55,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, tall=True)
+        projs = MVMDS().fit_transform(Xs, tall=True)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -65,7 +65,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, fraction_var=None, n_components=3)
+        projs = MVMDS().fit_transform(Xs, fraction_var=None, n_components=3)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -75,7 +75,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = GCCA().fit_transform(Xs, sv_tolerance=1)
+        projs = MVMDS().fit_transform(Xs, sv_tolerance=1)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
@@ -110,10 +110,10 @@ Xs = np.random.normal(0, 1, size=(2, 4, 6))
 def test_bad_inputs(params, err):
     np.random.seed(1)
     with pytest.raises(err):
-        GCCA().fit(**params)
+        MVMDS().fit(**params)
 
 
 def test_no_fit(params={"Xs": mat_good}, err=RuntimeError):
     np.random.seed(1)
     with pytest.raises(err):
-        GCCA().transform(**params)
+        MVMDS().transform(**params)
