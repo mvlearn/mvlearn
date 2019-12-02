@@ -195,7 +195,6 @@ class GCCA(BaseEmbed):
                 elbows, _ = select_dimension(
                     s, n_elbows=self.n_elbows, threshold=None
                 )
-                print(elbows)
                 rank = elbows[-1]
 
             ranks.append(rank)
