@@ -136,7 +136,7 @@ class KCCA(object):
             self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
         return self
 
-    def validate(self, vdata):
+    def fit_transform(self, vdata):
         """
         Tests how well the CCA mapping generalizes to the test data
         For each dimension in the test data, correlations between
@@ -149,6 +149,8 @@ class KCCA(object):
 
         Returns
         -------
+        preds_
+            Predictions on the validation (test) dataset (List)
         corrs_
             Correlations on the validation dataset (List)
         """
@@ -156,7 +158,7 @@ class KCCA(object):
         if not hasattr(self, "ws_"):
             raise NameError("Algorithm has not been trained.")
         self.preds_, self.corrs_ = predict(vdata, self.ws_, self.cutoff)
-        return self.corrs_
+        return self.preds_, self.corrs_
 
     def compute_ev(self, vdata):
         """
@@ -193,8 +195,8 @@ class KCCA(object):
 
 def predict(vdata, ws_, cutoff=1e-15):
     """
-    Get predictions for each dataset based on the other datasets
-    and weights. Find correlations with actual dataset.
+    Get predictions and correlations for testing dataset based on
+    the training datasets canonical weights.
 
     Parameters
     ----------
@@ -207,6 +209,7 @@ def predict(vdata, ws_, cutoff=1e-15):
     -------
     corrs_
         Correlations on the validation dataset (List)
+        
     preds_
         Predictions on the validation dataset (List)
     """
@@ -476,7 +479,7 @@ def _make_kernel(d, normalize=True, ktype="linear", gausigma=1.0, degree=2):
         from scipy.spatial.distance import pdist, squareform
 
         pairwise_dists = squareform(pdist(d, "euclidean"))
-        kernel = np.exp(-pairwise_dists ** 2 / 2 * gausigma ** 2)
+        kernel = np.exp(-pairwise_dists ** 2 / (2 * gausigma ** 2))
     elif ktype == "poly":
         kernel = np.dot(cd, cd.T) ** degree
     kernel = (kernel + kernel.T) / 2.0
