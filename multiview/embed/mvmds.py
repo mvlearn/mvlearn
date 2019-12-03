@@ -94,8 +94,8 @@ class MVMDS(BaseEmbed):
                 s2 = np.zeros((p, p))
 
                 for yy in np.arange(views):
-                    d = n_num[yy] * np.sum(np.array([n] * views))
-                    s2 = s2 + (d * x[yy] / d[:, yy])
+                    #d = n_num[yy] * np.sum(np.array([n] * views))
+                    s2 = s2 + ((n_num * np.sum(np.array([n] * views)) * x[yy]) / d[:, yy])
 
                 w = np.dot(s2, q)
 
@@ -123,7 +123,7 @@ class MVMDS(BaseEmbed):
 
         Xs: list of array-likes
                 - Xs shape: (n_views,)
-                - Xs[i] shape: (n_samples, n_features_i)
+                - xXs[i] shape: (n_samples, n_features_i)
                 The data to fit to. Each sample will receive its own embedding.
 
         n_components: int (positive), optional, default = 0
