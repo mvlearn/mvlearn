@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-sys.path.append()
-from base import BaseEmbed
-from ..utils.utils import check_Xs
+from multiview.embed.base import BaseEmbed
+from multiview.utils.utils import check_Xs
 import warnings
 import numpy as np
 from sklearn.metrics import euclidean_distances
