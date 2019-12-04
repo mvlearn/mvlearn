@@ -62,11 +62,7 @@ class MVMDS(BaseEmbed):
         n = p = x.shape[1]
 
         views = len(x)
-        
-        n_g = np.array([x.shape[1]]*x.shape[0])
-        
-        n_stuff = n_g/np.sum(n_g)
-        
+                        
         n_num = np.array([n] * views)/np.sum(np.array([n] * views))
 
         Components = np.zeros((p, n_components))
@@ -99,10 +95,11 @@ class MVMDS(BaseEmbed):
 
                 for yy in np.arange(views):
                     #d2 = n_num[yy] * np.sum(np.array([n] * views))
-                    s2 = s2 + n_g[yy] * x[yy] / d[:, yy]
-                    
-                    #s2 = s2 + d2[yy] * x[yy] / d[:, yy]
+                    #print(d2)
+                    #s2 = s2 + (d2 * x[yy] / d[:, yy])
+                    s2 = s2 + (n_num[yy]*np.sum(np.array([n] * views)) * x[yy] / d[:,yy])
 
+                    
                 w = np.dot(s2, q)
 
                 w = np.dot(pi, w)
@@ -163,7 +160,7 @@ class MVMDS(BaseEmbed):
 
         mat = np.ones(shape=(len(Xs), len(Xs[0]), len(Xs[0])))
 
-        for i in range(len(Xs)):
+        for i in np.arange(len(Xs)):
             view = euclidean_distances(Xs[i])
             view_squared = np.power(np.array(view), 2)
 
