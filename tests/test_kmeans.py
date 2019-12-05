@@ -5,11 +5,11 @@ from sklearn.exceptions import NotFittedError
 
 # EXCEPTION TESTING
 
-def test_k_not_positive_int():
+def test_n_clusters_not_positive_int():
     with pytest.raises(ValueError):
-        kmeans = MultiviewKMeans(k=-1)
+        kmeans = MultiviewKMeans(n_clusters=-1)
     with pytest.raises(ValueError):
-        kmeans = MultiviewKMeans(k=0)
+        kmeans = MultiviewKMeans(n_clusters=0)
         
 def test_random_state_not_convertible():
     with pytest.raises(ValueError):
@@ -55,21 +55,21 @@ def test_patience_not_nonnegative_int():
     with pytest.raises(ValueError):
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
-        kmeans = MultiviewKMeans()
-        kmeans.fit([view1, view2], patience=-1)
+        kmeans = MultiviewKMeans(patience=-1)
+        kmeans.fit([view1, view2])
 
 def test_max_iter_not_positive_int():
     with pytest.raises(ValueError):
-        kmeans = MultiviewKMeans()
+        kmeans = MultiviewKMeans(max_iter=-1)
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
-        kmeans.fit([view1, view2], max_iter=-1)
+        kmeans.fit([view1, view2])
     
     with pytest.raises(ValueError):
-        kmeans = MultiviewKMeans()
+        kmeans = MultiviewKMeans(max_iter=0)
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
-        kmeans.fit([view1, view2], max_iter=0)
+        kmeans.fit([view1, view2])
 
 def test_not_fit():
     with pytest.raises(NotFittedError):
@@ -98,7 +98,7 @@ def data_random():
     test_data.append(np.random.rand(num_test_samples, n_feats1))
     test_data.append(np.random.rand(num_test_samples, n_feats2))
 
-    kmeans = MultiviewKMeans(k=n_clusters, random_state=random_seed)
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, random_state=random_seed)
     return {'n_test' : num_test_samples, 'n_feats1': n_feats1, 'n_feats2': n_feats2,
             'n_clusters': n_clusters, 'kmeans' : kmeans, 'fit_data' : fit_data,
             'test_data' : test_data}
@@ -109,7 +109,7 @@ def test_compute_distance():
     n_samples = 3
     centroids = np.array([[5,3,-2], [8, 0, 1.5]])
     data = np.array([[5, 3, -2,], [0, 0, 0], [1, 11, -4]])
-    kmeans = MultiviewKMeans(k=n_centroids)
+    kmeans = MultiviewKMeans(n_clusters=n_centroids)
     distances = kmeans._compute_distance(data, centroids)
     true_distances = np.array([[ 0, 6.164414, 9.16515139],
                        [ 5.5, 8.1394103, 14.1509717 ]])
@@ -128,7 +128,7 @@ def test_compute_positive():
 
     samples = np.random.rand(n_samples, n_feats)
     centroids = np.random.rand(n_centroids, n_feats)
-    kmeans = MultiviewKMeans(k=n_centroids)
+    kmeans = MultiviewKMeans(n_clusters=n_centroids)
     distances = kmeans._compute_distance(samples, centroids)
 
     for dist in distances.flatten():
@@ -147,7 +147,6 @@ def test_fit_centroids(data_random):
         assert(cent.shape[0] == data_random['n_feats1'])
     for cent in kmeans._centroids[1]:
         assert(cent.shape[0] == data_random['n_feats2'])
-
 
         
 def test_predict_random(data_random):
@@ -183,7 +182,7 @@ def test_predict_deterministic():
     v1_data = np.array([[0, 0],[0.3, 0.2],[0.5, 0.5],[0.7, 0.7],[1, 1]])
     v2_data = np.array([[0, 0],[0.2, 0.4],[0.5, 0.5],[0.4, 0.7],[1, 1]])
     data = [v1_data, v2_data]
-    kmeans = MultiviewKMeans(k=n_clusters)
+    kmeans = MultiviewKMeans(n_clusters=n_clusters)
     kmeans._centroids = centroids
     cluster_pred = kmeans.predict(data)
     true_clusters = [0, 0, 0, 1, 1]
@@ -204,8 +203,11 @@ def test_fit_predict(data_random):
     
 def test_fit_predict_patience(data_random):
 
-    kmeans = data_random['kmeans']
-    cluster_pred = kmeans.fit_predict(data_random['test_data'], patience=10)
+    
+    n_clusters = data_random['n_clusters']
+    patience=10
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, patience=patience)
+    cluster_pred = kmeans.fit_predict(data_random['test_data'])
     
     assert(data_random['n_test'] ==  cluster_pred.shape[0])
     for cl in cluster_pred:
@@ -213,10 +215,12 @@ def test_fit_predict_patience(data_random):
 
 def test_fit_predict_max_iter(data_random):
 
-    kmeans = data_random['kmeans']
-    cluster_pred = kmeans.fit_predict(data_random['test_data'], max_iter=4)
+    
+    n_clusters = data_random['n_clusters']
+    max_iter = 5
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, max_iter=max_iter)
+    cluster_pred = kmeans.fit_predict(data_random['test_data'])
     
     assert(data_random['n_test'] ==  cluster_pred.shape[0])
     for cl in cluster_pred:
         assert(cl >= 0 and cl < data_random['n_clusters'])
-

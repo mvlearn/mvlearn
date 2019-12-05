@@ -29,17 +29,25 @@ class MultiviewKMeans(BaseCluster):
 
     Paramters
     ---------
-    k : int
+    n_clusters : int (default=2)
         The number of clusters
 
     random_state : int (default=None)
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
+    patience : int, optional (default=5)
+        The number of EM iterations with no decrease in the objective
+        function after which the algorithm will terminate.
+
+    max_iter : int, optional (default=None)
+        The maximum number of EM iterations to run before
+        termination.
+
     Attributes
     ----------
 
-    _k : int
+    _n_clusters : int
         The number of clusters
 
     _random_state : int
@@ -53,17 +61,25 @@ class MultiviewKMeans(BaseCluster):
         corresponds to the centroids of view 1 and _centroids[1] corresponds
         to the centroids of view 2.
 
+    _patience : int 
+        The number of EM iterations with no decrease in the objective
+        function after which the algorithm will terminate.
+
+    _max_iter : int 
+        The maximum number of EM iterations to run before
+        termination.
+
     References
     ----------
     [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the
     4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
-    def __init__(self, k=5, random_state=None):
+    def __init__(self, n_clusters=2, random_state=None, patience=5, max_iter=None):
 
         super().__init__()
 
-        if not (isinstance(k, int) and k > 0):
+        if not (isinstance(n_clusters, int) and n_clusters > 0):
             msg = 'k must be a positive integer'
             raise ValueError(msg)
 
@@ -74,10 +90,24 @@ class MultiviewKMeans(BaseCluster):
             except ValueError:
                 raise ValueError(msg)
             np.random.seed(random_state)
+        
+        if not (isinstance(patience, int) and (patience > 0)):
+            msg = 'patience must be a nonnegative integer'
+            raise ValueError(msg)
+
+        self._max_iter = None
+        if max_iter is not None:
+            if not (isinstance(max_iter, int) and (max_iter > 0)):
+                msg = 'max_iter must be a positive integer'
+                raise ValueError(msg)
+            self._max_iter = max_iter
+        else:
+            self._max_iter = np.inf
 
         self._centroids = None
-        self._k = k
+        self._n_clusters = n_clusters
         self._random_state = random_state
+        self._patience = patience
 
     def _compute_distance(self, X, centers):
 
@@ -102,7 +132,7 @@ class MultiviewKMeans(BaseCluster):
 
         distances = list()
 
-        for cl in range(self._k):
+        for cl in range(self._n_clusters):
             dist = X - centers[cl]
             dist = np.linalg.norm(dist, axis=1)
             distances.append(dist)
@@ -110,7 +140,7 @@ class MultiviewKMeans(BaseCluster):
         distances = np.vstack(distances)
         return distances
 
-    def fit(self, Xs, patience=5, max_iter=None):
+    def fit(self, Xs):
 
         '''
         Fit the cluster centroids to the data.
@@ -124,33 +154,14 @@ class MultiviewKMeans(BaseCluster):
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
 
-        patience: int, optional (default=5)
-            The number of EM iterations with no decrease in the objective
-            function after which the algorithm will terminate.
-
-        max_iter: int, optional (default=None)
-            The maximum number of EM iterations to run before
-            termination.
-
         '''
 
         Xs = check_Xs(Xs, enforce_views=2)
 
-        if not (isinstance(patience, int) and (patience > 0)):
-            msg = 'patience must be a nonnegative integer'
-            raise ValueError(msg)
-
-        if max_iter is not None:
-            if not (isinstance(max_iter, int) and (max_iter > 0)):
-                msg = 'max_iter must be a positive integer'
-                raise ValueError(msg)
-        else:
-            max_iter = np.inf
-
         # Random initialization of centroids
-        indices1 = np.random.choice(Xs[0].shape[0], self._k)
+        indices1 = np.random.choice(Xs[0].shape[0], self._n_clusters)
         centers1 = Xs[0][indices1]
-        indices2 = np.random.choice(Xs[1].shape[0], self._k)
+        indices2 = np.random.choice(Xs[1].shape[0], self._n_clusters)
         centers2 = Xs[1][indices2]
         self._centroids = [centers1, centers2]
 
@@ -164,14 +175,14 @@ class MultiviewKMeans(BaseCluster):
         entropy = 0
 
         # While objective is still decreasing and num of iterations < max_iter
-        while(iter_stall < patience and iter_num < max_iter):
+        while(iter_stall < self._patience and iter_num < self._max_iter):
             iter_num += 1
             pre_view = (iter_num) % 2
             view = (iter_num + 1) % 2
 
             # Switch partitions and compute maximization
             new_centers = list()
-            for cl in range(self._k):
+            for cl in range(self._n_clusters):
                 # Isolate data points from each cluster to recompute centroids
                 mask = (partitions[pre_view] == cl)
                 if (np.sum(mask) == 0):
@@ -187,7 +198,7 @@ class MultiviewKMeans(BaseCluster):
 
             # Recompute the objective function
             o_funct = 0
-            for cl in range(self._k):
+            for cl in range(self._n_clusters):
                 # Collect data points in each cluster and compute within
                 # cluster distances
                 vecs = Xs[view][(partitions[view] == cl)]
@@ -204,7 +215,7 @@ class MultiviewKMeans(BaseCluster):
         # Compute consensus vectors for final clustering
         v1_consensus = list()
         v2_consensus = list()
-        for clust in range(self._k):
+        for clust in range(self._n_clusters):
             v1_distances = self._compute_distance(Xs[0], self._centroids[0])
             v1_partitions = np.argmin(v1_distances, axis=0).flatten()
             v2_distances = self._compute_distance(Xs[1], self._centroids[1])
@@ -224,7 +235,7 @@ class MultiviewKMeans(BaseCluster):
         self._centroids[0] = np.vstack(v1_consensus)
         self._centroids[1] = np.vstack(v2_consensus)
         # Updates k if number of consensus clusters less than original k value
-        self._k = self._centroids[0].shape[0]
+        self._n_clusters = self._centroids[0].shape[0]
 
         return self
 
@@ -262,7 +273,7 @@ class MultiviewKMeans(BaseCluster):
 
         return predictions
 
-    def fit_predict(self, Xs, patience=5, max_iter=None):
+    def fit_predict(self, Xs):
 
         '''
         Fit the cluster centroids to the data and then
@@ -277,14 +288,6 @@ class MultiviewKMeans(BaseCluster):
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.
 
-        patience: int, optional (default=5)
-            The number of EM iterations with no decrease in the objective
-            function after which the algorithm will terminate.
-
-        max_iter: int, optional (default=None)
-            The maximum number of EM iterations to run before
-            termination.
-
         Returns
         -------
         predictions : array-like, shape (n_samples,)
@@ -292,6 +295,6 @@ class MultiviewKMeans(BaseCluster):
 
         '''
 
-        self.fit(Xs, patience, max_iter)
+        self.fit(Xs)
         predictions = self.predict(Xs)
         return predictions
