@@ -71,14 +71,17 @@ def test_n_iter_not_positive_int():
     with pytest.raises(ValueError):
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
-        spectral = MultiviewSpectralClustering(2, n_iter=-1)
+        spectral = MultiviewSpectralClustering(2)
+        spectral.fit_predict([view1, view2], n_iter=-1)
 
     
     with pytest.raises(ValueError):
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
-        spectral = MultiviewSpectralClustering(2, n_iter=0)
-        
+        spectral = MultiviewSpectralClustering(2)
+        spectral.fit_predict([view1, view2], n_iter=0)
+
+
         
 # Function Testing
 
@@ -167,33 +170,31 @@ def test_fit_predict_n_views(data):
     for clust in predictions:
         assert(clust >= 0 and clust < n_clusts)
 
-
-def test_fit_predict_n_iter(data):
-
-    
-    v_data = data['fit_data']
-    n_views = data['n_views']
-    n_iter = 5
-    n_clusts = data['n_clusters']
-    spectral = MultiviewSpectralClustering(n_clusts, n_views=n_views, n_iter=n_iter)
-    predictions = spectral.fit_predict(v_data)
-    
-    assert(predictions.shape[0] == data['n_fit'])
-    for clust in predictions:
-        assert(clust >= 0 and clust < n_clusts) 
         
- 
+
 def test_fit_predict_info_view(data):
     
     v_data = data['fit_data']
     n_views = data['n_views']
-    info_view = np.random.randint(n_views)
-    print('n_views is ' + str(n_views))
-    print('info_views is ' + str(info_view))
     n_clusts = data['n_clusters']
+    info_view = np.random.randint(n_views)
     spectral = MultiviewSpectralClustering(n_clusts, n_views=n_views, info_view=info_view)
     predictions = spectral.fit_predict(v_data) 
     
     assert(predictions.shape[0] == data['n_fit'])
     for clust in predictions:
         assert(clust >= 0 and clust < n_clusts)
+
+        
+def test_fit_predict_n_iter(data_random):
+
+    v_data = data['fit_data']
+    spectral = data['spectral']
+    n_iter = 5
+    predictions = spectral.fit_predict(v_data, n_iter=n_iter)
+    n_clusts = data['n_clusters']
+    
+    assert(predictions.shape[0] == data['n_fit'])
+    for clust in predictions:
+        assert(clust >= 0 and clust < n_clusts)
+

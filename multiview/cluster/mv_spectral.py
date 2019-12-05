@@ -48,13 +48,18 @@ class MultiviewSpectralClustering(BaseEstimator):
         designated view alone. Otherwise, the algorithm will concatenate
         across all views and cluster on the result.
 
+
+    n_iter : int, optional (default=10)
+        The maximum number of iterations to run the clustering
+        algorithm.
+
     Attributes
     ----------
 
     _n_clusters : int
         The number of clusters
 
-    _n_views: int
+    _n_views : int
         The number of different views of the data.
 
     _random_state : int
@@ -62,6 +67,9 @@ class MultiviewSpectralClustering(BaseEstimator):
 
     _info_view : int
         The index of the most informative view.
+
+    _n_iter : int
+        The number of iterations to run clustering.
 
     References
     ----------
@@ -71,7 +79,7 @@ class MultiviewSpectralClustering(BaseEstimator):
     '''
 
     def __init__(self, n_clusters, n_views=2, random_state=None,
-                 info_view=None):
+                 info_view=None, n_iter=10):
 
         super().__init__()
 
@@ -94,16 +102,21 @@ class MultiviewSpectralClustering(BaseEstimator):
         self._info_view = None
         if info_view is not None:
             if (isinstance(info_view, int)
-                    and (info_view >= 0 and info_view < n_clusters)):
+                    and (info_view >= 0 and info_view < n_views)):
                 self._info_view = info_view
             else:
                 msg = 'info_view must be an integer between 0 and n_clusters-1'
                 raise ValueError(msg)
 
+        if not (isinstance(n_iter, int) and (n_iter > 0)):
+            msg = 'n_iter must be a positive integer'
+            raise ValueError(msg)
+
         self._n_clusters = n_clusters
         self._n_views = n_views
         self._random_state = random_state
         self._info_view = info_view
+        self._n_iter = n_iter
 
     def _gaussian_sim(self, X):
 
@@ -165,7 +178,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         return la_eigs
 
-    def fit_predict(self, Xs, n_iter=10):
+    def fit_predict(self, Xs):
 
         '''
         Performs clustering on the multiple views of data and returns
@@ -180,10 +193,6 @@ class MultiviewSpectralClustering(BaseEstimator):
             of views of data. Each view can have a different number of
             features, but they must have the same number of samples.
 
-        n_iter: int, optional (default=10)
-            The maximum number of iterations to run the clustering
-            algorithm.
-
         Returns
         -------
         predictions : array_like, shape(n_samples,)
@@ -195,10 +204,6 @@ class MultiviewSpectralClustering(BaseEstimator):
             msg = 'Length of Xs must be the same as n_views'
             raise ValueError(msg)
 
-        if not (isinstance(n_iter, int) and (n_iter > 0)):
-            msg = 'n_iter must be a positive integer'
-            raise ValueError(msg)
-
         # Compute the similarity matrices
         sims = [self._gaussian_sim(X) for X in Xs]
 
@@ -207,7 +212,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Iteratively compute new graph similarities, laplacians,
         # and eigenvectors
-        for iter in range(n_iter):
+        for iter in range(self._n_iter):
 
             # Compute the sums of the products of the spectral embeddings
             # and their transposes
