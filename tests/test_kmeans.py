@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from multiview.cluster.mv_k_means import MultiviewKMeans
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import NotFittedError, ConvergenceWarning
 
 # EXCEPTION TESTING
 
@@ -70,14 +70,74 @@ def test_max_iter_not_positive_int():
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
         kmeans.fit([view1, view2])
+        
+def test_final_centroids_no_consensus():
+    with pytest.raises(ConvergenceWarning):
+        kmeans = MultiviewKMeans()
+        view1 = np.array([[0, 1], [1, 0]])
+        view2 = np.array([[1, 0], [0, 1]])
+        v1_centroids = np.array([[0, 1],[1, 0]])
+        v2_centroids = np.array([[0, 1],[1, 0]])
+        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans._final_centroids([view1, view2])
 
-def test_not_fit():
+def test_final_centroids_less_than_n_clusters():
+    with pytest.raises(ConvergenceWarning):
+        kmeans = MultiviewKMeans(n_clusters=3)
+        view1 = np.random.random((2,5))
+        view2 = np.random.random((2,6))
+        v1_centroids = np.random.random((3, 5))
+        v2_centroids = np.random.random((3, 6))
+        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans._final_centroids([view1, view2])
+
+def test_final_centroids_less_than_n_clusters():
+    with pytest.raises(ConvergenceWarning):
+        kmeans = MultiviewKMeans(n_clusters=3)
+        view1 = np.random.random((2,11))
+        view2 = np.random.random((2,10))
+        kmeans.fit([view1, view2])
+
+
+def test_predict_not_fit():
     with pytest.raises(NotFittedError):
         kmeans = MultiviewKMeans()
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
         kmeans.predict([view1, view2])
+
+def test_predict_no_centroids1():
+    with pytest.raises(AttributeError):
+        kmeans = MultiviewKMeans()
+        kmeans._centroids = [None, None]
+        view1 = np.random.random((10,11))
+        view2 = np.random.random((10,10))
+        kmeans.predict([view1, view2]) 
+
+def test_predict_no_centroids2():
+    kmeans = MultiviewKMeans()
+    
+    with pytest.raises(ConvergenceWarning):
+        view1 = np.array([[0, 1], [1, 0]])
+        view2 = np.array([[1, 0], [0, 1]])
+        v1_centroids = np.array([[0, 1],[1, 0]])
+        v2_centroids = np.array([[0, 1],[1, 0]])
+        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans._final_centroids([view1, view2])
+
+    with pytest.raises(AttributeError):
+        kmeans.predict([view1, view2])
         
+'''
+def test_no_centroids():
+    with pytest.raises(AttributeError):
+        kmeans = MultiviewKMeans()
+        kmeans._centroids = []
+        view1 = np.random.random((10,11))
+        view2 = np.random.random((10,10))
+        kmeans.predict([view1, view2])
+'''
+
 # Function Testing
 
 @pytest.fixture(scope='module')
@@ -163,7 +223,7 @@ def test_predict_random(data_random):
 
 def test_predict_random_small(data_random):
 
-    kmeans = data_random['kmeans']
+    kmeans = MultiviewKMeans()
     input_data = [data_random['fit_data'][0][:2],data_random['fit_data'][1][:2]] 
     kmeans.fit(input_data)
     cluster_pred = kmeans.predict(data_random['test_data'])

@@ -18,7 +18,7 @@
 import numpy as np
 from .base_cluster import BaseCluster
 from ..utils.utils import check_Xs
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import NotFittedError, ConvergenceWarning
 
 
 class MultiviewKMeans(BaseCluster):
@@ -61,11 +61,11 @@ class MultiviewKMeans(BaseCluster):
         corresponds to the centroids of view 1 and _centroids[1] corresponds
         to the centroids of view 2.
 
-    _patience : int 
+    _patience : int
         The number of EM iterations with no decrease in the objective
         function after which the algorithm will terminate.
 
-    _max_iter : int 
+    _max_iter : int
         The maximum number of EM iterations to run before
         termination.
 
@@ -75,7 +75,8 @@ class MultiviewKMeans(BaseCluster):
     4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
-    def __init__(self, n_clusters=2, random_state=None, patience=5, max_iter=None):
+    def __init__(self, n_clusters=2, random_state=None,
+                 patience=5, max_iter=None):
 
         super().__init__()
 
@@ -90,7 +91,7 @@ class MultiviewKMeans(BaseCluster):
             except ValueError:
                 raise ValueError(msg)
             np.random.seed(random_state)
-        
+
         if not (isinstance(patience, int) and (patience > 0)):
             msg = 'patience must be a nonnegative integer'
             raise ValueError(msg)
@@ -139,6 +140,67 @@ class MultiviewKMeans(BaseCluster):
 
         distances = np.vstack(distances)
         return distances
+
+    def _final_centroids(self, Xs):
+
+        '''
+        Compute the final cluster centroids based on consensus samples across
+        both views. Consensus samples are those that are assigned to the same
+        partition in both views.
+
+        Parameters
+        ----------
+        Xs : list of array_likes
+            - Xs shape: (2,)
+            - Xs[0] shape: (n_samples, n_features_i)
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        '''
+
+        # Compute consensus vectors for final clustering
+        v1_consensus = list()
+        v2_consensus = list()
+
+        for clust in range(self._n_clusters):
+            v1_distances = self._compute_distance(Xs[0], self._centroids[0])
+            v1_partitions = np.argmin(v1_distances, axis=0).flatten()
+            v2_distances = self._compute_distance(Xs[1], self._centroids[1])
+            v2_partitions = np.argmin(v2_distances, axis=0).flatten()
+
+            # Find data points in the same partition in both views
+            part_indices = (v1_partitions == clust) * (v2_partitions == clust)
+
+            # Recompute centroids based on these data points
+            if (np.sum(part_indices) != 0):
+                cent1 = np.mean(Xs[0][part_indices], axis=0)
+                v1_consensus.append(cent1)
+
+                cent2 = np.mean(Xs[1][part_indices], axis=0)
+                v2_consensus.append(cent2)
+
+        # Check if there are no consensus vectors
+        if (len(v1_consensus) == 0):
+            self._centroids = [None, None]
+            msg = 'No distinct cluster centroids have been found.'
+            raise ConvergenceWarning(msg)
+        else:
+            self._centroids[0] = np.vstack(v1_consensus)
+            self._centroids[1] = np.vstack(v2_consensus)
+
+            # Check if the number of consensus clusters is less than n_clusters
+            if (self._centroids[0].shape[0] < self._n_clusters):
+                msg = ('Number of distinct cluster centroids ('
+                       + str(self._centroids[0].shape[0])
+                       + ') found is smaller than n_clusters ('
+                       + str(self._n_clusters)
+                       + ').')
+                raise ConvergenceWarning(msg)
+
+            # Updates k if number of consensus clusters less than original
+            # n_clusters value
+            self._n_clusters = self._centroids[0].shape[0]
 
     def fit(self, Xs):
 
@@ -212,30 +274,8 @@ class MultiviewKMeans(BaseCluster):
             else:
                 iter_stall += 1
 
-        # Compute consensus vectors for final clustering
-        v1_consensus = list()
-        v2_consensus = list()
-        for clust in range(self._n_clusters):
-            v1_distances = self._compute_distance(Xs[0], self._centroids[0])
-            v1_partitions = np.argmin(v1_distances, axis=0).flatten()
-            v2_distances = self._compute_distance(Xs[1], self._centroids[1])
-            v2_partitions = np.argmin(v2_distances, axis=0).flatten()
-
-            # Find data points in the same partition in both views
-            part_indices = (v1_partitions == clust) * (v2_partitions == clust)
-
-            # Recompute centroids based on these data points
-            if (np.sum(part_indices) != 0):
-                cent1 = np.mean(Xs[0][part_indices], axis=0)
-                v1_consensus.append(cent1)
-
-                cent2 = np.mean(Xs[1][part_indices], axis=0)
-                v2_consensus.append(cent2)
-
-        self._centroids[0] = np.vstack(v1_consensus)
-        self._centroids[1] = np.vstack(v2_consensus)
-        # Updates k if number of consensus clusters less than original k value
-        self._n_clusters = self._centroids[0].shape[0]
+        # Compute final cluster centroids
+        self._final_centroids(Xs)
 
         return self
 
@@ -265,6 +305,10 @@ class MultiviewKMeans(BaseCluster):
         if self._centroids is None:
             msg = 'This MultiviewKMeans instance is not fitted yet.'
             raise NotFittedError(msg)
+
+        if self._centroids[0] is None:
+            msg = 'This MultiviewKMeans instance has no cluster centroids.'
+            raise AttributeError(msg)
 
         dist1 = self._compute_distance(Xs[0], self._centroids[0])
         dist2 = self._compute_distance(Xs[1], self._centroids[1])
