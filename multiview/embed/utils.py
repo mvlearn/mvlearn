@@ -161,8 +161,6 @@ def select_dimension(
     likelihoods = []
     for _ in range(n_elbows):
         arr = D[idx:]
-        if arr.size <= 1:  # Cant compute likelihoods with 1 numbers
-            break
         lq = _compute_likelihood(arr)
         idx += np.argmax(lq) + 1
         elbows.append(idx)
