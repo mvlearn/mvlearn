@@ -36,40 +36,21 @@ class MultiviewSpectralClustering(BaseEstimator):
     n_clusters : int
         The number of clusters
 
-    n_views : int (default=2)
+    n_views : int, optional (default=2)
         The number of different views of data.
 
-    random_state : int (default=None)
+    random_state : int, optional (default=None)
         Determines random number generation for kmeans.
 
-    info_view : int (default=None)
+    info_view : int, optional (default=None)
         The most informative view. Must be between 0 and n_views-1
         If given, then the final clustering will be performed on the
         designated view alone. Otherwise, the algorithm will concatenate
         across all views and cluster on the result.
 
-
-    n_iter : int, optional (default=10)
+    max_iter : int, optional (default=10)
         The maximum number of iterations to run the clustering
         algorithm.
-
-    Attributes
-    ----------
-
-    _n_clusters : int
-        The number of clusters
-
-    _n_views : int
-        The number of different views of the data.
-
-    _random_state : int
-        The seed for the random number generator used during kmeans.
-
-    _info_view : int
-        The index of the most informative view.
-
-    _n_iter : int
-        The number of iterations to run clustering.
 
     References
     ----------
@@ -99,24 +80,24 @@ class MultiviewSpectralClustering(BaseEstimator):
                 raise ValueError(msg)
             np.random.seed(random_state)
 
-        self._info_view = None
+        self.info_view = None
         if info_view is not None:
             if (isinstance(info_view, int)
                     and (info_view >= 0 and info_view < n_views)):
-                self._info_view = info_view
+                self.info_view = info_view
             else:
                 msg = 'info_view must be an integer between 0 and n_clusters-1'
                 raise ValueError(msg)
 
         if not (isinstance(n_iter, int) and (n_iter > 0)):
-            msg = 'n_iter must be a positive integer'
+            msg = 'max_iter must be a positive integer'
             raise ValueError(msg)
 
-        self._n_clusters = n_clusters
-        self._n_views = n_views
-        self._random_state = random_state
-        self._info_view = info_view
-        self._n_iter = n_iter
+        self.n_clusters = n_clusters
+        self.n_views = n_views
+        self.random_state = random_state
+        self.info_view = info_view
+        self.max_iter = n_iter
 
     def _gaussian_sim(self, X):
 
@@ -173,7 +154,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Obtain the top n_cluster eigenvectors of the laplacian
         e_vals, e_vecs = np.linalg.eig(laplacian)
-        indices = np.argsort(np.real(e_vals))[-self._n_clusters:]
+        indices = np.argsort(np.real(e_vals))[-self.n_clusters:]
         la_eigs = np.real(e_vecs[:, indices])
 
         return la_eigs
@@ -200,7 +181,7 @@ class MultiviewSpectralClustering(BaseEstimator):
         '''
 
         Xs = check_Xs(Xs)
-        if len(Xs) != self._n_views:
+        if len(Xs) != self.n_views:
             msg = 'Length of Xs must be the same as n_views'
             raise ValueError(msg)
 
@@ -212,7 +193,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Iteratively compute new graph similarities, laplacians,
         # and eigenvectors
-        for iter in range(self._n_iter):
+        for iter in range(self.max_iter):
 
             # Compute the sums of the products of the spectral embeddings
             # and their transposes
@@ -220,7 +201,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_sum = np.sum(np.array(eig_sums), axis=0)
             new_sims = list()
 
-            for view in range(self._n_views):
+            for view in range(self.n_views):
                 # Compute new graph similarity representation
                 mat1 = sims[view] @ (U_sum - eig_sums[view])
                 mat1 = (mat1 + np.transpose(mat1)) / 2.0
@@ -230,18 +211,18 @@ class MultiviewSpectralClustering(BaseEstimator):
                           for sim in new_sims]
 
         # Row normalize
-        for view in range(self._n_views):
+        for view in range(self.n_views):
             U_norm = np.linalg.norm(U_mats[view], axis=1).reshape((-1, 1))
             U_norm[U_norm == 0] = 1
             U_mats[view] /= U_norm
 
         # Performing kmeans clustering
-        kmeans = KMeans(n_clusters=self._n_clusters,
-                        random_state=self._random_state)
+        kmeans = KMeans(n_clusters=self.n_clusters,
+                        random_state=self.random_state)
         predictions = None
-        if self._info_view is not None:
+        if self.info_view is not None:
             # Use a single view if one was previously designated
-            predictions = kmeans.fit_predict(U_mats[self._info_view])
+            predictions = kmeans.fit_predict(U_mats[self.info_view])
         else:
             # Otherwise, perform columwise concatenation across views
             # and use result for clustering
