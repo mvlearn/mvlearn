@@ -20,7 +20,7 @@ class Omnibus(BaseEmbed):
                  algorithm="randomized",
                  n_iter=5):
         """
-        Omnibus computes the normalized, pairwise distances for each view. Each
+        Omnibus computes the pairwise distances for each view. Each
         of these matrices is a n x n dissimilarity matrix where n is the number
         of rows in each view. Omnibus embedding
         (https://graspy.neurodata.io/reference/embed.html#multiple-graph-embedding)
@@ -37,9 +37,9 @@ class Omnibus(BaseEmbed):
             Distance metric used to compute pairwise distances.
 
         normalize : string or None (default = 'l1')
-            Normalize function to use on pairwise distance matrices. Must be
-            'l2', 'l1', 'max' or None. If None, the
-            distance matrices will not be normalized.
+            Normalize function to use on views before computing
+            pairwise distances. Must be 'l2', 'l1', 'max'
+            or None. If None, the distance matrices will not be normalized.
 
         algorithm : string (default = 'randomized')
             SVD solver to use. Must be 'full', 'randomized', or 'truncated'.
@@ -119,9 +119,10 @@ class Omnibus(BaseEmbed):
         Xs = check_Xs(Xs)
         dissimilarities = []
         for X in Xs:
-            dissimilarity = pairwise_distances(X, metric=self.distance_metric)
             if self.normalize is not None:
-                dissimilarity = normalize(dissimilarity, norm=self.normalize)
+                X = normalize(X, norm=self.normalize)
+            dissimilarity = pairwise_distances(X, metric=self.distance_metric)
+
             dissimilarities.append(dissimilarity)
 
         embedder = OmnibusEmbed(n_components=self.n_components,
