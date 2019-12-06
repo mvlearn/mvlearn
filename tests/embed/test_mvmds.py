@@ -12,7 +12,6 @@ from numpy.testing import assert_almost_equal, assert_equal
 
 from multiview.embed.mvmds import MVMDS
 
-
 def test_output():
     def _get_Xs(n_views=2):
         np.random.seed(0)
@@ -33,7 +32,7 @@ def test_output():
         n = 2
         Xs = _get_Xs(n)
 
-        projs = MVMDS().fit_transform(Xs)
+        projs = MVMDS().fit_transform(Xs, n_components=2)
         dists = _compute_dissimilarity(projs)
 
         # Checks up to 7 decimal points
