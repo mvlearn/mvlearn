@@ -78,7 +78,7 @@ def test_final_centroids_no_consensus():
         view2 = np.array([[1, 0], [0, 1]])
         v1_centroids = np.array([[0, 1],[1, 0]])
         v2_centroids = np.array([[0, 1],[1, 0]])
-        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans.centroids_ = [v1_centroids, v2_centroids]
         kmeans._final_centroids([view1, view2])
 
 def test_final_centroids_less_than_n_clusters():
@@ -88,7 +88,7 @@ def test_final_centroids_less_than_n_clusters():
         view2 = np.random.random((2,6))
         v1_centroids = np.random.random((3, 5))
         v2_centroids = np.random.random((3, 6))
-        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans.centroids_ = [v1_centroids, v2_centroids]
         kmeans._final_centroids([view1, view2])
 
 def test_final_centroids_less_than_n_clusters():
@@ -109,7 +109,7 @@ def test_predict_not_fit():
 def test_predict_no_centroids1():
     with pytest.raises(AttributeError):
         kmeans = MultiviewKMeans()
-        kmeans._centroids = [None, None]
+        kmeans.centroids_ = [None, None]
         view1 = np.random.random((10,11))
         view2 = np.random.random((10,10))
         kmeans.predict([view1, view2]) 
@@ -122,22 +122,12 @@ def test_predict_no_centroids2():
         view2 = np.array([[1, 0], [0, 1]])
         v1_centroids = np.array([[0, 1],[1, 0]])
         v2_centroids = np.array([[0, 1],[1, 0]])
-        kmeans._centroids = [v1_centroids, v2_centroids]
+        kmeans.centroids_ = [v1_centroids, v2_centroids]
         kmeans._final_centroids([view1, view2])
 
     with pytest.raises(AttributeError):
         kmeans.predict([view1, view2])
-        
-'''
-def test_no_centroids():
-    with pytest.raises(AttributeError):
-        kmeans = MultiviewKMeans()
-        kmeans._centroids = []
-        view1 = np.random.random((10,11))
-        view2 = np.random.random((10,10))
-        kmeans.predict([view1, view2])
-'''
-
+  
 # Function Testing
 
 @pytest.fixture(scope='module')
@@ -199,13 +189,13 @@ def test_fit_centroids(data_random):
     kmeans = data_random['kmeans']
     kmeans.fit(data_random['fit_data'])
 
-    assert(len(kmeans._centroids) == 2)
-    assert(kmeans._centroids[0].shape[0] == data_random['n_clusters'])
-    assert(kmeans._centroids[1].shape[0] == data_random['n_clusters'])
+    assert(len(kmeans.centroids_) == 2)
+    assert(kmeans.centroids_[0].shape[0] == data_random['n_clusters'])
+    assert(kmeans.centroids_[1].shape[0] == data_random['n_clusters'])
     
-    for cent in kmeans._centroids[0]:
+    for cent in kmeans.centroids_[0]:
         assert(cent.shape[0] == data_random['n_feats1'])
-    for cent in kmeans._centroids[1]:
+    for cent in kmeans.centroids_[1]:
         assert(cent.shape[0] == data_random['n_feats2'])
 
         
@@ -243,7 +233,7 @@ def test_predict_deterministic():
     v2_data = np.array([[0, 0],[0.2, 0.4],[0.5, 0.5],[0.4, 0.7],[1, 1]])
     data = [v1_data, v2_data]
     kmeans = MultiviewKMeans(n_clusters=n_clusters)
-    kmeans._centroids = centroids
+    kmeans.centroids_ = centroids
     cluster_pred = kmeans.predict(data)
     true_clusters = [0, 0, 0, 1, 1]
 
