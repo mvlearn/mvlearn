@@ -16,7 +16,7 @@ from sklearn.preprocessing import normalize
 class Omnibus(BaseEmbed):
 
     def __init__(self, n_components=2, distance_metric="euclidean",
-                 normalize="l1", 
+                 normalize="l1",
                  algorithm="randomized",
                  n_iter=5):
         """
@@ -24,8 +24,8 @@ class Omnibus(BaseEmbed):
         of these matrices is a n x n dissimilarity matrix where n is the number
         of rows in each view. Omnibus embedding
         (https://graspy.neurodata.io/reference/embed.html#multiple-graph-embedding)
-        is then performed over the dissimilarity matrices and the computed embeddings
-        are returned. 
+        is then performed over the dissimilarity matrices and the
+        computed embeddings are returned.
 
         Parameters
         ----------
@@ -34,16 +34,16 @@ class Omnibus(BaseEmbed):
             additional details.
 
         distance_metric : string (default = 'euclidean')
-            Distance metric used to compute pairwise distances. 
+            Distance metric used to compute pairwise distances.
 
         normalize : string or None (default = 'l1')
             Normalize function to use on pairwise distance matrices. Must be
-            'l2', 'l1', 'max' or None. If None, the distance matrices will not be
-            normalized.
+            'l2', 'l1', 'max' or None. If None, the
+            distance matrices will not be normalized.
 
         algorithm : string (default = 'randomized')
-            SVD solver to use. Must be 'full', 'randomized', or 'truncated'. See
-            graspy docs for details.
+            SVD solver to use. Must be 'full', 'randomized', or 'truncated'.
+            See graspy docs for details.
 
         n_iter : positive int (default = 5)
             Number of iterations for randomized SVD solver. See graspy docs for
@@ -57,7 +57,6 @@ class Omnibus(BaseEmbed):
         self.n_iter = n_iter
         self.check_params()
 
-
     def check_params(self):
         """
         Checks that Omnibus arguments are valid. A ValueError
@@ -68,26 +67,29 @@ class Omnibus(BaseEmbed):
             - n_components is positive int
             - n_iter is positive int
         """
-    
-        valid_metrics = ['braycurtis', 'canberra', 
-                         'chebyshev', 'cityblock', 'correlation', 
-                         'cosine', 'dice', 'euclidean', 'hamming', 
-                         'jaccard', 'jensenshannon', 'kulsinski', 'mahalanobis', 
-                         'matching', 'minkowski', 'rogerstanimoto', 
-                         'russellrao', 'seuclidean', 'sokalmichener', 
-                         'sokalsneath', 'sqeuclidean', 'yule']
+
+        valid_metrics = ['braycurtis', 'canberra',
+                         'chebyshev', 'cityblock', 'correlation',
+                         'cosine', 'dice', 'euclidean', 'hamming',
+                         'jaccard', 'jensenshannon', 'kulsinski',
+                         'mahalanobis', 'matching', 'minkowski',
+                         'rogerstanimoto', 'russellrao', 'seuclidean',
+                         'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']
 
         valid_algorithms = ["randomized", "full", "truncated"]
 
         valid_normalize = ["l1", "l2", "max"]
 
         if self.distance_metric not in valid_metrics:
-            raise ValueError("distance_metric must be in scipy.spatial.distances.pdist.")
+            raise ValueError("distance_metric must be in \
+                             scipy.spatial.distances.pdist.")
 
         if self.algorithm not in valid_algorithms:
-            raise ValueError("algorithm must be 'randomized', 'full', or 'truncated'.")
+            raise ValueError("algorithm must be 'randomized', \
+                            'full', or 'truncated'.")
 
-        if self.normalize is not None and self.normalize not in valid_normalize:
+        if self.normalize is not None and \
+           self.normalize not in valid_normalize:
             raise ValueError("normalize must be 'l2', 'l1', or 'max'.")
 
         if not isinstance(self.n_components, int) or self.n_components <= 0:
@@ -95,7 +97,6 @@ class Omnibus(BaseEmbed):
 
         if not isinstance(self.n_iter, int) or self.n_iter <= 0:
             raise ValueError("n_iter must be positive int.")
-
 
     def fit_transform(self, Xs):
         """
@@ -114,7 +115,7 @@ class Omnibus(BaseEmbed):
         embeddings : list
             list of (n_samples, n_components) matrices for each X in Xs.
         """
-        
+
         Xs = check_Xs(Xs)
         dissimilarities = []
         for X in Xs:
@@ -126,10 +127,6 @@ class Omnibus(BaseEmbed):
         embedder = OmnibusEmbed(n_components=self.n_components,
                                 algorithm=self.algorithm,
                                 n_iter=self.n_iter)
-    
+
         embeddings = embedder.fit_transform(dissimilarities)
         return embeddings
-
-
-    
-
