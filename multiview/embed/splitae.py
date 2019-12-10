@@ -75,8 +75,8 @@ class SplitAE(BaseEmbed):
         """
 
         assert len(Xs) == 2, "this SplitAE implementation deals with two views"
-        assert Xs[0].shape[0] == Xs[1].shape[0], """must have each view for each
-            sample"""
+        assert Xs[0].shape[0] == Xs[1].shape[0], """must have each view for
+            each sample"""
         assert Xs[0].shape[0] >= self.batchSize, """batch size must be <= to
             number of samples"""
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
