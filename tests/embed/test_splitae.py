@@ -9,7 +9,8 @@ def test_splitae_overfit():
     view2 = view1[:, :5] + view1[:, -5:]
     # make huge network so we should overfit
     splitae = SplitAE(hiddenSize=64, numHiddenLayers=1, embedSize=10, trainingEpochs=200, batchSize=10, learningRate=0.01)
-    splitae.fit([view1, view2], printInfo=False)
+    # irrelevant validationXs to make sure testing error code runs
+    splitae.fit([view1, view2], validationXs=[view1, view2], printInfo=False)
     embedding, reconstructedView1, predictedView2 = splitae.transform([view1])
     # std reaches 0.0035 max in 100 runs.
     assert np.std(reconstructedView1 - view1) < 1e-2
