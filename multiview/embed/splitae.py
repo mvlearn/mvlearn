@@ -59,7 +59,7 @@ class SplitAE(BaseEmbed):
         self.batchSize = batchSize
         self.learningRate = learningRate
 
-    def fit(self, Xs, validationXs=None): #Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
+    def fit(self, Xs, validationXs=None, printInfo=True): #Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
         """
         Given two views, create and train the autoencoder.
         Parameters
@@ -84,7 +84,7 @@ class SplitAE(BaseEmbed):
 
         print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
             "\nview2Decoder: {:,}".format(self.view1Encoder.paramCount(),
-             self.view1Decoder.paramCount(), self.view2Decoder.paramCount()))
+             self.view1Decoder.paramCount(), self.view2Decoder.paramCount())) if printInfo else None
 
         parameters = [self.view1Encoder.parameters(), self.view1Decoder.parameters(), self.view2Decoder.parameters()]
         optim = torch.optim.Adam(itertools.chain(*parameters), lr=self.learningRate)
@@ -92,7 +92,7 @@ class SplitAE(BaseEmbed):
         epochTrainErrors = []
         epochTestErrors = []
 
-        for epoch in tqdm.tqdm(range(self.trainingEpochs)):
+        for epoch in tqdm.tqdm(range(self.trainingEpochs), disable=(not printInfo)):
             batchErrors = []
             for batchNum in range(nSamples // self.batchSize):
                 optim.zero_grad()
@@ -107,21 +107,22 @@ class SplitAE(BaseEmbed):
                 totalError.backward()
                 optim.step()
                 batchErrors.append(totalError.item())
-            print("Average train error during epoch {} was {}".format(epoch, np.mean(batchErrors)))
+            print("Average train error during epoch {} was {}".format(epoch, np.mean(batchErrors))) if printInfo else None
             epochTrainErrors.append(np.mean(batchErrors))
             if not validationXs == None:
                 testError = self._testError(validationXs)
-                print("Average test  error during epoch {} was {}\n".format(epoch, testError))
+                print("Average test  error during epoch {} was {}\n".format(epoch, testError)) if printInfo else None
                 epochTestErrors.append(testError)
 
-        plt.plot(epochTrainErrors, label="train error")
-        if not validationXs == None:
-            plt.plot(epochTestErrors, label="test error")
-        plt.title("Errors during training")
-        plt.xlabel("Epoch")
-        plt.ylabel("Error")
-        plt.legend()
-        plt.show()
+        if printInfo:
+            plt.plot(epochTrainErrors, label="train error")
+            if not validationXs == None:
+                plt.plot(epochTestErrors, label="test error")
+            plt.title("Errors during training")
+            plt.xlabel("Epoch")
+            plt.ylabel("Error")
+            plt.legend()
+            plt.show()
 
     def _testError(self, Xs):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
