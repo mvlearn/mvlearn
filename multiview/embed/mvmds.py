@@ -32,11 +32,11 @@ class MVMDS(BaseEmbed):
 
     """
 
-    def _init_(self, n_components):
+    def _init_(self, n_components=None):
 
         super()._init_()
         self.components = None
-        self.number = n_components
+        self.n_components = n_components
 
     def _cpc(self, x):
 
@@ -65,7 +65,7 @@ class MVMDS(BaseEmbed):
 
         n_num = np.array([n] * views)/np.sum(np.array([n] * views))
 
-        Components = np.zeros((p, self.number))
+        Components = np.zeros((p, self.n_components))
 
         pi = np.eye(p)
 
@@ -80,7 +80,7 @@ class MVMDS(BaseEmbed):
 
         q0 = e2[:, ::-1]
 
-        for i in np.arange(self.number):
+        for i in np.arange(self.n_components):
 
             q = q0[:, i]
             q = np.array(q).reshape(len(q), 1)
@@ -136,14 +136,14 @@ class MVMDS(BaseEmbed):
 
         """
 
-        if (self.number) > len(Xs[0]):
-            self.number = len(Xs[0])
+        if (self.n_components) > len(Xs[0]):
+            self.n_components = len(Xs[0])
             warnings.warn('The number of components you have requested is '
                           + 'greater than the number of features in the '
-                          + 'dataset. ' + str(self.number)
+                          + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
-        if (self.number) <= 0:
+        if (self.n_components) <= 0:
             raise ValueError('The number of components must be greater than 0 '
                              + 'and less than the number of features')
 
@@ -209,4 +209,4 @@ class MVMDS(BaseEmbed):
         Components: Components of the dimensionally reduced Xs
 
         """
-        return self.fit(Xs, self.number)
+        return self.fit(Xs, self.n_components)
