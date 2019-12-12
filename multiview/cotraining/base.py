@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This is a base class for implementing multi-view estimators with
+# This is a base class for implementing multi-view estimators using
 # co-training.
 
 from abc import abstractmethod
@@ -24,6 +24,7 @@ class BaseCoTrainEstimator(BaseEstimator):
     """
     A base class for multiview co-training. Extends from sklearn's
     BaseEstimator.
+
     Parameters
     ----------
     estimator1 : estimator object, default (None)
@@ -33,6 +34,10 @@ class BaseCoTrainEstimator(BaseEstimator):
         The estimator object which will be trained on view 2 of the data.
         Does not need to be of the same type as estimator1.
 
+    random_state : int
+        The starting random seed for fit() and class operations, passed to
+        numpy.random.seed().
+
     Attributes
     ----------
     estimator1 : estimator object
@@ -41,10 +46,9 @@ class BaseCoTrainEstimator(BaseEstimator):
     estimator2 : estimator object
         The estimator used on view 2.
 
-    random_state : real number
-        The starting random seed for fit() and class operations.
-    See Also
-    --------
+    random_state : int
+        The starting random seed for fit() and class operations, passed to
+        numpy.random.seed().
     """
 
     def __init__(self,
@@ -60,15 +64,17 @@ class BaseCoTrainEstimator(BaseEstimator):
     def fit(self, Xs, y):
         """
         A method to co-trained estimators to multiview data.
+
         Parameters
         ----------
-        Xs: list of array-likes
+        Xs: numpy.ndarray, list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,)
+
         Returns
         -------
-        y_pred : array-like (n_samples,)
+        self : object
         """
 
         return self
@@ -77,11 +83,13 @@ class BaseCoTrainEstimator(BaseEstimator):
     def predict(self, Xs):
         """
         A method to predict the class of multiview data.
+
         Parameters
         ----------
-        Xs: list of array-likes
+        Xs: numpy.ndarray, list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
+
         Returns
         -------
         y : array-like (n_samples, n_classes)
