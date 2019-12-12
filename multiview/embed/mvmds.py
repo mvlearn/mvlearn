@@ -32,12 +32,13 @@ class MVMDS(BaseEmbed):
 
     """
 
-    def _init_(self):
+    def _init_(self, n_components):
 
         super()._init_()
         self.components = None
+        self.number = n_components
 
-    def _cpc(self, n_components, x):
+    def _cpc(self, x):
 
         """
         Finds Stepwise Estimation of Common Principal Components as described
@@ -47,9 +48,7 @@ class MVMDS(BaseEmbed):
 
         Parameters
         ----------
-
-        n_components: Number of dimensions to return
-
+        
         x: List of matrices, each with number of rows, n
 
         it: Number of common principal component stepwise iterations
@@ -66,7 +65,7 @@ class MVMDS(BaseEmbed):
 
         n_num = np.array([n] * views)/np.sum(np.array([n] * views))
 
-        Components = np.zeros((p, n_components))
+        Components = np.zeros((p, self.number))
 
         pi = np.eye(p)
 
@@ -81,7 +80,7 @@ class MVMDS(BaseEmbed):
 
         q0 = e2[:, ::-1]
 
-        for i in np.arange(n_components):
+        for i in np.arange(self.number):
 
             q = q0[:, i]
             q = np.array(q).reshape(len(q), 1)
@@ -113,7 +112,7 @@ class MVMDS(BaseEmbed):
 
         return(Components)
 
-    def fit(self, Xs, n_components):
+    def fit(self, Xs):
 
         """
         Calculates a dimensional reduction based on minimizing Euclidean
@@ -137,14 +136,14 @@ class MVMDS(BaseEmbed):
 
         """
 
-        if (n_components) > len(Xs[0]):
-            n_components = len(Xs[0])
+        if (self.number) > len(Xs[0]):
+            self.number = len(Xs[0])
             warnings.warn('The number of components you have requested is '
                           + 'greater than the number of features in the '
-                          + 'dataset. ' + str(n_components)
+                          + 'dataset. ' + str(self.number)
                           + ' components were computed instead.')
 
-        if (n_components) <= 0:
+        if (self.number) <= 0:
             raise ValueError('The number of components must be greater than 0 '
                              + 'and less than the number of features')
 
@@ -170,7 +169,7 @@ class MVMDS(BaseEmbed):
 
         return self.components
 
-    def transform(self, Xs, n_components):
+    def transform(self, Xs):
 
         """"
         Embeds data matrix(s) using fitted projection matrices
@@ -191,7 +190,7 @@ class MVMDS(BaseEmbed):
 
         return Xs
 
-    def fit_transform(self, Xs, n_components):
+    def fit_transform(self, Xs):
 
         """"
         Embeds data matrix(s) using fitted projection matrices
@@ -210,4 +209,4 @@ class MVMDS(BaseEmbed):
         Components: Components of the dimensionally reduced Xs
 
         """
-        return self.fit(Xs, n_components)
+        return self.fit(Xs, self.number)
