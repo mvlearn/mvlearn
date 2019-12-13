@@ -121,8 +121,8 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
+        Xs: list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
         """
@@ -238,8 +238,8 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
+        Xs: list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of data matrices from each view to transform based on the
             prior fit function. If view_idx defined, then Xs is a 2D data
@@ -273,8 +273,8 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
+        Xs: list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own
             transformation matrix and projection.
