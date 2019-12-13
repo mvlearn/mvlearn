@@ -158,9 +158,9 @@ class CTClassifier(BaseCoTrainEstimator):
         self.unlabeled_pool_size_ = unlabeled_pool_size
         self.num_iter_ = num_iter
 
-        self.check_params()
+        self._check_params()
 
-    def check_params(self):
+    def _check_params(self):
         """
         Checks that cotraining parameters are valid. Throws AttributeError
         if estimators are invalid. Throws ValueError if any other parameters
