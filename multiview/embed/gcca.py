@@ -111,7 +111,7 @@ class GCCA(BaseEmbed):
     def fit(self, Xs):
         """
         Calculates a projection from each view to a latentent space such that
-        the sum of pariwise latent space correlations is maximized. Each view
+        the sum of pairwise latent space correlations is maximized. Each view
         'X' is normalized and the left singular vectors of 'X^T X' are
         calculated using SVD. The number of singular vectors kept is determined
         by either the percent variance explained, a given rank threshold, or a
