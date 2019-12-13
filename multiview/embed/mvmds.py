@@ -34,7 +34,7 @@ class MVMDS(BaseEmbed):
 
     def _init_(self,n_components=None):
         
-        super()._init_()
+        #super()._init_()
         self.components = None
         self.n_components = n_components
 
