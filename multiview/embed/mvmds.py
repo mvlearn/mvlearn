@@ -32,7 +32,7 @@ class MVMDS(BaseEmbed):
 
     """
 
-    def __init__(self,n_components=None):
+    def _init_(self,n_components=None):
         
         super()._init_()
         self.components = None
