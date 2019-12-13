@@ -270,23 +270,3 @@ class GCCA(BaseEmbed):
                     for x, proj in zip(Xs, self.projection_mats_)
                 ]
             )
-
-    def fit_transform(self, Xs):
-        """
-        Fits transformer to Xs and returns a transformed version of the Xs.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each sample will receive its own
-            transformation matrix and projection.
-
-        Returns
-        -------
-        Xs_transformed : array-like 2D if view_idx not None, otherwise
-            (n_views, n_samples, self.n_components)
-        """
-
-        return self.fit(Xs).transform(Xs)
