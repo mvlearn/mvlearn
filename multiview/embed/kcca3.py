@@ -8,7 +8,6 @@ Code adopted from UC Berkeley, Gallant lab
 
 import numpy as np
 from scipy.linalg import eigh
-from scipy import stats
 
 
 class KCCA(object):
@@ -19,79 +18,95 @@ class KCCA(object):
     ----------
     reg
         Regularization parameter. Default is 0.1. (Float)
-    n_components
+    numCC
         Number of canonical dimensions to keep. Default is 10. (Integer)
+    kernelcca
+        Kernel or non-kernel CCA. Default is True. (Boolean)
     ktype
-        Type of kernel if kernel is True. (String)
+        Type of kernel if kernelcca is True. (String)
         Value can be 'linear' (default), 'gaussian' or 'polynomial'.
     verbose
-        Provides detailed explanation of results. Default is False. (Boolean)
+        Provides detailed explanation of results. Default is True. (Boolean)
     cutoff
         Optional regularization parameter to perform spectral
         cutoff when computing the canonical weight pseudoinverse
         during held-out data prediction
         Default is 1x10^-15 (Float)
-    sigma
+    gausigma
         Parameter if the kernel is a Gaussian kernel. (Float)
     degree
         Parameter if the kernel is a Polynomial kernel. (Integer)
 
+    Returns
+    -------
+    ws_
+        Canonical weights (List)
+    comps_
+        Canonical components (List)
+    cancorrs_
+        Correlations of the canonical components on the training dataset (List)
+    corrs_
+        Correlations on the validation dataset (List)
+    preds_
+        Predictions on the validation dataset (List)
+    ev_
+        Explained variance for each canonical dimension (List)
     """
 
     def __init__(
         self,
         reg=None,
-        n_components=None,
+        numCC=None,
+        kernelcca=True,
         ktype=None,
         verbose=False,
         cutoff=1e-15,
-        sigma=1.0,
+        gausigma=1.0,
         degree=2,
     ):
         self.reg = reg
-        self.n_components = n_components
+        self.numCC = numCC
+        self.kernelcca = kernelcca
         self.ktype = ktype
         self.cutoff = cutoff
-        self.sigma = sigma
+        self.gausigma = gausigma
         self.degree = degree
-        if self.ktype is None:
+        if self.kernelcca and self.ktype is None:
             self.ktype = "linear"
         self.verbose = verbose
-    
-    def center(self, X):
-        """
-        Subtracts the row means and divides by the row standard deviations.
-        Then subtracts column means.
-        Parameters
-        ----------
-        X : array-like, shape (n_observations, n_features)
-            The data to preprocess
-        Returns
-        -------
-        centered_X : preprocessed data matrix
-        """
 
-        # Mean along rows using sample mean and sample std
-        centered_X = stats.zscore(X, axis=1, ddof=1)
-        # Mean along columns
-        mu = np.mean(centered_X, axis=0)
-        centered_X -= mu
-        return centered_X
-
-    def fit(self, Xs):
+    def fit(self, data):
         """
-        Trains KCCA with given parameters. (Insert more thorough description of what kcca does here)
+        Trains CCA with given parameters
 
         Parameters
         ----------
-        Xs
-            Data that KCCA is performed on (List of arrays)
+        reg
+            Regularization parameter. Default is 0.1. (Float)
+        numCC
+            Number of canonical dimensions to keep. Default is 10. (Integer)
+        kernelcca
+            Kernel or non-kernel CCA. Default is True. (Boolean)
+        ktype
+            Type of kernel if kernelcca is True. (String)
+            Value can be 'linear' (default), 'gaussian' or 'polynomial'.
+        verbose
+            Provides detailed explanation of results.
+            Default is True. (Boolean)
+        cutoff
+            Optional regularization parameter to perform spectral cutoff when
+            computing the canonical weight pseudoinverse during held-out
+            data prediction. Default is 1x10^-15 (Float)
+        gausigma
+            Parameter if the kernel is a Gaussian kernel. (Float)
+        degree
+            Parameter if the kernel is a Polynomial kernel. (Integer)
 
         Returns
         -------
-        weights_
+        ws_
             Canonical weights (List)
-        components_
+        comps_
             Canonical components (List)
         cancorrs_
             Correlations of the canonical components on
@@ -99,25 +114,25 @@ class KCCA(object):
         """
         if self.verbose:
             print(
-                "Training KCCA, regularization = %0.4f, "
-                "%d components" % (self.ktype, self.reg, self.n_components)
+                "Training CCA, kernel = %s, regularization = %0.4f, "
+                "%d components" % (self.ktype, self.reg, self.numCC)
             )
-        
-        #data = [self.center(x) for x in data]
 
-        components_ = kcca(
-            Xs,
+        comps_ = kcca(
+            data,
             self.reg,
-            self.n_components,
+            self.numCC,
+            kernelcca=self.kernelcca,
             ktype=self.ktype,
-            sigma=self.sigma,
+            gausigma=self.gausigma,
             degree=self.degree,
         )
-        self.cancorrs_, self.weights_, self.components_ = recon(
-            Xs, components_
+        self.cancorrs_, self.ws_, self.comps_ = recon(
+            data, comps_, kernelcca=self.kernelcca
         )
 
-        if len(Xs) == 2:
+        # self.ev_ = compute_ev(data)
+        if len(data) == 2:
             self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
         return self
 
@@ -140,9 +155,9 @@ class KCCA(object):
             Correlations on the validation dataset (List)
         """
         vdata = [np.nan_to_num(_zscore(d)) for d in vdata]
-        if not hasattr(self, "weights_"):
+        if not hasattr(self, "ws_"):
             raise NameError("Algorithm has not been trained.")
-        self.preds_, self.corrs_ = predict(vdata, self.weights_, self.cutoff)
+        self.preds_, self.corrs_ = predict(vdata, self.ws_, self.cutoff)
         return self.preds_, self.corrs_
 
     def compute_ev(self, vdata):
@@ -160,7 +175,7 @@ class KCCA(object):
             Explained variance for each canonical dimension (List)
         """
         nD = len(vdata)
-        nC = self.weights_[0].shape[1]
+        nC = self.ws_[0].shape[1]
         nF = [d.shape[1] for d in vdata]
         self.ev_ = [np.zeros((nC, f)) for f in nF]
         for cc in range(nC):
@@ -168,7 +183,7 @@ class KCCA(object):
             if self.verbose:
                 print("Computing explained variance for component #%d" % ccs)
             preds_, corrs_ = predict(
-                vdata, [w[:, ccs - 1: ccs] for w in self.weights_], self.cutoff
+                vdata, [w[:, ccs - 1: ccs] for w in self.ws_], self.cutoff
             )
             resids = [abs(d[0] - d[1]) for d in zip(vdata, preds_)]
             for s in range(nD):
@@ -178,7 +193,7 @@ class KCCA(object):
         return self.ev_
 
 
-def predict(vdata, weights_, cutoff=1e-15):
+def predict(vdata, ws_, cutoff=1e-15):
     """
     Get predictions and correlations for testing dataset based on
     the training datasets canonical weights.
@@ -187,7 +202,7 @@ def predict(vdata, weights_, cutoff=1e-15):
     ----------
     vdata
         Standardized data (z-score) (Float)
-    weights_
+    ws_
         Canonical weights (List)
 
     Returns
@@ -198,8 +213,8 @@ def predict(vdata, weights_, cutoff=1e-15):
     preds_
         Predictions on the validation dataset (List)
     """
-    iws = [np.linalg.pinv(w.T, rcond=cutoff) for w in weights_]
-    ccomp = _listdot([d.T for d in vdata], weights_)
+    iws = [np.linalg.pinv(w.T, rcond=cutoff) for w in ws_]
+    ccomp = _listdot([d.T for d in vdata], ws_)
     ccomp = np.array(ccomp)
     preds_ = []
     corrs_ = []
@@ -217,8 +232,8 @@ def predict(vdata, weights_, cutoff=1e-15):
 
 
 def kcca(
-    Xs, reg=0.0, n_components=None,
-    ktype="linear", sigma=1.0, degree=2
+    data, reg=0.0, numCC=None, kernelcca=True,
+    ktype="linear", gausigma=1.0, degree=2
 ):
 
     """
@@ -226,24 +241,39 @@ def kcca(
 
     Parameters
     ----------
-    Xs
+    data
         Data that kCCA is being run on (Array)
-
+    reg
+        Regularization parameter. Default is 0.1. (Float)
+    numCC
+        Number of canonical dimensions to keep. Default is 10. (Integer)
+    kernelcca
+        Kernel or non-kernel CCA. Default is True. (Boolean)
+    ktype
+        Type of kernel if kernelcca is True. (String)
+        Value can be 'linear' (default), 'gaussian' or 'polynomial'.
+    gausigma
+        Parameter if the kernel is a Gaussian kernel. (Float)
+    degree
+        Parameter if the kernel is a Polynomial kernel. (Integer)
 
     Returns
     -------
     comp
         Component to determine the canonical weights (Array)
-    """
 
-    kernel = [
-        _make_kernel(d, ktype=ktype, sigma=sigma,
-                     degree=degree) for d in Xs
-    ]
+    """
+    if kernelcca:
+        kernel = [
+            _make_kernel(d, ktype=ktype, gausigma=gausigma,
+                         degree=degree) for d in data
+        ]
+    else:
+        kernel = [d.T for d in data]
 
     nDs = len(kernel)
     nFs = [k.shape[0] for k in kernel]
-    n_components = min([k.shape[1] for k in kernel]) if n_components is None else n_components
+    numCC = min([k.shape[1] for k in kernel]) if numCC is None else numCC
 
     # Get the auto- and cross-covariance matrices
     crosscovs = [np.dot(ki, kj.T) for ki in kernel for kj in kernel]
@@ -269,23 +299,23 @@ def kcca(
     RH = (RH + RH.T) / 2.0
 
     maxCC = LH.shape[0]
-    r, Vs = eigh(LH, RH, eigvals=(maxCC - n_components, maxCC - 1))
+    r, Vs = eigh(LH, RH, eigvals=(maxCC - numCC, maxCC - 1))
     r[np.isnan(r)] = 0
     rindex = np.argsort(r)[::-1]
     comp = []
     Vs = Vs[:, rindex]
     for i in range(nDs):
-        comp.append(Vs[sum(nFs[:i]): sum(nFs[: i + 1]), :n_components])
+        comp.append(Vs[sum(nFs[:i]): sum(nFs[: i + 1]), :numCC])
     return comp
 
 
-def recon(Xs, comp, corronly=False):
+def recon(data, comp, corronly=False, kernelcca=True):
     """
     Calculates canonical weights, correlations and components
 
     Parameters
     ----------
-    Xs
+    data
         Data of interest (Array)
     comp
         Component to determine the canonical weights (Array)
@@ -294,20 +324,22 @@ def recon(Xs, comp, corronly=False):
     -------
     corrs_
         Pairwise row correlations for all items in array (List of matrices)
-    weights_
+    ws_
         Canonical weights (List)
     ccomp
         Canonical components (List)
     """
 
-    weights_ = _listdot(Xs, comp)
-
-    ccomp = _listdot([d.T for d in Xs], weights_)
+    if kernelcca:
+        ws_ = _listdot(data, comp)
+    else:
+        ws_ = comp
+    ccomp = _listdot([d.T for d in data], ws_)
     corrs_ = _listcorr(ccomp)
     if corronly:
         return corrs_
     else:
-        return corrs_, weights_, ccomp
+        return corrs_, ws_, ccomp
 
 
 def _zscore(d):
@@ -415,11 +447,11 @@ def _rowcorr(a, b):
     return cs
 
 
-def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
+def _make_kernel(d, normalize=True, ktype="linear", gausigma=1.0, degree=2):
     """
     Makes a kernel for data d
       If ktype is 'linear', the kernel is a linear inner product
-      If ktype is 'gaussian', the kernel is a Gaussian kernel, sigma = sigma
+      If ktype is 'gaussian', the kernel is a Gaussian kernel, sigma = gausigma
       If ktype is 'poly', the kernel is a polynomial kernel with degree=degree
 
     Parameters
@@ -427,9 +459,9 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
     d
         Data (Array)
     ktype
-        Type of kernel (String)
+        Type of kernel if kernelcca is True. (String)
         Value can be 'linear' (default), 'gaussian' or 'polynomial'.
-    sigma
+    gausigma
         Parameter if the kernel is a Gaussian kernel. (Float)
     degree
         Parameter if the kernel is a Polynomial kernel. (Integer)
@@ -442,16 +474,15 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
     d = np.nan_to_num(d)
     cd = _demean(d)
     if ktype == "linear":
-        kernel_ = np.dot(cd, cd.T)
+        kernel = np.dot(cd, cd.T)
     elif ktype == "gaussian":
         from scipy.spatial.distance import pdist, squareform
-        # pdist finds pairwise distances between observations in n-dimensional space
-        
-        pairwise_dists = squareform(pdist(cd, "euclidean")) #originally just d
-        kernel_ = np.exp(-pairwise_dists ** 2 / (2 * sigma ** 2)) #originally no parentheses in denom
+
+        pairwise_dists = squareform(pdist(d, "euclidean"))
+        kernel = np.exp(-pairwise_dists ** 2 / (2 * gausigma ** 2))
     elif ktype == "poly":
-        kernel_ = np.dot(cd, cd.T) ** degree
-    kernel = (kernel_ + kernel_.T) / 2.0
+        kernel = np.dot(cd, cd.T) ** degree
+    kernel = (kernel + kernel.T) / 2.0
     if normalize:
         kernel = kernel / np.linalg.eigvalsh(kernel).max()
     return kernel
