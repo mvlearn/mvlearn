@@ -32,11 +32,13 @@ class MVMDS(BaseEmbed):
 
     """
 
-    def _init_(self, n_components=None):
+    def __init__(self):
+        
+        print('on')
 
         #super()._init_()
-        self.components = None
-        self.n_components = n_components
+        #self.components = None
+        #self.n_components = n_components
 
     def _cpc(self, x):
 
