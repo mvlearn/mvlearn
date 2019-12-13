@@ -8,6 +8,11 @@ def _compute_likelihood(arr):
     Computes the log likelihoods based on normal distribution given
     a 1d-array of sorted values. If the input has no variance,
     the likelihood will be nan.
+    
+    References:
+    -----------
+    .. [#1] Code from the https://github.com/neurodata/graspy package,
+        reproduced and shared with permission.
     """
     n_elements = len(arr)
     likelihoods = np.zeros(n_elements)
@@ -87,7 +92,9 @@ def select_dimension(
 
     References
     ----------
-    .. [#1] Zhu, M. and Ghodsi, A. (2006).
+    .. [#1] Code from the https://github.com/neurodata/graspy package,
+        reproduced and shared with permission.
+    .. [#2] Zhu, M. and Ghodsi, A. (2006).
         Automatic dimensionality selection from the scree plot via the
         use of profile likelihood. Computational Statistics & Data
         Analysis, 51(2), pp.918-930.
