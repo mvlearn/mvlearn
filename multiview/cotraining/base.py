@@ -67,14 +67,16 @@ class BaseCoTrainEstimator(BaseEstimator):
 
         Parameters
         ----------
-        Xs: numpy.ndarray, list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            A list of the different views of data to train on.
+
         y : array, shape (n_samples,)
 
         Returns
         -------
-        self : object
+        self : returns an instance of self
         """
 
         return self
@@ -86,13 +88,15 @@ class BaseCoTrainEstimator(BaseEstimator):
 
         Parameters
         ----------
-        Xs: numpy.ndarray, list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            A list of the different views of data to predict.
 
         Returns
         -------
         y : array-like (n_samples, n_classes)
+            Returns predictions for each sample.
         """
 
         return self

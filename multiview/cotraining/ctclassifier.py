@@ -198,8 +198,8 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : numpy.ndarray, list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to train on.
 
@@ -209,7 +209,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Returns
         -------
-        self : object
+        self : returns an instance of self
         """
 
         # verify Xs and y
@@ -325,8 +325,8 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : numpy.ndarray, list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to predict.
 
@@ -376,8 +376,8 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : numpy.ndarray, list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to predict.
 
