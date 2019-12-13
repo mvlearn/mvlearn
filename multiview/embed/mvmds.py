@@ -165,7 +165,7 @@ class MVMDS(BaseEmbed):
             B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
             mat[i] = B
 
-        self.components = self._cpc(n_components, mat)
+        self.components = self._cpc(self.n_components, mat)
 
         return self.components
 
