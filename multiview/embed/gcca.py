@@ -124,7 +124,7 @@ class GCCA(BaseEmbed):
         Xs : list of array-likes or numpy.ndarray
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each sample will receive its own embedding. 
+            The data to fit to. Each sample will receive its own embedding.
 
         Returns
         -------
