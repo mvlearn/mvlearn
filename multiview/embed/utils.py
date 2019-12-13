@@ -8,7 +8,7 @@ def _compute_likelihood(arr):
     Computes the log likelihoods based on normal distribution given
     a 1d-array of sorted values. If the input has no variance,
     the likelihood will be nan.
-    
+
     References:
     -----------
     .. [#1] Code from the https://github.com/neurodata/graspy package,
