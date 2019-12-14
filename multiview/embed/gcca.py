@@ -111,7 +111,7 @@ class GCCA(BaseEmbed):
     def fit(self, Xs):
         """
         Calculates a projection from each view to a latentent space such that
-        the sum of pariwise latent space correlations is maximized. Each view
+        the sum of pairwise latent space correlations is maximized. Each view
         'X' is normalized and the left singular vectors of 'X^T X' are
         calculated using SVD. The number of singular vectors kept is determined
         by either the percent variance explained, a given rank threshold, or a
@@ -121,10 +121,14 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own embedding.
+
+        Returns
+        -------
+        self : returns an instance of self.
         """
 
         Xs = check_Xs(Xs, multiview=True)
@@ -238,13 +242,13 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
             A list of data matrices from each view to transform based on the
             prior fit function. If view_idx defined, then Xs is a 2D data
             matrix corresponding to a single view.
-        view_idx: int, default=None
+        view_idx : int, default=None
             For transformation of a single view. If not None, then Xs is 2D
             and views_idx specifies the index of the view from which Xs comes
             from.
@@ -273,9 +277,9 @@ class GCCA(BaseEmbed):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each sample will receive its own
             transformation matrix and projection.
 
