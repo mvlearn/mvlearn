@@ -8,7 +8,7 @@ Code adopted from UC Berkeley, Gallant lab
 
 import numpy as np
 from scipy.linalg import eigh
-from scipy import stats
+#from scipy import stats
 
 
 class KCCA(object):
@@ -52,26 +52,6 @@ class KCCA(object):
         self.degree = degree
         if self.ktype is None:
             self.ktype = "linear"
-    
-    def center(self, X):
-        """
-        Subtracts the row means and divides by the row standard deviations.
-        Then subtracts column means.
-        Parameters
-        ----------
-        X : array-like, shape (n_observations, n_features)
-            The data to preprocess
-        Returns
-        -------
-        centered_X : preprocessed data matrix
-        """
-
-        # Mean along rows using sample mean and sample std
-        centered_X = stats.zscore(X, axis=1, ddof=1)
-        # Mean along columns
-        mu = np.mean(centered_X, axis=0)
-        centered_X -= mu
-        return centered_X
 
     def fit(self, Xs):
         """
@@ -79,7 +59,7 @@ class KCCA(object):
 
         Parameters
         ----------
-        Xs: list of array-likes
+        Xs : list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to. 
@@ -87,17 +67,12 @@ class KCCA(object):
 
         Returns
         -------
-        weights_: list of array-likes
+        weights_ : list of array-likes
                   Canonical weights
-        components_: list of array-likes
-                     Canonical components
-        cancorrs_: list of array-likes
-                   Correlations of the canonical components on 
-                   the training dataset
-        """
-        
-        #Xs = [self.center(x) for x in Xs]
 
+        """
+        Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
+        
         components_ = kcca(
             Xs,
             self.reg,
@@ -106,17 +81,84 @@ class KCCA(object):
             sigma=self.sigma,
             degree=self.degree,
         )
-        self.cancorrs_, self.weights_, self.components_ = recon(
-            Xs, components_
+        
+        self.weights_ = _listdot(Xs, components_)
+
+        return self.weights_
+
+    def transform(self, Xs):
+        """
+        Uses kcca weights to apply develop
+        canonical components and correlations
+
+        Parameters
+        ----------
+        vdata: float
+               Standardized data (z-score)
+
+        Returns
+        -------
+        preds_: list of array-likes
+                Prediction components of test dataset
+        corrs_: list of array-likes
+                Correlations on the test dataset
+        """
+        Xs = [np.nan_to_num(_zscore(d)) for d in Xs]
+        
+        if not hasattr(self, "weights_"):
+            raise NameError("kCCA has not been trained.")
+        
+        self.components_ = _listdot([d.T for d in Xs], self.weights_)
+        self.cancorrs_ = _listcorr(self.components_)
+        self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
+        
+        return self
+
+    def fit_transform(self, Xs):
+        """
+        Trains KCCA with given parameters. (Insert more thorough description of what kcca does here)
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data for kcca to fit to. 
+            Each sample will receive its own embedding.
+
+        Returns
+        -------
+        weights_ : list of array-likes
+                   Canonical weights
+        components_ : list of array-likes
+                     Canonical components
+        cancorrs_ : list of array-likes
+                   Correlations of the canonical components on 
+                   the training dataset
+        """
+        
+        Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
+        
+        components_ = kcca(
+            Xs,
+            self.reg,
+            self.n_components,
+            ktype=self.ktype,
+            sigma=self.sigma,
+            degree=self.degree,
         )
+        
+        self.weights_ = _listdot(Xs, components_)
+        self.components_ = _listdot([d.T for d in Xs], self.weights_)
+        self.cancorrs_ = _listcorr(self.components_)
 
         if len(Xs) == 2:
             self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
         return self
-
-    def fit_transform(self, vdata):
+    
+    def validate(self, vdata):
         """
-        Tests how well the CCA mapping generalizes to the test data
+        Uses the kCCA mapping generalizes to other data
         For each dimension in the test data, correlations between
         predicted and actual data are computed.
 
@@ -128,16 +170,34 @@ class KCCA(object):
         Returns
         -------
         preds_: list of array-likes
-                Predictions on the validation (test) dataset
-        corrs_: list of array-likes
-                Correlations on the validation dataset
+                Prediction components of test dataset
+        vcorrs_: list of array-likes
+                Correlations on the test dataset
         """
+        
         vdata = [np.nan_to_num(_zscore(d)) for d in vdata]
+        
         if not hasattr(self, "weights_"):
-            raise NameError("Algorithm has not been trained.")
-        self.preds_, self.corrs_ = predict(vdata, self.weights_, self.cutoff)
-        return self.preds_, self.corrs_
-
+            raise NameError("kCCA has not been trained.")
+        
+        iws = [np.linalg.pinv(w.T, rcond=self.cutoff) for w in self.weights_]
+        ccomp = _listdot([d.T for d in vdata], self.weights_)
+        ccomp = np.array(ccomp)
+        self.vpreds_ = []
+        self.vcorrs_ = []
+    
+        for dnum in range(len(vdata)):
+            idx = np.ones((len(vdata),))
+            idx[dnum] = False
+            proj = ccomp[idx > 0].mean(0)
+            pred = np.dot(iws[dnum], proj.T).T
+            pred = np.nan_to_num(_zscore(pred))
+            self.vpreds_.append(pred)
+            cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
+            self.vcorrs_.append(cs)
+        
+        return self.vcorrs_
+    
     def compute_ev(self, vdata):
         """
         Computes the explained variance for each canonical dimension
@@ -158,53 +218,30 @@ class KCCA(object):
         self.ev_ = [np.zeros((nC, f)) for f in nF]
         for cc in range(nC):
             ccs = cc + 1
-
-            preds_, corrs_ = predict(
-                vdata, [w[:, ccs - 1: ccs] for w in self.weights_], self.cutoff
-            )
+            weights = [w[:, ccs - 1: ccs] for w in self.weights_]
+            
+            iws = [np.linalg.pinv(w.T, rcond=self.cutoff) for w in weights]
+            ccomp = _listdot([d.T for d in vdata], weights)
+            ccomp = np.array(ccomp)
+            preds_ = []
+            corrs_ = []
+        
+            for dnum in range(len(vdata)):
+                idx = np.ones((len(vdata),))
+                idx[dnum] = False
+                proj = ccomp[idx > 0].mean(0)
+                pred = np.dot(iws[dnum], proj.T).T
+                pred = np.nan_to_num(_zscore(pred))
+                preds_.append(pred)
+                cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
+                corrs_.append(cs)
+            
             resids = [abs(d[0] - d[1]) for d in zip(vdata, preds_)]
             for s in range(nD):
                 ev_ = abs(vdata[s].var(0) - resids[s].var(0)) / vdata[s].var(0)
                 ev_[np.isnan(ev_)] = 0.0
                 self.ev_[s][cc] = ev_
         return self.ev_
-
-
-def predict(vdata, weights_, cutoff=1e-15):
-    """
-    Get predictions and correlations for testing dataset based on
-    the training datasets canonical weights.
-
-    Parameters
-    ----------
-    vdata : list of array-likes
-           Standardized data (z-score)
-    weights_ : list of array-likes
-               Canonical weights
-
-    Returns
-    -------
-    corrs_ : list of array-likes
-             Correlations on the validation dataset
-    preds_ : list of array-likes
-             Predictions on the validation dataset
-    """
-    iws = [np.linalg.pinv(w.T, rcond=cutoff) for w in weights_]
-    ccomp = _listdot([d.T for d in vdata], weights_)
-    ccomp = np.array(ccomp)
-    preds_ = []
-    corrs_ = []
-
-    for dnum in range(len(vdata)):
-        idx = np.ones((len(vdata),))
-        idx[dnum] = False
-        proj = ccomp[idx > 0].mean(0)
-        pred = np.dot(iws[dnum], proj.T).T
-        pred = np.nan_to_num(_zscore(pred))
-        preds_.append(pred)
-        cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
-        corrs_.append(cs)
-    return preds_, corrs_
 
 
 def kcca(
@@ -271,37 +308,6 @@ def kcca(
     for i in range(nDs):
         comp.append(Vs[sum(nFs[:i]): sum(nFs[: i + 1]), :n_components])
     return comp
-
-
-def recon(Xs, comp, corronly=False):
-    """
-    Calculates canonical weights, correlations and components
-
-    Parameters
-    ----------
-    Xs : array
-        Data of interest
-    comp : array
-        Component to determine the canonical weights
-
-    Returns
-    -------
-    corrs_ : list of array-likes
-             Pairwise row correlations for all items in array
-    weights_ : list of array-likes
-               Canonical weights 
-    ccomp : list of array-likes
-            Canonical components 
-    """
-
-    weights_ = _listdot(Xs, comp)
-
-    ccomp = _listdot([d.T for d in Xs], weights_)
-    corrs_ = _listcorr(ccomp)
-    if corronly:
-        return corrs_
-    else:
-        return corrs_, weights_, ccomp
 
 
 def _zscore(d):
@@ -447,4 +453,4 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
     kernel = (kernel_ + kernel_.T) / 2.0
     if normalize:
         kernel = kernel / np.linalg.eigvalsh(kernel).max()
-    return kernel
+    return _zscore(kernel)
