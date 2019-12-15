@@ -2,8 +2,10 @@
 kcca.py
 ====================================
 Python module for regularized kernel canonical correlation analysis.
+
 Code adopted from UC Berkeley, Gallant lab
 (https://github.com/gallantlab/pyrcca)
+Copyright 2016, UC Berkeley, Gallant lab.
 """
 
 import numpy as np
@@ -60,7 +62,7 @@ class KCCA(object):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs shape: (n_views,)
+            - Xs shape: 2 (# of views)
             - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to. 
             Each sample will receive its own embedding.
