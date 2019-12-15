@@ -16,48 +16,48 @@ from sklearn.preprocessing import normalize
 
 
 class Omnibus(BaseEmbed):
+    """
+    Omnibus computes the pairwise distances for each view. Each
+    of these matrices is a n x n dissimilarity matrix where n is the number
+    of rows in each view. Omnibus embedding
+    (https://graspy.neurodata.io/reference/embed.html#multiple-graph-embedding)
+    is then performed over the dissimilarity matrices and the
+    computed embeddings are returned.
+
+    Parameters
+    ----------
+    n_components : strictly positive int (default = 2)
+        Desired dimensionality of output embeddings. See graspy docs for
+        additional details.
+
+    distance_metric : string (default = 'euclidean')
+        Distance metric used to compute pairwise distances.
+
+    normalize : string or None (default = 'l1')
+        Normalize function to use on views before computing
+        pairwise distances. Must be 'l2', 'l1', 'max'
+        or None. If None, the distance matrices will not be normalized.
+
+    algorithm : string (default = 'randomized')
+        SVD solver to use. Must be 'full', 'randomized', or 'truncated'.
+        See graspy docs for details.
+
+    n_iter : positive int (default = 5)
+        Number of iterations for randomized SVD solver. See graspy docs for
+        details.
+
+    Attributes
+    ----------
+    embeddings_: list of arrays (default = None)
+        List of Omnibus embeddings. One embedding matrix is provided
+        per view. If fit() has not been called, embeddings_ is set to
+        None.
+    """
 
     def __init__(self, n_components=2, distance_metric="euclidean",
                  normalize="l1",
                  algorithm="randomized",
                  n_iter=5):
-        """
-        Omnibus computes the pairwise distances for each view. Each
-        of these matrices is a n x n dissimilarity matrix where n is the number
-        of rows in each view. Omnibus embedding
-        (https://graspy.neurodata.io/reference/embed.html#multiple-graph-embedding)
-        is then performed over the dissimilarity matrices and the
-        computed embeddings are returned.
-
-        Parameters
-        ----------
-        n_components : strictly positive int (default = 2)
-            Desired dimensionality of output embeddings. See graspy docs for
-            additional details.
-
-        distance_metric : string (default = 'euclidean')
-            Distance metric used to compute pairwise distances.
-
-        normalize : string or None (default = 'l1')
-            Normalize function to use on views before computing
-            pairwise distances. Must be 'l2', 'l1', 'max'
-            or None. If None, the distance matrices will not be normalized.
-
-        algorithm : string (default = 'randomized')
-            SVD solver to use. Must be 'full', 'randomized', or 'truncated'.
-            See graspy docs for details.
-
-        n_iter : positive int (default = 5)
-            Number of iterations for randomized SVD solver. See graspy docs for
-            details.
-
-        Attributes
-        ----------
-        embeddings_: list of arrays (default = None)
-            List of Omnibus embeddings. One embedding matrix is provided
-            per view. If fit() has not been called, embeddings_ is set to
-            None.
-        """
 
         super().__init__()
         self.n_components = n_components
