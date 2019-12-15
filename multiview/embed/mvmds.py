@@ -145,9 +145,7 @@ class MVMDS(BaseEmbed):
         if (self.n_components) > len(Xs[0]):
             self.n_components = len(Xs[0])
             warnings.warn('The number of components you have requested is '
-                          + 'greater than the
-
-                          number of samples in the '
+                          + 'greater than the number of samples in the '
                           + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
