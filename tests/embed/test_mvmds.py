@@ -5,114 +5,118 @@ Created on Mon Nov 11 11:24:42 2019
 @author: arman
 """
 
-import sys
 import pytest
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal
-
 from multiview.embed.mvmds import MVMDS
+import math
 
-def test_output():
-    def _get_Xs(n_views=2):
-        np.random.seed(0)
-        n_obs = 4
-        n_features = 6
-        X = np.random.normal(0, 1, size=(n_views, n_obs, n_features))
-        return X
+'''
+DATA INITIALIZATION
+'''
 
-    def _compute_dissimilarity(arr):
-        n = len(arr)
-        out = np.zeros((n, n))
-        for i in range(n):
-            out[i] = np.linalg.norm(arr - arr[i])
+def data():
+    
+    N = 50
+    D1 = 5
+    D2 = 7
+    D3 = 4
 
-        return out
+    first = np.random.rand(N,D1)
+    second = np.random.rand(N,D2)
+    third = np.random.rand(N,D3)
+    random_views = [first, second, third]
+    samp_views = [np.array([[1,4,0,6,2,3],
+                        [2,5,7,1,4,3],
+                        [9,8,5,4,5,6]]),             
+                    np.array([[2,6,2,6],
+                        [9,2,7,3],
+                        [9,6,5,2]])]
+    
+    first_wrong = np.random.rand(N,D1)
+    second_wrong = np.random.rand(N-1,D1)
+    wrong_views = [first_wrong, second_wrong]
+    
+    dep_views = [np.array([[1,2,3],[1,2,3],[1,2,3]]),
+                 np.array([[1,2,3],[1,2,3],[1,2,3]])]
+    
+    return {'wrong_views' : wrong_views, 'dep_views' : dep_views,
+            'random_views' : random_views,
+            'samp_views': samp_views}
 
-    def use_fit_transform():
-        n = 2
-        Xs = _get_Xs(n)
-
-        projs = MVMDS().fit_transform(Xs, n_components=2)
-        dists = _compute_dissimilarity(projs)
-
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
-
-    def use_fit_view_idx():
-        n = 2
-        Xs = _get_Xs(n)
-
-        MVMDS = MVMDS().fit(Xs)
-        projs = [MVMDS.transform(Xs[i], view_idx=i) for i in range(n)]
-
-        dists = _compute_dissimilarity(projs)
-
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
-
-    def use_fit_tall():
-        n = 2
-        Xs = _get_Xs(n)
-
-        projs = MVMDS().fit_transform(Xs, tall=True)
-        dists = _compute_dissimilarity(projs)
-
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
-
-    def use_fit_n_components():
-        n = 2
-        Xs = _get_Xs(n)
-
-        projs = MVMDS().fit_transform(Xs, fraction_var=None, n_components=3)
-        dists = _compute_dissimilarity(projs)
-
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
-
-    def use_fit_sv_tolerance():
-        n = 2
-        Xs = _get_Xs(n)
-
-        projs = MVMDS().fit_transform(Xs, sv_tolerance=1)
-        dists = _compute_dissimilarity(projs)
-
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
-
-    use_fit_transform()
-    use_fit_tall()
-    use_fit_n_components()
-    use_fit_sv_tolerance()
-    use_fit_view_idx()
+'''
+TESTS
+'''
 
 
-test_mat = np.array([[1, 2], [3, 4]])
-mat_good = np.ones((2, 4, 2))
-Xs = np.random.normal(0, 1, size=(2, 4, 6))
+def test_component_num_greater(data):
+    mvmds = MVMDS(len(data['random_views'][0] + 1))
+    comp = mvmds.fit(data['random_views'])
+    
+    assert len(comp) == len(data['random_views'][0])       
+
+       
+def test_fit_values(data):
+    mvmds = MVMDS(len(data['samp_views'][0]))
+    comp = mvmds.fit(data['samp_views'])
+    comp2 = np.array([[-0.81330129,  0.07216426,  0.57735027],
+           [ 0.34415456, -0.74042171,  0.57735027],
+           [ 0.46914673,  0.66825745,  0.57735027]])
+    
+    for i in range(comp.shape[0]):
+        for j in range(comp.shape[1]):
+            assert comp[i,j]-comp2[i,j] < .000001
+
+    
+def test_fit_transform_values(data):
+    mvmds = MVMDS(len(data['samp_views'][0]))
+    comp = mvmds.fit_transform(data['samp_views'])
+    comp2 = np.array([[-0.81330129,  0.07216426,  0.57735027],
+           [ 0.34415456, -0.74042171,  0.57735027],
+           [ 0.46914673,  0.66825745,  0.57735027]])
+    
+    for i in range(comp.shape[0]):
+        for j in range(comp.shape[1]):
+            assert comp[i,j]-comp2[i,j] < .000001
 
 
-@pytest.mark.parametrize(
-    "params,err",
-    [
-        ({"Xs": [[]]}, ValueError),  # Empty input
-        ({"Xs": test_mat}, ValueError),  # Single matrix input
-        ({"Xs": mat_good, "fraction_var": "fail"}, TypeError),
-        ({"Xs": mat_good, "fraction_var": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": "fail"}, TypeError),
-        ({"Xs": mat_good, "n_components": -1}, ValueError),
-        ({"Xs": mat_good, "sv_tolerance": "fail"}, TypeError),
-        ({"Xs": mat_good, "sv_tolerance": -1}, ValueError),
-        ({"Xs": mat_good, "n_components": mat_good.shape[1]}, ValueError),
-    ],
-)
-def test_bad_inputs(params, err):
-    np.random.seed(1)
-    with pytest.raises(err):
-        MVMDS().fit(**params)
+def test_transform(data):
+    mvmds = MVMDS(len(data['random_views'][0]))
+    comp = mvmds.transform(data['random_views'])
+    
+    for i in range(len(comp)):
+        for j in range(comp[i].shape[0]):     
+            for k in range(comp[i].shape[1]):
+                
+                assert abs(comp[i][j,k] - \
+                           data['random_views'][i][j,k]) < .000001
 
 
-def test_no_fit(params={"Xs": mat_good}, err=RuntimeError):
-    np.random.seed(1)
-    with pytest.raises(err):
-        MVMDS().transform(**params)
+def test_fit_values_0(data):
+    with pytest.raises(ValueError):
+       
+        mvmds = MVMDS(0)
+        comp = mvmds.fit(data['samp_views'])
+
+        
+def test_fit_values_neg(data):
+    with pytest.raises(ValueError):
+       
+        mvmds = MVMDS(-4)
+        comp = mvmds.fit(data['samp_views'])
+
+            
+def test_fit_different_wrong_samples(data):
+    with pytest.raises(ValueError):
+       
+        mvmds = MVMDS(2)
+        comp = mvmds.fit(data['wrong_views'])
+
+
+#This is about taking in views that are the same.
+def test_depend_views(data):
+    mvmds = MVMDS(2)
+    fit = mvmds.fit(data['dep_views'])
+    
+    for i in range(fit.shape[0]):
+        for j in range(fit.shape[1]):     
+            assert math.isnan(fit[i,j])

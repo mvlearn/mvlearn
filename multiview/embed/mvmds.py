@@ -95,7 +95,12 @@ class MVMDS(BaseEmbed):
 
                 for yy in np.arange(views):
                     d2 = n_num[yy] * np.sum(np.array([n] * views))
-                    s2 = s2 + (d2 * x[yy] / d[:, yy])
+
+                    if d[:,yy] == 0:    
+                        s2 = s2 + (d2 * x[yy] / .0001)
+                        
+                    else:
+                        s2 = s2 + (d2 * x[yy] / d[:,yy])
 
                 w = np.dot(s2, q)
 
@@ -136,10 +141,13 @@ class MVMDS(BaseEmbed):
 
         """
 
+        
         if (self.n_components) > len(Xs[0]):
             self.n_components = len(Xs[0])
             warnings.warn('The number of components you have requested is '
-                          + 'greater than the number of features in the '
+                          + 'greater than the
+
+                          number of samples in the '
                           + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
@@ -165,7 +173,7 @@ class MVMDS(BaseEmbed):
             B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
             mat[i] = B
 
-        self.components = self._cpc(self.n_components, mat)
+        self.components = self._cpc(mat)
 
         return self.components
 
@@ -209,4 +217,4 @@ class MVMDS(BaseEmbed):
         Components: Components of the dimensionally reduced Xs
 
         """
-        return self.fit(Xs, self.n_components)
+        return self.fit(Xs)
