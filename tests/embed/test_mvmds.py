@@ -119,8 +119,8 @@ def test_fit_fit_transform_same(data):
     
     for i in range(comp_fit.shape[0]):
         for j in range(comp_fit.shape[1]):
-            assert comp_fit.shape[i,j] - \
-            comp_fit_transform.shape[i,j] < .0000001
+            assert comp_fit[i,j] - \
+            comp_fit_transform[i,j] < .0000001
 
 
 #This is about taking in views that are the same.
