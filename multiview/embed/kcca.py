@@ -17,24 +17,21 @@ class KCCA(object):
 
     Parameters
     ----------
-    reg
-        Regularization parameter. Default is 0.1. (Float)
-    n_components
-        Number of canonical dimensions to keep. Default is 10. (Integer)
-    ktype
-        Type of kernel if kernel is True. (String)
-        Value can be 'linear' (default), 'gaussian' or 'polynomial'.
-    verbose
-        Provides detailed explanation of results. Default is False. (Boolean)
-    cutoff
-        Optional regularization parameter to perform spectral
-        cutoff when computing the canonical weight pseudoinverse
-        during held-out data prediction
-        Default is 1x10^-15 (Float)
-    sigma
-        Parameter if the kernel is a Gaussian kernel. (Float)
-    degree
-        Parameter if the kernel is a Polynomial kernel. (Integer)
+    reg : float, default = 0.1
+          Regularization parameter
+    n_components : int, default = 10
+                   Number of canonical dimensions to keep
+    ktype : string, default = 'linear'
+            Type of kernel 
+        - value can be 'linear', 'gaussian' or 'polynomial'
+    cutoff : float, default = 1x10^-15
+             Optional regularization parameter 
+             to perform spectral cutoff when computing the canonical 
+             weight pseudoinverse during held-out data prediction
+    sigma : float, default = 1 
+            Parameter if Gaussian kernel
+    degree : integer, default = 2
+             Parameter if Polynomial kernel
 
     """
 
@@ -43,7 +40,6 @@ class KCCA(object):
         reg=None,
         n_components=None,
         ktype=None,
-        verbose=False,
         cutoff=1e-15,
         sigma=1.0,
         degree=2,
@@ -56,7 +52,6 @@ class KCCA(object):
         self.degree = degree
         if self.ktype is None:
             self.ktype = "linear"
-        self.verbose = verbose
     
     def center(self, X):
         """
@@ -84,26 +79,24 @@ class KCCA(object):
 
         Parameters
         ----------
-        Xs
-            Data that KCCA is performed on (List of arrays)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data for kcca to fit to. 
+            Each sample will receive its own embedding.
 
         Returns
         -------
-        weights_
-            Canonical weights (List)
-        components_
-            Canonical components (List)
-        cancorrs_
-            Correlations of the canonical components on
-            the training dataset (List)
+        weights_: list of array-likes
+                  Canonical weights
+        components_: list of array-likes
+                     Canonical components
+        cancorrs_: list of array-likes
+                   Correlations of the canonical components on 
+                   the training dataset
         """
-        if self.verbose:
-            print(
-                "Training KCCA, regularization = %0.4f, "
-                "%d components" % (self.ktype, self.reg, self.n_components)
-            )
         
-        #data = [self.center(x) for x in data]
+        #Xs = [self.center(x) for x in Xs]
 
         components_ = kcca(
             Xs,
@@ -129,15 +122,15 @@ class KCCA(object):
 
         Parameters
         ----------
-        vdata
-            Standardized data (z-score) (Float)
+        vdata: float
+               Standardized data (z-score)
 
         Returns
         -------
-        preds_
-            Predictions on the validation (test) dataset (List)
-        corrs_
-            Correlations on the validation dataset (List)
+        preds_: list of array-likes
+                Predictions on the validation (test) dataset
+        corrs_: list of array-likes
+                Correlations on the validation dataset
         """
         vdata = [np.nan_to_num(_zscore(d)) for d in vdata]
         if not hasattr(self, "weights_"):
@@ -151,13 +144,13 @@ class KCCA(object):
 
         Parameters
         ----------
-        vdata
-            Standardized data (z-score) (Float)
+        vdata: list of array-likes
+               Standardized data (z-score)
 
         Returns
         -------
-        ev_
-            Explained variance for each canonical dimension (List)
+        ev_: list of array-likes
+             Explained variance for each canonical dimension
         """
         nD = len(vdata)
         nC = self.weights_[0].shape[1]
@@ -165,8 +158,7 @@ class KCCA(object):
         self.ev_ = [np.zeros((nC, f)) for f in nF]
         for cc in range(nC):
             ccs = cc + 1
-            if self.verbose:
-                print("Computing explained variance for component #%d" % ccs)
+
             preds_, corrs_ = predict(
                 vdata, [w[:, ccs - 1: ccs] for w in self.weights_], self.cutoff
             )
@@ -185,18 +177,17 @@ def predict(vdata, weights_, cutoff=1e-15):
 
     Parameters
     ----------
-    vdata
-        Standardized data (z-score) (Float)
-    weights_
-        Canonical weights (List)
+    vdata : list of array-likes
+           Standardized data (z-score)
+    weights_ : list of array-likes
+               Canonical weights
 
     Returns
     -------
-    corrs_
-        Correlations on the validation dataset (List)
-        
-    preds_
-        Predictions on the validation dataset (List)
+    corrs_ : list of array-likes
+             Correlations on the validation dataset
+    preds_ : list of array-likes
+             Predictions on the validation dataset
     """
     iws = [np.linalg.pinv(w.T, rcond=cutoff) for w in weights_]
     ccomp = _listdot([d.T for d in vdata], weights_)
@@ -226,14 +217,17 @@ def kcca(
 
     Parameters
     ----------
-    Xs
-        Data that kCCA is being run on (Array)
+    Xs : list of array-likes
+        - Xs shape: (n_views,)
+        - Xs[i] shape: (n_samples, n_features_i)
+        The data for kcca to fit to. 
+        Each sample will receive its own embedding.
 
 
     Returns
     -------
-    comp
-        Component to determine the canonical weights (Array)
+    comp : list of array-likes
+           Component to determine the canonical weights
     """
 
     kernel = [
@@ -285,19 +279,19 @@ def recon(Xs, comp, corronly=False):
 
     Parameters
     ----------
-    Xs
-        Data of interest (Array)
-    comp
-        Component to determine the canonical weights (Array)
+    Xs : array
+        Data of interest
+    comp : array
+        Component to determine the canonical weights
 
     Returns
     -------
-    corrs_
-        Pairwise row correlations for all items in array (List of matrices)
-    weights_
-        Canonical weights (List)
-    ccomp
-        Canonical components (List)
+    corrs_ : list of array-likes
+             Pairwise row correlations for all items in array
+    weights_ : list of array-likes
+               Canonical weights 
+    ccomp : list of array-likes
+            Canonical components 
     """
 
     weights_ = _listdot(Xs, comp)
@@ -316,13 +310,13 @@ def _zscore(d):
 
     Parameters
     ----------
-    d
-        Data of interest (Array)
+    d : array
+        Data of interest
 
     Returns
     -------
-    z
-        Z-score (Array)
+    z : array
+        Z-score
     """
     z = (d - d.mean(0)) / d.std(0)
     return z
@@ -334,13 +328,13 @@ def _demean(d):
 
     Parameters
     ----------
-    d
-        Data of interest (Array)
+    d : array
+        Data of interest
 
     Returns
     -------
-    diff
-        Difference from the mean (Array)
+    diff : array
+           Difference from the mean (Array)
     """
     diff = d - d.mean(0)
     return diff
@@ -352,15 +346,15 @@ def _listdot(d1, d2):
 
     Parameters
     ----------
-    d1
-        Data of interest (Array)
-    d1
-        Data of interest (Array)
+    d1 : array
+         Data of interest
+    d1 : array
+         Data of interest
 
     Returns
     -------
-    ld
-        Dot product (List)
+    ld : list
+        Dot product
     """
     ld = [np.dot(x[0].T, x[1]) for x in zip(d1, d2)]
     return ld
@@ -373,13 +367,12 @@ def _listcorr(a):
 
     Parameters
     ----------
-    a
-        Matrix
+    a : Matrix
 
     Returns
     -------
-    corrs_
-        Pairwise row correlations for all items in array (List of matrices)
+    corrs_ : list of array-likes
+             Pairwise row correlations for all items in array
     """
     corrs_ = np.zeros((a[0].shape[1], len(a), len(a)))
     for i in range(len(a)):
@@ -398,15 +391,15 @@ def _rowcorr(a, b):
 
     Parameters
     ----------
-    a
+    a : array 
         Matrix row 1
-    b
+    b : array
         Matrix row 2
 
     Returns
     -------
-    cs
-        Correlations between corresponding rows (Array)
+    cs: array
+        Correlations between corresponding rows
 
     """
     cs = np.zeros((a.shape[0]))
@@ -424,20 +417,20 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
 
     Parameters
     ----------
-    d
-        Data (Array)
-    ktype
-        Type of kernel (String)
-        Value can be 'linear' (default), 'gaussian' or 'polynomial'.
-    sigma
-        Parameter if the kernel is a Gaussian kernel. (Float)
-    degree
-        Parameter if the kernel is a Polynomial kernel. (Integer)
+    d : array
+        Data
+    ktype : string, default = 'linear'
+        - Type of kernel
+        - Value can be 'linear', 'gaussian' or 'polynomial'.
+    sigma : float, default = 1.0
+            Parameter if the kernel is a Gaussian kernel.
+    degree : int, default = 2
+             Parameter if the kernel is a Polynomial kernel. 
 
     Returns
     -------
-    kernel
-        Kernel that data is projected to (Array)
+    kernel: array
+            Kernel that data is projected to
     """
     d = np.nan_to_num(d)
     cd = _demean(d)
