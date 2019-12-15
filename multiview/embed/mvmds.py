@@ -23,22 +23,27 @@ class MVMDS(BaseEmbed):
 
     """"
     Classical Multiview Multidimensional Scaling for jointly reducing
-    the dimensions of multiple views of data. A euclidean distance matrix
+    the dimensions of multiple views of data. A Euclidean distance matrix
     is created for each view, double centered, and the k largest common
     eigenvectors are returned based on the algorithm proposed by the
     following paper:
 
     https://www.sciencedirect.com/science/article/pii/S016794731000112X
 
+    it: Number of common principal component stepwise iterations
+
+
     """
 
-    def __init__(self, n_components=None):
+    def __init__(self, n_components=None, num_iter=15):
 
         super().__init__()
         self.components = None
         self.n_components = n_components
+        self.num_iter = num_iter
+        
 
-    def _cpc(self, x):
+    def _cpc(self, Xs):
 
         """
         Finds Stepwise Estimation of Common Principal Components as described
@@ -49,58 +54,54 @@ class MVMDS(BaseEmbed):
         Parameters
         ----------
 
-        x: List of matrices, each with number of rows, n
-
-        it: Number of common principal component stepwise iterations
-
+        Xs: List of matrices, each with number of rows, n
+        
         Returns
         -------
 
         Components: Desired Common Principal Components
 
         """
-        n = p = x.shape[1]
+        n = p = Xs.shape[1]
 
-        views = len(x)
+        views = len(Xs)
 
         n_num = np.array([n] * views)/np.sum(np.array([n] * views))
 
-        Components = np.zeros((p, self.n_components))
+        components = np.zeros((p, self.n_components))
 
         pi = np.eye(p)
 
         s = np.zeros((p, p))
 
-        it = 15
-
         for i in np.arange(views):
-            s = s + (n_num[i] * x[i])
+            s = s + (n_num[i] * Xs[i])
 
         e1, e2 = np.linalg.eigh(s)
 
-        q0 = e2[:, ::-1]
+        q0 = e2[:, ::-1] #Orders the eigenvalues
 
         for i in np.arange(self.n_components):
 
             q = q0[:, i]
-            q = np.array(q).reshape(len(q), 1)
+            q = np.array(q).reshape(len(q), 1) 
             d = np.zeros((1, views))
 
             for j in np.arange(views):
 
-                d[:, j] = np.dot(np.dot(q.T, x[j]), q)
+                d[:, j] = np.dot(np.dot(q.T, Xs[j]), q)
 
-            for j in np.arange(it):
+            for j in np.arange(self.num_iter): #stepwise iterations
                 s2 = np.zeros((p, p))
 
                 for yy in np.arange(views):
                     d2 = n_num[yy] * np.sum(np.array([n] * views))
 
                     if d[:, yy] == 0:
-                        s2 = s2 + (d2 * x[yy] / .0001)
+                        s2 = s2 + (d2 * Xs[yy] / .0001)
 
                     else:
-                        s2 = s2 + (d2 * x[yy] / d[:, yy])
+                        s2 = s2 + (d2 * Xs[yy] / d[:, yy])
 
                 w = np.dot(s2, q)
 
@@ -110,12 +111,12 @@ class MVMDS(BaseEmbed):
 
                 for yy in np.arange(views):
 
-                    d[:, yy] = np.dot(np.dot(q.T, x[yy]), q)
+                    d[:, yy] = np.dot(np.dot(q.T, Xs[yy]), q)
 
-            Components[:, i] = q[:, 0]
+            components[:, i] = q[:, 0] #creates next component
             pi = pi - np.dot(q, q.T)
 
-        return(Components)
+        return(components)
 
     def fit(self, Xs):
 
@@ -128,11 +129,9 @@ class MVMDS(BaseEmbed):
 
         Xs: list of array-likes
                 - Xs shape: (n_views,)
-                - xXs[i] shape: (n_samples, n_features_i)
+                - Xs[i] shape: (n_samples, n_features_i)
                 The data to fit to. Each sample will receive its own embedding.
 
-        n_components: int (positive), optional, default = 0
-            Number of components requested
 
         Attributes
         ----------
@@ -171,8 +170,6 @@ class MVMDS(BaseEmbed):
             mat[i] = B
 
         self.components = self._cpc(mat)
-
-        return self.components
 
     def transform(self, Xs):
 
@@ -214,4 +211,6 @@ class MVMDS(BaseEmbed):
         Components: Components of the dimensionally reduced Xs
 
         """
-        return self.fit(Xs)
+        self.fit(Xs)
+
+        return self.components
