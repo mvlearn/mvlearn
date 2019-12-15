@@ -76,7 +76,7 @@ class SplitAE(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
         """
 
-        Xs = check_Xs(multiview=True, enforce_views=2)
+        Xs = check_Xs(Xs, multiview=True, enforce_views=2)
         assert Xs[0].shape[0] >= self.batchSize, """batch size must be <= to
             number of samples"""
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
