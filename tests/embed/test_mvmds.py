@@ -14,6 +14,7 @@ import math
 DATA INITIALIZATION
 '''
 
+@pytest.fixture(scope='module')
 def data():
     
     N = 50
