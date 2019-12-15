@@ -147,6 +147,9 @@ class MVMDS(BaseEmbed):
                           + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
+        if (self.num_iter) <= 0:
+            raise ValueError('The number of iterations must be greater than 0')
+        
         if (self.n_components) <= 0:
             raise ValueError('The number of components must be greater than 0 '
                              + 'and less than the number of features')

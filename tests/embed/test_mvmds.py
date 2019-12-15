@@ -51,23 +51,11 @@ TESTS
 
 def test_component_num_greater(data):
     mvmds = MVMDS(len(data['random_views'][0] + 1))
-    comp = mvmds.fit(data['random_views'])
+    comp = mvmds.fit_transform(data['random_views'])
     
     assert len(comp) == len(data['random_views'][0])       
 
-       
-def test_fit_values(data):
-    mvmds = MVMDS(len(data['samp_views'][0]))
-    comp = mvmds.fit(data['samp_views'])
-    comp2 = np.array([[-0.81330129,  0.07216426,  0.57735027],
-           [ 0.34415456, -0.74042171,  0.57735027],
-           [ 0.46914673,  0.66825745,  0.57735027]])
-    
-    for i in range(comp.shape[0]):
-        for j in range(comp.shape[1]):
-            assert comp[i,j]-comp2[i,j] < .000001
-
-    
+          
 def test_fit_transform_values(data):
     mvmds = MVMDS(len(data['samp_views'][0]))
     comp = mvmds.fit_transform(data['samp_views'])
@@ -90,45 +78,48 @@ def test_transform(data):
                 
                 assert abs(comp[i][j,k] - \
                            data['random_views'][i][j,k]) < .000001
-
-
-def test_fit_values_0(data):
-    with pytest.raises(ValueError):
-       
-        mvmds = MVMDS(0)
-        comp = mvmds.fit(data['samp_views'])
-
-        
-def test_fit_values_neg(data):
-    with pytest.raises(ValueError):
-       
-        mvmds = MVMDS(-4)
-        comp = mvmds.fit(data['samp_views'])
-
             
-def test_fit_different_wrong_samples(data):
+def test_fit_transformdifferent_wrong_samples(data):
     with pytest.raises(ValueError):
        
         mvmds = MVMDS(2)
-        comp = mvmds.fit(data['wrong_views'])
+        comp = mvmds.fit_transform(data['wrong_views'])
 
-def test_fit_fit_transform_same(data):
-    mvmds = MVMDS(2)
-    comp_fit = mvmds.fit(data['samp_views'])
-    comp_fit_transform = mvmds.fit_transform(data['samp_views'])
-    
-    for i in range(comp_fit.shape[0]):
-        for j in range(comp_fit.shape[1]):
-            assert comp_fit[i,j] - \
-            comp_fit_transform[i,j] < .0000001
 
 
 #This is about taking in views that are the same.
 
 def test_depend_views(data):
     mvmds = MVMDS(2)
-    fit = mvmds.fit(data['dep_views'])
+    fit = mvmds.fit_transform(data['dep_views'])
     
     for i in range(fit.shape[0]):
         for j in range(fit.shape[1]):     
             assert math.isnan(fit[i,j])
+
+'''
+Parameter Checks
+'''
+
+
+def test_fit_transform_values_0(data):
+    with pytest.raises(ValueError):
+       
+        mvmds = MVMDS(n_components=0)
+        comp = mvmds.fit_transform(data['samp_views'])
+
+        
+def test_fit_transform_values_neg(data):
+    with pytest.raises(ValueError):
+       
+        mvmds = MVMDS(n_components=-4)
+        comp = mvmds.fit_transform(data['samp_views'])
+
+def check_num_iter(data):
+    with pytest.raises(ValueError):
+        
+        mvmds = MVMDS(n_components=-3)
+        comp = mvmds.fit_transform(data['samp_views'])
+    
+
+    
