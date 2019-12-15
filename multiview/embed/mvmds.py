@@ -96,7 +96,7 @@ class MVMDS(BaseEmbed):
                 for yy in np.arange(views):
                     d2 = n_num[yy] * np.sum(np.array([n] * views))
 
-                    if d[:, yy] == 0:    
+                    if d[:, yy] == 0:
                         s2 = s2 + (d2 * x[yy] / .0001)
 
                     else:
@@ -140,7 +140,7 @@ class MVMDS(BaseEmbed):
         components: A k-dimensional projection of shape [n,k]
 
         """
-  
+
         if (self.n_components) > len(Xs[0]):
             self.n_components = len(Xs[0])
             warnings.warn('The number of components you have requested is '
