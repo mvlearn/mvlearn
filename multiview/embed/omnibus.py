@@ -116,11 +116,11 @@ class Omnibus(BaseEmbed):
 
         Parameters
         ==========
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function. If
-            view_idx defined, Xs is 2D, single view
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to embed based on the prior fit function. Each
+            X in Xs will receive its own embedding.
         """
         Xs = check_Xs(Xs)
         dissimilarities = []
@@ -144,11 +144,11 @@ class Omnibus(BaseEmbed):
 
         Parameters
         ==========
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function. If
-            view_idx defined, Xs is 2D, single view
+         Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to embed based on the prior fit function. Each
+            X in Xs will receive its own embedding.
 
         Returns
         =======
