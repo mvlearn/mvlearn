@@ -27,29 +27,29 @@ class MultiviewKMeans(BaseCluster):
     An implementation of Multi-View K-Means using the co-EM algorithm.
     This algorithm currently handles two views of data.
 
-    Paramters
+    Parameters
     ---------
-    n_clusters : int (default=2)
+    n_clusters : int, optional, default=2
         The number of clusters
 
-    random_state : int (default=None)
+    random_state : int, optional, default=None
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
-    patience : int, optional (default=5)
+    patience : int, optional, default=5
         The number of EM iterations with no decrease in the objective
         function after which the algorithm will terminate.
 
-    max_iter : int, optional (default=None)
+    max_iter : int, optional, default=None
         The maximum number of EM iterations to run before
         termination.
 
     Attributes
     ----------
 
-    centroids_ : list of array_likes
-        - centroids_ shape: (2,)
-        - centroids_[0] shape: (n_clusters, n_features_i)
+    centroids_ : list of array-likes
+        - centroids_ length: n_views
+        - centroids_[i] shape: (n_clusters, n_features_i)
         The cluster centroids for each of the two views. centroids_[0]
         corresponds to the centroids of view 1 and centroids_[1] corresponds
         to the centroids of view 2.
@@ -108,7 +108,7 @@ class MultiviewKMeans(BaseCluster):
 
         Returns
         -------
-        distances : array-like (n_clusters, n_samples)
+        distances : array-like, shape (n_clusters, n_samples)
             An array of Euclidean distances between each
             sample point and each cluster centroid.
 
@@ -133,9 +133,9 @@ class MultiviewKMeans(BaseCluster):
 
         Parameters
         ----------
-        Xs : list of array_likes
-            - Xs shape: (2,)
-            - Xs[0] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
@@ -192,13 +192,16 @@ class MultiviewKMeans(BaseCluster):
 
         Parameters
         ----------
-        Xs : list of array_likes
-            - Xs shape: (2,)
-            - Xs[0] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
 
+        Returns
+        -------
+        self : returns an instance of self.
         '''
 
         Xs = check_Xs(Xs, enforce_views=2)
@@ -272,9 +275,9 @@ class MultiviewKMeans(BaseCluster):
 
         Parameters
         ----------
-        Xs : list of array_likes
-            - Xs shape: (2,)
-            - Xs[0] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             This list must be of size 2, corresponding to the two
             views of the data. The two views can each have a different
             number of features, but they must have the same number of samples.
@@ -311,9 +314,9 @@ class MultiviewKMeans(BaseCluster):
 
         Parameters
         ----------
-        Xs : list of array_likes
-            - Xs shape: (2,)
-            - Xs[0] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             This list must be of size 2, corresponding to the two views
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.

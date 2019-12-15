@@ -35,45 +35,60 @@ class BaseCluster(BaseEstimator):
         pass
 
     @abstractmethod
-    def fit(self, Xs, y=None):
+    def fit(self, Xs):
 
         '''
         A method to fit clustering parameters to the multiview data.
         Parameters
         ----------
-        Xs: a list of numpy arrays
-
-        y : Ignored
-        not used, present here for API consistency by convention.
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views to fit the model on.
+        
+        Returns
+        -------
+        self :  returns and instance of self.
         '''
 
         return self
 
     @abstractmethod
-    def predict(self, Xs, y=None):
+    def predict(self, Xs):
 
         '''
         A method to predict cluster labels of multiview data.
         Parameters
         ----------
-        Xs: a list of numpy arrays
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views to cluster.
 
-        y : Ignored
-        not used, present here for API consistency by convention.
+        Returns
+        -------
+        predictions : array-like, shape (n_samples,)
+            Returns the predicted cluster labels for each sample.
         '''
         return
 
     @abstractmethod
-    def fit_predict(self, Xs, y=None):
+    def fit_predict(self, Xs):
 
         '''
         A method to fit clustering parameters and predict cluster
         labels of multiview data.
         Parameters
         ----------
-        Xs: a list of numpy arrays
-
-        y : Ignored
-        not used, present here for API consistency by convention.
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views to fit the model on 
+            and cluster.
+        
+        Returns
+        -------
+        predictions : array-like, shape (n_samples,)
+            Returns the predicted cluster labels for each sample.
         '''
         return
