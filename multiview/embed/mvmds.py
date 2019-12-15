@@ -32,8 +32,8 @@ class MVMDS(BaseEmbed):
 
     """
 
-    def __init__(self,n_components=None):
-        
+    def __init__(self, n_components=None):
+
         super().__init__()
         self.components = None
         self.n_components = n_components
@@ -48,7 +48,7 @@ class MVMDS(BaseEmbed):
 
         Parameters
         ----------
-        
+
         x: List of matrices, each with number of rows, n
 
         it: Number of common principal component stepwise iterations
@@ -96,11 +96,11 @@ class MVMDS(BaseEmbed):
                 for yy in np.arange(views):
                     d2 = n_num[yy] * np.sum(np.array([n] * views))
 
-                    if d[:,yy] == 0:    
+                    if d[:, yy] == 0:    
                         s2 = s2 + (d2 * x[yy] / .0001)
-                        
+
                     else:
-                        s2 = s2 + (d2 * x[yy] / d[:,yy])
+                        s2 = s2 + (d2 * x[yy] / d[:, yy])
 
                 w = np.dot(s2, q)
 
@@ -140,8 +140,7 @@ class MVMDS(BaseEmbed):
         components: A k-dimensional projection of shape [n,k]
 
         """
-
-        
+  
         if (self.n_components) > len(Xs[0]):
             self.n_components = len(Xs[0])
             warnings.warn('The number of components you have requested is '
