@@ -2,6 +2,8 @@
 omnibus.py
 ==========
 Omnibus embedding for multiview dimensionality reduction.
+Code from the https://github.com/neurodata/graspy package,
+reproduced and shared with permission.
 """
 
 from .base import BaseEmbed
@@ -48,16 +50,25 @@ class Omnibus(BaseEmbed):
         n_iter : positive int (default = 5)
             Number of iterations for randomized SVD solver. See graspy docs for
             details.
+
+        Attributes
+        ----------
+        embeddings_: list of arrays (default = None)
+            List of Omnibus embeddings. One embedding matrix is provided
+            per view. If fit() has not been called, embeddings_ is set to
+            None.
         """
+
         super().__init__()
         self.n_components = n_components
         self.normalize = normalize
         self.distance_metric = distance_metric
         self.algorithm = algorithm
         self.n_iter = n_iter
-        self.check_params()
+        self._check_params()
+        self.embeddings_ = None
 
-    def check_params(self):
+    def _check_params(self):
         """
         Checks that Omnibus arguments are valid. A ValueError
         is thrown if any are not. The checks performed are:
@@ -98,9 +109,10 @@ class Omnibus(BaseEmbed):
         if not isinstance(self.n_iter, int) or self.n_iter <= 0:
             raise ValueError("n_iter must be positive int.")
 
-    def fit_transform(self, Xs):
+    def fit(self, Xs):
         """
         Fit the model with Xs and apply the embedding on Xs.
+        The embeddings are saved as a class attribute.
 
         Parameters
         ==========
@@ -109,13 +121,7 @@ class Omnibus(BaseEmbed):
             - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. If
             view_idx defined, Xs is 2D, single view
-
-        Returns
-        =======
-        embeddings : list
-            list of (n_samples, n_components) matrices for each X in Xs.
         """
-
         Xs = check_Xs(Xs)
         dissimilarities = []
         for X in Xs:
@@ -129,5 +135,26 @@ class Omnibus(BaseEmbed):
                                 algorithm=self.algorithm,
                                 n_iter=self.n_iter)
 
-        embeddings = embedder.fit_transform(dissimilarities)
-        return embeddings
+        self.embeddings_ = embedder.fit_transform(dissimilarities)
+
+    def fit_transform(self, Xs):
+        """
+        Fit the model with Xs and apply the embedding on Xs using
+        the fit() function. The resulting embeddings are returned.
+
+        Parameters
+        ==========
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+            The data to embed based on the prior fit function. If
+            view_idx defined, Xs is 2D, single view
+
+        Returns
+        =======
+        embeddings : list of arrays
+            list of (n_samples, n_components) matrices for each X in Xs.
+        """
+
+        self.fit(Xs)
+        return self.embeddings_

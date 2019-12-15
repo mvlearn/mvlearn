@@ -43,6 +43,10 @@ def test_invalid_n_iter():
     with pytest.raises(ValueError):
         omnibus.Omnibus(n_iter=0)
 
+def test_embeddings_default_none():
+    omni = omnibus.Omnibus()
+    assert omni.embeddings_ == None
+
 def test_omnibus_embedding():
     n_components = 2
     embedder = omnibus.Omnibus(n_components=n_components)
@@ -71,4 +75,15 @@ def test_omnibus_embedding_no_normalize():
 
     assert len(embeddings) == n_views
 
-
+def test_fit():
+    n_components = 2
+    embedder = omnibus.Omnibus(n_components=n_components)
+    n_views = 4
+    n = 25
+    m = 25
+    Xs = []
+    for _ in range(n_views):
+        X = np.random.rand(n, m)
+        Xs.append(X)
+    embedder.fit(Xs)
+    assert len(embedder.embeddings_ == n_views)
