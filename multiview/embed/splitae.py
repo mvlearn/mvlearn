@@ -184,7 +184,7 @@ class SplitAE(BaseEmbed):
         view1Reconstruction: the reconstructed View1
         view2Prediction: the predicted View2
         """
-        Xs = check_Xs(Xs, multiview=True, enforce_views=1)
+        Xs = check_Xs(Xs, enforce_views=1)
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         view1 = torch.FloatTensor(Xs[0])
         with torch.no_grad():
