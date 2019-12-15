@@ -8,7 +8,8 @@ import numpy as np
 import itertools
 import tqdm
 
-from multiview.embed.base import BaseEmbed
+from .base import BaseEmbed
+from ..utils.utils import check_Xs
 
 
 class FullyConnectedNet(torch.nn.Module):
@@ -69,14 +70,13 @@ class SplitAE(BaseEmbed):
         Given two views, create and train the autoencoder.
         Parameters
         ----------
-        Xs: a list with two arrays. Each array has `n` rows (samples) and some
-        number of columns (features). The first array is View1 and the second
-        array is View2.
+        Xs : list of array-likes or numpy.ndarray. Xs[0] is View1 and
+        Xs[1] is View2
+             - Xs length: n_views, only 2 is currently supported for splitAE.
+             - Xs[i] shape: (n_samples, n_features_i)
         """
 
-        assert len(Xs) == 2, "this SplitAE implementation deals with two views"
-        assert Xs[0].shape[0] == Xs[1].shape[0], """must have each view for
-            each sample"""
+        Xs = check_Xs(multiview=True, enforce_views=2)
         assert Xs[0].shape[0] >= self.batchSize, """batch size must be <= to
             number of samples"""
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -173,15 +173,18 @@ class SplitAE(BaseEmbed):
         Transform the given view with the trained autoencoder.
         Parameters
         ----------
-        Xs: a list with one array representing the View1 view of some data.
-        The array must have the same number of columns (features) as
-        the View1 presented in the `fit(...)` step.
+        Xs: a list of one array-like, or an np.ndarray, representing the
+        View1 of some data. The array must have the same number of
+        columns  (features) as the View1 presented in the `fit(...)` step.
+             - Xs length: 1
+             - Xs[0] shape: (n_samples, n_features_0)
         Returns
         ----------
         embedding: the embedding of the View1 data
         view1Reconstruction: the reconstructed View1
         view2Prediction: the predicted View2
         """
+        Xs = check_Xs(Xs, multiview=True, enforce_views=1)
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         view1 = torch.FloatTensor(Xs[0])
         with torch.no_grad():
