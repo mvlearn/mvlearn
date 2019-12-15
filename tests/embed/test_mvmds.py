@@ -111,8 +111,19 @@ def test_fit_different_wrong_samples(data):
         mvmds = MVMDS(2)
         comp = mvmds.fit(data['wrong_views'])
 
+def test_fit_fit_transform_same(data):
+    mvmds = MVMDS(2)
+    comp_fit = mvmds.fit(data['samp_views'])
+    comp_fit_transform = mvmds.fit_transform(data['samp_views'])
+    
+    for i in range(comp_fit.shape[0]):
+        for j in range(comp_fit.shape[1]):
+            assert comp_fit.shape[i,j] - \
+            comp_fit_transform.shape[i,j] < .0000001
+
 
 #This is about taking in views that are the same.
+
 def test_depend_views(data):
     mvmds = MVMDS(2)
     fit = mvmds.fit(data['dep_views'])
