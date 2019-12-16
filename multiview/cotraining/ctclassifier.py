@@ -43,6 +43,36 @@ class CTClassifier(BaseCoTrainEstimator):
         Does not need to be of the same type as estimator1, but should support
         predict_proba().
 
+    p : int, optional (default=None)
+        The number of positive classifications from the unlabeled_pool
+        training set which will be given a positive "label". If None, the
+        default is the floor of the ratio of positive to negative examples
+        in the labeled training data (at least 1). If only one of p or n
+        is not None, the other will be set to be the same. When the labels
+        are 0 or 1, positive is defined as 1, and in general, positive is
+        the larger label.
+
+    n : int, optional (default=None)
+        The number of negative classifications from the unlabeled_pool
+        training set which will be given a negative "label". If None, the
+        default is the floor of the ratio of positive to negative examples
+        in the labeled training data (at least 1). If only one of p or n
+        is not None, the other will be set to be the same. When the labels
+        are 0 or 1, negative is defined as 0, and in general, negative is
+        the smaller label.
+
+    unlabeled_pool_size : int, optional (default=75)
+        The number of unlabeled_pool samples which will be kept in a
+        separate pool for classification and selection by the updated
+        classifier at each training iteration.
+
+    num_iter : int, optional (default=50)
+        The maximum number of training iterations to run.
+
+    random_state : int
+        The starting random seed for fit() and class operations, passed to
+        numpy.random.seed().
+
     Attributes
     ----------
     estimator1 : classifier object
@@ -81,8 +111,9 @@ class CTClassifier(BaseCoTrainEstimator):
     num_iter_ : int
         Maximum number of training iterations to run.
 
-    random_state : real number
-        The starting random seed for fit() and class operations.
+    random_state : int
+        The starting random seed for fit() and class operations, passed to
+        numpy.random.seed().
 
     References
     ----------
@@ -96,6 +127,10 @@ class CTClassifier(BaseCoTrainEstimator):
                  self,
                  estimator1=None,
                  estimator2=None,
+                 p=None,
+                 n=None,
+                 unlabeled_pool_size=75,
+                 num_iter=50,
                  random_state=0
                  ):
 
@@ -108,33 +143,63 @@ class CTClassifier(BaseCoTrainEstimator):
         if self.estimator2 is None:
             self.estimator2 = GaussianNB()
 
+        # If only 1 of p or n is not None, set them equal
+        if (p is not None and n is None):
+            n = p
+            self.p_, self.n_ = p, n
+        elif (p is None and n is not None):
+            p = n
+            self.p_, self.n_ = p, n
+        else:
+            self.p_, self.n_ = p, n
+
+        self.n_views_ = 2  # only 2 view learning supported currently
+        self.class_name = "CTClassifier"
+        self.unlabeled_pool_size_ = unlabeled_pool_size
+        self.num_iter_ = num_iter
+
+        self._check_params()
+
+    def _check_params(self):
+        """
+        Checks that cotraining parameters are valid. Throws AttributeError
+        if estimators are invalid. Throws ValueError if any other parameters
+        are not valid. The checks performed are:
+            - estimator1 and estimator2 have predict_proba methods
+            - p and n are both positive
+            - unlabeled_pool_size is positive
+            - num_iter is positive
+        """
+
         # verify that estimator1 and estimator2 have predict_proba
-        if (not hasattr(self.estimator1, 'predict_proba')
-                or not hasattr(self.estimator2, 'predict_proba')):
+        if (not hasattr(self.estimator1, 'predict_proba') or
+                not hasattr(self.estimator2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
 
-        self.n_views_ = 2  # only 2 view learning supported currently
+        if (self.p_ is not None and self.p_ <= 0) or (self.n_ is not None and
+                                                      self.n_ <= 0):
+            raise ValueError("Both p and n must be positive.")
 
-        self.class_name = "CTClassifier"
+        if self.unlabeled_pool_size_ <= 0:
+            raise ValueError("unlabeled_pool_size must be positive.")
+
+        if self.num_iter_ <= 0:
+            raise ValueError("num_iter must be positive.")
 
     def fit(
             self,
             Xs,
-            y,
-            p=None,
-            n=None,
-            unlabeled_pool_size=75,
-            num_iter=50
+            y
             ):
         """
         Fit the classifier object to the data in Xs, y.
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to train on.
 
@@ -142,31 +207,9 @@ class CTClassifier(BaseCoTrainEstimator):
             The labels of the training data. Unlabeled_pool examples should
             have label np.nan.
 
-        p : int, optional (default=None)
-            The number of positive classifications from the unlabeled_pool
-            training set which will be given a positive "label". If None, the
-            default is the floor of the ratio of positive to negative examples
-            in the labeled training data (at least 1). If only one of p or n
-            is not None, the other will be set to be the same. When the labels
-            are 0 or 1, positive is defined as 1, and in general, positive is
-            the larger label.
-
-        n : int, optional (default=None)
-            The number of negative classifications from the unlabeled_pool
-            training set which will be given a negative "label". If None, the
-            default is the floor of the ratio of positive to negative examples
-            in the labeled training data (at least 1). If only one of p or n
-            is not None, the other will be set to be the same. When the labels
-            are 0 or 1, negative is defined as 0, and in general, negative is
-            the smaller label.
-
-        unlabeled_pool_size : int, optional (default=75)
-            The number of unlabeled_pool samples which will be kept in a
-            separate pool for classification and selection by the updated
-            classifier at each training iteration.
-
-        num_iter : int, optional (default=50)
-            The maximum number of training iterations to run.
+        Returns
+        -------
+        self : returns an instance of self
         """
 
         # verify Xs and y
@@ -183,17 +226,8 @@ class CTClassifier(BaseCoTrainEstimator):
         self.classes_ = list(set(y[~np.isnan(y)]))
         self.n_classes_ = len(self.classes_)
 
-        # If only 1 of p or n is not None, set them equal
-        if (p is not None and n is None):
-            n = p
-            self.p_ = p
-            self.n_ = n
-        elif (p is None and n is not None):
-            p = n
-            self.p_ = p
-            self.n_ = n
-        # if both are none, set as ratio of one class to the other
-        elif (p is None and n is None):
+        # if both p & n are none, set as ratio of one class to the other
+        if (self.p_ is None and self.n_ is None):
             num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
             num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
             p_over_n_ratio = num_class_p // num_class_n
@@ -201,11 +235,6 @@ class CTClassifier(BaseCoTrainEstimator):
                 self.p_, self.n_ = p_over_n_ratio, 1
             else:
                 self.n_, self.p_ = num_class_n // num_class_p, 1
-        else:
-            self.p_, self.n_ = p, n
-
-        self.unlabeled_pool_size_ = unlabeled_pool_size
-        self.num_iter_ = num_iter
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -288,16 +317,19 @@ class CTClassifier(BaseCoTrainEstimator):
         self.estimator1.fit(X1[L], y[L])
         self.estimator2.fit(X2[L], y[L])
 
+        return self
+
     def predict(self, Xs):
         """
         Predict the classes of the examples in the two input views.
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to predict.
+
         Returns
         -------
         y : array-like (n_samples,)
@@ -344,10 +376,11 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: (n_views,)
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of the different views of data to predict.
+
         Returns
         -------
         y_proba : array-like (n_samples, n_classes)
