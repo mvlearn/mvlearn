@@ -171,12 +171,6 @@ class MVMDS(BaseEmbed):
             raise ValueError('The number of components must be greater than 0 '
                              + 'and less than the number of features')
 
-        #for i in Xs:
-         #   for j in Xs:
-          #      if i.shape[0] != j.shape[0]:
-           #         raise ValueError('Input matrices must have the same '
-            #                         + 'number of samples')
-
         Xs = check_Xs(Xs, multiview=True)
 
         mat = np.ones(shape=(len(Xs), len(Xs[0]), len(Xs[0])))
