@@ -78,9 +78,9 @@ class KCCA(object):
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: 2 (# of views)
-            - Xs[i] shape: (n_samples, n_features_)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
 
@@ -143,9 +143,9 @@ class KCCA(object):
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
 
@@ -378,9 +378,9 @@ def _rowcorr(a, b):
 def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
     """
     Makes a kernel for data d
-      If ktype is 'linear', the kernel is a linear inner product
-      If ktype is 'gaussian', the kernel is a Gaussian kernel, sigma = sigma
-      If ktype is 'poly', the kernel is a polynomial kernel with degree=degree
+      If ktype is 'linear', kernel is a linear inner product
+      If ktype is 'gaussian', kernel is a Gaussian kernel, sigma = sigma
+      If ktype is 'poly', kernel is a polynomial kernel with degree=degree
 
     Parameters
     ----------
