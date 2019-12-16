@@ -21,7 +21,8 @@ def data():
     D1 = 5
     D2 = 7
     D3 = 4
-
+    
+    np.random.seed(seed=5)
     first = np.random.rand(N,D1)
     second = np.random.rand(N,D2)
     third = np.random.rand(N,D3)
