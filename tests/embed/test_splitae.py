@@ -1,5 +1,48 @@
 from multiview.embed.splitae import SplitAE
 import numpy as np
+import sklearn.cluster
+import sklearn.datasets
+from itertools import permutations
+import torch
+
+# These are blobs that PCA can reduce to nice clusters easily, so splitAE should be able to aswell
+# cluster_std is high s.t. any 2 features alone do not make nice seperable blobs
+def test_splitae_blobs():
+    accuracies = []
+    for i in range(10):
+        view1, labels = sklearn.datasets.make_blobs(n_samples=1000, n_features=20, centers=None, cluster_std=10.0, center_box=(-10.0, 10.0), shuffle=True, random_state=None)
+        # plt.scatter(*view1.T[2:4], c=labels)
+        linear = torch.nn.Linear(20, 20)
+        view2 = linear(torch.FloatTensor(view1)).detach().cpu() # view2 is just linear transform of view1
+        trainSplit = 800
+
+        # 0 hidden layers -- i.e. no nonlinearities, just matrix mults -- can solve this problem
+        splitae = SplitAE(hiddenSize=64, numHiddenLayers=0, embedSize=2, trainingEpochs=10, batchSize=10, learningRate=0.01)
+        splitae.fit([view1[:trainSplit], view2[:trainSplit]], validationXs=[view1[trainSplit:], view2[trainSplit:]], printInfo=False)
+
+        embeddings, reconstructedView1, predictedView2 = splitae.transform([view1[-200:]])
+        # plt.scatter(*embeddings.T, c=labels[trainSplit:])
+        kmeans = sklearn.cluster.KMeans(n_clusters=3).fit(embeddings)
+        # plt.scatter(*embeddings.T, c=(kmeans.labels_))
+
+        def clusterAccuracy(prediction, target, nClusters):
+            predictionPermuted = prediction.copy()
+            clusterPermutations = list(permutations(range(nClusters)))
+            maxAccuracy = 0
+            for permutation in clusterPermutations:
+                indexes = []
+                for i in range(nClusters):
+                    indexes.append(prediction == i)
+                for i in range(nClusters):
+                    predictionPermuted[indexes[i]] = permutation[i]
+                accuracy = np.sum(predictionPermuted == target) / len(target)
+                maxAccuracy = accuracy if accuracy > maxAccuracy else maxAccuracy
+            return maxAccuracy
+
+        accuracy = clusterAccuracy(kmeans.labels_, labels[trainSplit:], nClusters=3)
+        accuracies.append(accuracy)
+    # distribution of accuracies sometimes has outliers around 0.65, so be conservative
+    assert np.mean(accuracies) > 0.7
 
 def test_splitae_overfit():
     nSamples = 10
@@ -12,6 +55,8 @@ def test_splitae_overfit():
     # irrelevant validationXs to make sure testing error code runs
     splitae.fit([view1, view2], validationXs=[view1, view2], printInfo=False)
     embedding, reconstructedView1, predictedView2 = splitae.transform([view1])
-    # std reaches 0.0035 max in 100 runs.
-    assert np.std(reconstructedView1 - view1) < 1e-2
-    assert np.std(predictedView2 - view2) < 1e-2
+    # thresholds picked by looking at distributions of these errors
+    assert np.mean(reconstructedView1 - view1) < 1e-3
+    assert np.mean(predictedView2 - view2) < 1e-3
+    assert np.std(reconstructedView1 - view1) < 4e-2
+    assert np.std(predictedView2 - view2) < 4e-2
