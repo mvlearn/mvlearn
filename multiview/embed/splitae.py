@@ -39,6 +39,7 @@ class SplitAE(BaseEmbed):
     """
     Implements an autoencoder that creates an embedding of a view View1 and
     from that embedding reconstructs View1 and another view View2.
+
     Parameters
     ----------
     hiddenSize: number of nodes in the hidden layers
@@ -48,6 +49,7 @@ class SplitAE(BaseEmbed):
     trainingEpochs: how many times the network trains on the full
         dataset
     learningRate: learning rate of the Adam optimizer
+
     Attributes
     ----------
     view1Encoder: the View1 embedding network as a PyTorch module
@@ -68,6 +70,7 @@ class SplitAE(BaseEmbed):
     def fit(self, Xs, validationXs=None, printInfo=True):
         """
         Given two views, create and train the autoencoder.
+
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray. Xs[0] is View1 and
@@ -171,6 +174,7 @@ class SplitAE(BaseEmbed):
     def transform(self, Xs):
         """
         Transform the given view with the trained autoencoder.
+
         Parameters
         ----------
         Xs: a list of one array-like, or an np.ndarray, representing the
@@ -178,6 +182,7 @@ class SplitAE(BaseEmbed):
         columns  (features) as the View1 presented in the `fit(...)` step.
              - Xs length: 1
              - Xs[0] shape: (n_samples, n_features_0)
+
         Returns
         ----------
         embedding: the embedding of the View1 data
@@ -198,9 +203,11 @@ class SplitAE(BaseEmbed):
         """
         `fit(Xs)` and then `transform(Xs[:1])`. Note that this method will be
         embedding data that the autoencoder was trained on.
+
         Parameters:
         ----------
         Xs: see `fit(...)` Xs parameters
+        
         Returns
         ----------
         See `transform(...)` return values.
