@@ -49,6 +49,7 @@ class SplitAE(BaseEmbed):
     trainingEpochs: how many times the network trains on the full
         dataset
     learningRate: learning rate of the Adam optimizer
+    printInfo: whether or not to print errors as the network trains.
 
     Attributes
     ----------
@@ -58,16 +59,18 @@ class SplitAE(BaseEmbed):
     """
 
     def __init__(self, hiddenSize=64, numHiddenLayers=2, embedSize=20,
-                 trainingEpochs=10, batchSize=16, learningRate=0.001):
+                 trainingEpochs=10, batchSize=16, learningRate=0.001,
+                 printInfo=True):
         self.hiddenSize = hiddenSize
         self.embedSize = embedSize
         self.numHiddenLayers = numHiddenLayers
         self.trainingEpochs = trainingEpochs
         self.batchSize = batchSize
         self.learningRate = learningRate
+        self.printInfo = printInfo
 
     # Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
-    def fit(self, Xs, validationXs=None, printInfo=True):
+    def fit(self, Xs, validationXs=None):
         """
         Given two views, create and train the autoencoder.
 
@@ -77,6 +80,9 @@ class SplitAE(BaseEmbed):
         Xs[1] is View2
              - Xs length: n_views, only 2 is currently supported for splitAE.
              - Xs[i] shape: (n_samples, n_features_i)
+        validationXs: optional validation data in the same shape of Xs. If
+            printInfo is true, then validation error, calculated with this
+            data, will be printed as the network trains.
         """
 
         Xs = check_Xs(Xs, multiview=True, enforce_views=2)
@@ -88,20 +94,21 @@ class SplitAE(BaseEmbed):
         view2 = torch.FloatTensor(Xs[1])
 
         self.view1Encoder_ = FullyConnectedNet(view1.shape[1], self.hiddenSize,
-                                              self.numHiddenLayers,
-                                              self.embedSize).to(device)
+                                               self.numHiddenLayers,
+                                               self.embedSize).to(device)
         self.view1Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
-                                              self.numHiddenLayers,
-                                              view1.shape[1]).to(device)
+                                               self.numHiddenLayers,
+                                               view1.shape[1]).to(device)
         self.view2Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
-                                              self.numHiddenLayers,
-                                              view2.shape[1]).to(device)
+                                               self.numHiddenLayers,
+                                               view2.shape[1]).to(device)
 
-        if printInfo:
+        if self.printInfo:
             print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
-                  "\nview2Decoder: {:,}".format(self.view1Encoder_.paramCount(),
-                                                self.view1Decoder_.paramCount(),
-                                                self.view2Decoder_.paramCount())
+                  "\nview2Decoder: {:,}"
+                  .format(self.view1Encoder_.paramCount(),
+                          self.view1Decoder_.paramCount(),
+                          self.view2Decoder_.paramCount())
                   )
 
         parameters = [self.view1Encoder_.parameters(),
@@ -114,7 +121,7 @@ class SplitAE(BaseEmbed):
         epochTestErrors = []
 
         for epoch in tqdm.tqdm(range(self.trainingEpochs),
-                               disable=(not printInfo)):
+                               disable=(not self.printInfo)):
             batchErrors = []
             for batchNum in range(nSamples // self.batchSize):
                 optim.zero_grad()
@@ -133,16 +140,18 @@ class SplitAE(BaseEmbed):
                 totalError.backward()
                 optim.step()
                 batchErrors.append(totalError.item())
-            print("Average train error during epoch {} was {}"
-                  .format(epoch, np.mean(batchErrors))) if printInfo else None
+            if self.printInfo:
+                print("Average train error during epoch {} was {}"
+                      .format(epoch, np.mean(batchErrors)))
             epochTrainErrors.append(np.mean(batchErrors))
             if validationXs is not None:
                 testError = self._testError(validationXs)
-                print("Average test  error during epoch {} was {}\n"
-                      .format(epoch, testError)) if printInfo else None
+                if self.printInfo:
+                    print("Average test  error during epoch {} was {}\n"
+                          .format(epoch, testError))
                 epochTestErrors.append(testError)
 
-        if printInfo:
+        if self.printInfo:
             plt.plot(epochTrainErrors, label="train error")
             if validationXs is not None:
                 plt.plot(epochTestErrors, label="test error")
