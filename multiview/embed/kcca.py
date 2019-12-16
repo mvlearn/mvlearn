@@ -312,7 +312,7 @@ def _listcorr(a):
 
     Parameters
     ----------
-    a : Matrix
+    a : list of array-likes
 
     Returns
     -------
@@ -390,6 +390,5 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
     elif ktype == "poly":
         kernel_ = np.dot(cd, cd.T) ** degree
     kernel = (kernel_ + kernel_.T) / 2.0
-    if normalize:
-        kernel = kernel / np.linalg.eigvalsh(kernel).max()
+    kernel = kernel / np.linalg.eigvalsh(kernel).max() # normalize
     return _zscore(kernel)

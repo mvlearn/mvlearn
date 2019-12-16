@@ -1,6 +1,6 @@
 # KCCA Unit Tests
 
-from multiview.embed.kcca import KCCA, _zscore
+from multiview.embed.kcca import KCCA, _zscore, _rowcorr, _listdot, _listcorr, _make_kernel
 import numpy as np
 
 # Initialize number of samples
@@ -71,13 +71,43 @@ def test_ktype_polynomial():
     kpoly = KCCA(ktype = 'poly', reg = 0.0001, n_components = 2, degree=3)
     kpoly.fit_transform([train1, train2])
     assert len(kpoly.components_) == 2
+
+### Testing helper functions
+np.random.seed(30)
+a = np.random.uniform(0,1,(10,10))
+b = np.random.uniform(0,1,(10,10))
+c = np.ones((3,3))
+c[1] = 0
     
+# Test that _rowcorr works
+def test_rowcorr():
+    cs = _rowcorr(a,b)
+    assert len(cs) == 10
     
+# Test that _zscore works
+def test_zscore(): 
+    new = _zscore(c)
+    assert (new[0] == new[2]).all()
+
+# Test listdot works
+def test_listdot(): 
+    x = np.ones((10,10))
+    y = 3*np.ones((10,10))
+    ld = _listdot(x,y)
+    assert ld == [30.0]*10
     
-    
-    
-    
-    
+# Test _listcorr works
+def test_listcorr():
+    d = [a,b,a,b]
+    lc = _listcorr(d)
+    assert len(lc) == 10
+
+# Test make_kernel
+def test_make_kernel(): 
+    lkernel = _make_kernel(c, normalize=True, ktype="linear", sigma=1.0, degree=2)
+    gkernel = _make_kernel(c, normalize=True, ktype="gaussian", sigma=1.0, degree=2)
+    pkernel = _make_kernel(c, normalize=True, ktype="poly", sigma=1.0, degree=2)
+    assert lkernel.shape==gkernel.shape==pkernel.shape == (3,3)
     
     
     
