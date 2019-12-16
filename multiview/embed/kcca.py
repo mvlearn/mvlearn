@@ -61,21 +61,21 @@ class KCCA(BaseEmbed):
         CCA aims to find useful projections of the
         high- dimensional variable sets onto the compact
         linear representations, the canonical components (components_).
-        
+
         Each resulting canonical variate is computed from
         the weighted sum of every original variable indicated
         by the canonical weights (weights_).
-        
+
         The canonical correlation (cancorrs_) quantifies the linear
         correspondence between the two views of data
         based on Pearson’s correlation between their
         canonical components.
-        
+
         Canonical correlation can be seen as a metric of
         successful joint information reduction between two views
         and, therefore, routinely serves as a performance measure for CCA.
-        
-        The kernel generalization of CCA, kernel CCA, is used when 
+
+        The kernel generalization of CCA, kernel CCA, is used when
         there are nonlinear relations between two views.
 
         Parameters
@@ -255,7 +255,7 @@ def kcca(
 
     nDs = len(kernel)
     nFs = [k.shape[0] for k in kernel]
-    n_components = (min([k.shape[1] for k in kernel]) 
+    n_components = (min([k.shape[1] for k in kernel])
                     if n_components is None else n_components)
 
     # Get the auto- and cross-covariance matrices
