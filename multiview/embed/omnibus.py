@@ -31,7 +31,8 @@ class Omnibus(BaseEmbed):
         additional details.
 
     distance_metric : string (default = 'euclidean')
-        Distance metric used to compute pairwise distances.
+        Distance metric used to compute pairwise distances. Metrics must
+        be found in sklearn.neighbors.DistanceMetric.
 
     normalize : string or None (default = 'l1')
         Normalize function to use on views before computing
