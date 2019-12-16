@@ -199,51 +199,6 @@ class KCCA(object):
             self.vcorrs_.append(cs)
         
         return self.vcorrs_
-    
-    def compute_ev(self, vdata):
-        """
-        Computes the explained variance for each canonical dimension
-
-        Parameters
-        ----------
-        vdata: list of array-likes
-               Standardized data (z-score)
-
-        Returns
-        -------
-        ev_: list of array-likes
-             Explained variance for each canonical dimension
-        """
-        nD = len(vdata)
-        nC = self.weights_[0].shape[1]
-        nF = [d.shape[1] for d in vdata]
-        self.ev_ = [np.zeros((nC, f)) for f in nF]
-        for cc in range(nC):
-            ccs = cc + 1
-            weights = [w[:, ccs - 1: ccs] for w in self.weights_]
-            
-            iws = [np.linalg.pinv(w.T, rcond=self.cutoff) for w in weights]
-            ccomp = _listdot([d.T for d in vdata], weights)
-            ccomp = np.array(ccomp)
-            preds_ = []
-            corrs_ = []
-        
-            for dnum in range(len(vdata)):
-                idx = np.ones((len(vdata),))
-                idx[dnum] = False
-                proj = ccomp[idx > 0].mean(0)
-                pred = np.dot(iws[dnum], proj.T).T
-                pred = np.nan_to_num(_zscore(pred))
-                preds_.append(pred)
-                cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
-                corrs_.append(cs)
-            
-            resids = [abs(d[0] - d[1]) for d in zip(vdata, preds_)]
-            for s in range(nD):
-                ev_ = abs(vdata[s].var(0) - resids[s].var(0)) / vdata[s].var(0)
-                ev_[np.isnan(ev_)] = 0.0
-                self.ev_[s][cc] = ev_
-        return self.ev_
 
 
 def kcca(
@@ -328,24 +283,6 @@ def _zscore(d):
     """
     z = (d - d.mean(0)) / d.std(0)
     return z
-
-
-def _demean(d):
-    """
-    Calculates difference from mean of the data
-
-    Parameters
-    ----------
-    d : array
-        Data of interest
-
-    Returns
-    -------
-    diff : array
-           Difference from the mean (Array)
-    """
-    diff = d - d.mean(0)
-    return diff
 
 
 def _listdot(d1, d2):
@@ -441,7 +378,7 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
             Kernel that data is projected to
     """
     d = np.nan_to_num(d)
-    cd = _demean(d)
+    cd = d - d.mean(0)
     if ktype == "linear":
         kernel_ = np.dot(cd, cd.T)
     elif ktype == "gaussian":

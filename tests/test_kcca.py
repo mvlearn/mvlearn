@@ -1,79 +1,76 @@
-#unit tests
+# KCCA Unit Tests
 
-from multiview.embed.kcca import KCCA
+from multiview.embed.kcca import KCCA, _zscore
 import numpy as np
 
-x = np.array([[1.,1.,3.],[2.,3.,2.],[1.,1.,1.],[1.,1.,2.],
-              [2.,2.,3.],[3,3,2],[1,3,2],[4,3,5],[5,5,5]])
-y = np.array([[4,4,-1.07846],[3,3,1.214359],[2,2,0.307180],
-              [2,3,-0.385641],[2,1,-0.078461],[1,1,1.61436],
-              [1,2,0.81436],[2,1,-0.06410],[1,2,1.54590]])
-
-testcca = KCCA(kernelcca = False, reg = 0.0001, numCC = 2)
-testcca.fit([x, y])
-
-print(testcca.comps_)
-
-# Test that numCC is equal to number of cancorrs_
-def test_numCC_cancorrs_():
-    assert len(testcca.cancorrs_) == 2
-
-# Test that numCC is equal to number of ws_
-def test_numCC_ws_():
-    assert len(testcca.ws_) == 2
-    
-# Test that numCC is equal to number of comps_
-def test_numCC_comps_():
-    assert len(testcca.comps_) == 2
-
-# Test that numCC is equal to number of ev_
-def test_numCC_ev_():
-    assert len(testcca.compute_ev([x, y])) == 2
- 
-# Test that linear kernel works
-def test_ktype_linear():
-    klinear = KCCA(ktype = 'linear', reg = 0.0001, numCC = 2, gausigma=2)
-    klinear.fit([x, y])
-    assert len(klinear.comps_) == 2
-    
-# Test that gaussian kernel works
-def test_ktype_gaussian():
-    kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, numCC = 2, gausigma=2)
-    kgauss.fit([x, y])
-    assert len(kgauss.comps_) == 2
-    
-# Test that polynomial kernel works
-def test_ktype_polynomial():
-    kpoly = KCCA(ktype = 'poly', reg = 0.0001, numCC = 2, degree=3)
-    kpoly.fit([x, y])
-    assert len(kpoly.comps_) == 2
-
+# Initialize number of samples
+nSamples = 1000
+np.random.seed(30)
 
 # Define two latent variables (number of samples x 1)
-latvar1 = np.random.randn(1000,)
-latvar2 = np.random.randn(1000,)
+latvar1 = np.random.randn(nSamples,)
+latvar2 = np.random.randn(nSamples,)
 
 # Define independent components for each dataset (number of observations x dataset dimensions)
-indep1 = np.random.randn(1000, 4)
-indep2 = np.random.randn(1000, 5)
+indep1 = np.random.randn(nSamples, 4)
+indep2 = np.random.randn(nSamples, 5)
 
 # Create two datasets, with each dimension composed as a sum of 75% one of the latent variables and 25% independent component
 data1 = 0.25*indep1 + 0.75*np.vstack((latvar1, latvar2, latvar1, latvar2)).T
 data2 = 0.25*indep2 + 0.75*np.vstack((latvar1, latvar2, latvar1, latvar2, latvar1)).T
 
-# Split each dataset into two halves: training set and test set
-train1 = data1[:1000//2]
-train2 = data2[:1000//2]
-test1 = data1[1000//2:]
-test2 = data2[1000//2:]
+# Split each dataset into a training set and test set (10% of dataset is training data)
+train1 = data1[:int(nSamples/10)]
+train2 = data2[:int(nSamples/10)]
+test1 = data1[int(nSamples/10):]
+test2 = data2[int(nSamples/10):]
 
-# Test validate and prediction
+n_components = 4
+
+# Initialize a linear kCCA class
+kcca_l = KCCA(ktype ="linear", reg = 0.001, n_components = n_components)
+
+# Use the methods to find a kCCA mapping and transform the views of data
+kcca_ft = kcca_l.fit_transform([train1, train2])
+kcca_f = kcca_l.fit([train1, train2])
+kcca_t = kcca_l.transform([train1, train2])
+
+# Test that cancorrs_ is equal to n_components
+def test_numCC_cancorrs_():
+    assert len(kcca_ft.cancorrs_) == n_components
+
+# Test that number of views is equal to number of ws_
+def test_numCC_ws_():
+    assert len(kcca_ft.weights_) == 2
+    
+# Test that number of views is equal to number of comps_
+def test_numCC_comps_():
+    assert len(kcca_ft.components_) == 2
+    
+#Test that validate() runs
 def test_validate():
-    cca = KCCA(kernelcca = False, reg = 0., numCC = 4)
-    cca.fit([train1, train2])
-    testcorrs = cca.validate([test1, test2])
-    assert len(testcorrs) == 2
-
+    accuracy = kcca_ft.validate([test1, test2])
+    assert (len(accuracy[0]) == 4 and len(accuracy[1]) == 5)
+    
+# Test that weights from fit equals fit.transform weights
+def test_ktype_weights():
+    assert kcca_t.weights_ == kcca_f
+    
+# Test that components from transform equals fit.transform weights
+def test_ktype_components():
+    assert np.allclose(kcca_ft.components_, kcca_t.components_)
+    
+# Test that gaussian kernel runs
+def test_ktype_gaussian():
+    kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, n_components = 2, sigma=2)
+    kgauss.fit_transform([train1, train2])
+    assert len(kgauss.components_) == 2
+    
+# Test that polynomial kernel runs
+def test_ktype_polynomial():
+    kpoly = KCCA(ktype = 'poly', reg = 0.0001, n_components = 2, degree=3)
+    kpoly.fit_transform([train1, train2])
+    assert len(kpoly.components_) == 2
     
     
     
