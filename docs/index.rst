@@ -4,8 +4,8 @@ Welcome to multiview-ndd's documentation!
 .. toctree::
    :maxdepth: 4
 
-Construct
-=========
+multiview.construct
+===================
 
 .. currentmodule:: multiview.construct
 
@@ -21,8 +21,8 @@ Random Subspace Method
 
 .. autofunction:: random_subspace_method
 
-Cotraining
-==========
+multiview.cotraining
+====================
 
 .. currentmodule:: multiview.cotraining
 
@@ -31,8 +31,8 @@ Cotraining Classifier
 
 .. autoclass:: CTClassifier
 
-Embed
-=====
+multiview.embed
+===============
 
 .. currentmodule:: multiview.embed
 
@@ -52,8 +52,8 @@ Partial Least Squares Regression
 .. autofunction:: partial_least_squares_embedding
 
 
-Cluster
-=======
+multiview.cluster
+=================
 
 .. currentmodule:: multiview.cluster
 
