@@ -52,9 +52,9 @@ class SplitAE(BaseEmbed):
 
     Attributes
     ----------
-    view1Encoder: the View1 embedding network as a PyTorch module
-    view1Decoder: the View1 decoding network as a PyTorch module
-    view2Decoder: the View2 decoding network as a PyTorch module
+    view1Encoder_: the View1 embedding network as a PyTorch module
+    view1Decoder_: the View1 decoding network as a PyTorch module
+    view2Decoder_: the View2 decoding network as a PyTorch module
     """
 
     def __init__(self, hiddenSize=64, numHiddenLayers=2, embedSize=20,
@@ -87,26 +87,26 @@ class SplitAE(BaseEmbed):
         view1 = torch.FloatTensor(Xs[0])
         view2 = torch.FloatTensor(Xs[1])
 
-        self.view1Encoder = FullyConnectedNet(view1.shape[1], self.hiddenSize,
+        self.view1Encoder_ = FullyConnectedNet(view1.shape[1], self.hiddenSize,
                                               self.numHiddenLayers,
                                               self.embedSize).to(device)
-        self.view1Decoder = FullyConnectedNet(self.embedSize, self.hiddenSize,
+        self.view1Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
                                               self.numHiddenLayers,
                                               view1.shape[1]).to(device)
-        self.view2Decoder = FullyConnectedNet(self.embedSize, self.hiddenSize,
+        self.view2Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
                                               self.numHiddenLayers,
                                               view2.shape[1]).to(device)
 
         if printInfo:
             print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
-                  "\nview2Decoder: {:,}".format(self.view1Encoder.paramCount(),
-                                                self.view1Decoder.paramCount(),
-                                                self.view2Decoder.paramCount())
+                  "\nview2Decoder: {:,}".format(self.view1Encoder_.paramCount(),
+                                                self.view1Decoder_.paramCount(),
+                                                self.view2Decoder_.paramCount())
                   )
 
-        parameters = [self.view1Encoder.parameters(),
-                      self.view1Decoder.parameters(),
-                      self.view2Decoder.parameters()]
+        parameters = [self.view1Encoder_.parameters(),
+                      self.view1Decoder_.parameters(),
+                      self.view2Decoder_.parameters()]
         optim = torch.optim.Adam(itertools.chain(*parameters),
                                  lr=self.learningRate)
         nSamples = view1.shape[0]
@@ -122,9 +122,9 @@ class SplitAE(BaseEmbed):
                                    (batchNum+1)*self.batchSize]
                 view2Batch = view2[batchNum*self.batchSize:
                                    (batchNum+1)*self.batchSize]
-                embedding = self.view1Encoder(view1Batch.to(device))
-                view1Reconstruction = self.view1Decoder(embedding)
-                view2Reconstruction = self.view2Decoder(embedding)
+                embedding = self.view1Encoder_(view1Batch.to(device))
+                view1Reconstruction = self.view1Decoder_(embedding)
+                view2Reconstruction = self.view2Decoder_(embedding)
                 view1Error = torch.nn.MSELoss()(view1Reconstruction,
                                                 view1Batch.to(device))
                 view2Error = torch.nn.MSELoss()(view2Reconstruction,
@@ -161,9 +161,9 @@ class SplitAE(BaseEmbed):
         view1Batch = torch.FloatTensor(Xs[0][testIndices])
         view2Batch = torch.FloatTensor(Xs[1][testIndices])
         with torch.no_grad():
-            embedding = self.view1Encoder(view1Batch.to(device))
-            view1Reconstruction = self.view1Decoder(embedding)
-            view2Reconstruction = self.view2Decoder(embedding)
+            embedding = self.view1Encoder_(view1Batch.to(device))
+            view1Reconstruction = self.view1Decoder_(embedding)
+            view2Reconstruction = self.view2Decoder_(embedding)
             view1Error = torch.nn.MSELoss()(view1Reconstruction,
                                             view1Batch.to(device))
             view2Error = torch.nn.MSELoss()(view2Reconstruction,
@@ -193,9 +193,9 @@ class SplitAE(BaseEmbed):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         view1 = torch.FloatTensor(Xs[0])
         with torch.no_grad():
-            embedding = self.view1Encoder(view1.to(device))
-            view1Reconstruction = self.view1Decoder(embedding)
-            view2Prediction = self.view2Decoder(embedding)
+            embedding = self.view1Encoder_(view1.to(device))
+            view1Reconstruction = self.view1Decoder_(embedding)
+            view2Prediction = self.view2Decoder_(embedding)
         return (embedding.cpu().numpy(), view1Reconstruction.cpu().numpy(),
                 view2Prediction.cpu().numpy())
 
@@ -207,7 +207,7 @@ class SplitAE(BaseEmbed):
         Parameters:
         ----------
         Xs: see `fit(...)` Xs parameters
-        
+
         Returns
         ----------
         See `transform(...)` return values.
