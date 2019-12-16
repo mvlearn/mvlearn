@@ -1,9 +1,9 @@
 """
 kcca.py
 ====================================
-Python module for regularized kernel canonical correlation analysis.
+Python module for kernel canonical correlation analysis (kCCA)
 
-Code adopted from UC Berkeley, Gallant lab
+Code modified from UC Berkeley, Gallant lab
 (https://github.com/gallantlab/pyrcca)
 Copyright 2016, UC Berkeley, Gallant lab.
 """
@@ -56,20 +56,38 @@ class KCCA(object):
 
     def fit(self, Xs):
         """
-        Trains KCCA with given parameters. (Insert more thorough description of what kcca does here)
+        CCA aims to find useful projections of the
+        high- dimensional variable sets onto the compact
+        linear representations, the canonical components (components_).
+        
+        Each resulting canonical variate is computed from
+        the weighted sum of every original variable indicated
+        by the canonical weights (weights_).
+        
+        The canonical correlation (cancorrs_) quantifies the linear
+        correspondence between the two views of data
+        based on Pearson’s correlation between their
+        canonical components.
+        
+        Canonical correlation can be seen as a metric of
+        successful joint information reduction between two views
+        and, therefore, routinely serves as a performance measure for CCA.
+        
+        The kernel generalization of CCA, kernel CCA, is used when 
+        there are nonlinear relations between two views.
 
         Parameters
         ----------
         Xs : list of array-likes
             - Xs shape: 2 (# of views)
-            - Xs[i] shape: (n_samples, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
 
         Returns
         -------
         weights_ : list of array-likes
-                  Canonical weights
+                   Canonical weights
 
         """
         Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
@@ -89,8 +107,8 @@ class KCCA(object):
 
     def transform(self, Xs):
         """
-        Uses kcca weights to apply develop
-        canonical components and correlations
+        Uses KCCA weights to transform Xs into canonical components
+        and calculates correlations.
 
         Parameters
         ----------
@@ -99,6 +117,8 @@ class KCCA(object):
 
         Returns
         -------
+        weights_ : list of array-likes
+                   Canonical weights
         preds_: list of array-likes
                 Prediction components of test dataset
         corrs_: list of array-likes
@@ -117,7 +137,9 @@ class KCCA(object):
 
     def fit_transform(self, Xs):
         """
-        Trains KCCA with given parameters. (Insert more thorough description of what kcca does here)
+        Fits KCCA mapping with given parameters and transforms Xs
+        with the KCCA weights to calculate canonical components
+        or projects of the views into a shared embedding.
 
         Parameters
         ----------
@@ -196,7 +218,7 @@ class KCCA(object):
             self.vpreds_.append(pred)
             cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
             self.vcorrs_.append(cs)
-        
+
         return self.vcorrs_
 
 
@@ -230,7 +252,8 @@ def kcca(
 
     nDs = len(kernel)
     nFs = [k.shape[0] for k in kernel]
-    n_components = min([k.shape[1] for k in kernel]) if n_components is None else n_components
+    n_components = (min([k.shape[1] for k in kernel]) 
+                    if n_components is None else n_components)
 
     # Get the auto- and cross-covariance matrices
     crosscovs = [np.dot(ki, kj.T) for ki in kernel for kj in kernel]
@@ -382,12 +405,11 @@ def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
         kernel_ = np.dot(cd, cd.T)
     elif ktype == "gaussian":
         from scipy.spatial.distance import pdist, squareform
-        # pdist finds pairwise distances between observations in n-dimensional space
         # originally just d and no parentheses in denominator
         pairwise_dists = squareform(pdist(cd, "euclidean"))
         kernel_ = np.exp(-pairwise_dists ** 2 / (2 * sigma ** 2))
     elif ktype == "poly":
         kernel_ = np.dot(cd, cd.T) ** degree
     kernel = (kernel_ + kernel_.T) / 2.0
-    kernel = kernel / np.linalg.eigvalsh(kernel).max() # normalize
+    kernel = kernel / np.linalg.eigvalsh(kernel).max()  # normalize
     return _zscore(kernel)
