@@ -7,12 +7,14 @@ Code modified from UC Berkeley, Gallant lab
 (https://github.com/gallantlab/pyrcca)
 Copyright 2016, UC Berkeley, Gallant lab.
 """
+from .base import BaseEmbed
+from ..utils.utils import check_Xs
 
 import numpy as np
 from scipy.linalg import eigh
 
 
-class KCCA(object):
+class KCCA(BaseEmbed):
     """
     Kernel CCA class initialization and methods
 
@@ -90,6 +92,7 @@ class KCCA(object):
                    Canonical weights
 
         """
+        Xs = check_Xs(Xs, multiview=True)
         Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
@@ -159,7 +162,7 @@ class KCCA(object):
                    Correlations of the canonical components on
                    the training dataset
         """
-
+        Xs = check_Xs(Xs, multiview=True)
         Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
