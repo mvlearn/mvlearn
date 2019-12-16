@@ -44,7 +44,7 @@ class MVMDS(BaseEmbed):
     .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
             Components.” Computational Statistics &amp; Data Analysis, vol. 54,
             no. 12, 2010, pp. 3446–3457., doi:10.1016/j.csda.2010.03.010.
-     
+
     """
 
     def __init__(self, n_components=None, num_iter=15):
@@ -68,12 +68,12 @@ class MVMDS(BaseEmbed):
         Xs: List of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
-            
+
         Returns
         -------
 
         components: The first n_component primary principal components
-        
+
         """
         n = p = Xs.shape[1]
 
@@ -139,8 +139,8 @@ class MVMDS(BaseEmbed):
 
         """
         Calculates dimensionally reduced components by inputting the Euclidean
-        distances of each view, double centering them, and using the _cpc 
-        function to find common components between views. Works similarly to 
+        distances of each view, double centering them, and using the _cpc
+        function to find common components between views. Works similarly to
         traditional, single-view Multidimensional Scaling.
 
         Parameters
