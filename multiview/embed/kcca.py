@@ -93,7 +93,7 @@ class KCCA(BaseEmbed):
 
         """
         Xs = check_Xs(Xs, multiview=True)
-        Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
+        #Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
             Xs,
@@ -127,7 +127,7 @@ class KCCA(BaseEmbed):
         corrs_: list of array-likes
                 Correlations on the test dataset
         """
-        Xs = [np.nan_to_num(_zscore(d)) for d in Xs]
+        #Xs = [np.nan_to_num(_zscore(d)) for d in Xs]
 
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")
@@ -163,7 +163,7 @@ class KCCA(BaseEmbed):
                    the training dataset
         """
         Xs = check_Xs(Xs, multiview=True)
-        Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
+        #Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
             Xs,
