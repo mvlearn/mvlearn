@@ -12,7 +12,7 @@ from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
 
-class FullyConnectedNet(torch.nn.Module):
+class _FullyConnectedNet(torch.nn.Module):
     def __init__(self, inputSize, hiddenSize, numHiddenLayers, embeddingSize):
         super().__init__()
         assert numHiddenLayers >= 0, "can't have negative hidden layer count"
@@ -42,20 +42,27 @@ class SplitAE(BaseEmbed):
 
     Parameters
     ----------
-    hiddenSize: number of nodes in the hidden layers
-    numHiddenLayers: number of hidden layers in each encoder or
-        decoder net
-    embedSize: size of the bottleneck vector in the autoencoder
-    trainingEpochs: how many times the network trains on the full
-        dataset
-    learningRate: learning rate of the Adam optimizer
-    printInfo: whether or not to print errors as the network trains.
+    hiddenSize: int (default=64)
+        number of nodes in the hidden layers
+    numHiddenLayers: int (default=2)
+        number of hidden layers in each encoder or decoder net
+    embedSize: int (default=20)
+        size of the bottleneck vector in the autoencoder
+    trainingEpochs: int (default=10)
+        how many times the network trains on the full dataset
+    learningRate: float (default=0.001)
+        learning rate of the Adam optimizer
+    printInfo: bool (default=True)
+        whether or not to print errors as the network trains.
 
     Attributes
     ----------
-    view1Encoder_: the View1 embedding network as a PyTorch module
-    view1Decoder_: the View1 decoding network as a PyTorch module
-    view2Decoder_: the View2 decoding network as a PyTorch module
+    view1Encoder_: torch.nn.Module
+        the View1 embedding network as a PyTorch module
+    view1Decoder_: torch.nn.Module
+        the View1 decoding network as a PyTorch module
+    view2Decoder_: torch.nn.Module
+        the View2 decoding network as a PyTorch module
     """
 
     def __init__(self, hiddenSize=64, numHiddenLayers=2, embedSize=20,
@@ -77,11 +84,12 @@ class SplitAE(BaseEmbed):
 
         Parameters
         ----------
-        Xs : list of array-likes or numpy.ndarray. Xs[0] is View1 and
-        Xs[1] is View2
+        Xs : list of array-likes or numpy.ndarray.
+            Xs[0] is View1 and Xs[1] is View2
              - Xs length: n_views, only 2 is currently supported for splitAE.
              - Xs[i] shape: (n_samples, n_features_i)
-        validationXs: optional validation data in the same shape of Xs. If
+        validationXs: list of array-likes or numpy.ndarray
+            optional validation data in the same shape of Xs. If
             printInfo is true, then validation error, calculated with this
             data, will be printed as the network trains.
         """
@@ -94,15 +102,18 @@ class SplitAE(BaseEmbed):
         view1 = torch.FloatTensor(Xs[0])
         view2 = torch.FloatTensor(Xs[1])
 
-        self.view1Encoder_ = FullyConnectedNet(view1.shape[1], self.hiddenSize,
-                                               self.numHiddenLayers,
-                                               self.embedSize).to(device)
-        self.view1Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
-                                               self.numHiddenLayers,
-                                               view1.shape[1]).to(device)
-        self.view2Decoder_ = FullyConnectedNet(self.embedSize, self.hiddenSize,
-                                               self.numHiddenLayers,
-                                               view2.shape[1]).to(device)
+        self.view1Encoder_ = _FullyConnectedNet(view1.shape[1],
+                                                self.hiddenSize,
+                                                self.numHiddenLayers,
+                                                self.embedSize).to(device)
+        self.view1Decoder_ = _FullyConnectedNet(self.embedSize,
+                                                self.hiddenSize,
+                                                self.numHiddenLayers,
+                                                view1.shape[1]).to(device)
+        self.view2Decoder_ = _FullyConnectedNet(self.embedSize,
+                                                self.hiddenSize,
+                                                self.numHiddenLayers,
+                                                view2.shape[1]).to(device)
 
         if self.printGraph:
             print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
@@ -187,17 +198,21 @@ class SplitAE(BaseEmbed):
 
         Parameters
         ----------
-        Xs: a list of one array-like, or an np.ndarray, representing the
-        View1 of some data. The array must have the same number of
-        columns  (features) as the View1 presented in the `fit(...)` step.
+        Xs: a list of one array-like, or an np.ndarray
+            Represents the View1 of some data. The array must have the same
+            number of columns  (features) as the View1 presented
+            in the `fit(...)` step.
              - Xs length: 1
              - Xs[0] shape: (n_samples, n_features_0)
 
         Returns
         ----------
-        embedding: the embedding of the View1 data
-        view1Reconstruction: the reconstructed View1
-        view2Prediction: the predicted View2
+        embedding: np.ndarray of shape (n_samples, embeddingSize)
+            the embedding of the View1 data
+        view1Reconstruction: np.ndarray of shape (n_samples, n_features_0)
+            the reconstructed View1
+        view2Prediction: np.ndarray of shape (n_samples, n_features_1)
+            the predicted View2
         """
         Xs = check_Xs(Xs, enforce_views=1)
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
