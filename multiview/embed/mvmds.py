@@ -83,6 +83,7 @@ class MVMDS(BaseEmbed):
 
         components = np.zeros((p, self.n_components))
 
+        # Initialized by paper
         pi = np.eye(p)
 
         s = np.zeros((p, p))
@@ -97,12 +98,14 @@ class MVMDS(BaseEmbed):
 
         for i in np.arange(self.n_components):
 
+            # Each q is a particular eigenvalue
             q = q0[:, i]
             q = np.array(q).reshape(len(q), 1)
             d = np.zeros((1, views))
 
             for j in np.arange(views):
 
+                # Represents mu from the paper.
                 d[:, j] = np.dot(np.dot(q.T, Xs[j]), q)
 
             # stepwise iterations
@@ -117,8 +120,10 @@ class MVMDS(BaseEmbed):
                         s2 = s2 + (d2 * Xs[yy] / .0001)
 
                     else:
+                        # Refers to d value from previous iteration
                         s2 = s2 + (d2 * Xs[yy] / d[:, yy])
 
+                # eigenvectors dotted with S matrix and pi
                 w = np.dot(s2, q)
 
                 w = np.dot(pi, w)
@@ -131,6 +136,7 @@ class MVMDS(BaseEmbed):
 
             # creates next component
             components[:, i] = q[:, 0]
+            # initializes pi for next iteration
             pi = pi - np.dot(q, q.T)
 
         return(components)
