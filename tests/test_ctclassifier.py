@@ -1,5 +1,5 @@
 # Gavin Mischler
-# 10/21/2019
+# 12/12/2019
 
 import pytest
 import numpy as np
@@ -29,7 +29,7 @@ def data():
 
     return {'N_test' : N_test, 'clf_test' : clf_test,
     'random_data' : random_data, 'random_labels' : random_labels,
-    'random_test' : random_test}
+    'random_test' : random_test, 'random_seed' : random_seed}
 
 '''
 EXCEPTION TESTING
@@ -102,6 +102,38 @@ def test_predict_zero_classes(data):
         random_labels_bad = np.zeros(100)
         data['clf_test'].predict(bad_data)
 
+def test_zero_p():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), p=0)
+
+def test_negative_p():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), p=-1)
+
+def test_zero_n():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), n=0)
+
+def test_negative_n():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), n=-1)
+
+def test_zero_pool_size():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), unlabeled_pool_size=0)
+
+def test_negative_pool_size():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), unlabeled_pool_size=-1)
+
+def test_zero_num_iter():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), num_iter=0)
+
+def test_negative_num_iter():
+    with pytest.raises(ValueError):
+        clf = CTClassifier(GaussianNB(), GaussianNB(), num_iter=-1)
+
 '''
 FUNCTION TESTING
 '''
@@ -168,15 +200,19 @@ def test_predict_check_p_n(data):
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier()
-    clf.fit(data['random_data'], labels1, p=4, n=3)
+    clf = CTClassifier(p=4, n=3)
+    clf.fit(data['random_data'], labels1)
     assert clf.p_ == 4
     assert clf.n_ == 3
 
 def test_predict_set_p(data):
-    data['clf_test'].fit(data['random_data'], data['random_labels'], p=12)
-    y_pred_test = data['clf_test'].predict(data['random_test'])
-    y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
+    random_seed = 10
+    gnb1 = GaussianNB()
+    gnb2 = GaussianNB()
+    clf = CTClassifier(gnb1, gnb2, p=12, random_state=random_seed)
+    clf.fit(data['random_data'], data['random_labels'])
+    y_pred_test = clf.predict(data['random_test'])
+    y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [3., 3., 3., 3., 3.]
     truth_proba = [[0.31422418, 0.68577582],
@@ -193,9 +229,13 @@ def test_predict_set_p(data):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_set_n(data):
-    data['clf_test'].fit(data['random_data'], data['random_labels'], n=9)
-    y_pred_test = data['clf_test'].predict(data['random_test'])
-    y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
+    random_seed = 10
+    gnb1 = GaussianNB()
+    gnb2 = GaussianNB()
+    clf = CTClassifier(gnb1, gnb2, n=9, random_state=random_seed)
+    clf.fit(data['random_data'], data['random_labels'])
+    y_pred_test = clf.predict(data['random_test'])
+    y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [3., 3., 2., 3., 3.]
     truth_proba = [[0.29020704, 0.70979296],
@@ -212,10 +252,13 @@ def test_predict_set_n(data):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_unlabeled_pool_size(data):
-    data['clf_test'].fit(data['random_data'], data['random_labels'], 
-                         unlabeled_pool_size=20)
-    y_pred_test = data['clf_test'].predict(data['random_test'])
-    y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
+    random_seed = 10
+    gnb1 = GaussianNB()
+    gnb2 = GaussianNB()
+    clf = CTClassifier(gnb1, gnb2, unlabeled_pool_size=20, random_state=random_seed)
+    clf.fit(data['random_data'], data['random_labels'])
+    y_pred_test = clf.predict(data['random_test'])
+    y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [2., 3., 2., 2., 2.]
     truth_proba = [[0.55708013, 0.44291987],
@@ -232,9 +275,13 @@ def test_predict_unlabeled_pool_size(data):
             assert abs(y_pred_prob[i,j] - truth_proba[i][j]) < 0.00000001
 
 def test_predict_num_iter(data):
-    data['clf_test'].fit(data['random_data'], data['random_labels'], num_iter=9)
-    y_pred_test = data['clf_test'].predict(data['random_test'])
-    y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
+    random_seed = 10
+    gnb1 = GaussianNB()
+    gnb2 = GaussianNB()
+    clf = CTClassifier(gnb1, gnb2, num_iter=9, random_state=random_seed)
+    clf.fit(data['random_data'], data['random_labels'])
+    y_pred_test = clf.predict(data['random_test'])
+    y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [2., 3., 2., 2., 2.]
     truth_proba = [[0.88555037, 0.11444963],
