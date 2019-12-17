@@ -60,7 +60,7 @@ class SplitAE(BaseEmbed):
 
     def __init__(self, hiddenSize=64, numHiddenLayers=2, embedSize=20,
                  trainingEpochs=10, batchSize=16, learningRate=0.001,
-                 printInfo=True):
+                 printInfo=False, printGraph=True):
         self.hiddenSize = hiddenSize
         self.embedSize = embedSize
         self.numHiddenLayers = numHiddenLayers
@@ -68,6 +68,7 @@ class SplitAE(BaseEmbed):
         self.batchSize = batchSize
         self.learningRate = learningRate
         self.printInfo = printInfo
+        self.printGraph = printGraph
 
     # Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
     def fit(self, Xs, validationXs=None):
@@ -103,7 +104,7 @@ class SplitAE(BaseEmbed):
                                                self.numHiddenLayers,
                                                view2.shape[1]).to(device)
 
-        if self.printInfo:
+        if self.printGraph:
             print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
                   "\nview2Decoder: {:,}"
                   .format(self.view1Encoder_.paramCount(),
@@ -151,7 +152,7 @@ class SplitAE(BaseEmbed):
                           .format(epoch, testError))
                 epochTestErrors.append(testError)
 
-        if self.printInfo:
+        if self.printGraph:
             plt.plot(epochTrainErrors, label="train error")
             if validationXs is not None:
                 plt.plot(epochTestErrors, label="test error")
