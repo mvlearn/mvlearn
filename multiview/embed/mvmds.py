@@ -54,7 +54,7 @@ class MVMDS(BaseEmbed):
         self.n_components = n_components
         self.num_iter = num_iter
 
-    def _cpc(self, Xs):
+    def _commonpcs(self, Xs):
 
         """
         Finds Stepwise Estimation of Common Principal Components as described
@@ -139,7 +139,7 @@ class MVMDS(BaseEmbed):
 
         """
         Calculates dimensionally reduced components by inputting the Euclidean
-        distances of each view, double centering them, and using the _cpc
+        distances of each view, double centering them, and using the _commonpcs
         function to find common components between views. Works similarly to
         traditional, single-view Multidimensional Scaling.
 
@@ -184,7 +184,7 @@ class MVMDS(BaseEmbed):
             B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
             mat[i] = B
 
-        self.components = self._cpc(mat)
+        self.components = self._commonpcs(mat)
 
     def transform(self, Xs):
 
