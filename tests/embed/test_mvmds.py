@@ -67,26 +67,12 @@ def test_fit_transform_values(data):
     for i in range(comp.shape[0]):
         for j in range(comp.shape[1]):
             assert comp[i,j]-comp2[i,j] < .000001
-
-
-def test_transform(data):
-    mvmds = MVMDS(len(data['random_views'][0]))
-    comp = mvmds.transform(data['random_views'])
-    
-    for i in range(len(comp)):
-        for j in range(comp[i].shape[0]):     
-            for k in range(comp[i].shape[1]):
-                
-                assert abs(comp[i][j,k] - \
-                           data['random_views'][i][j,k]) < .000001
             
 def test_fit_transformdifferent_wrong_samples(data):
     with pytest.raises(ValueError):
        
         mvmds = MVMDS(2)
         comp = mvmds.fit_transform(data['wrong_views'])
-
-
 
 #This is about taking in views that are the same.
 
@@ -101,7 +87,6 @@ def test_depend_views(data):
 '''
 Parameter Checks
 '''
-
 
 def test_fit_transform_values_0(data):
     with pytest.raises(ValueError):
@@ -121,6 +106,3 @@ def check_num_iter(data):
         
         mvmds = MVMDS(n_components=-3)
         comp = mvmds.fit_transform(data['samp_views'])
-    
-
-    

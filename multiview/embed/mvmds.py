@@ -39,6 +39,10 @@ class MVMDS(BaseEmbed):
         Number of iterations stepwise estimation goes through. Detailed
         in Trendafilov paper.
 
+    Attributes
+    ----------
+    components: A projection of shape [n_samples, n_components]
+
     References
     ----------
     .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
@@ -156,11 +160,6 @@ class MVMDS(BaseEmbed):
                 - Xs length: n_views
                 - Xs[i] shape: (n_samples, n_features_i)
 
-        Attributes
-        ----------
-
-        components: A k-dimensional projection of shape [n,k]
-
         """
 
         if (self.n_components) > len(Xs[0]):
@@ -192,30 +191,6 @@ class MVMDS(BaseEmbed):
 
         self.components = self._commonpcs(mat)
 
-    def transform(self, Xs):
-
-        """
-        Returns back the original Xs. Not needed for implementation
-
-        Parameters
-        ----------
-
-        Xs: list of array-likes or numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function.
-
-        Returns
-        -------
-
-        Xs = Same Xs as inputted
-
-        """
-
-        Xs = check_Xs(Xs)
-
-        return Xs
-
     def fit_transform(self, Xs):
 
         """"
@@ -227,11 +202,13 @@ class MVMDS(BaseEmbed):
         Xs: list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
-            The data to embed based on the prior fit function.
+            The data to embed based on the fit function.
 
         Returns
         -------
-        components: Components of the dimensionally reduced Xs
+        components: numpy.ndarray
+            - components shape: (n_samples, n_components)
+            MVMDS components of Xs
         """
         Xs = check_Xs(Xs)
         self.fit(Xs)
