@@ -41,8 +41,9 @@ class MVMDS(BaseEmbed):
 
     Attributes
     ----------
-    components: A projection of shape [n_samples, n_components]
-
+    components: numpy.ndarray
+            - components shape: (n_samples, n_components)
+            MVMDS components of Xs
     References
     ----------
     .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
@@ -68,16 +69,15 @@ class MVMDS(BaseEmbed):
 
         Parameters
         ----------
-
         Xs: List of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
 
         Returns
         -------
-
-        components: The first n_component primary principal components
-
+        components: numpy.ndarray
+            - components shape: (n_samples, n_components)
+            MVMDS components of Xs
         """
         n = p = Xs.shape[1]
 
