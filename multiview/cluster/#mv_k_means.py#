@@ -46,7 +46,7 @@ class MultiviewKMeans(BaseCluster):
 
     n_init : int, optional, default=5
         Number of times the k-means algorithm will run on different
-        centroid seeds. The final result will be the best output of 
+        centroid seeds. The final result will be the best output of
         n_init runs with respect to total inertia across all views.
 
     Attributes
@@ -119,7 +119,7 @@ class MultiviewKMeans(BaseCluster):
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
 
-        
+
         centroids_ : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
@@ -192,13 +192,13 @@ class MultiviewKMeans(BaseCluster):
         '''
 
         Xs = check_Xs(Xs, enforce_views=2)
-        
+
         # Run multi-view kmeans for n_init different centroid initializations
         min_inertia = np.inf
         best_centroids = None
-        
+
         for _ in range(self.n_init):
-            
+
             # Random initialization of centroids
             indices1 = np.random.choice(Xs[0].shape[0], self.n_clusters)
             centers1 = Xs[0][indices1]
