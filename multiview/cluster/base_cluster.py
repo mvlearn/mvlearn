@@ -45,7 +45,7 @@ class BaseCluster(BaseEstimator):
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views to fit the model on.
-        
+
         Returns
         -------
         self :  returns and instance of self.
@@ -83,9 +83,9 @@ class BaseCluster(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views to fit the model on 
+            A list of different views to fit the model on
             and cluster.
-        
+
         Returns
         -------
         predictions : array-like, shape (n_samples,)

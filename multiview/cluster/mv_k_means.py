@@ -21,6 +21,7 @@ from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 from scipy.spatial.distance import cdist
 
+
 class MultiviewKMeans(BaseCluster):
 
     '''
@@ -46,7 +47,7 @@ class MultiviewKMeans(BaseCluster):
 
     n_init : int, optional, default=5
         Number of times the k-means algorithm will run on different
-        centroid seeds. The final result will be the best output of 
+        centroid seeds. The final result will be the best output of
         n_init runs with respect to total inertia across all views.
 
     Attributes
@@ -119,7 +120,7 @@ class MultiviewKMeans(BaseCluster):
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
 
-        
+
         centroids_ : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
@@ -192,13 +193,13 @@ class MultiviewKMeans(BaseCluster):
         '''
 
         Xs = check_Xs(Xs, enforce_views=2)
-        
+
         # Run multi-view kmeans for n_init different centroid initializations
         min_inertia = np.inf
         best_centroids = None
-        
+
         for _ in range(self.n_init):
-            
+
             # Random initialization of centroids
             indices1 = np.random.choice(Xs[0].shape[0], self.n_clusters)
             centers1 = Xs[0][indices1]
@@ -206,7 +207,7 @@ class MultiviewKMeans(BaseCluster):
             centers2 = Xs[1][indices2]
             centroids = [centers1, centers2]
 
-            # Initializing partitions, objective function value, and loop variables
+            # Initializing partitions, objective value, and loop vars
             distances = cdist(Xs[1], centers2)
             parts = np.argmin(distances, axis=1).flatten()
             partitions = [None, parts]
@@ -214,7 +215,7 @@ class MultiviewKMeans(BaseCluster):
             iter_stall = 0
             iter_num = 0
 
-            # While objective is still decreasing and num of iterations < max_iter
+            # While objective is still decreasing and iterations < max_iter
             max_iter = np.inf
             if self.max_iter is not None:
                 max_iter = self.max_iter
@@ -225,7 +226,7 @@ class MultiviewKMeans(BaseCluster):
                 # Switch partitions and compute maximization
                 new_centers = list()
                 for cl in range(self.n_clusters):
-                    # Isolate data points from each cluster to recompute centroids
+                    # Recompute centroids using samples from each cluster
                     mask = (partitions[pre_view] == cl)
                     if (np.sum(mask) == 0):
                         new_centers.append(centroids[view][cl])
