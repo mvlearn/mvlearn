@@ -31,7 +31,7 @@ class KCCA(BaseEmbed):
              Optional regularization parameter
              to perform spectral cutoff when computing the canonical
              weight pseudoinverse during held-out data prediction
-    sigma : float, default = 1
+    sigma : float, default = 1.0
             Parameter if Gaussian kernel
     degree : integer, default = 2
              Parameter if Polynomial kernel
@@ -40,9 +40,9 @@ class KCCA(BaseEmbed):
 
     def __init__(
         self,
-        reg=None,
-        n_components=None,
-        ktype=None,
+        reg=0.1,
+        n_components=10,
+        ktype='linear',
         cutoff=1e-15,
         sigma=1.0,
         degree=2,
@@ -55,6 +55,22 @@ class KCCA(BaseEmbed):
         self.degree = degree
         if self.ktype is None:
             self.ktype = "linear"
+
+        # Error Handling
+        if self.n_components<0 or not type(self.n_components) == int:
+            raise ValueError("n_components must be a positive integer")
+        if ((self.ktype != "linear") and (self.ktype != "poly")
+                            and (self.ktype != "gaussian")):
+            raise ValueError("ktype must be 'linear', 'gaussian', or 'poly'.")
+        if self.sigma < 0 or not type(self.sigma) == float:
+            raise ValueError("sigma must be positive float")
+        if self.degree < 0 or not type(self.degree) == int:
+            raise ValueError("degree must be positive int")
+        if self.reg < 0 or not type(self.reg) == float:
+            raise ValueError("reg must be positive float")
+        if self.cutoff < 0 or not type(self.cutoff) == float:
+            raise ValueError("cutoff must be positive float")
+
 
     def fit(self, Xs):
         """
@@ -93,7 +109,6 @@ class KCCA(BaseEmbed):
 
         """
         Xs = check_Xs(Xs, multiview=True)
-        #Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
             Xs,
@@ -127,7 +142,6 @@ class KCCA(BaseEmbed):
         corrs_: list of array-likes
                 Correlations on the test dataset
         """
-        #Xs = [np.nan_to_num(_zscore(d)) for d in Xs]
 
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")

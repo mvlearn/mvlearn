@@ -2,6 +2,7 @@
 
 from multiview.embed.kcca import KCCA, _zscore, _rowcorr, _listdot, _listcorr, _make_kernel
 import numpy as np
+import pytest
 
 # Initialize number of samples
 nSamples = 1000
@@ -62,7 +63,7 @@ def test_ktype_components():
     
 # Test that gaussian kernel runs
 def test_ktype_gaussian():
-    kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, n_components = 2, sigma=2)
+    kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, n_components = 2, sigma=2.0)
     kgauss.fit_transform([train1, train2])
     assert len(kgauss.components_) == 2
     
@@ -109,6 +110,24 @@ def test_make_kernel():
     pkernel = _make_kernel(c, normalize=True, ktype="poly", sigma=1.0, degree=2)
     assert lkernel.shape==gkernel.shape==pkernel.shape == (3,3)
     
-    
-    
+# Test error handling
+def test_bad_parameters():
+    with pytest.raises(ValueError):
+        kcca_a = KCCA(ktype ="test", reg = 0.001, n_components = n_components) # wrong ktype
+        kcca_b = KCCA(ktype ="linear", reg = 0.001, n_components = -1) # negative -n_comp
+        kcca_c = KCCA(ktype ="linear", reg = 0.001, n_components = 1.0) # float n_comp
+        kcca_d = KCCA(ktype ="linear", reg = -0.001, n_components = 1) # negative reg
+        kcca_e = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =-1.0) # negative sigma
+        kcca_f = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =1) # int sigma
+        kcca_g = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =-1) # negative degree
+        kcca_h = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =1.0) # float degree
+        kcca_i = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= -1) # neg cutoff
+        kcca_j = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= 1) # int cutoff
+
+# Test if error when transform before fit
+def test_no_weights():
+    with pytest.raises(NameError):
+        kcca_b = KCCA(ktype ="linear", reg = 0.001, n_components = 1)
+        kcca_b.transform([train1, train2])
+        
     
