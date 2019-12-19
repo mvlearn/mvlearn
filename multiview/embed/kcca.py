@@ -57,10 +57,10 @@ class KCCA(BaseEmbed):
             self.ktype = "linear"
 
         # Error Handling
-        if self.n_components<0 or not type(self.n_components) == int:
+        if self.n_components < 0 or not type(self.n_components) == int:
             raise ValueError("n_components must be a positive integer")
         if ((self.ktype != "linear") and (self.ktype != "poly")
-                            and (self.ktype != "gaussian")):
+            and (self.ktype != "gaussian")):
             raise ValueError("ktype must be 'linear', 'gaussian', or 'poly'.")
         if self.sigma < 0 or not type(self.sigma) == float:
             raise ValueError("sigma must be positive float")
@@ -70,7 +70,6 @@ class KCCA(BaseEmbed):
             raise ValueError("reg must be positive float")
         if self.cutoff < 0 or not type(self.cutoff) == float:
             raise ValueError("cutoff must be positive float")
-
 
     def fit(self, Xs):
         """
@@ -177,7 +176,6 @@ class KCCA(BaseEmbed):
                    the training dataset
         """
         Xs = check_Xs(Xs, multiview=True)
-        #Xs = [np.nan_to_num(_zscore(x)) for x in Xs]
 
         components_ = kcca(
             Xs,
