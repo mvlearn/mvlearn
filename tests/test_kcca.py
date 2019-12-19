@@ -111,19 +111,55 @@ def test_make_kernel():
     assert lkernel.shape==gkernel.shape==pkernel.shape == (3,3)
     
 # Test error handling
-def test_bad_parameters():
+def test_bad_ktype():
     with pytest.raises(ValueError):
-        kcca_a = KCCA(ktype ="test", reg = 0.001, n_components = n_components) # wrong ktype
-        kcca_b = KCCA(ktype ="linear", reg = 0.001, n_components = -1) # negative -n_comp
-        kcca_c = KCCA(ktype ="linear", reg = 0.001, n_components = 1.0) # float n_comp
-        kcca_d = KCCA(ktype ="linear", reg = -0.001, n_components = 1) # negative reg
-        kcca_e = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =-1.0) # negative sigma
-        kcca_f = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =1) # int sigma
-        kcca_g = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =-1) # negative degree
-        kcca_h = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =1.0) # float degree
-        kcca_i = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= -1) # neg cutoff
-        kcca_j = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= 1) # int cutoff
+        kcca_a = KCCA(ktype ="test", reg = 0.001, n_components = n_components)
 
+# Test error handling
+def test_neg_nc():
+    with pytest.raises(ValueError):
+        kcca_b = KCCA(ktype ="linear", reg = 0.001, n_components = -1)
+        
+# Test error handling
+def test_float_nc():
+    with pytest.raises(ValueError):
+        kcca_c = KCCA(ktype ="linear", reg = 0.001, n_components = 1.0)
+  
+# Test error handling
+def test_neg_reg():
+    with pytest.raises(ValueError):
+        kcca_d = KCCA(ktype ="linear", reg = -0.001, n_components = 1)
+   
+# Test error handling
+def test_neg_sigma():
+    with pytest.raises(ValueError):
+        kcca_e = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =-1.0)
+        
+# Test error handling
+def test_int_sigma():
+    with pytest.raises(ValueError):
+        kcca_f = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =1)
+
+# Test error handling
+def test_neg_degree():
+    with pytest.raises(ValueError):
+        kcca_g = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =-1)
+
+# Test error handling
+def test_float_degree():
+    with pytest.raises(ValueError):
+        kcca_h = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =1.0)
+
+# Test error handling
+def test_neg_cutoff():
+    with pytest.raises(ValueError):
+        kcca_i = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= -1)
+
+# Test error handling
+def test_inf_cutoff():
+    with pytest.raises(ValueError):
+        kcca_j = KCCA(ktype ="poly", reg = 0.001, n_components = 1, cutoff= 1)
+        
 # Test if error when transform before fit
 def test_no_weights():
     with pytest.raises(NameError):
