@@ -17,8 +17,8 @@ def test_splitae_blobs():
         trainSplit = 800
 
         # 0 hidden layers -- i.e. no nonlinearities, just matrix mults -- can solve this problem
-        splitae = SplitAE(hiddenSize=64, numHiddenLayers=0, embedSize=2, trainingEpochs=10, batchSize=10, learningRate=0.01, printInfo=False, printGraph=False)
-        splitae.fit([view1[:trainSplit], view2[:trainSplit]], validationXs=[view1[trainSplit:], view2[trainSplit:]])
+        splitae = SplitAE(hidden_size=64, num_hidden_layers=0, embed_size=2, training_epochs=10, batch_size=10, learning_rate=0.01, print_info=False, print_graph=False)
+        splitae.fit([view1[:trainSplit], view2[:trainSplit]], validation_Xs=[view1[trainSplit:], view2[trainSplit:]])
 
         embeddings, reconstructedView1, predictedView2 = splitae.transform([view1[-200:]])
         # plt.scatter(*embeddings.T, c=labels[trainSplit:])
@@ -51,9 +51,9 @@ def test_splitae_overfit():
     # give view2 5 features, each of which is the sum of two features in view1
     view2 = view1[:, :5] + view1[:, -5:]
     # make huge network so we should overfit
-    splitae = SplitAE(hiddenSize=64, numHiddenLayers=1, embedSize=10, trainingEpochs=200, batchSize=10, learningRate=0.01, printInfo=False, printGraph=False)
-    # irrelevant validationXs to make sure testing error code runs
-    splitae.fit([view1, view2], validationXs=[view1, view2])
+    splitae = SplitAE(hidden_size=64, num_hidden_layers=1, embed_size=10, training_epochs=200, batch_size=10, learning_rate=0.01, print_info=False, print_graph=False)
+    # irrelevant validation_Xs to make sure testing error code runs
+    splitae.fit([view1, view2], validation_Xs=[view1, view2])
     embedding, reconstructedView1, predictedView2 = splitae.transform([view1])
     # thresholds picked by looking at distributions of these errors
     assert np.mean(reconstructedView1 - view1) < 1e-3

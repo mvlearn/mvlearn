@@ -13,6 +13,12 @@ from ..utils.utils import check_Xs
 
 
 class _FullyConnectedNet(torch.nn.Module):
+    """
+    General torch module for a fully connected neural network with
+    an input layer with # nodes given by inputSize , numHiddenLayers hidden
+    layers with # nodes given by hiddenSize, and an output layer # nodes given
+    by embeddingSize.
+    """
     def __init__(self, inputSize, hiddenSize, numHiddenLayers, embeddingSize):
         super().__init__()
         assert numHiddenLayers >= 0, "can't have negative hidden layer count"
@@ -26,6 +32,8 @@ class _FullyConnectedNet(torch.nn.Module):
             self.layers.append(torch.nn.Linear(hiddenSize, embeddingSize))
 
     def forward(self, x):
+        # Forward pass for the network. Pytorch automatically calculates
+        # backwards pass
         for layer in self.layers[:-1]:
             x = torch.nn.Sigmoid()(layer(x))
         x = self.layers[-1](x)  # no activation on last layer
@@ -42,43 +50,47 @@ class SplitAE(BaseEmbed):
 
     Parameters
     ----------
-    hiddenSize: int (default=64)
+    hidden_size: int (default=64)
         number of nodes in the hidden layers
-    numHiddenLayers: int (default=2)
+    num_hidden_layers: int (default=2)
         number of hidden layers in each encoder or decoder net
-    embedSize: int (default=20)
+    embed_size: int (default=20)
         size of the bottleneck vector in the autoencoder
-    trainingEpochs: int (default=10)
+    training_epochs: int (default=10)
         how many times the network trains on the full dataset
-    learningRate: float (default=0.001)
+    batch_size: int (default=16):
+        batch size while training the network
+    learning_rate: float (default=0.001)
         learning rate of the Adam optimizer
-    printInfo: bool (default=True)
+    print_info: bool (default=True)
         whether or not to print errors as the network trains.
+    print_graph: bool (default=True)
+        whether or not to graph training loss
 
     Attributes
     ----------
-    view1Encoder_: torch.nn.Module
+    view1_encoder_: torch.nn.Module
         the View1 embedding network as a PyTorch module
-    view1Decoder_: torch.nn.Module
+    view1_decoder_: torch.nn.Module
         the View1 decoding network as a PyTorch module
-    view2Decoder_: torch.nn.Module
+    view2_decoder_: torch.nn.Module
         the View2 decoding network as a PyTorch module
     """
 
-    def __init__(self, hiddenSize=64, numHiddenLayers=2, embedSize=20,
-                 trainingEpochs=10, batchSize=16, learningRate=0.001,
-                 printInfo=False, printGraph=True):
-        self.hiddenSize = hiddenSize
-        self.embedSize = embedSize
-        self.numHiddenLayers = numHiddenLayers
-        self.trainingEpochs = trainingEpochs
-        self.batchSize = batchSize
-        self.learningRate = learningRate
-        self.printInfo = printInfo
-        self.printGraph = printGraph
+    def __init__(self, hidden_size=64, num_hidden_layers=2, embed_size=20,
+                 training_epochs=10, batch_size=16, learning_rate=0.001,
+                 print_info=False, print_graph=True):
+        self.hiddenSize = hidden_size
+        self.embedSize = embed_size
+        self.numHiddenLayers = num_hidden_layers
+        self.trainingEpochs = training_epochs
+        self.batchSize = batch_size
+        self.learningRate = learning_rate
+        self.printInfo = print_info
+        self.printGraph = print_graph
 
     # Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
-    def fit(self, Xs, validationXs=None):
+    def fit(self, Xs, validation_Xs=None):
         """
         Given two views, create and train the autoencoder.
 
@@ -88,7 +100,7 @@ class SplitAE(BaseEmbed):
             Xs[0] is View1 and Xs[1] is View2
              - Xs length: n_views, only 2 is currently supported for splitAE.
              - Xs[i] shape: (n_samples, n_features_i)
-        validationXs: list of array-likes or numpy.ndarray
+        validation_Xs: list of array-likes or numpy.ndarray
             optional validation data in the same shape of Xs. If
             printInfo is true, then validation error, calculated with this
             data, will be printed as the network trains.
@@ -114,6 +126,10 @@ class SplitAE(BaseEmbed):
                                                 self.hiddenSize,
                                                 self.numHiddenLayers,
                                                 view2.shape[1]).to(device)
+
+        self.view1_encoder_ = self.view1Encoder_
+        self.view1_decoder_ = self.view1Decoder_
+        self.view2_decoder_ = self.view2Decoder_
 
         if self.printGraph:
             print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
@@ -156,8 +172,8 @@ class SplitAE(BaseEmbed):
                 print("Average train error during epoch {} was {}"
                       .format(epoch, np.mean(batchErrors)))
             epochTrainErrors.append(np.mean(batchErrors))
-            if validationXs is not None:
-                testError = self._testError(validationXs)
+            if validation_Xs is not None:
+                testError = self._testError(validation_Xs)
                 if self.printInfo:
                     print("Average test  error during epoch {} was {}\n"
                           .format(epoch, testError))
@@ -165,7 +181,7 @@ class SplitAE(BaseEmbed):
 
         if self.printGraph:
             plt.plot(epochTrainErrors, label="train error")
-            if validationXs is not None:
+            if validation_Xs is not None:
                 plt.plot(epochTestErrors, label="test error")
             plt.title("Errors during training")
             plt.xlabel("Epoch")
