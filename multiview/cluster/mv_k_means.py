@@ -302,29 +302,3 @@ class MultiviewKMeans(BaseCluster):
         predictions = np.argmin(dist_metric, axis=1).flatten()
 
         return predictions
-
-    def fit_predict(self, Xs):
-
-        '''
-        Fit the cluster centroids to the data and then
-        predict the cluster labels for the data.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            This list must be of size 2, corresponding to the two views
-            of the data. The two views can each have a different number
-            of features, but they must have the same number of samples.
-
-        Returns
-        -------
-        predictions : array-like, shape (n_samples,)
-            The predicted cluster labels for each sample.
-
-        '''
-
-        self.fit(Xs)
-        predictions = self.predict(Xs)
-        return predictions
