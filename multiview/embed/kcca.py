@@ -3,27 +3,6 @@ kcca.py
 ====================================
 Python module for kernel canonical correlation analysis (kCCA)
 
-CCA aims to find useful projections of the
-high- dimensional variable sets onto the compact
-linear representations, the canonical components (components_).
-
-Each resulting canonical variate is computed from
-the weighted sum of every original variable indicated
-by the canonical weights (weights_).
-
-The canonical correlation (cancorrs_) quantifies the linear
-correspondence between the two views of data
-based on Pearson’s correlation between their
-canonical components.
-
-Canonical correlation can be seen as a metric of
-successful joint information reduction between two views
-and, therefore, routinely serves as a performance measure for CCA.
-
-The kernel generalization of CCA, kernel CCA, is used when
-there are nonlinear relations between two views.
-
-
 Code modified from UC Berkeley, Gallant lab
 (https://github.com/gallantlab/pyrcca)
 Copyright 2016, UC Berkeley, Gallant lab.
@@ -38,7 +17,25 @@ from scipy.linalg import eigh
 
 class KCCA(BaseEmbed):
     """
-    Kernel CCA class initialization and methods
+    CCA aims to find useful projections of the
+    high- dimensional variable sets onto the compact
+    linear representations, the canonical components (components_).
+    
+    Each resulting canonical variate is computed from
+    the weighted sum of every original variable indicated
+    by the canonical weights (weights_).
+    
+    The canonical correlation (cancorrs_) quantifies the linear
+    correspondence between the two views of data
+    based on Pearson’s correlation between their
+    canonical components.
+    
+    Canonical correlation can be seen as a metric of
+    successful joint information reduction between two views
+    and, therefore, routinely serves as a performance measure for CCA.
+    
+    The kernel generalization of CCA, kernel CCA, is used when
+    there are nonlinear relations between two views.
 
     Parameters
     ----------
