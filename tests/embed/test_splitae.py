@@ -5,6 +5,40 @@ import sklearn.datasets
 from itertools import permutations
 import torch
 
+# Try and make sure the .fit() leads to an error if any parameters are invalid
+# Not comprehensive right now e.g. if user passes negative learning rate,
+# that's a valid backprop update step but probably not what the user wants.
+# In fact there are many ways in which the data/params could be "invalid" --
+# i.e. not suited for the method, feature and sample dimension mixed up,
+# too few rows in data so model will overfit, batch size too low
+# so model won't train at non-glacial rate, not enough epochs specified
+# for the model to converge, etc, that this test cannot hope to check.
+# For the time being. Maybe there is some way to comprehensively advise the
+# user with e.g. with warnings w/o making them read the docs / read about NNs.
+def test_invalid_params():
+    for i in range(100):
+        validParams = [64, 0, 2, 10, 10, 0.01, False, False]
+        whichInvalid = np.random.randint(5) # only checking first 5 params
+
+        if whichInvalid in [0, 2, 4]:
+            invalidValue = np.random.randint(-1, 1) # -1 or 0
+            validParams[whichInvalid] = invalidValue
+        else:
+            invalidValue = np.random.randint(-5, 0) # some negative number
+            validParams[whichInvalid] = invalidValue
+
+        view1, labels = sklearn.datasets.make_blobs(n_samples=100, n_features=20, centers=None, cluster_std=10.0, center_box=(-10.0, 10.0), shuffle=True, random_state=None)
+        view2 = view1**2
+
+        splitae = SplitAE(*validParams)
+        threwError = False
+        try:
+            splitae.fit([view1, view2])
+        except Exception as e:
+            threwError = True
+        assert threwError
+
+
 # These are blobs that PCA can reduce to nice clusters easily, so splitAE should be able to aswell
 # cluster_std is high s.t. any 2 features alone do not make nice seperable blobs
 def test_splitae_blobs():

@@ -24,6 +24,8 @@ class _FullyConnectedNet(torch.nn.Module):
     def __init__(self, inputSize, hiddenSize, numHiddenLayers, embeddingSize):
         super().__init__()
         assert numHiddenLayers >= 0, "can't have negative hidden layer count"
+        assert hiddenSize >= 1, "hidden size must involve >= 1 node"
+        assert embeddingSize >= 1, "embedding size must involve >= 1 node"
         self.layers = torch.nn.ModuleList()
         if numHiddenLayers == 0:
             self.layers.append(torch.nn.Linear(inputSize, embeddingSize))
@@ -110,6 +112,9 @@ class SplitAE(BaseEmbed):
         Xs = check_Xs(Xs, multiview=True, enforce_views=2)
         assert Xs[0].shape[0] >= self.batchSize, """batch size must be <= to
             number of samples"""
+        assert self.batchSize > 0, """can't have negative batch size"""
+        assert self.trainingEpochs >= 0, """can't train for negative amount of
+            times"""
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         view1 = torch.FloatTensor(Xs[0])
@@ -189,6 +194,7 @@ class SplitAE(BaseEmbed):
             plt.ylabel("Error")
             plt.legend()
             plt.show()
+        return self
 
     def _testError(self, Xs):
         # Calculates the error of the network on a set of data Xs
@@ -227,9 +233,9 @@ class SplitAE(BaseEmbed):
         ----------
         embedding: np.ndarray of shape (n_samples, embeddingSize)
             the embedding of the View1 data
-        view1Reconstruction: np.ndarray of shape (n_samples, n_features_0)
+        view1_reconstructions: np.ndarray of shape (n_samples, n_features_0)
             the reconstructed View1
-        view2Prediction: np.ndarray of shape (n_samples, n_features_1)
+        view2_prediction: np.ndarray of shape (n_samples, n_features_1)
             the predicted View2
         """
         Xs = check_Xs(Xs, enforce_views=1)
