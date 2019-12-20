@@ -39,8 +39,8 @@ extensions = [
     "numpydoc",
     "sphinx.ext.ifconfig",
     "sphinx.ext.githubpages",
-    "nbsphinx",
-    "sphinx.ext.intersphinx",
+    #"nbsphinx",
+    #"sphinx.ext.intersphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -30,6 +30,7 @@ Cotraining Classifier
 ---------------------
 
 .. autoclass:: CTClassifier
+    :exclude-members: get_params, set_params
 
 multiview.embed
 ===============
@@ -40,16 +41,24 @@ Generalized Canonical Correlation Analysis
 ------------------------------------------
 
 .. autoclass:: GCCA
+    :exclude-members: get_params, set_params
 
 Omnibus Embedding
 -----------------
 
 .. autoclass:: Omnibus
+    :exclude-members: transform, get_params, set_params
 
 Partial Least Squares Regression
 --------------------------------
 
 .. autofunction:: partial_least_squares_embedding
+
+Multiview Multidimensional Scaling
+----------------------------------
+
+.. autoclass:: MVMDS
+    :exclude-members: transform, get_params, set_params
 
 
 multiview.cluster
@@ -61,6 +70,13 @@ Multiview Spectral Clustering
 -----------------------------
 
 .. autoclass:: MultiviewSpectralClustering
+    :exclude-members: get_params, set_params
+
+Multiview K Means
+-----------------
+
+.. autoclass:: MultiviewKMeans
+    :exclude-members: get_params, set_params
 
 
 

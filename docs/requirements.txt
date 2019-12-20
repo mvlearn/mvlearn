@@ -19,6 +19,7 @@ MarkupSafe==1.1.1
 matplotlib==3.1.1
 more-itertools==7.2.0
 numpy==1.17.2
+numpydoc
 packaging==19.1
 pluggy==0.13.0
 py==1.8.0

@@ -44,6 +44,7 @@ class MVMDS(BaseEmbed):
     components: numpy.ndarray
             - components shape: (n_samples, n_components)
             MVMDS components of Xs
+
     References
     ----------
     .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal

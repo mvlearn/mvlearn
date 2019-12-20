@@ -55,7 +55,7 @@ class Omnibus(BaseEmbed):
 
     References
     ----------
-    .. [#1] TODO: cite graspy
+    .. [#1] https://graspy.neurodata.io/tutorials/embedding/omnibus
 
     """
 
