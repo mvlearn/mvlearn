@@ -14,10 +14,12 @@ from ..utils.utils import check_Xs
 
 class _FullyConnectedNet(torch.nn.Module):
     """
-    General torch module for a fully connected neural network with
-    an input layer with # nodes given by inputSize , numHiddenLayers hidden
-    layers with # nodes given by hiddenSize, and an output layer # nodes given
-    by embeddingSize.
+    General torch module for a fully connected neural network.
+    - inputSize: number of nodes in the first layer
+    - numHiddenLayers: number of hidden layers
+    - hiddenSize: number of nodes in each hidden layer
+    - embeddingSize: number of nodes in the output layer.
+    All are ints. Each hidden layer has the same number of nodes.
     """
     def __init__(self, inputSize, hiddenSize, numHiddenLayers, embeddingSize):
         super().__init__()
@@ -89,7 +91,6 @@ class SplitAE(BaseEmbed):
         self.printInfo = print_info
         self.printGraph = print_graph
 
-    # Xs is not a tensor but instead a list with two arrays of shape [n, f_i]
     def fit(self, Xs, validation_Xs=None):
         """
         Given two views, create and train the autoencoder.
@@ -190,6 +191,7 @@ class SplitAE(BaseEmbed):
             plt.show()
 
     def _testError(self, Xs):
+        # Calculates the error of the network on a set of data Xs
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         nSamples = Xs[0].shape[0]
         validationBatchSize = self.batchSize
