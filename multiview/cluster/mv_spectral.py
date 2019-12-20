@@ -1,3 +1,4 @@
+
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +24,10 @@ from sklearn.base import BaseEstimator
 from sklearn.cluster import KMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
+from sklearn.neighbors import NearestNeighbors
+
+AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']
 
 
 class MultiviewSpectralClustering(BaseEstimator):
@@ -36,21 +41,38 @@ class MultiviewSpectralClustering(BaseEstimator):
     n_clusters : int
         The number of clusters
 
-    n_views : int, optional (default=2)
+    n_views : int, optional, default=2
         The number of different views of data.
 
-    random_state : int, optional (default=None)
+    random_state : int, optional, default=None
         Determines random number generation for kmeans.
 
-    info_view : int, optional (default=None)
+    info_view : int, optional, default=None
         The most informative view. Must be between 0 and n_views-1
         If given, then the final clustering will be performed on the
         designated view alone. Otherwise, the algorithm will concatenate
         across all views and cluster on the result.
 
-    max_iter : int, optional (default=10)
+    max_iter : int, optional, default=10
         The maximum number of iterations to run the clustering
         algorithm.
+
+    n_init : int, optional, default=10
+        The number of random initializations to use for kmeans clustering.
+
+    affinity : string, optional, default='rbf'
+        The affinity metric used to construct the affinity matrix. Options
+        includ rbf (radial basis function, nearest_neighbors, and poly
+        (polynomial)
+
+    gamma : float, optional, default=None
+        Kernel coefficient for rbf and polynomial kernels. If None then
+        gamma is computed as 1 / (2 * median(pair_wise_distances(X))^2)
+        for each data view X.
+
+    n_neighbors : int, optional, default=10
+        Only used if nearest neighbors is selected for affinity. The
+        number of neighbors to use for the nearest neighbors kernel.
 
     References
     ----------
@@ -58,9 +80,9 @@ class MultiviewSpectralClustering(BaseEstimator):
     Spectral Clustering. In International Conference on Machine Learning, 2011
 
     '''
-
-    def __init__(self, n_clusters, n_views=2, random_state=None,
-                 info_view=None, n_iter=10):
+    def __init__(self, n_clusters=2, n_views=2, random_state=None,
+                 info_view=None, max_iter=10, n_init=10, affinity='rbf',
+                 gamma=None, n_neighbors=10):
 
         super().__init__()
 
@@ -89,39 +111,73 @@ class MultiviewSpectralClustering(BaseEstimator):
                 msg = 'info_view must be an integer between 0 and n_clusters-1'
                 raise ValueError(msg)
 
-        if not (isinstance(n_iter, int) and (n_iter > 0)):
+        if not (isinstance(max_iter, int) and (max_iter > 0)):
             msg = 'max_iter must be a positive integer'
+            raise ValueError(msg)
+
+        if not (isinstance(n_init, int) and n_init > 0):
+            msg = 'n_init must be a positive integer'
+            raise ValueError(msg)
+
+        if affinity not in AFFINITY_METRICS:
+            msg = 'affinity must be a valid affinity metric'
+            raise ValueError(msg)
+
+        if gamma is not None:
+            if not ((isinstance(gamma, float) or
+                     isinstance(gamma, int)) and gamma > 0):
+                msg = 'gamma must be a positive float'
+                raise ValueError(msg)
+
+        if not (isinstance(n_neighbors, int) and n_neighbors > 0):
+            msg = 'n_neighbors must be a positive integer'
             raise ValueError(msg)
 
         self.n_clusters = n_clusters
         self.n_views = n_views
         self.random_state = random_state
         self.info_view = info_view
-        self.max_iter = n_iter
+        self.max_iter = max_iter
+        self.n_init = n_init
+        self.affinity = affinity
+        self.gamma = gamma
+        self.n_neighbors = n_neighbors
 
-    def _gaussian_sim(self, X):
+    def _affinity_mat(self, X):
 
         '''
-        Computes the gaussian similarity kernel for a given matrix.
-        The sigma used is the median pairwise distances.
+        Computes the affinity matrix based on the selected
+        kernel type.
 
         Parameters
         ----------
-        X : array_like, shape(n_samples, n_features)
-            The data matrix from which we will compute the gaussian
-            similarity kernel.
+        X : array-like, shape (n_samples, n_features)
+            The data matrix from which we will compute the
+            affinity matrix.
 
         Returns
         -------
-        sims : array_like, shape(n_samples, n_samples)
-            The gaussian similarity kernel.
+        sims : array-like, shape (n_samples, n_samples)
+            The resulting affinity kernel.
 
         '''
 
-        distances = cdist(X, X)
-        sq_dists = np.square(distances)
-        norm_dists = sq_dists / (2 * np.median(sq_dists))
-        sims = np.exp(-norm_dists)
+        sims = None
+
+        # If gamma is None, then compute default gamma value for this view
+        gamma = self.gamma
+        if self.gamma is None:
+            distances = cdist(X, X)
+            gamma = 1 / (2 * np.median(distances) ** 2)
+        # Produce the affinity matrix based on the selected kernel type
+        if (self.affinity == 'rbf'):
+            sims = rbf_kernel(X, gamma=gamma)
+        elif(self.affinity == 'nearest_neighbors'):
+            neighbor = NearestNeighbors(n_neighbors=self.n_neighbors)
+            neighbor.fit(X)
+            sims = neighbor.kneighbors_graph(X).toarray()
+        else:
+            sims = polynomial_kernel(X, gamma=gamma)
 
         return sims
 
@@ -153,10 +209,8 @@ class MultiviewSpectralClustering(BaseEstimator):
         laplacian = (laplacian + np.transpose(laplacian)) / 2.0
 
         # Obtain the top n_cluster eigenvectors of the laplacian
-        e_vals, e_vecs = np.linalg.eig(laplacian)
-        indices = np.argsort(np.real(e_vals))[-self.n_clusters:]
-        la_eigs = np.real(e_vecs[:, indices])
-
+        u_mat, s_mat, v_mat = np.linalg.svd(laplacian)
+        la_eigs = u_mat[:, :self.n_clusters]
         return la_eigs
 
     def fit_predict(self, Xs):
@@ -167,16 +221,17 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array_likes
-            - Xs shape: (n_views,)
-            - Xs[0] shape: (n_samples, n_features_i)
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             This list must be of size n_views, corresponding to the number
             of views of data. Each view can have a different number of
             features, but they must have the same number of samples.
 
         Returns
         -------
-        predictions : array_like, shape(n_samples,)
+        predictions : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
         '''
 
@@ -186,7 +241,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             raise ValueError(msg)
 
         # Compute the similarity matrices
-        sims = [self._gaussian_sim(X) for X in Xs]
+        sims = [self._affinity_mat(X) for X in Xs]
 
         # Initialize matrices of eigenvectors
         U_mats = [self._compute_eigs(sim) for sim in sims]
