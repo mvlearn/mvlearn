@@ -31,8 +31,8 @@ class MultiviewSpectralClustering(BaseEstimator):
     An implementation of Multi-View Spectral using the
     basic co-training framework.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     n_clusters : int
         The number of clusters
 

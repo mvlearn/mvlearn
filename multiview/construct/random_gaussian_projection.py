@@ -19,9 +19,6 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     you want to generate. Random_state is also only set once in the
     function (not per view).
 
-    sklearn implementation:
-    https://scikit-learn.org/stable/modules/generated/sklearn.random_projection.GaussianRandomProjection.html
-
     Parameters
     ----------
     X : array-like matrix, shape = [n_rows, n_cols]

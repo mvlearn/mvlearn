@@ -117,7 +117,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
     References
     ----------
-    [1] Blum, A., & Mitchell, T. (1998, July). Combining labeled and
+    .. [#1] Blum, A., & Mitchell, T. (1998, July). Combining labeled and
     unlabeled_pool data with co-training. In Proceedings of the eleventh
     annual conference on Computational learning theory (pp. 92-100). ACM.
 
