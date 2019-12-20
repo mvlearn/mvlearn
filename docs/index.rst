@@ -60,6 +60,12 @@ Multiview Multidimensional Scaling
 .. autoclass:: MVMDS
     :exclude-members: transform, get_params, set_params
 
+Split Autoencoder
+-----------------
+
+.. autoclass:: SplitAE
+    :exclude-members: get_params, set_params
+
 
 multiview.cluster
 =================
