@@ -198,7 +198,7 @@ class KCCA(BaseEmbed):
 
     def validate(self, vdata):
         """
-        Uses the kCCA mapping generalizes to other data
+        Uses the kCCA mapping and generalizes to other data
         For each dimension in the test data, correlations between
         predicted and actual data are computed.
 
