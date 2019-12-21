@@ -48,3 +48,4 @@ torchvision>=0.4.2
 urllib3==1.25.5
 wcwidth==0.1.7
 zipp==0.6.0
+tqdm
