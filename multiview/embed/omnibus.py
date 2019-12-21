@@ -20,7 +20,6 @@ class Omnibus(BaseEmbed):
     Omnibus computes the pairwise distances for each view. Each
     of these matrices is a n x n dissimilarity matrix where n is the number
     of rows in each view. Omnibus embedding
-    (https://graspy.neurodata.io/reference/embed.html#multiple-graph-embedding)
     is then performed over the dissimilarity matrices and the
     computed embeddings are returned.
 
@@ -53,6 +52,11 @@ class Omnibus(BaseEmbed):
         List of Omnibus embeddings. One embedding matrix is provided
         per view. If fit() has not been called, embeddings_ is set to
         None.
+
+    References
+    ----------
+    .. [#1] https://graspy.neurodata.io/tutorials/embedding/omnibus
+
     """
 
     def __init__(self, n_components=2, distance_metric="euclidean",
