@@ -6,7 +6,7 @@ Random gaussian projection for view construction.
 
 import numpy as np
 from sklearn.random_projection import GaussianRandomProjection
-from multiview.construct.utils import check_n_views
+from mvlearn.construct.utils import check_n_views
 
 
 def random_gaussian_projection(X, n_views=1, n_components="auto",

@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = multiview
+source = mvlearn
 
 [report]
 exclude_lines =

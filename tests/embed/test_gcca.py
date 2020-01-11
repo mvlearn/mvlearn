@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.linalg import orth
 
-from multiview.embed.gcca import GCCA
+from mvlearn.embed.gcca import GCCA
 
 
 def generate_data(n=10, elbows=3, seed=1):

@@ -1,7 +1,7 @@
 """
 example.py
 ====================================
-Example of how to contribute code to multiview.
+Example of how to contribute code to mvlearn.
 """
 
 
