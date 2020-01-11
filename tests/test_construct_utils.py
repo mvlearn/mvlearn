@@ -1,11 +1,11 @@
 """
 test_construct_utils.py
 ====================================
-Test multiview.construct.utils.py
+Test mvlearn.construct.utils.py
 """
 
 import pytest
-from multiview.construct import utils
+from mvlearn.construct import utils
 
 
 def test_check_n_views():

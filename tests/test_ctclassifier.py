@@ -3,7 +3,7 @@
 
 import pytest
 import numpy as np
-from multiview.cotraining.ctclassifier import CTClassifier
+from mvlearn.cotraining.ctclassifier import CTClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import RidgeClassifier
 

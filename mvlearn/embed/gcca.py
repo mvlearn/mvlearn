@@ -19,7 +19,7 @@ import numpy as np
 from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
-from multiview.embed.utils import select_dimension
+from mvlearn.embed.utils import select_dimension
 
 
 class GCCA(BaseEmbed):
@@ -47,7 +47,7 @@ class GCCA(BaseEmbed):
     n_elbows : int, optional, default: 2
         If ``self.fraction_var=None``, ``self.sv_tolerance=None``, and
         ``self.n_components=None``, then compute the optimal embedding
-        dimension using :func:`~multiview.embed.gcca.select_dimension`.
+        dimension using :func:`~mvlearn.embed.gcca.select_dimension`.
         Otherwise, ignored.
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD

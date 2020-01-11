@@ -6,7 +6,7 @@ Tests functions in random_gaussian_projection.py.
 
 import pytest
 import numpy as np
-from multiview.construct import random_gaussian_projection
+from mvlearn.construct import random_gaussian_projection
 
 # IMPORTANT: Because random gaussian projection wraps sklearn's
 # implementation, we do not test projection functionality. Instead

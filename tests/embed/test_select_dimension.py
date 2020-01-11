@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_equal
 from scipy.linalg import orth
 
-from multiview.embed.utils import select_dimension
+from mvlearn.embed.utils import select_dimension
 
 
 def generate_data(n=10, elbows=3, seed=1):

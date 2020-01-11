@@ -1,4 +1,4 @@
-from multiview.embed.splitae import SplitAE
+from mvlearn.embed.splitae import SplitAE
 import numpy as np
 import sklearn.cluster
 import sklearn.datasets

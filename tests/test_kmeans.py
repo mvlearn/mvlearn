@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from multiview.cluster.mv_k_means import MultiviewKMeans
+from mvlearn.cluster.mv_k_means import MultiviewKMeans
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 
 # EXCEPTION TESTING

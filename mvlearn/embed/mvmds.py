@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from multiview.embed.base import BaseEmbed
-from multiview.utils.utils import check_Xs
+from mvlearn.embed.base import BaseEmbed
+from mvlearn.utils.utils import check_Xs
 import warnings
 import numpy as np
 from sklearn.metrics import euclidean_distances

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.metrics.pairwise import rbf_kernel
-from multiview.cluster.mv_spectral import MultiviewSpectralClustering
+from mvlearn.cluster.mv_spectral import MultiviewSpectralClustering
 from sklearn.exceptions import NotFittedError
 
 # EXCEPTION TESTING
