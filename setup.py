@@ -17,7 +17,7 @@ AUTHOR = (
     "Cameron Franz",
 )
 AUTHOR_EMAIL = "rflperry@gmail.com"
-URL = "https://github.com/NeuroDataDesign/multiview"
+URL = "https://github.com/NeuroDataDesign/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 with open("requirements.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
