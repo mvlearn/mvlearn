@@ -1,13 +1,13 @@
-Welcome to multiview-ndd's documentation!
+Welcome to mvlearn's documentation!
 =========================================
 
 .. toctree::
    :maxdepth: 4
 
-multiview.construct
+mvlearn.construct
 ===================
 
-.. currentmodule:: multiview.construct
+.. currentmodule:: mvlearn.construct
 
 Random Gaussian Projection
 --------------------------
@@ -21,10 +21,10 @@ Random Subspace Method
 
 .. autofunction:: random_subspace_method
 
-multiview.cotraining
+mvlearn.cotraining
 ====================
 
-.. currentmodule:: multiview.cotraining
+.. currentmodule:: mvlearn.cotraining
 
 Cotraining Classifier
 ---------------------
@@ -32,10 +32,10 @@ Cotraining Classifier
 .. autoclass:: CTClassifier
     :exclude-members: get_params, set_params
 
-multiview.embed
+mvlearn.embed
 ===============
 
-.. currentmodule:: multiview.embed
+.. currentmodule:: mvlearn.embed
 
 Generalized Canonical Correlation Analysis
 ------------------------------------------
@@ -73,10 +73,10 @@ Split Autoencoder
     :exclude-members: get_params, set_params
 
 
-multiview.cluster
+mvlearn.cluster
 =================
 
-.. currentmodule:: multiview.cluster
+.. currentmodule:: mvlearn.cluster
 
 Multiview Spectral Clustering
 -----------------------------

@@ -1,6 +1,6 @@
 # KCCA Unit Tests
 
-from multiview.embed.kcca import KCCA, _zscore, _rowcorr, _listdot, _listcorr, _make_kernel
+from mvlearn.embed.kcca import KCCA, _zscore, _rowcorr, _listdot, _listcorr, _make_kernel
 import numpy as np
 import pytest
 

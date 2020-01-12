@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'multiview-ndd'
-copyright = '2019, multiview-ndd'
-author = 'multiview'
+project = 'mvlearn'
+copyright = '2019, mvlearn'
+author = 'neurodata'
 
 # The full version, including alpha/beta/rc tags
 release = '0.0.0'

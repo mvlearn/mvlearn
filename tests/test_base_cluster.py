@@ -1,5 +1,5 @@
 import pytest
-from multiview.cluster.base_cluster import BaseCluster
+from mvlearn.cluster.base_cluster import BaseCluster
 
 
 def test_base_cluster():

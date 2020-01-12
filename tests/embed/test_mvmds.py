@@ -7,7 +7,7 @@ Created on Mon Nov 11 11:24:42 2019
 
 import pytest
 import numpy as np
-from multiview.embed.mvmds import MVMDS
+from mvlearn.embed.mvmds import MVMDS
 import math
 
 '''
