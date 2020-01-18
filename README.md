@@ -7,3 +7,7 @@
 
 
 mvlearn is a Python module for multiview learning.
+
+```shell
+pip3 install mvlearn
+```
