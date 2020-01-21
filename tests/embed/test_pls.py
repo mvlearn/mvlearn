@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 
-from multiview.embed.pls import partial_least_squares_embedding
+from mvlearn.embed.pls import partial_least_squares_embedding
 
 np.random.seed(0)
 X = [[1, 1, 1], [1, 2, 2], [1, 2, 2]]
