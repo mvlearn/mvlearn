@@ -1,6 +1,6 @@
 import sys
 import pytest
-from multiview.embed.base import BaseEmbed
+from mvlearn.embed.base import BaseEmbed
 from numpy.testing import assert_equal
 
 
