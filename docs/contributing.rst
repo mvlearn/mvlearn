@@ -77,14 +77,14 @@ repository on GitHub, clone, and develop on a branch. Steps:
 2. Clone your fork of the mvlearn repo from your GitHub account to
    your local disk:
 
-   .. code:: bash
+   .. code:: console
 
    $ git clone git@github.com:YourLogin/mvlearn.git $ cd mvlearn
 
 
 3. Create a ``feature`` branch to hold your development changes:
 
-   .. code:: bash
+   .. code:: console
 
    $ git checkout -b my-feature
 
@@ -95,14 +95,14 @@ repository on GitHub, clone, and develop on a branch. Steps:
 4. Develop the feature on your feature branch. Add changed files using
    ``git add`` and then ``git commit`` files:
 
-   .. code:: bash
+   .. code:: console
 
    $ git add modified_files $ git commit
 
    to record your changes in Git, then push the changes to your GitHub
    account with:
 
-   .. code:: bash
+   .. code:: console
 
    $ git push -u origin my-feature
 
@@ -132,19 +132,19 @@ before you submit a pull request:
 -  Ensure all tests are passing locally using ``pytest``. Install the
    necessary packages by:
 
-   .. code:: bash
+   .. code:: console
 
    $ pip install pytest pytest-cov
 
    then run
 
-   .. code:: bash
+   .. code:: console
 
    $ pytest
 
    or you can run pytest on a single test file by
 
-   .. code:: bash
+   .. code:: console
 
    $ pytest path/to/test.py
 
@@ -152,7 +152,7 @@ before you submit a pull request:
    ``black`` and would like for you to format all files using ``black``.
    You can run the following lines to format your files.
 
-   .. code:: bash
+   .. code:: console
 
    $ pip install black $ black path/to/module.py
 
@@ -236,7 +236,7 @@ matched. Note that data matrices in Xs must have the same number of
 samples (rows) but the number of features (columns) may differ.
 
 +----------------+----------------------------------------------------+
-| **Parameters** | *Format*                                           |
+| **Parameters** | **Format**                                         |
 +================+====================================================+
 | Xs             | list of array-likes:                               | 
 |                |  - Xs shape: (n_views,)                            |
