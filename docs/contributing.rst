@@ -73,12 +73,14 @@ repository on GitHub, clone, and develop on a branch. Steps:
    details on how to fork a repository see
    ``this guide <https://help.github.com/articles/fork-a-repo/>``\ \__.
 
+
 2. Clone your fork of the mvlearn repo from your GitHub account to
    your local disk:
 
    .. code:: bash
 
    $ git clone git@github.com:YourLogin/mvlearn.git $ cd mvlearn
+
 
 3. Create a ``feature`` branch to hold your development changes:
 
@@ -88,6 +90,7 @@ repository on GitHub, clone, and develop on a branch. Steps:
 
    Always use a ``feature`` branch. It’s good practice to never work on
    the ``master`` branch!
+
 
 4. Develop the feature on your feature branch. Add changed files using
    ``git add`` and then ``git commit`` files:
@@ -195,7 +198,7 @@ Instantiation
 An estimator object’s ``__init__`` method may accept constants that
 determine the behavior of the object’s methods. These constants should
 not be the data nor should they be data-dependent as those are left to
-the ``fit()`` method. All instantiation arguments are keyworded and have
+the ``fit`` method. All instantiation arguments are keyworded and have
 default values. Thus, the object keeps these values across different
 method calls. Every keyword argument accepted by ``__init__`` should
 correspond to an instance attribute and there should be no input
@@ -233,9 +236,9 @@ matched. Note that data matrices in Xs must have the same number of
 samples (rows) but the number of features (columns) may differ.
 
 +----------------+----------------------------------------------------+
-| **Parameters** | **Format**                                         |
+| **Parameters** | *Format*                                           |
 +================+====================================================+
-| Xs             | list of array-likes                                | 
+| Xs             | list of array-likes:                               | 
 |                |  - Xs shape: (n_views,)                            |
 |                |  - Xs[i] shape: (n_samples, n_features_i)          |
 +----------------+----------------------------------------------------+

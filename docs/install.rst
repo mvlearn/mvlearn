@@ -27,7 +27,7 @@ install into your user directory using the ``--user`` flag::
 
     $ pip install --user mvlearn
 
-Alternatively, you can manually download ``graspy`` from
+Alternatively, you can manually download ``mvlearn`` from
 `GitHub <https://github.com/NeuroDataDesign/mvlearn>`_  or
 `PyPI <https://pypi.org/project/mvlearn/>`_.
 To install one of these versions, unpack it and run the following from the
@@ -53,7 +53,7 @@ mvlearn requires the following packages:
 
 Hardware requirements
 ---------------------
-`mvlearn` package requires only a standard computer with enough RAM to support the in-memory operations and free memory to install required packages. 
+The `mvlearn` package requires only a standard computer with enough RAM to support the in-memory operations and free memory to install required packages. 
 
 OS Requirements
 ---------------

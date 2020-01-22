@@ -44,8 +44,8 @@ mvearn is a python package of multiview learning tools.
    :maxdepth: 1
 
    install
-   tutorial
-   reference/index
+   tutorials
+   references/index
    contributing
    news
    license
@@ -54,9 +54,9 @@ mvearn is a python package of multiview learning tools.
    :maxdepth: 1
    :caption: Useful Links
 
-   GraSPy @ GitHub <http://www.github.com/neurodata/graspy/>
-   GraSPy @ PyPI <https://pypi.org/project/graspy/>
-   Issue Tracker <https://github.com/neurodata/graspy/issues>
+   mvlearn @ GitHub <https://github.com/NeuroDataDesign/mvlearn>
+   mvlearn @ PyPI <https://pypi.org/project/mvlearn/>
+   Issue Tracker <https://github.com/NeuroDataDesign/mvlearn/issues>
 
 
 Indices and tables
