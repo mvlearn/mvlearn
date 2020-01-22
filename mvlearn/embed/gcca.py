@@ -108,7 +108,7 @@ class GCCA(BaseEmbed):
         centered_X -= mu
         return centered_X
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         """
         Calculates a projection from each view to a latentent space such that
         the sum of pairwise latent space correlations is maximized. Each view
@@ -125,6 +125,8 @@ class GCCA(BaseEmbed):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
+
+        y : Unused parameter for base class fit_transform compliance
 
         Returns
         -------
