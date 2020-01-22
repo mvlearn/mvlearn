@@ -77,16 +77,16 @@ repository on GitHub, clone, and develop on a branch. Steps:
 2. Clone your fork of the mvlearn repo from your GitHub account to
    your local disk:
 
-   .. code:: console
+   .. code:: bash
 
-   $ git clone git@github.com:YourLogin/mvlearn.git $ cd mvlearn
+       $ git clone git@github.com:YourLogin/mvlearn.git $ cd mvlearn
 
 
 3. Create a ``feature`` branch to hold your development changes:
 
-   .. code:: console
+   .. code:: bash
 
-   $ git checkout -b my-feature
+       $ git checkout -b my-feature
 
    Always use a ``feature`` branch. It’s good practice to never work on
    the ``master`` branch!
@@ -95,16 +95,16 @@ repository on GitHub, clone, and develop on a branch. Steps:
 4. Develop the feature on your feature branch. Add changed files using
    ``git add`` and then ``git commit`` files:
 
-   .. code:: console
+   .. code:: bash
 
-   $ git add modified_files $ git commit
+       $ git add modified_files $ git commit
 
    to record your changes in Git, then push the changes to your GitHub
    account with:
 
-   .. code:: console
+   .. code:: bash
 
-   $ git push -u origin my-feature
+       $ git push -u origin my-feature
 
 Pull Request Checklist
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -132,29 +132,29 @@ before you submit a pull request:
 -  Ensure all tests are passing locally using ``pytest``. Install the
    necessary packages by:
 
-   .. code:: console
+   .. code:: bash
 
-   $ pip install pytest pytest-cov
+       $ pip install pytest pytest-cov
 
    then run
 
-   .. code:: console
+   .. code:: bash
 
-   $ pytest
+       $ pytest
 
    or you can run pytest on a single test file by
 
-   .. code:: console
+   .. code:: bash
 
-   $ pytest path/to/test.py
+       $ pytest path/to/test.py
 
 -  Run an autoformatter to conform to PEP 8 style guidelines. We use
    ``black`` and would like for you to format all files using ``black``.
    You can run the following lines to format your files.
 
-   .. code:: console
+   .. code:: bash
 
-   $ pip install black $ black path/to/module.py
+       $ pip install black $ black path/to/module.py
 
 Guidelines
 ----------
@@ -218,15 +218,14 @@ All estimators implement the fit method to make some estimation, either:
 
 .. code:: python
 
-
-   estimator.fit(Xs, y)
+       estimator.fit(Xs, y)
 
 or
 
 .. code:: python
 
 
-   estimator.fit(Xs)
+       estimator.fit(Xs)
 
 The former case corresponds to the supervised case and the latter to the
 unsupervised case. In unsupervised cases, y takes on a default value of
