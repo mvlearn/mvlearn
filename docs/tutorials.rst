@@ -32,11 +32,14 @@ Inference on and visualization of multiview data often requires low-dimensional 
    :maxdepth: 1
    
    tutorials/embed/gcca_tutorial
+   tutorials/embed/gcca_simulation
    tutorials/embed/linear_kcca_validation_tutorial
    tutorials/embed/mvmds_tutorial
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
+   tutorials/embed/pls_tutorial
+   tutorials/embed/pls_simulation
    
 Test Dataset
 ============
