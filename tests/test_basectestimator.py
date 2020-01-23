@@ -2,7 +2,7 @@
 # 10/21/2019
 
 import pytest
-from multiview.cotraining.base import BaseCoTrainEstimator
+from mvlearn.cotraining.base import BaseCoTrainEstimator
 from sklearn.base import BaseEstimator
 
 """
