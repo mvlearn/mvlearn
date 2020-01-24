@@ -21,7 +21,14 @@ URL = "https://github.com/NeuroDataDesign/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 with open("requirements.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
-
+EXTRA_PACKAGES = {
+    'torch':[
+        torch>=1.1.0,
+        torchvision>=0.4.2,
+        tqdm,
+    ]
+}
+    
 # Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 for line in open(os.path.join(PROJECT_PATH, "mvlearn", "__init__.py")):
@@ -46,6 +53,7 @@ setup(
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     install_requires=REQUIRED_PACKAGES,
+    extras_require=EXTRA_PACKAGES,
     url=URL,
     license="Apache License 2.0",
     classifiers=[
