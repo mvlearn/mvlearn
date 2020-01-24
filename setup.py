@@ -26,6 +26,7 @@ EXTRA_PACKAGES = {
         torch>=1.1.0,
         torchvision>=0.4.2,
         tqdm,
+        pillow<7.0,
     ]
 }
     
