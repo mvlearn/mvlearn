@@ -8,6 +8,12 @@
 
 mvlearn is a Python module for multiview learning.
 
+Install default
 ```shell
 pip3 install mvlearn
+```
+
+Install with optional torch dependency (solely for SplitAE functionality)
+```shell
+pip3 install mvlearn[torch]
 ```
