@@ -1,4 +1,4 @@
-# Contributing to multiview
+# Contributing to mvlearn
 
 (adopted from scikit-learn)
 
@@ -9,15 +9,15 @@ an issue if you have found a bug or wish to see a feature implemented.
 
 In case you experience issues using this package, do not hesitate to submit a
 ticket to the
-`Bug Tracker <https://github.com/neurodata/multiview/issues>`_. You are
+`Bug Tracker <https://github.com/neurodata/mvlearn/issues>`_. You are
 also welcome to post feature requests or pull requests.
 
 It is recommended to check that your issue complies with the
 following rules before submitting:
 
 -  Verify that your issue is not being currently addressed by other
-   `issues <https://github.com/neurodata/multiview/issues?q=>`_
-   or `pull requests <https://github.com/neurodata/multiview/pulls?q=>`_.
+   `issues <https://github.com/neurodata/mvlearn/issues?q=>`_
+   or `pull requests <https://github.com/neurodata/mvlearn/pulls?q=>`_.
 
 -  If you are submitting a bug report, we strongly encourage you to follow the guidelines in
    :ref:`filing_bugs`.
@@ -27,7 +27,7 @@ following rules before submitting:
 ### How to make a good bug report
 
 When you submit an issue to `Github
-<https://github.com/neurodata/multiview/issues>`__, please do your best to
+<https://github.com/neurodata/mvlearn/issues>`__, please do your best to
 follow these guidelines! This will make it a lot easier to provide you with good
 feedback:
 
@@ -43,12 +43,12 @@ feedback:
 - If an exception is raised, please **provide the full traceback**.
 
 - Please include your **operating system type and version number**, as well as
-  your **Python and multiview versions**. This information
+  your **Python and mvlearn versions**. This information
   can be found by running the following code snippet::
 
     import platform; print(platform.platform())
     import sys; print("Python", sys.version)
-    import multiview; print("multiview", multiview.__version__)
+    import mvlearn; print("mvlearn", mvlearn.__version__)
 
 - Please ensure all **code snippets and error messages are formatted in
   appropriate code blocks**.  See `Creating and highlighting code blocks
@@ -57,22 +57,22 @@ feedback:
 
 ## Contributing Code
 
-The preferred workflow for contributing to multiview is to fork the main
+The preferred workflow for contributing to mvlearn is to fork the main
 repository on GitHub, clone, and develop on a branch. Steps: 
 
-1. Fork the `project repository <https://github.com/neurodata/multiview>`__ by clicking
+1. Fork the `project repository <https://github.com/neurodata/mvlearn>`__ by clicking
    on the ‘Fork’ button near the top right of the page. This creates a copy
    of the code under your GitHub user account. For more details on how to
    fork a repository see `this
    guide <https://help.github.com/articles/fork-a-repo/>`__.
 
-2. Clone your fork of the multiview repo from your GitHub account to your
+2. Clone your fork of the mvlearn repo from your GitHub account to your
    local disk:
 
    .. code:: bash
 
-      $ git clone git@github.com:YourLogin/multiview.git
-      $ cd multiview
+      $ git clone git@github.com:YourLogin/mvlearn.git
+      $ cd mvlearn
 
 3. Create a ``feature`` branch to hold your development changes:
 
@@ -142,7 +142,7 @@ before you submit a pull request:
 
 ### Coding Guidelines
 
-Uniformly formatted code makes it easier to share code ownership. multiview
+Uniformly formatted code makes it easier to share code ownership. mvlearn
 package closely follows the official Python guidelines detailed in
 `PEP8 <https://www.python.org/dev/peps/pep-0008/>`__ that detail how
 code should be formatted and indented. Please read it and follow it.
@@ -157,11 +157,11 @@ guidelines. Refer to the
 `example.py <https://numpydoc.readthedocs.io/en/latest/example.html#example>`__
 provided by numpydoc.
 
-## API of multiview Objects
+## API of mvlearn Objects
 
 ### Estimators
 
-The main multiview object is the estimator and its documentation draws mainly from the formatting of sklearn’s estimator object. An estimator is an object that fits a set of training data and generates some new view of the data. In contributing, borrow from sklearn requirements as much as possible and utilize their checks to automatically check the suitability of inputted data.
+The main mvlearn object is the estimator and its documentation draws mainly from the formatting of sklearn’s estimator object. An estimator is an object that fits a set of training data and generates some new view of the data. In contributing, borrow from sklearn requirements as much as possible and utilize their checks to automatically check the suitability of inputted data.
 
 #### Instantiation
 
@@ -212,13 +212,13 @@ All attributed calculated in the `fit` method should be saved with a trailing un
 A transformer object modifies the data it is given. An estimator may also be a transformer that learns the transformation parameters. The transformer object implements the method
 
 ```python
-new_data = transformer.transform(data)
+new_data = transformer.transform(Xs)
 ```
 
 and if the fit method must be called first,
 
 ```python
-new_data = transformer.fit_transform(data)
+new_data = transformer.fit_transform(Xs, y)
 ```
 
 It may be more efficient in some cases to compute the latter example rather than call `fit` and `transform` separately.
