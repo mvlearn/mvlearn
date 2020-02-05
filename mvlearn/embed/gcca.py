@@ -212,7 +212,10 @@ class GCCA(BaseEmbed):
         Uall_c = np.concatenate(Uall, axis=1)
 
         _, _, VV = svds(Uall_c, d)
+
+        # Sort W columns in descending singular value order
         VV = np.flip(VV.T, axis=1)
+        # Take top columns
         VV = VV[:, : min([d, VV.shape[1]])]
 
         # SVDS the concatenated Us
