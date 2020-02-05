@@ -93,6 +93,9 @@ class MultiviewKMeans(BaseKMeans):
         self.n_jobs = n_jobs
         self.centroids_ = None
 
+    def _compute_dist(self, X, Y):
+        return cdist(X, Y)
+        
     def _init_centroids(self, Xs):
 
         '''
@@ -134,7 +137,7 @@ class MultiviewKMeans(BaseKMeans):
 
             # Compute the remaining n_cluster centroids
             for cent in range(self.n_clusters - 1):
-                dists = cdist(centers2, Xs[1])
+                dists = self._compute_dist(centers2, Xs[1])
                 dists = np.min(dists, axis=1)
                 max_index = np.argmax(dists)
                 indices.append(max_index)
@@ -191,9 +194,9 @@ class MultiviewKMeans(BaseKMeans):
         v2_consensus = list()
 
         for clust in range(self.n_clusters):
-            v1_distances = cdist(Xs[0], centroids[0])
+            v1_distances = self._compute_dist(Xs[0], centroids[0])
             v1_partitions = np.argmin(v1_distances, axis=1).flatten()
-            v2_distances = cdist(Xs[1], centroids[1])
+            v2_distances = self._compute_dist(Xs[1], centroids[1])
             v2_partitions = np.argmin(v2_distances, axis=1).flatten()
 
             # Find data points in the same partition in both views
@@ -229,6 +232,34 @@ class MultiviewKMeans(BaseKMeans):
             # n_clusters value
             self.n_clusters = self.centroids_[0].shape[0]
 
+    def _em_step(self, X, partition, centroids):
+
+        n_samples = X.shape[0]
+        new_centers = list()
+        for cl in range(self.n_clusters):
+            # Recompute centroids using samples from each cluster
+            mask = (partition == cl)
+            if (np.sum(mask) == 0):
+                new_centers.append(centroids[cl])
+            else:
+                cent = np.mean(X[mask], axis=0)
+                new_centers.append(cent)
+        new_centers = np.vstack(new_centers)
+            
+        # Compute expectation and objective function
+        distances = self._compute_dist(X, new_centers)
+        new_parts = np.argmin(distances, axis=1).flatten()
+        min_dists = distances[np.arange(n_samples), new_parts]
+        o_funct = np.sum(min_dists)
+
+        return new_parts, new_centers, o_funct
+
+    def _preprocess_data(self, Xs):
+        
+        # Check that the input data is valid
+        Xs = check_Xs(Xs, enforce_views=2)
+        return Xs
+    
     def fit(self, Xs):
 
         '''
@@ -248,8 +279,8 @@ class MultiviewKMeans(BaseKMeans):
         self : returns an instance of self.
         '''
 
-        Xs = check_Xs(Xs, enforce_views=2)
-
+        Xs = self._preprocess_data(Xs)
+        
         # Type checking and exception handling for random_state parameter
         if self.random_state is not None:
             msg = 'random_state must be convertible to 32 bit unsigned integer'
@@ -297,7 +328,7 @@ class MultiviewKMeans(BaseKMeans):
             centroids = self._init_centroids(Xs)
 
             # Initializing partitions, objective value, and loop vars
-            distances = cdist(Xs[1], centroids[1])
+            distances = self._compute_dist(Xs[1], centroids[1])
             parts = np.argmin(distances, axis=1).flatten()
             partitions = [None, parts]
             objective = [np.inf, np.inf]
@@ -310,30 +341,11 @@ class MultiviewKMeans(BaseKMeans):
                 pre_view = (iter_num) % 2
                 view = (iter_num + 1) % 2
                 # Switch partitions and compute maximization
-                new_centers = list()
-                for cl in range(self.n_clusters):
-                    # Recompute centroids using samples from each cluster
-                    mask = (partitions[pre_view] == cl)
-                    if (np.sum(mask) == 0):
-                        new_centers.append(centroids[view][cl])
-                    else:
-                        cent = np.mean(Xs[view][mask], axis=0)
-                        new_centers.append(cent)
-                centroids[view] = np.vstack(new_centers)
-
-                # Compute expectation
-                distances = cdist(Xs[view], centroids[view])
-                partitions[view] = np.argmin(distances, axis=1).flatten()
-                # Recompute the objective function
-                o_funct = 0
-                for cl in range(self.n_clusters):
-                    # Collect data points in each cluster and compute within
-                    # cluster distances
-                    vecs = Xs[view][(partitions[view] == cl)]
-                    dist = np.linalg.norm(vecs - centroids[view][cl], axis=1)
-                    o_funct += np.sum(dist)
-
-                # Track of number of iterations without improvement
+                
+                partitions[view], centroids[view], o_funct = self._em_step(
+                    Xs[view], partitions[pre_view], centroids[view]) 
+                
+                # Track the number of iterations without improvement
                 if(o_funct < objective[view]):
                     objective[view] = o_funct
                     iter_stall = 0
@@ -383,8 +395,8 @@ class MultiviewKMeans(BaseKMeans):
             msg = 'This MultiviewKMeans instance has no cluster centroids.'
             raise AttributeError(msg)
 
-        dist1 = cdist(Xs[0], self.centroids_[0])
-        dist2 = cdist(Xs[1], self.centroids_[1])
+        dist1 = self._compute_dist(Xs[0], self.centroids_[0])
+        dist2 = self._compute_dist(Xs[1], self.centroids_[1])
         dist_metric = dist1 + dist2
         predictions = np.argmin(dist_metric, axis=1).flatten()
 
