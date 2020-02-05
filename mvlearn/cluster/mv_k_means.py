@@ -16,13 +16,13 @@
 
 
 import numpy as np
-from .base_cluster import BaseCluster
+from .base_kmeans import BaseKMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 from scipy.spatial.distance import cdist
 
 
-class MultiviewKMeans(BaseCluster):
+class MultiviewKMeans(BaseKMeans):
 
     '''
     An implementation of Multi-View K-Means using the co-EM algorithm.
@@ -50,6 +50,19 @@ class MultiviewKMeans(BaseCluster):
         centroid seeds. The final result will be the best output of
         n_init runs with respect to total inertia across all views.
 
+    init : {'k-means++', 'random'} or list of array-likes
+        Method of initializing centroids, defaults to 'k-means++'.
+
+        'k-means++': selects initial cluster centers for k-means clustering
+        via a method that speeds up convergence.
+
+        'random': choose n_cluster samples from the data for the initial
+        centroids.
+
+        If a list of array-likes is passed, the list should have a length of
+        equal to the number of views. Each of the array-likes should have
+        the shape
+
     Attributes
     ----------
 
@@ -66,48 +79,92 @@ class MultiviewKMeans(BaseCluster):
     4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
-    def __init__(self, n_clusters=2, random_state=None,
-                 patience=5, max_iter=None, n_init=5):
+    def __init__(self, n_clusters=2, random_state=None, init='k-means++',
+                 patience=5, max_iter=None, n_init=5, n_jobs=1):
 
         super().__init__()
-
-        if not (isinstance(n_clusters, int) and n_clusters > 0):
-            msg = 'n_clusters must be a positive integer'
-            raise ValueError(msg)
-
-        if random_state is not None:
-            msg = 'random_state must be convertible to 32 bit unsigned integer'
-            try:
-                random_state = int(random_state)
-            except ValueError:
-                raise ValueError(msg)
-            np.random.seed(random_state)
-
-        if not (isinstance(patience, int) and (patience > 0)):
-            msg = 'patience must be a nonnegative integer'
-            raise ValueError(msg)
-
-        self.max_iter = None
-        if max_iter is not None:
-            if not (isinstance(max_iter, int) and (max_iter > 0)):
-                msg = 'max_iter must be a positive integer'
-                raise ValueError(msg)
-            self.max_iter = max_iter
-
-        if not (isinstance(n_init, int) and (n_init > 0)):
-            msg = 'n_init must be a nonnegative integer'
-            raise ValueError(msg)
 
         self.n_clusters = n_clusters
         self.random_state = random_state
         self.patience = patience
         self.n_init = n_init
+        self.init = init
+        self.max_iter = max_iter
+        self.n_jobs = n_jobs
         self.centroids_ = None
+
+    def _init_centroids(self, Xs):
+
+        '''
+        Initializes the centroids for Multi-view KMeans or KMeans++ depending
+        on which has been selected.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        centroids : list of array-likes
+            - centroids length: n_views
+            - centroids[i] shape: (n_clusters, n_features_i)
+            The cluster centroids for each of the two views. centroids[0]
+            corresponds to the centroids of view 1 and centroids[1] corresponds
+            to the centroids of view 2. These are not yet the final cluster
+            centroids.
+        '''
+        centroids = None
+        if self.init == 'random':
+            # Random initialization of centroids
+            indices = np.random.choice(Xs[0].shape[0], self.n_clusters)
+            centers1 = Xs[0][indices]
+            centers2 = Xs[1][indices]
+            centroids = [centers1, centers2]
+        elif self.init == 'k-means++':
+            # Initializing centroids via kmeans++ implementation
+            indices = list()
+            centers2 = list()
+            indices.append(np.random.randint(Xs[1].shape[0]))
+            centers2.append(Xs[1][indices[0], :])
+
+            # Compute the remaining n_cluster centroids
+            for cent in range(self.n_clusters - 1):
+                dists = cdist(centers2, Xs[1])
+                dists = np.min(dists, axis=1)
+                max_index = np.argmax(dists)
+                indices.append(max_index)
+                centers2.append(Xs[1][max_index])
+
+            centers1 = Xs[0][indices]
+            centers2 = np.array(centers2)
+            centroids = [centers1, centers2]
+        else:
+            centroids = self.init
+            try:
+                centroids = check_Xs(centroids, enforce_views=2)
+            except ValueError:
+                msg = 'init must be a valid centroid initialization'
+                raise ValueError(msg)
+            for ind in range(len(centroids)):
+                if centroids[ind].shape[0] != self.n_clusters:
+                    msg = 'number of centroids per view must equal n_clusters'
+                    raise ValueError(msg)
+                if centroids[ind].shape[1] != Xs[0][0].shape[0]:
+                    msg = ('feature dimensions of cluster centroids'
+                           + 'must match those of data')
+                    raise ValueError(msg)
+
+        return centroids
 
     def _final_centroids(self, Xs, centroids):
 
         '''
-        Compute the final cluster centroids based on consensus samples across
+        Computes the final cluster centroids based on consensus samples across
         both views. Consensus samples are those that are assigned to the same
         partition in both views.
 
@@ -120,8 +177,7 @@ class MultiviewKMeans(BaseCluster):
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
 
-
-        centroids_ : list of array-likes
+        centroids : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
             The cluster centroids for each of the two views. centroids[0]
@@ -194,21 +250,54 @@ class MultiviewKMeans(BaseCluster):
 
         Xs = check_Xs(Xs, enforce_views=2)
 
+        # Type checking and exception handling for random_state parameter
+        if self.random_state is not None:
+            msg = 'random_state must be convertible to 32 bit unsigned integer'
+            try:
+                self.random_state = int(self.random_state)
+            except TypeError:
+                raise TypeError(msg)
+            np.random.seed(self.random_state)
+
+        # Type and value checking for n_clusters parameter
+        if not (isinstance(self.n_clusters, int) and self.n_clusters > 0):
+            msg = 'n_clusters must be a positive integer'
+            raise ValueError(msg)
+
+        # Type and value checking for patience parameter
+        if not (isinstance(self.patience, int) and (self.patience > 0)):
+            msg = 'patience must be a nonnegative integer'
+            raise ValueError(msg)
+
+        # Type and value checking for max_iter parameter
+        max_iter = np.inf
+        if self.max_iter is not None:
+            if not (isinstance(self.max_iter, int) and (self.max_iter > 0)):
+                msg = 'max_iter must be a positive integer'
+                raise ValueError(msg)
+            max_iter = self.max_iter
+
+        # Type and value checking for n_init parameter
+        if not (isinstance(self.n_init, int) and (self.n_init > 0)):
+            msg = 'n_init must be a nonnegative integer'
+            raise ValueError(msg)
+
+        # If initial centroids passed in, then n_init should be 1
+        n_init = self.n_init
+        if not isinstance(self.n_init, str):
+            n_init = 1
+
         # Run multi-view kmeans for n_init different centroid initializations
         min_inertia = np.inf
         best_centroids = None
 
-        for _ in range(self.n_init):
+        for _ in range(n_init):
 
-            # Random initialization of centroids
-            indices1 = np.random.choice(Xs[0].shape[0], self.n_clusters)
-            centers1 = Xs[0][indices1]
-            indices2 = np.random.choice(Xs[1].shape[0], self.n_clusters)
-            centers2 = Xs[1][indices2]
-            centroids = [centers1, centers2]
+            # Initialize centroids for clustering
+            centroids = self._init_centroids(Xs)
 
             # Initializing partitions, objective value, and loop vars
-            distances = cdist(Xs[1], centers2)
+            distances = cdist(Xs[1], centroids[1])
             parts = np.argmin(distances, axis=1).flatten()
             partitions = [None, parts]
             objective = [np.inf, np.inf]
@@ -216,9 +305,6 @@ class MultiviewKMeans(BaseCluster):
             iter_num = 0
 
             # While objective is still decreasing and iterations < max_iter
-            max_iter = np.inf
-            if self.max_iter is not None:
-                max_iter = self.max_iter
             while(iter_stall < self.patience and iter_num < max_iter):
                 iter_num += 1
                 pre_view = (iter_num) % 2
@@ -288,6 +374,7 @@ class MultiviewKMeans(BaseCluster):
 
         Xs = check_Xs(Xs, enforce_views=2)
 
+        # Check whether or not centroids were properly fitted
         if self.centroids_ is None:
             msg = 'This MultiviewKMeans instance is not fitted yet.'
             raise NotFittedError(msg)
