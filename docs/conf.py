@@ -114,7 +114,7 @@ html_context = {
 
 linkcode_resolve = make_linkcode_resolve(
     "mvlearn",
-    u"https://github.com/neurodata/mvlearn"
+    u"https://github.com/neurodata/mvlearn",
     # "mvlearn/blob/{revision}/"
     # "{package}/{path}#L{lineno}",
 )
