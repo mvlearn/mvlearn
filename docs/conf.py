@@ -112,8 +112,12 @@ html_context = {
     "github_version": "master/docs/",
 }
 
-linkcode_resolve = "https://github.com/neurodata/mvlearn/tree/master"
-
+linkcode_resolve = make_linkcode_resolve(
+    "mvlearn",
+    u"https://github.com/neurodata/mvlearn"
+    # "mvlearn/blob/{revision}/"
+    # "{package}/{path}#L{lineno}",
+)
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
