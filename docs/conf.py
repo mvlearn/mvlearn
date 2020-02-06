@@ -14,11 +14,14 @@
 #
 import os
 import sys
+import shutil
 
 # Use RTD Theme
 import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("sphinxext"))
+from github_link import make_linkcode_resolve
 
 # -- Project information -----------------------------------------------------
 
@@ -50,6 +53,7 @@ extensions = [
     "sphinxcontrib.rawfiles",
     "nbsphinx",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.linkcode",
 ]
 
 # -- sphinxcontrib.rawfiles
@@ -98,6 +102,23 @@ html_theme_options = {
     "navigation_depth": 3,
 }
 
+html_context = {
+    # Enable the "Edit in GitHub link within the header of each page.
+    "display_github": True,
+    # Set the following variables to generate the resulting github URL for each page.
+    # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
+    "github_user": "neurodata",
+    "github_repo": "mvlearn",
+    "github_version": "master/docs/",
+}
+
+linkcode_resolve = make_linkcode_resolve(
+    "mvlearn",
+    u"https://github.com/neurodata/"
+    "mvlearn/blob/{revision}/"
+    "{package}/{path}#L{lineno}",
+)
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
@@ -114,6 +135,10 @@ html_theme_options = {
 htmlhelp_basename = "mvlearndoc"
 
 # -- Options for LaTeX output ------------------------------------------------
+
+def setup(app):
+    # to hide/show the prompt in code examples:
+    app.add_javascript("js/copybutton.js")
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
