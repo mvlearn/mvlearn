@@ -51,7 +51,6 @@ extensions = [
     "sphinxcontrib.rawfiles",
     "nbsphinx",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.linkcode",
 ]
 
 # -- sphinxcontrib.rawfiles
