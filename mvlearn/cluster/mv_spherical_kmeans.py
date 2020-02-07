@@ -77,14 +77,34 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
-                 patience=5, max_iter=None, n_init=5, n_jobs=1):
+                 patience=5, max_iter=None, n_init=5):
 
         super().__init__(n_clusters=n_clusters, random_state=random_state,
                          init=init, patience=patience, max_iter=max_iter,
-                         n_init=n_init, n_jobs=n_jobs)
+                         n_init=n_init)
 
     def _compute_dist(self, X, Y):
 
+        '''
+        Function that computes the pairwise distance between each row of X
+        and each row of Y. The distance metric used here is Cosine
+        distance.
+
+        Parameters
+        ----------
+        X: array-like, shape (n_samples_i, n_features)
+            An array of samples.
+        Y: array-like, shape (n_samples_j, n_features)
+            Another array of samples. Second dimension is the same size
+            as the second dimension of X.
+
+        Returns
+        -------
+        distances: array-like, shape (n_samples_i, n_samples_j)
+            An array containing the pairwise distances between each
+            row of X and each row of Y.
+        '''
+        
         cosine_dist = 1 - X @ np.transpose(Y)
         return cosine_dist
         
@@ -159,6 +179,36 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
 
     def _em_step(self, X, partition, centroids):
 
+        '''
+        A function that computes one iteration of expectation-maximization.
+
+        Parameters
+        ----------
+        X: array-like, shape (n_samples, n_features)
+            An array of samples representing a single view of the data.
+
+        partition: array-like, shape (n_samples,)
+            An array of cluster labels indicating the cluster to which
+            each data sample is assigned. This is essentially a partition
+            of the data points.
+
+        centroids: array-like, shape (n_clusters, n_features)
+            The current cluster centers.
+
+        Returns
+        -------
+        new_parts: array-like, shape (n_samples,)
+            The new cluster assignments for each sample in the data after
+            the data has been repartitioned with respect to the new
+            cluster centers.
+
+        new_centers: array-like, shape (n_clusters, n_features)
+            The updated cluster centers.
+
+        o_funct: float
+            The new value of the objective function.
+        '''
+        
         n_samples = X.shape[0]
         new_centers = list()
         for cl in range(self.n_clusters):
@@ -182,8 +232,29 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
 
     def _preprocess_data(self, Xs):
 
+        '''
+        Checks that the inputted data is in the correct format and
+        normalizes to make row vectors unit length.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        Xs_new : list of array-likes
+            - centroids length: n_views
+            - centroids[i] shape: (n_clusters, n_features_i)
+            The data samples after they have been checked and normalized.
+        '''
+        
         # Check that the input data is valid
-        Xs = check_Xs(Xs, enforce_views=2)
+        Xs = check_Xs(Xs, enforce_views=2).copy()
         
         #Normalize the input samples
         for view in range(len(Xs)):
@@ -197,6 +268,23 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
 
     def fit(self, Xs):
 
+        '''
+        Fit the cluster centroids to the data.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        self : returns an instance of self.
+        '''
+                
         super().fit(Xs)
         # Normalize the centroids
         for view in range(len(self.centroids_)):

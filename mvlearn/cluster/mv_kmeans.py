@@ -80,7 +80,7 @@ class MultiviewKMeans(BaseKMeans):
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
-                 patience=5, max_iter=None, n_init=5, n_jobs=1):
+                 patience=5, max_iter=None, n_init=5):
 
         super().__init__()
 
@@ -90,12 +90,33 @@ class MultiviewKMeans(BaseKMeans):
         self.n_init = n_init
         self.init = init
         self.max_iter = max_iter
-        self.n_jobs = n_jobs
         self.centroids_ = None
 
     def _compute_dist(self, X, Y):
-        return cdist(X, Y)
-        
+
+        '''
+        Function that computes the pairwise distance between each row of X
+        and each row of Y. The distance metric used here is Euclidean
+        distance.
+
+        Parameters
+        ----------
+        X: array-like, shape (n_samples_i, n_features)
+            An array of samples.
+        Y: array-like, shape (n_samples_j, n_features)
+            Another array of samples. Second dimension is the same size
+            as the second dimension of X.
+
+        Returns
+        -------
+        distances: array-like, shape (n_samples_i, n_samples_j)
+            An array containing the pairwise distances between each
+            row of X and each row of Y.
+        '''
+
+        distances = cdist(X, Y)
+        return distances
+
     def _init_centroids(self, Xs):
 
         '''
@@ -234,6 +255,37 @@ class MultiviewKMeans(BaseKMeans):
 
     def _em_step(self, X, partition, centroids):
 
+        '''
+        A function that computes one iteration of expectation-maximization.
+
+        Parameters
+        ----------
+        X: array-like, shape (n_samples, n_features)
+            An array of samples representing a single view of the data.
+
+        partition: array-like, shape (n_samples,)
+            An array of cluster labels indicating the cluster to which
+            each data sample is assigned. This is essentially a partition
+            of the data points.
+
+        centroids: array-like, shape (n_clusters, n_features)
+            The current cluster centers.
+
+        Returns
+        -------
+        new_parts: array-like, shape (n_samples,)
+            The new cluster assignments for each sample in the data after
+            the data has been repartitioned with respect to the new
+            cluster centers.
+
+        new_centers: array-like, shape (n_clusters, n_features)
+            The updated cluster centers.
+
+        o_funct: float
+            The new value of the objective function.
+        '''
+
+
         n_samples = X.shape[0]
         new_centers = list()
         for cl in range(self.n_clusters):
@@ -245,7 +297,7 @@ class MultiviewKMeans(BaseKMeans):
                 cent = np.mean(X[mask], axis=0)
                 new_centers.append(cent)
         new_centers = np.vstack(new_centers)
-            
+
         # Compute expectation and objective function
         distances = self._compute_dist(X, new_centers)
         new_parts = np.argmin(distances, axis=1).flatten()
@@ -255,11 +307,31 @@ class MultiviewKMeans(BaseKMeans):
         return new_parts, new_centers, o_funct
 
     def _preprocess_data(self, Xs):
-        
+
+        '''
+        Checks that the inputted data is in the correct format.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        Xs_new : list of array-likes
+            - centroids length: n_views
+            - centroids[i] shape: (n_clusters, n_features_i)
+            The data samples after they have been checked.
+        '''
+
         # Check that the input data is valid
-        Xs = check_Xs(Xs, enforce_views=2)
-        return Xs
-    
+        Xs_new = check_Xs(Xs, enforce_views=2)
+        return Xs_new
+
     def fit(self, Xs):
 
         '''
@@ -280,7 +352,7 @@ class MultiviewKMeans(BaseKMeans):
         '''
 
         Xs = self._preprocess_data(Xs)
-        
+
         # Type checking and exception handling for random_state parameter
         if self.random_state is not None:
             msg = 'random_state must be convertible to 32 bit unsigned integer'
@@ -341,10 +413,10 @@ class MultiviewKMeans(BaseKMeans):
                 pre_view = (iter_num) % 2
                 view = (iter_num + 1) % 2
                 # Switch partitions and compute maximization
-                
+
                 partitions[view], centroids[view], o_funct = self._em_step(
-                    Xs[view], partitions[pre_view], centroids[view]) 
-                
+                    Xs[view], partitions[pre_view], centroids[view])
+
                 # Track the number of iterations without improvement
                 if(o_funct < objective[view]):
                     objective[view] = o_funct
@@ -384,7 +456,7 @@ class MultiviewKMeans(BaseKMeans):
 
         '''
 
-        Xs = check_Xs(Xs, enforce_views=2)
+        Xs = self._preprocess_data(Xs)
 
         # Check whether or not centroids were properly fitted
         if self.centroids_ is None:
