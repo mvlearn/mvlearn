@@ -23,7 +23,7 @@ from mvlearn.embed.utils import select_dimension
 
 
 class GCCA(BaseEmbed):
-    r"""
+    """
     An implementation of Generalized Canonical Correalation Analysis. Computes
     individual projections into a common subspace such that the correlations
     between pairwise projections are minimized (ie. maximize pairwise
