@@ -48,13 +48,12 @@ extensions = [
     "numpydoc",
     "sphinx.ext.ifconfig",
     "sphinx.ext.githubpages",
-    "sphinxcontrib.rawfiles",
     "nbsphinx",
     "sphinx.ext.intersphinx",
 ]
 
 # -- sphinxcontrib.rawfiles
-rawfiles = ["CNAME"]
+#rawfiles = ["CNAME"]
 
 # -- numpydoc
 # Below is needed to prevent errors
