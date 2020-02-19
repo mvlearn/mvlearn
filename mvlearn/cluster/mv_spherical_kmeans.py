@@ -17,6 +17,7 @@
 from .mv_kmeans import MultiviewKMeans
 import numpy as np
 from ..utils.utils import check_Xs
+from sklearn.preprocessing import normalize
 
 class MultiviewSphericalKMeans(MultiviewKMeans):
 
@@ -170,9 +171,9 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
                 if centroids[ind].shape[0] != self.n_clusters:
                     msg = 'number of centroids per view must equal n_clusters'
                     raise ValueError(msg)
-                if centroids[ind].shape[1] != Xs[0][0].shape[0]:
+                if centroids[ind].shape[1] != Xs[ind].shape[1]:
                     msg = ('feature dimensions of cluster centroids'
-                           + 'must match those of data')
+                           + ' must match those of data')
                     raise ValueError(msg)
 
         return centroids
@@ -218,16 +219,15 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
                 new_centers.append(centroids[cl])
             else:
                 cent = np.sum(X[mask], axis=0)
-                cent /= np.linalg.norm(cent)
                 new_centers.append(cent)
         new_centers = np.vstack(new_centers)
+        new_centers = normalize(new_centers)
             
         # Compute expectation and objective function
         distances = self._compute_dist(X, new_centers)
         new_parts = np.argmin(distances, axis=1).flatten()
         min_dists = distances[np.arange(n_samples), new_parts]
         o_funct = np.sum(min_dists)
-
         return new_parts, new_centers, o_funct
 
     def _preprocess_data(self, Xs):
@@ -259,10 +259,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         #Normalize the input samples
         for view in range(len(Xs)):
             Xs[view] = Xs[view].astype(float)
-            magnitudes = np.linalg.norm(Xs[view], axis=1)
-            magnitudes[magnitudes == 0] = 1
-            magnitudes = magnitudes.reshape((-1,1))
-            Xs[view] /= magnitudes
+            Xs[view] = normalize(Xs[view])
 
         return Xs
 
@@ -288,6 +285,4 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         super().fit(Xs)
         # Normalize the centroids
         for view in range(len(self.centroids_)):
-            magnitude = np.linalg.norm(self.centroids_[view], axis=1)
-            magnitude = magnitude.reshape((-1, 1))
-            self.centroids_[view] /= magnitude
+            self.centroids_[view] = normalize(self.centroids_[view])
