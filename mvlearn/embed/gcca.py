@@ -72,10 +72,10 @@ class GCCA(BaseEmbed):
     Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
     Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
     the correlation :math:`X_1 a_1` and :math:`X_2 a_2`, expanded below.
-    
+
     .. math::
         \left(\frac{a_1^TC_{12}a_2}
-            {\sqrt{a_1^TC_{11}a_1a_2^TC_{22}a_2}} 
+            {\sqrt{a_1^TC_{11}a_1a_2^TC_{22}a_2}}
             \right)
 
     where :math:`C_{11}`, :math:`C_{22}`, and :math:`C_{12}` are respectively
@@ -310,7 +310,7 @@ class GCCA(BaseEmbed):
 
         Returns
         -------
-        Xs_transformed : array-like, 2D if view_idx not None, otherwise 
+        Xs_transformed : array-like, 2D if view_idx not None, otherwise
             (n_views, n_samples, self.n_components)
         """
 
