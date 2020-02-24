@@ -3,7 +3,7 @@
 .. _contents:
 
 Overview of mvlearn_
-===================
+====================
 
 .. _mvlearn: https://github.com/NeuroDataDesign/mvlearn
 
@@ -47,7 +47,6 @@ mvearn is a python package of multiview learning tools.
    tutorials
    references/index
    contributing
-   news
    license
 
 .. toctree::
