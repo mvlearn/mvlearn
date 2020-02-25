@@ -230,7 +230,7 @@ class SplitAE(BaseEmbed):
              - Xs[0] shape: (n_samples, n_features_0)
 
         Returns
-        ----------
+        -------
         embedding: np.ndarray of shape (n_samples, embeddingSize)
             the embedding of the View1 data
         view1_reconstructions: np.ndarray of shape (n_samples, n_features_0)
@@ -253,12 +253,12 @@ class SplitAE(BaseEmbed):
         `fit(Xs)` and then `transform(Xs[:1])`. Note that this method will be
         embedding data that the autoencoder was trained on.
 
-        Parameters:
+        Parameters
         ----------
         Xs: see `fit(...)` Xs parameters
 
         Returns
-        ----------
+        -------
         See `transform(...)` return values.
         """
         self.fit(Xs)
