@@ -286,7 +286,7 @@ class SplitAE(BaseEmbed):
 
     def fit_transform(self, Xs):
         r"""
-        :code:`fit(Xs)` and then :code:`transform(Xs[:1])`. 
+        :code:`fit(Xs)` and then :code:`transform(Xs[:1])`.
         Note that this method will be
         embedding data that the autoencoder was trained on.
 
