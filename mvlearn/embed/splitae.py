@@ -57,7 +57,8 @@ class SplitAE(BaseEmbed):
         :alt: SplitAE diagram
         :align: center
 
-        in this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}` is View2
+        in this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}`
+        is View2
 
     Each encoder / decoder network is a fully connected neural net with
     paramater count equal to:
@@ -116,7 +117,6 @@ class SplitAE(BaseEmbed):
         ICML, 2015.
     """
 
-
     def __init__(self, hidden_size=64, num_hidden_layers=2, embed_size=20,
                  training_epochs=10, batch_size=16, learning_rate=0.001,
                  print_info=False, print_graph=True):
@@ -141,8 +141,8 @@ class SplitAE(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
         validation_Xs : list of array-likes or numpy.ndarray
             optional validation data in the same shape of Xs. If
-            :code:`print_info=True`, then validation error, calculated with this
-            data, will be printed as the network trains.
+            :code:`print_info=True`, then validation error, calculated with
+            this data, will be printed as the network trains.
         """
 
         Xs = check_Xs(Xs, multiview=True, enforce_views=2)
@@ -286,7 +286,8 @@ class SplitAE(BaseEmbed):
 
     def fit_transform(self, Xs):
         r"""
-        :code:`fit(Xs)` and then :code:`transform(Xs[:1])`. Note that this method will be
+        :code:`fit(Xs)` and then :code:`transform(Xs[:1])`. 
+        Note that this method will be
         embedding data that the autoencoder was trained on.
 
         Parameters
