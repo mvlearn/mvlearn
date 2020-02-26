@@ -1,4 +1,4 @@
-Datasets
+mvlearn.datasets
 ========
 
 .. currentmodule:: mvlearn.datasets
