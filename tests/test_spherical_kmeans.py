@@ -181,7 +181,7 @@ def test_init_not_2_views(data_small):
         view1 = np.random.random((2,8))
         view2 = np.random.random((2,9))
         view3 = np.random.random((2,9))
-        kmeans = MultiviewSphericalKMeans(init=[view1, view2])
+        kmeans = MultiviewSphericalKMeans(init=[view1, view2, view3])
         kmeans.fit(data_small)
         
 def test_init_not_n_clusters(data_small):
@@ -317,7 +317,7 @@ def test_fit_predict_n_init(data_random):
 
     
     n_clusters = data_random['n_clusters']
-    n_init=1
+    n_init = 1
     kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters, n_init=n_init)
     cluster_pred = kmeans.fit_predict(data_random['test_data'])
     
@@ -359,3 +359,16 @@ def test_fit_predict_init_predefined():
     data = [v1_data, v2_data]
     kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters, init=centroids)
     cluster_pred = kmeans.fit_predict(data)
+
+def test_preprocess_data(data_random):
+    n_clusters = data_random['n_clusters']
+    kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters)
+    processed = kmeans._preprocess_data(data_random['test_data'])
+    for mat in processed:
+        mat = np.linalg.norm(mat, axis=1)
+        ones = np.ones(mat.shape)
+        assert(np.allclose(mat, ones))
+
+
+# def test_em_step(data_random):
+    

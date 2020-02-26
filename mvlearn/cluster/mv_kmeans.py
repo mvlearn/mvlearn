@@ -14,7 +14,6 @@
 #
 # Implements multi-view kmeans clustering algorithm for data with 2-views.
 
-
 import numpy as np
 from .base_kmeans import BaseKMeans
 from ..utils.utils import check_Xs
@@ -24,12 +23,14 @@ from scipy.spatial.distance import cdist
 
 class MultiviewKMeans(BaseKMeans):
 
-    '''
-    An implementation of Multi-View K-Means using the co-EM algorithm.
+    r'''
+    This class implements Multi-View K-Means using the co-EM framework
+    as described in [#1Clu]_. This algorithm is most suitable for cases
+    in which the different views of data are conditionally independent.
     This algorithm currently handles two views of data.
 
     Parameters
-    ---------
+    ----------
     n_clusters : int, optional, default=2
         The number of clusters
 
@@ -50,8 +51,8 @@ class MultiviewKMeans(BaseKMeans):
         centroid seeds. The final result will be the best output of
         n_init runs with respect to total inertia across all views.
 
-    init : {'k-means++', 'random'} or list of array-likes
-        Method of initializing centroids, defaults to 'k-means++'.
+    init : {'k-means++', 'random'} or list of array-likes, default='k-means++'
+        Method of initializing centroids.
 
         'k-means++': selects initial cluster centers for k-means clustering
         via a method that speeds up convergence.
@@ -61,22 +62,70 @@ class MultiviewKMeans(BaseKMeans):
 
         If a list of array-likes is passed, the list should have a length of
         equal to the number of views. Each of the array-likes should have
-        the shape
+        the shape (n_clusters, n_features_i) for the ith view, where
+        n_features_i is the number of features in the ith view of the input
+        data.
 
     Attributes
     ----------
-
     centroids_ : list of array-likes
         - centroids_ length: n_views
         - centroids_[i] shape: (n_clusters, n_features_i)
+
         The cluster centroids for each of the two views. centroids_[0]
         corresponds to the centroids of view 1 and centroids_[1] corresponds
         to the centroids of view 2.
 
+    Notes
+    -----
+
+    Multi-view KMeans clustering adapts the traditional kmeans clustering
+    algorithm to handle two views of data. This algorithm requires that a
+    conditional independence assumption between views holds true. In cases
+    where both views are informative and conditionally independent, Multi-view
+    KMeans clustering can outperform its single-view analog run on a
+    concatenated version of the two views of data. This is quite useful for
+    applications where you wish to cluster data from two different modalities
+    or data with features that naturally fall into two different partitions.
+    Multi-view KMeans works by iteratively performing the maximization and
+    expectation steps of traditional EM in one view, and then using the
+    computed hidden variables as the input for the maximization step in
+    the other view. This algorithm, referred to as Co-EM, is described
+    below.
+
+    *Co-EM Algorithm*
+
+    Input: Unlabeled data D with 2 views
+
+        #. Initialize :math:`\Theta_0^{(2)}`, T, :math:`t = 0`.
+
+        #. E step for view 2: compute expectation for hidden variables given
+
+        #. Loop until stopping criterion is true:
+
+            #. For v = 1 ... 2:
+
+                #. :math:`t = t + 1`
+
+                #. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
+                   that maximize the likelihood for the data given the expected
+                   values for hidden variables of view :math:`\overline{v}` of
+                   iteration :math:`t` - 1
+
+                #. E step view :math:`v`: compute expectation for hidden
+                   variables given the model parameters :math:`\Theta_t^{(v)}`
+
+        #. return combined :math:`\hat{\Theta} = \Theta_{t-1}^{(1)} \cup
+           \Theta_t^{(2)}`
+
+    The final assignment of examples to partitions is performed by assigning
+    each example to the cluster with the largest averaged posterior
+    probability over both views.
+
     References
     ----------
-    [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the
-    4th IEEE International Conference on Data Mining, pp. 19–26
+    .. [#1Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
+            of the 4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
@@ -94,7 +143,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def _compute_dist(self, X, Y):
 
-        '''
+        r'''
         Function that computes the pairwise distance between each row of X
         and each row of Y. The distance metric used here is Euclidean
         distance.
@@ -119,7 +168,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def _init_centroids(self, Xs):
 
-        '''
+        r'''
         Initializes the centroids for Multi-view KMeans or KMeans++ depending
         on which has been selected.
 
@@ -128,6 +177,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
@@ -137,6 +187,7 @@ class MultiviewKMeans(BaseKMeans):
         centroids : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
+
             The cluster centroids for each of the two views. centroids[0]
             corresponds to the centroids of view 1 and centroids[1] corresponds
             to the centroids of view 2. These are not yet the final cluster
@@ -187,7 +238,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def _final_centroids(self, Xs, centroids):
 
-        '''
+        r'''
         Computes the final cluster centroids based on consensus samples across
         both views. Consensus samples are those that are assigned to the same
         partition in both views.
@@ -197,6 +248,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
@@ -204,6 +256,7 @@ class MultiviewKMeans(BaseKMeans):
         centroids : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
+
             The cluster centroids for each of the two views. centroids[0]
             corresponds to the centroids of view 1 and centroids[1] corresponds
             to the centroids of view 2. These are not yet the final cluster
@@ -255,7 +308,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def _em_step(self, X, partition, centroids):
 
-        '''
+        r'''
         A function that computes one iteration of expectation-maximization.
 
         Parameters
@@ -285,7 +338,6 @@ class MultiviewKMeans(BaseKMeans):
             The new value of the objective function.
         '''
 
-
         n_samples = X.shape[0]
         new_centers = list()
         for cl in range(self.n_clusters):
@@ -308,7 +360,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def _preprocess_data(self, Xs):
 
-        '''
+        r'''
         Checks that the inputted data is in the correct format.
 
         Parameters
@@ -316,6 +368,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
@@ -325,6 +378,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs_new : list of array-likes
             - centroids length: n_views
             - centroids[i] shape: (n_clusters, n_features_i)
+
             The data samples after they have been checked.
         '''
 
@@ -334,7 +388,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def fit(self, Xs):
 
-        '''
+        r'''
         Fit the cluster centroids to the data.
 
         Parameters
@@ -342,6 +396,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
@@ -437,7 +492,7 @@ class MultiviewKMeans(BaseKMeans):
 
     def predict(self, Xs):
 
-        '''
+        r'''
         Predict the cluster labels for the data.
 
         Parameters
@@ -445,6 +500,7 @@ class MultiviewKMeans(BaseKMeans):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two
             views of the data. The two views can each have a different
             number of features, but they must have the same number of samples.
@@ -455,7 +511,7 @@ class MultiviewKMeans(BaseKMeans):
             The predicted cluster labels for each sample.
 
         '''
-
+        
         Xs = self._preprocess_data(Xs)
 
         # Check whether or not centroids were properly fitted
