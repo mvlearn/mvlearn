@@ -29,7 +29,7 @@ class MultiviewKMeans(BaseCluster):
     This algorithm currently handles two views of data.
 
     Parameters
-    ---------
+    ----------
     n_clusters : int, optional, default=2
         The number of clusters
 
@@ -62,8 +62,8 @@ class MultiviewKMeans(BaseCluster):
 
     References
     ----------
-    [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the
-    4th IEEE International Conference on Data Mining, pp. 19–26
+    .. [#2Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
+            of the 4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
     def __init__(self, n_clusters=2, random_state=None,
