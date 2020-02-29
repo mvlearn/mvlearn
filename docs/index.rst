@@ -38,7 +38,7 @@ mvlearn was developed during the end of 2019 by Richard Guo, Ronan Perry, Gavin 
 Documentation
 =============
 
-mvearn is a python package of multiview learning tools.
+mvlearn is a python package of multiview learning tools.
 
 .. toctree::
    :maxdepth: 1

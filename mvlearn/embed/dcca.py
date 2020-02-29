@@ -1,3 +1,17 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # MIT License
 
 # Original work Copyright (c) 2016 Vahid Noroozi
@@ -13,34 +27,17 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-
-# Copyright 2019 NeuroData (http://neurodata.io)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from .base import BaseEmbed
-from ..utils.utils import check_Xs
-from .dcca_utils import *
+from ..utils.utils import *
 
 
 class DCCA(BaseEmbed):
-    """
+    r"""
     An implementation of Deep Canonical Correlation Analysis with PyTorch.
     Computes projections into a common subspace in order to maximize the
     correlation between pairwise projections into the subspace from two views
     of data. Deep CCA can be thought of as using deep networks to learn the
-    best potentially nonlinear kernels for a variant of kernel CCA. This
-    implementation uses PyTorch.
+    best potentially nonlinear kernels for a variant of kernel CCA.
 
     Parameters
     ----------
@@ -90,9 +87,9 @@ class DCCA(BaseEmbed):
 
     References
     ----------
-    [1] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013, February).
-    Deep canonical correlation analysis. In International conference on
-    machine learning (pp. 1247-1255).
+    .. [#1DCCA] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
+                February). Deep canonical correlation analysis. In
+                International conference on machine learning (pp. 1247-1255).
     """
 
     def __init__(
@@ -132,8 +129,8 @@ class DCCA(BaseEmbed):
         self.logger.addHandler(fh)
         self.print_log_info = print_log_info
 
-    def fit(self, Xs, y=None):
-        """
+    def fit(self, Xs):
+        r"""
         Fits the deep networks for each view such that the output of the
         linear CCA has maximum correlation.
 
@@ -189,13 +186,8 @@ class DCCA(BaseEmbed):
                     epoch + 1, self.epoch_num, epoch_time, train_loss))
         # train_linear_cca
         if self.linear_cca is not None:
-            print("x1.shape")
-            print(x1.shape)
-            _, outputs = self._get_outputs(x1, x2)
-            print("outputs[0].shape")
-            print(outputs[0].shape)
-            print("linear cca")
-            self.train_linear_cca(outputs[0], outputs[1])
+            losses, outputs = self._get_outputs(x1, x2)
+            self._train_linear_cca(outputs[0], outputs[1])
 
         checkpoint_ = torch.load(checkpoint)
         self.model.load_state_dict(checkpoint_)
@@ -203,8 +195,8 @@ class DCCA(BaseEmbed):
         self.is_fit = True
         return self
 
-    def transform(self, Xs):
-        """
+    def transform(self, Xs, return_loss=False):
+        r"""
         Embeds data matrix(s) using the trained deep networks and fitted CCA
         projection matrices. May be used for out-of-sample embeddings.
 
@@ -222,6 +214,9 @@ class DCCA(BaseEmbed):
         Xs_transformed : list of array-likes or array-like
             Transformed samples. Same structure as Xs, but potentially
             different n_features_i.
+        loss : float
+            Average loss over data, defined as negative correlation of
+            transformed views. Only returned if ''return_loss''=True.
         """
 
         if not self.is_fit:
@@ -233,21 +228,28 @@ class DCCA(BaseEmbed):
         with torch.no_grad():
             losses, outputs = self._get_outputs(x1, x2)
             outputs = self.linear_cca.test(outputs[0], outputs[1])
-            return np.mean(losses), outputs
+            if return_loss:
+                return outputs, np.mean(losses)
+            return outputs
 
-    def train_linear_cca(self, x1, x2):
+    def _train_linear_cca(self, x1, x2):
+        """
+        Private function to fit the linear CCA model for use after the
+        deep layers.
+        """
         self.linear_cca.fit(x1, x2, self.outdim_size)
 
     def _get_outputs(self, x1, x2):
+        """
+        Private function to get the transformed data and the corresponding
+        loss for the given inputs.
+        """
         with torch.no_grad():
             self.model.eval()
             data_size = x1.size(0)
             batch_idxs = list(BatchSampler(SequentialSampler(range(data_size)),
                               batch_size=self.batch_size,
                               drop_last=False))
-            print("batch indices")
-            print(len(batch_idxs)) # 88
-            print(len(batch_idxs[0])) # 800
             losses = []
             outputs1 = []
             outputs2 = []
@@ -255,21 +257,19 @@ class DCCA(BaseEmbed):
                 batch_x1 = x1[batch_idx, :]
                 batch_x2 = x2[batch_idx, :]
                 o1, o2 = self.model(batch_x1, batch_x2)
-                print("batch output size")
-                print(o1.shape)
                 outputs1.append(o1)
                 outputs2.append(o2)
                 loss = self.loss(o1, o2)
                 losses.append(loss.item())
         outputs = [torch.cat(outputs1, dim=0).cpu().numpy(),
                    torch.cat(outputs2, dim=0).cpu().numpy()]
-        print("torch cat size")
-        print(torch.cat(outputs1, dim=0).cpu().numpy().shape)
-        print(torch.cat(outputs1, dim=0).shape)
-        print(outputs[0].shape)
 
-        return outputs
+        return losses, outputs
 
-    def print_deep_model_info(self):
+    def print_log_info(self):
+        """
+        Prints logged information about the model collected during training.
+
+        """
         self.logger.info(self.model)
         self.logger.info(self.optimizer)

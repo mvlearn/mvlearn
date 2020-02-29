@@ -3,6 +3,17 @@ Utility
 
 .. currentmodule:: mvlearn.utils
 
+DCCA Utils
+----------
+
+.. autoclass:: linear_cca
+
+.. autoclass:: cca_loss
+
+.. autoclass:: MlpNet
+
+.. autoclass:: DeepCCA
+
 IO
 --
 

@@ -15,6 +15,12 @@ Kernel Canonical Correlation Analysis
 .. autoclass:: KCCA
     :exclude-members: get_params, set_params
 
+Deep Canonical Correlation Analysis
+------------------------------------------
+
+.. autoclass:: DCCA
+    :exclude-members: get_params, set_params
+
 Omnibus Embedding
 -----------------
 
