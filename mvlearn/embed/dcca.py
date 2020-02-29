@@ -72,8 +72,8 @@ class DCCA(BaseEmbed):
         Learning rate for training the deep networks
     reg_par : float (positive), default=1e-5
         Regularization parameter for training the deep networks
-    print_log_info : boolean, default=False
-        Whether or not to print the logging info (training loss, epoch time)
+    print_train_log_info : boolean, default=False
+        Whether or not to print the logging info (training loss at each epoch)
         when calling DCCA.fit().
 
     Attributes
@@ -96,7 +96,7 @@ class DCCA(BaseEmbed):
             self, outdim_size=2, layer_sizes1=None, layer_sizes2=None,
             input_size1=None, input_size2=None, use_all_singular_values=False,
             device=torch.device('cpu'), epoch_num=10, batch_size=800,
-            learning_rate=1e-3, reg_par=1e-5, print_log_info=False
+            learning_rate=1e-3, reg_par=1e-5, print_train_log_info=False
             ):
 
         super().__init__()
@@ -116,18 +116,7 @@ class DCCA(BaseEmbed):
                                              weight_decay=reg_par)
         self.device = device
         self.outdim_size = outdim_size
-
-        # set up logger for logging training of deep models
-        formatter = logging.Formatter(
-            "[ %(levelname)s : %(asctime)s ] - %(message)s")
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="[ %(levelname)s : %(asctime)s ] - %(message)s")
-        self.logger = logging.getLogger("Pytorch")
-        fh = logging.FileHandler("DCCA.log")
-        fh.setFormatter(formatter)
-        self.logger.addHandler(fh)
-        self.print_log_info = print_log_info
+        self.print_train_log_info = print_train_log_info
 
     def fit(self, Xs):
         r"""
@@ -147,7 +136,6 @@ class DCCA(BaseEmbed):
         -------
         self : returns an instance of self.
         """
-
         Xs = check_Xs(Xs, multiview=True)  # ensure valid input
         x1 = torch.DoubleTensor(Xs[0])
         x2 = torch.DoubleTensor(Xs[1])
@@ -160,7 +148,6 @@ class DCCA(BaseEmbed):
 
         train_losses = []
         for epoch in range(self.epoch_num):
-            epoch_start_time = time.time()
             self.model.train()
             batch_idxs = list(BatchSampler(RandomSampler(range(data_size)),
                                            batch_size=self.batch_size,
@@ -174,16 +161,15 @@ class DCCA(BaseEmbed):
                 train_losses.append(loss.item())
                 loss.backward()
                 self.optimizer.step()
-            train_loss = np.mean(train_losses)
-
-            info_string = "Epoch {:d}/{:d} - time: {:.2f} -"\
-                          " training_loss: {:.4f}"
+            if self.print_train_log_info:
+                train_loss = np.mean(train_losses)
+                info_string = "Epoch {:d}/{:d},"\
+                    " training_loss: {:.4f}"
+                print(info_string.format(epoch + 1, self.epoch_num,
+                      train_loss))
 
             torch.save(self.model.state_dict(), checkpoint)
-            epoch_time = time.time() - epoch_start_time
-            if self.print_log_info:
-                self.logger.info(info_string.format(
-                    epoch + 1, self.epoch_num, epoch_time, train_loss))
+
         # train_linear_cca
         if self.linear_cca is not None:
             losses, outputs = self._get_outputs(x1, x2)
@@ -266,10 +252,10 @@ class DCCA(BaseEmbed):
 
         return losses, outputs
 
-    def print_log_info(self):
-        """
-        Prints logged information about the model collected during training.
+    # def print_log_info(self):
+    #     """
+    #     Prints logged information about the model collected during training.
 
-        """
-        self.logger.info(self.model)
-        self.logger.info(self.optimizer)
+    #     """
+    #     self.logger.info(self.model)
+    #     self.logger.info(self.optimizer)

@@ -27,14 +27,11 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-import warnings
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
-import time
-import logging
 
 
 def check_Xs(Xs, multiview=False, enforce_views=None):
@@ -174,6 +171,7 @@ def check_Xs_y_nan_allowed(
 
     return Xs_converted, y_converted
 
+
 class linear_cca():
     """
     Implementation of linear CCA to act on the output of the deep networks
@@ -222,9 +220,9 @@ class linear_cca():
 
         SigmaHat12 = (1.0 / (m - 1)) * np.dot(H1bar.T, H2bar)
         SigmaHat11 = (1.0 / (m - 1)) * np.dot(H1bar.T,
-                                                 H1bar) + r1 * np.identity(o1)
+                                              H1bar) + r1 * np.identity(o1)
         SigmaHat22 = (1.0 / (m - 1)) * np.dot(H2bar.T,
-                                                 H2bar) + r2 * np.identity(o2)
+                                              H2bar) + r2 * np.identity(o2)
 
         [D1, V1] = np.linalg.eigh(SigmaHat11)
         [D2, V2] = np.linalg.eigh(SigmaHat22)
@@ -234,7 +232,7 @@ class linear_cca():
             np.dot(V2, np.diag(D2 ** -0.5)), V2.T)
 
         Tval = np.dot(np.dot(SigmaHat11RootInv,
-                                   SigmaHat12), SigmaHat22RootInv)
+                             SigmaHat12), SigmaHat22RootInv)
 
         [U, D, V] = np.linalg.svd(Tval)
         V = V.T
@@ -308,9 +306,9 @@ class cca_loss():
 
     References
     ----------
-    .. [#1Utils] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013, February).
-                 Deep canonical correlation analysis. In International conference on
-                 machine learning (pp. 1247-1255).
+    .. [#1Utils] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
+                 February). Deep canonical correlation analysis. In
+                 International conference on machine learning (pp. 1247-1255).
     """
     def __init__(self, outdim_size, use_all_singular_values, device):
         self.outdim_size = outdim_size
@@ -422,7 +420,6 @@ class MlpNet(nn.Module):
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
                     nn.Sigmoid(),
                 ))
-        print("making MLP in utils.py")
         self.layers = nn.ModuleList(layers)
 
     def forward(self, x):
