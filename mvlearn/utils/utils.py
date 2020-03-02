@@ -19,24 +19,25 @@ import numpy as np
 
 
 def check_Xs(Xs, multiview=False, enforce_views=None):
-    """
+    r"""
     Checks Xs and ensures it to be a list of 2D matrices.
+
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
 
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix
+    multiview : boolean, (default=False)
+        If True, throws error if just 1 data matrix given.
 
-    enforce_views : int, default (not checked)
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
 
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
@@ -70,8 +71,9 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
 
 
 def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
-    """
-    Checks Xs and y for consistent length. Xs is set to be of dimension 3
+    r"""
+    Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+
     Parameters
     ----------
     Xs : nd-array, list
@@ -80,16 +82,17 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     y : nd-array, list
         Labels.
 
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix.
+    multiview : boolean, (default=False)
+        If True, throws error if just 1 data matrix given.
 
-    enforce_views : int, default (not checked)
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
+
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
 
     y_converted : object
         The converted and validated y.
@@ -108,17 +111,18 @@ def check_Xs_y_nan_allowed(
         enforce_views=None,
         num_classes=None
         ):
-    """
-    Checks Xs and y for consistent length. Xs is set to be of dimension 3
+    r"""
+    Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
     y : nd-array, list
         Labels.
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix
-    enforce_views : int, default (not checked)
+    multiview : boolean, (default=False)
+        If True, throws error if just 1 data matrix given.
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
     num_classes: int, default (None)
@@ -128,7 +132,7 @@ def check_Xs_y_nan_allowed(
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
     y_converted : object
         The converted and validated y.
     """
