@@ -8,11 +8,10 @@ from mvlearn.embed.base import BaseEmbed
 from mvlearn.utils.utils import check_Xs
 import warnings
 
-from mvlearn.embed.JIVE.utils import svd_wrapper, centering
-from mvlearn.embed.JIVE.wedin_bound import get_wedin_samples
-from mvlearn.embed.JIVE.random_direction import sample_randdir
-from mvlearn.embed.JIVE.diagnostic_plot import plot_joint_diagnostic
-from mvlearn.embed.JIVE.PCA import PCA
+from mvlearn.JIVE.utils import svd_wrapper, centering
+from mvlearn.JIVE.wedin_bound import get_wedin_samples
+from mvlearn.JIVE.random_direction import sample_randdir
+from mvlearn.JIVE.PCA import PCA
 
 
 class AJIVE(object):
@@ -409,19 +408,6 @@ class AJIVE(object):
             return list(self.blocks.keys())
         else:
             return None
-
-    def plot_joint_diagnostic(self, fontsize=20):
-        """
-        Plots joint rank threshold diagnostic plot
-        """
-
-        plot_joint_diagnostic(joint_svals=self.all_joint_svals_,
-                              wedin_sv_samples=self.wedin_sv_samples_,
-                              min_signal_rank=min(self.init_signal_ranks.values()),
-                              random_sv_samples=self.random_sv_samples_,
-                              wedin_percentile=self.wedin_percentile,
-                              random_percentile=self.randdir_percentile,
-                              fontsize=fontsize)
 
     def save(self, fpath, compress=9):
         dump(self, fpath, compress=compress)
