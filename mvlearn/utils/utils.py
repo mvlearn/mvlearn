@@ -27,6 +27,7 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
+import warnings
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 import torch

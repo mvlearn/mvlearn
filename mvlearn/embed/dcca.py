@@ -28,7 +28,7 @@
 # all copies or substantial portions of the Software.
 
 from .base import BaseEmbed
-from ..utils.utils import *
+from .utils import *
 
 
 class DCCA(BaseEmbed):
