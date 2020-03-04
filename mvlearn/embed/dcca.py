@@ -33,7 +33,7 @@ from ..utils.utils import *
 
 class DCCA(BaseEmbed):
     r"""
-    An implementation of Deep Canonical Correlation Analysis with PyTorch.
+    An implementation of Deep Canonical Correlation Analysis [#1DCCA]_ with PyTorch.
     Computes projections into a common subspace in order to maximize the
     correlation between pairwise projections into the subspace from two views
     of data. Deep CCA can be thought of as using deep networks to learn the
@@ -41,6 +41,49 @@ class DCCA(BaseEmbed):
 
     Parameters
     ----------
+    input_size1 : int (positive)
+        The dimensionality of the input vectors in view 1.
+    input_size2 : int (positive)
+        The dimensionality of the input vectors in view 2.
+    outdim_size : int (positive), default=2
+        The output dimensionality of the correlated projections. The deep
+        network wil transform the data to this size. If not specified, will
+        be set to 2.
+    layer_sizes1 : list of ints, default=None
+        The sizes of the layers of the deep network applied to view 1 before
+        CCA. For example, if the input dimensionality is 256, and there is one
+        hidden layer with 1024 units and the output dimensionality is 100
+        before applying CCA, layer_sizes1=[1024, 100]. If ``None``, set to
+        [1000, ``self.outdim_size``].
+    layer_sizes2 : list of ints, default=None
+        The sizes of the layers of the deep network applied to view 2 before
+        CCA. Does not need to have the same hidden layer architecture as
+        layer_sizes1, but the final dimensionality must be the same. If
+        ``None``, set to [1000, ``self.outdim_size``].
+    use_all_singular_values : boolean (default=False)
+        Whether or not to use all the singular values in the CCA computation
+        to calculate the loss. If False, only the top outdim_size singular
+        values are used.
+    device : string, default='cpu'
+        The torch device for processing.
+    epoch_num : int (positive)
+        The max number of epochs to train the deep networks.
+    batch_size : int (positive)
+        Batch size for training the deep networks.
+    learning_rate : float (positive), default=1e-3
+        Learning rate for training the deep networks.
+    reg_par : float (positive), default=1e-5
+        Weight decay parameter used in the RMSprop optimizer.
+    print_train_log_info : boolean, default=False
+        Whether or not to print the logging info (training loss at each epoch)
+        when calling DCCA.fit().
+
+    Attributes
+    ----------
+    input_size1 : int (positive)
+        The dimensionality of the input vectors in view 1.
+    input_size2 : int (positive)
+        The dimensionality of the input vectors in view 2.
     outdim_size : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
         network wil transform the data to this size. If not specified, will
@@ -54,10 +97,6 @@ class DCCA(BaseEmbed):
         The sizes of the layers of the deep network applied to view 2 before
         CCA. Does not need to have the same hidden layer architecture as
         layer_sizes1, but the final dimensionality must be the same.
-    input_size1 : int (positive)
-        The dimensionality of the input vectors in view 1.
-    input_size2 : int (positive)
-        The dimensionality of the input vectors in view 2.
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
         to calculate the loss. If False, only the top outdim_size singular
@@ -71,19 +110,22 @@ class DCCA(BaseEmbed):
     learning_rate : float (positive), default=1e-3
         Learning rate for training the deep networks
     reg_par : float (positive), default=1e-5
-        Regularization parameter for training the deep networks
+        Weight decay parameter used in the RMSprop optimizer.
     print_train_log_info : boolean, default=False
         Whether or not to print the logging info (training loss at each epoch)
         when calling DCCA.fit().
-
-    Attributes
-    ----------
-    projection_mats_ : list of arrays
-        A projection matrix for each view, from the given space to the
-        latent space
-    ranks_ : list of ints
-        number of left singular vectors kept for each view during the first
-        SVD
+    deep_model : ``DeepCCA`` object
+        2 view Deep CCA object used to transform 2 views of data together.
+    linear_cca : ``linear_cca`` object
+        Linear CCA object used to project final transformations from output
+        of ``deep_model`` to the ``outdim_size``.
+    model : torch.nn.DataParallel object
+        Wrapper around ``deep_model`` to allow parallelisation.
+    loss : ``cca_loss`` object
+        Loss function for ``deep_model``. Defined as the negative correlation
+        between outputs of transformed views.
+    optimizer : torch.optim.RMSprop object
+        Optimizer used to train the networks.
 
     References
     ----------
@@ -93,32 +135,46 @@ class DCCA(BaseEmbed):
     """
 
     def __init__(
-            self, outdim_size=2, layer_sizes1=None, layer_sizes2=None,
-            input_size1=None, input_size2=None, use_all_singular_values=False,
-            device=torch.device('cpu'), epoch_num=10, batch_size=800,
-            learning_rate=1e-3, reg_par=1e-5, print_train_log_info=False
+            self, input_size1=None, input_size2=None, outdim_size=2,
+            layer_sizes1=None, layer_sizes2=None,
+            use_all_singular_values=False, device=torch.device('cpu'),
+            epoch_num=10, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
+            print_train_log_info=False
             ):
 
         super().__init__()
+        # check input_size1/2
+
+        self.input_size1 = input_size1
+        self.input_size2 = input_size2
+        self.outdim_size = outdim_size
+
+        if layer_sizes1 is None:
+            self.layer_sizes1 = [1000, outdim_size]
+        if layer_sizes2 is None:
+            self.layer_sizes2 = [1000, outdim_size]
+
+        self.use_all_singular_values = use_all_singular_values
+        self.device = device
+        self.epoch_num = epoch_num
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.reg_par = reg_par
+        self.print_train_log_info = print_train_log_info
+
         self.deep_model = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
                                   input_size2, outdim_size,
                                   use_all_singular_values, device=device)
-
         self.linear_cca = linear_cca()
 
         self.model = nn.DataParallel(self.deep_model)
         self.model.to(device)
-        self.epoch_num = epoch_num
-        self.batch_size = batch_size
         self.loss = self.deep_model.loss
         self.optimizer = torch.optim.RMSprop(self.model.parameters(),
-                                             lr=learning_rate,
+                                             lr=self.learning_rate,
                                              weight_decay=reg_par)
-        self.device = device
-        self.outdim_size = outdim_size
-        self.print_train_log_info = print_train_log_info
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         r"""
         Fits the deep networks for each view such that the output of the
         linear CCA has maximum correlation.
@@ -202,7 +258,7 @@ class DCCA(BaseEmbed):
             different n_features_i.
         loss : float
             Average loss over data, defined as negative correlation of
-            transformed views. Only returned if ``return_loss``=True.
+            transformed views. Only returned if ``return_loss=True``.
         """
 
         if not self.is_fit:
@@ -251,11 +307,3 @@ class DCCA(BaseEmbed):
                    torch.cat(outputs2, dim=0).cpu().numpy()]
 
         return losses, outputs
-
-    # def print_log_info(self):
-    #     """
-    #     Prints logged information about the model collected during training.
-
-    #     """
-    #     self.logger.info(self.model)
-    #     self.logger.info(self.optimizer)

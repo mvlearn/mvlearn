@@ -37,6 +37,7 @@ from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
 def check_Xs(Xs, multiview=False, enforce_views=None):
     """
     Checks Xs and ensures it to be a list of 2D matrices.
+
     Parameters
     ----------
     Xs : nd-array, list
@@ -177,11 +178,8 @@ class linear_cca():
     Implementation of linear CCA to act on the output of the deep networks
     in DCCA.
 
-    Parameters
-    ----------
-
     Attributes
-    -------
+    ----------
     w : list (length=2)
         w[i] : nd-array
         List of the two weight matrices for projecting each view.
@@ -282,7 +280,7 @@ class linear_cca():
 class cca_loss():
     """
     An implementation of the loss function of linear CCA as introduced
-    in the original paper for ``DCCA`` [#1Utils].
+    in the original paper for ``DCCA`` [#1Utils]_.
 
     Parameters
     ----------
@@ -317,13 +315,13 @@ class cca_loss():
 
     def loss(self, H1, H2):
         """
-        Compute the loss.
+        Compute the loss (negative correlation) between 2 views.
 
         Parameters
         ----------
-        H1: nd-array, shape (n_samples, n_features)
-                View 1 data.
-        H2: nd-array, shape (n_samples, n_features)
+        H1: torch.tensor, shape (n_samples, n_features)
+            View 1 data.
+        H2: torch.tensor, shape (n_samples, n_features)
             View 2 data.
         """
 
@@ -387,7 +385,7 @@ class MlpNet(nn.Module):
     """
     Multilayer perceptron implementation for fully connected network. Used
     by ``DCCA`` for the fully transformation of a single view before linear
-    CCA.
+    CCA. Extends `torch.nn.Module <https://pytorch.org/docs/stable/nn.html>`_.
 
     Parameters
     ----------
@@ -429,7 +427,7 @@ class MlpNet(nn.Module):
         Parameters
         ----------
         x : torch.tensor
-            Input tensor to transform forward.
+            Input tensor to transform by the network.
 
         Returns
         -------
@@ -445,6 +443,7 @@ class DeepCCA(nn.Module):
     """
     A pair of deep networks for operating on the two views of data. Consists
     of two ``MlpNet`` objects for transforming 2 views of data in ``DCCA``.
+    Extends `torch.nn.Module <https://pytorch.org/docs/stable/nn.html>`_.
 
     Parameters
     ----------
@@ -463,7 +462,7 @@ class DeepCCA(nn.Module):
         The dimensionality of the input vectors in view 2.
     outdim_size : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
-        network wil transform the data to this size. If not specified, will
+        network will transform the data to this size. If not specified, will
         be set to 2.
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
@@ -474,6 +473,12 @@ class DeepCCA(nn.Module):
 
     Attributes
     ----------
+    model1 : ``MlpNet`` object
+        Deep network for view 1 transformation.
+    model2 : ``MlpNet`` object
+        Deep network for view 2 transformation.
+    loss : ``cca_loss`` object
+        Loss function for the 2 view DCCA.
     """
     def __init__(self, layer_sizes1, layer_sizes2, input_size1, input_size2,
                  outdim_size, use_all_singular_values,

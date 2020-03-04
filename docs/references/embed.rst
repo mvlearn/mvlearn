@@ -7,7 +7,7 @@ Generalized Canonical Correlation Analysis
 ------------------------------------------
 
 .. autoclass:: GCCA
-    :exclude-members: get_params, set_params
+    :exclude-members: get_params, set_par
 
 Kernel Canonical Correlation Analysis
 -------------------------------------
