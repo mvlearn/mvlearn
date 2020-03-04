@@ -459,25 +459,26 @@ class MultiviewKMeans(BaseKMeans):
             parts = np.argmin(distances, axis=1).flatten()
             partitions = [None, parts]
             objective = [np.inf, np.inf]
-            iter_stall = 0
+            o_funct = [None, None]
+            iter_stall = [0, 0]
             iter_num = 0
 
             # While objective is still decreasing and iterations < max_iter
-            while(iter_stall < self.patience and iter_num < max_iter):
+            while(max(iter_stall) < self.patience and iter_num < max_iter):
+
+                for vi in range(2):
+                    pre_view = (iter_num + 1) % 2
+                    # Switch partitions and compute maximization
+                    partitions[vi], centroids[vi], o_funct[vi] = self._em_step(
+                        Xs[vi], partitions[pre_view], centroids[vi])
                 iter_num += 1
-                pre_view = (iter_num) % 2
-                view = (iter_num + 1) % 2
-                # Switch partitions and compute maximization
-
-                partitions[view], centroids[view], o_funct = self._em_step(
-                    Xs[view], partitions[pre_view], centroids[view])
-
                 # Track the number of iterations without improvement
-                if(o_funct < objective[view]):
-                    objective[view] = o_funct
-                    iter_stall = 0
-                else:
-                    iter_stall += 1
+                for view in range(2):
+                    if(o_funct[view] < objective[view]):
+                        objective[view] = o_funct[view]
+                        iter_stall[view] = 0
+                    else:
+                        iter_stall[view] += 1
 
             # Update min_intertia and best centroids if lower intertia
             total_inertia = np.sum(objective)
@@ -511,7 +512,7 @@ class MultiviewKMeans(BaseKMeans):
             The predicted cluster labels for each sample.
 
         '''
-        
+
         Xs = self._preprocess_data(Xs)
 
         # Check whether or not centroids were properly fitted

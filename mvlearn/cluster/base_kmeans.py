@@ -44,6 +44,7 @@ class BaseKMeans(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            
             A list of different views to fit the model on.
 
         Returns
@@ -63,6 +64,7 @@ class BaseKMeans(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            
             A list of different views to cluster.
 
         Returns
@@ -83,6 +85,7 @@ class BaseKMeans(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            
             This list must be of size 2, corresponding to the two views
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.
