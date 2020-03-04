@@ -138,9 +138,11 @@ class DCCA(BaseEmbed):
     >>> outdim_size = 2
     >>> layer_sizes1 = [1024, 2]
     >>> layer_sizes2 = [1024, 2]
-    >>> dcca = DCCA(input_size1, input_size2, outdim_size, layer_sizes1
+    >>> dcca = DCCA(input_size1, input_size2, outdim_size, layer_sizes1,
                     layer_sizes2)
     >>> outputs = dcca.fit_transform([view1, view2])
+    >>> print(outputs[0].shape)
+    (1000, 2)
 
     References
     ----------
