@@ -17,7 +17,8 @@ from mvlearn.JIVE.PCA import PCA
 
 class AJIVE(object):
     """
-    Angle-based Joint and Individual Variation Explained
+    An implementation of Angle-based Joint and Individual Variation Explained.
+    This algorithm 
 
     Parameters
     ----------
@@ -36,7 +37,7 @@ class AJIVE(object):
         How to center the data matrices. If None, will not center.
 
     reconsider_joint_components: bool
-        TODO: explain
+        Triggers reconsider_joint_components function
 
     wedin_percentile: int (default=5)
         Percentile for wedin (lower) bound cutoff for squared singular values
