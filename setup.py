@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 from sys import platform
 
-PACKAGE_NAME = "multiview"
+PACKAGE_NAME = "mvlearn"
 DESCRIPTION = "A set of python modules for multiview learning"
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
@@ -17,14 +17,14 @@ AUTHOR = (
     "Cameron Franz",
 )
 AUTHOR_EMAIL = "rflperry@gmail.com"
-URL = "https://github.com/NeuroDataDesign/multiview"
+URL = "https://github.com/NeuroDataDesign/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 with open("requirements.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
 
-# Find multiview version.
+# Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-for line in open(os.path.join(PROJECT_PATH, "multiview", "__init__.py")):
+for line in open(os.path.join(PROJECT_PATH, "mvlearn", "__init__.py")):
     if line.startswith("__version__ = "):
         VERSION = line.strip().split()[2][1:-1]
 

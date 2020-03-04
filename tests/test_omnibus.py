@@ -4,7 +4,7 @@ test_omnibus.py
 """
 
 import pytest
-from multiview.embed import omnibus
+from mvlearn.embed import omnibus
 import numpy as np
 
 def test_default_constructor():

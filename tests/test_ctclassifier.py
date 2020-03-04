@@ -3,7 +3,7 @@
 
 import pytest
 import numpy as np
-from multiview.cotraining.ctclassifier import CTClassifier
+from mvlearn.cotraining.ctclassifier import CTClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import RidgeClassifier
 
@@ -182,7 +182,7 @@ def test_predict_check_p_n(data):
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier()
+    clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels1)
     assert clf.p_ == 2
     assert clf.n_ == 1
@@ -191,7 +191,7 @@ def test_predict_check_p_n(data):
     labels2[:5] = 6 # 5 "positive"
     labels2[5:15] = 4 # 10 "negative"
     labels2[15:] = np.nan
-    clf = CTClassifier()
+    clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels2)
     assert clf.p_ == 1
     assert clf.n_ == 2
@@ -200,7 +200,7 @@ def test_predict_check_p_n(data):
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier(p=4, n=3)
+    clf = CTClassifier(p=4, n=3, random_state=0)
     clf.fit(data['random_data'], labels1)
     assert clf.p_ == 4
     assert clf.n_ == 3

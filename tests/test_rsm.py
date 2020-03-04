@@ -7,7 +7,7 @@ param check helper functions.
 
 import pytest
 import numpy as np
-from multiview.construct import rsm
+from mvlearn.construct import rsm
 
 def test_rsm_return_vals():
     X = np.random.rand(25, 25)

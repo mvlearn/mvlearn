@@ -36,6 +36,7 @@ kcca_ft = kcca_l.fit_transform([train1, train2])
 kcca_f = kcca_l.fit([train1, train2])
 kcca_t = kcca_l.transform([train1, train2])
 
+
 # Test that number of components is equal to n_components
 def test_numCC_components_():
     assert len(kcca_ft.components_[0]) and len(kcca_ft.components_[1]) == n_components
@@ -47,7 +48,7 @@ def test_numCC_ws_():
 # Test that number of views is equal to number of comps_
 def test_numCC_comps_():
     assert len(kcca_ft.components_) == 2
-    
+
 # Test that weights from fit equals fit.transform weights
 def test_ktype_weights():
     assert kcca_t.weights_ == kcca_f.weights_
