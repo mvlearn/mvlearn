@@ -29,35 +29,33 @@ def sin2view(X, n_noise, seed=2):
 
 
 class GaussianMixture:
-    def __init__(self, n, seed, mu, sigma, two_class=False):
-        self.mu = np.asarray(mu)
+    def __init__(self, n, seed, mu, sigma, class_sizes = None):
+        self.mu = mu
         self.sigma = sigma
-        self.views = 2
+        self.views = len(mu)
+        self.class_sizes = class_sizes
 
         np.random.seed(seed)
-        if not two_class:
+        if class_sizes is None:
             self.latent = np.random.multivariate_normal(mu, sigma, size=n)
             self.y = None
         else:
-            n1 = int(n / 2)
-            n2 = int((n + 1) / 2)
             self.latent = np.concatenate(
-                (
+                [
                     np.random.multivariate_normal(
-                        self.mu, sigma, size=n1
-                    ),
-                    np.random.multivariate_normal(
-                        -self.mu, sigma, size=n2
-                    ),
-                )
+                        self.mu[i], self.sigma[i], size=class_sizes[i]
+                    ) for i in range(len(class_sizes))
+                ]
             )
-            self.y = np.concatenate((np.zeros(n1), np.ones(n2)))
+            self.y = np.concatenate([i*np.zeros(class_sizes[i]) 
+                                     for i in range(len(class_sizes))
+                                    ])
 
     def sample_views(self, n_noise=1, transform='linear', seeds=[1,2]):
         """
         Parameters
         ----------
-        sn_noice : int, default = 1
+        sn_noise : int, default = 1
             number of noise dimensions to add to transformed latent
         transform : string, default = 'linear'
             Type of transformation to form views
