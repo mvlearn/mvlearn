@@ -88,7 +88,7 @@ class KCCA(BaseEmbed):
             raise ValueError("reg must be positive float")
         if not type(self.constant) == float:
             raise ValueError("constant must be positive float")
-    
+
     def fit(self, Xs):
         """
         Creates kcca mapping by determining
@@ -109,43 +109,45 @@ class KCCA(BaseEmbed):
 
         """
         Xs = check_Xs(Xs, multiview=True)
-        
+
         x = Xs[0]
         y = Xs[1]
-        
+
         N = len(x)
         x = center_norm(x)
         y = center_norm(y)
-        
-        self.Kx = make_kernel(x, self.ktype, self.constant, self.degree, self.sigma)
-        self.Ky = make_kernel(y, self.ktype, self.constant, self.degree, self.sigma)
-    
+
+        self.Kx = make_kernel(x, self.ktype, self.constant,
+                              self.degree, self.sigma)
+        self.Ky = make_kernel(y, self.ktype, self.constant,
+                              self.degree, self.sigma)
+
         I = np.eye(N)
         Z = np.zeros((N,N))
         dim = min(x.shape[1],y.shape[1])
-        
+
         # Solving eigenvalue problem
         R = 0.5*np.r_[np.c_[self.Kx, self.Ky], np.c_[self.Kx, self.Ky]]
         D = np.r_[np.c_[self.Kx+self.reg*I, Z],np.c_[Z, self.Ky+self.reg*I]]
-        
+
         betas = linalg.eig(R,D)[0] #eigenvalues
         alphas = linalg.eig(R,D)[1] #right eigenvectors
         ind = np.argsort(np.sum(np.diag(betas), axis=0), axis=0)
-        
+
         perm_mat = np.zeros((len(ind), len(ind)))
-        
+
         for idx, i in enumerate(ind):
             perm_mat[idx, i] = 1
-        
+
         alphass = np.real(np.dot(alphas, perm_mat)/np.linalg.norm(alphas))
-        
+
         # weights
-        weight1 = alphass[:N,:dim] #dim can be changed to user input if they want less
+        weight1 = alphass[:N,:dim]
         weight2 = alphass[N:,:dim]
         self.weights_ = [weight1, weight2]
 
         return self
-    
+
     def transform(self, Xs):
         """
         Uses KCCA weights to transform Xs into canonical components
@@ -168,24 +170,24 @@ class KCCA(BaseEmbed):
 
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")
-        
+
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
-        
+
         comp1 = []
         comp2 = []
-        
+
         for i in range(weight1.shape[1]):
             comp1.append(self.Kx@weight1[:,i])
             comp2.append(self.Ky@weight2[:,i])
-            
+
         comp1 = [l*(-10**18) for l in comp1]
         comp2 = [l*10**18 for l in comp2]
-        
+
         self.components_ = [comp1, comp2]
-        
+
         return self
-    
+
     def fit_transform(self, Xs):
         """
         Fits KCCA mapping with given parameters and transforms Xs
@@ -215,7 +217,7 @@ def center_norm(x):
 def make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
     N = len(x)
     N0 = np.eye(N)-1/N*np.ones((N,N))
-    
+
     # Linear kernel
     if ktype == "linear":
         return N0@(x@x.T + constant)@N0
@@ -223,7 +225,7 @@ def make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
     # Polynomial kernel
     elif ktype == "poly":
         return N0@(x@x.T + constant)**degree@N0
-    
+
     # Gaussian kernel
     elif ktype == "gaussian":
         norms1 = np.sum(np.square(x),axis=1)[np.newaxis].T
