@@ -14,6 +14,7 @@ import numpy as np
 import numpy.matlib
 from scipy import linalg
 
+
 class KCCA(BaseEmbed):
     """
     CCA aims to find useful projections of the
@@ -55,7 +56,7 @@ class KCCA(BaseEmbed):
              Parameter if Polynomial kernel
 
     """
-    
+
     def __init__(
         self,
         reg=0.00001,
@@ -73,7 +74,7 @@ class KCCA(BaseEmbed):
         self.constant = constant
         if self.ktype is None:
             self.ktype = "linear"
-        
+
         # Error Handling
         if self.n_components < 0 or not type(self.n_components) == int:
             raise ValueError("n_components must be a positive integer")
@@ -118,20 +119,20 @@ class KCCA(BaseEmbed):
         y = _center_norm(y)
 
         self.Kx = _make_kernel(x, self.ktype, self.constant,
-                              self.degree, self.sigma)
+                               self.degree, self.sigma)
         self.Ky = _make_kernel(y, self.ktype, self.constant,
-                              self.degree, self.sigma)
+                               self.degree, self.sigma)
 
-        I = np.eye(N)
-        Z = np.zeros((N,N))
-        dim = min(x.shape[1],y.shape[1])
+        Id = np.eye(N)
+        Z = np.zeros((N, N))
+        dim = min(x.shape[1], y.shape[1])
 
         # Solving eigenvalue problem
         R = 0.5*np.r_[np.c_[self.Kx, self.Ky], np.c_[self.Kx, self.Ky]]
-        D = np.r_[np.c_[self.Kx+self.reg*I, Z],np.c_[Z, self.Ky+self.reg*I]]
+        D = np.r_[np.c_[self.Kx+self.reg*Id, Z],np.c_[Z, self.Ky+self.reg*Id]]
 
-        betas = linalg.eig(R,D)[0] #eigenvalues
-        alphas = linalg.eig(R,D)[1] #right eigenvectors
+        betas = linalg.eig(R, D)[0]  # eigenvalues
+        alphas = linalg.eig(R, D)[1]  # right eigenvectors
         ind = np.argsort(np.sum(np.diag(betas), axis=0), axis=0)
 
         perm_mat = np.zeros((len(ind), len(ind)))
@@ -142,8 +143,8 @@ class KCCA(BaseEmbed):
         alphass = np.real(np.dot(alphas, perm_mat)/np.linalg.norm(alphas))
 
         # weights
-        weight1 = alphass[:N,:dim]
-        weight2 = alphass[N:,:dim]
+        weight1 = alphass[:N, :dim]
+        weight2 = alphass[N:, :dim]
         self.weights_ = [weight1, weight2]
 
         return self
@@ -178,8 +179,8 @@ class KCCA(BaseEmbed):
         comp2 = []
 
         for i in range(weight1.shape[1]):
-            comp1.append(self.Kx@weight1[:,i])
-            comp2.append(self.Ky@weight2[:,i])
+            comp1.append(self.Kx@weight1[:, i])
+            comp2.append(self.Ky@weight2[:, i])
 
         comp1 = [l*(-10**18) for l in comp1]
         comp2 = [l*10**18 for l in comp2]
@@ -212,11 +213,11 @@ class KCCA(BaseEmbed):
 def _center_norm(x):
     N = len(x)
     x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
-    return x@np.sqrt(np.diag(np.divide(1,np.diag(np.transpose(x)@x))))
+    return x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
 
 def _make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
     N = len(x)
-    N0 = np.eye(N)-1/N*np.ones((N,N))
+    N0 = np.eye(N)-1/N*np.ones((N, N))
 
     # Linear kernel
     if ktype == "linear":
@@ -228,11 +229,11 @@ def _make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
 
     # Gaussian kernel
     elif ktype == "gaussian":
-        norms1 = np.sum(np.square(x),axis=1)[np.newaxis].T
-        norms2 = np.sum(np.square(x),axis=1)
+        norms1 = np.sum(np.square(x), axis=1)[np.newaxis].T
+        norms2 = np.sum(np.square(x), axis=1)
 
-        mat1 = numpy.matlib.repmat(norms1,1,N)
-        mat2 = numpy.matlib.repmat(norms2,N,1)
+        mat1 = numpy.matlib.repmat(norms1, 1, N)
+        mat2 = numpy.matlib.repmat(norms2, N, 1)
 
         distmat = mat1 + mat2 - 2*x@(x.conj().T)
         return N0@np.exp(-distmat/(2*sigma**2))@N0
