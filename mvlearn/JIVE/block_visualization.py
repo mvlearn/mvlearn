@@ -11,7 +11,6 @@ def data_block_heatmaps(blocks):
     if hasattr(blocks, 'keys'):
         block_names = list(blocks.keys())
     else:
-        # block_names = ['block {}'.format(i) for i in range(len(blocks))]
         block_names = list(range(len(blocks)))
 
     for k, bn in enumerate(block_names):

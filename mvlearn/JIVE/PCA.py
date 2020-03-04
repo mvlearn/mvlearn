@@ -5,21 +5,9 @@ import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from scipy.sparse import issparse
 
-from jive.utils import svd_wrapper, centering
-
-from jive.viz.viz import plot_loading, plot_scores_hist, interactive_slice
-from jive.viz.singular_values import scree_plot, plot_var_expl_prop, \
-    plot_var_expl_cum
-from jive.viz.pca_scores_plot import scores_plot
+from mvlearn.JIVE.utils import svd_wrapper, centering
 
 
-# from bokeh.io import output_notebook# , push_notebook, show
-
-# TODOs
-# - finish documentation
-# - make documentation follow sklearn conventions more closely.
-# - implement methods for automatic PCA rank selection
-# - interface with JackStraw
 class PCA(object):
     """
     Computes the Principal Components Analysis (PCA) of a data matrix
@@ -328,130 +316,6 @@ class PCA(object):
         return pca_reconstruct(U=scores, D=self.svals_, V=self.loadings_,
                                m=self.m_)
 
-    def plot_loading(self, comp, abs_sorted=True, show_var_names=True,
-                     significant_vars=None, show_top=None, title=True):
-        """
-        Plots the values for each feature of a single loading component.
-
-        Parameters
-        ----------
-        comp: int
-            Which PCA component.
-
-        abs_sorted: bool
-            Whether or not to sort components by their absolute values.
-
-        significant_vars: {None, array-like}, shape (n_featurse, )
-            Indicated which features are significant in this component.
-
-        show_top: {None, int}
-            Will only display this number of top loadings components when
-            sorting by absolute value.
-
-        title: {str, bool}
-            Plot title. User can provide their own otherwise will
-            use default title.
-        """
-        plot_loading(v=self.loadings().iloc[:, comp],
-                     abs_sorted=abs_sorted, show_var_names=show_var_names,
-                     significant_vars=significant_vars, show_top=show_top)
-
-        if type(title) == str:
-            plt.title(title)
-        elif title:
-            plt.title('loadings comp {}'.format(comp))
-
-    def plot_scores_hist(self, comp, norm=True, **kwargs):
-        """
-        Plots jitter-histogram of one scores component.
-
-        Parameters
-        ----------
-
-        comp: int
-            Which component.
-
-        norm: bool
-            Whether to use normalized scores.
-
-        **kwargs:
-            keyword arguments for plt.hist
-        """
-        plot_scores_hist(self.scores(norm=norm).iloc[:, comp], comp=comp, **kwargs)
-
-    def plot_scree(self, log=False, diff=False):
-        """
-        Makes a scree plot of the singular values.
-
-        Parameters
-        ----------
-        log: bool
-            Take log base 10 of singular values.
-
-        diff: bool
-            Plot difference of successive singular values.
-        """
-        scree_plot(self.svals_.values, log=log, diff=diff)
-
-    def plot_var_expl_prop(self):
-        """
-        Plots the proportion of variance explained for each component.
-        """
-        plot_var_expl_prop(self.var_expl_prop_)
-
-    def plot_var_expl_cum(self):
-        """
-        Plots the cumulative variance explained.
-        """
-        plot_var_expl_cum(self.var_expl_cum_)
-
-    def plot_scores(self, norm=True,
-                    start=0, n_components=3,  classes=None, class_name=None,
-                    dist_kws={}, scatter_kws={}):
-
-        """
-        Scores plot. See documentation of jive.viz.pca_scores_plot.scores_plot.
-
-        Parameters
-        ----------
-        norm: bool
-            Plot normalized scores.
-        """
-
-        scores_plot(self.scores(norm=norm),
-                    start=start,
-                    ncomps=n_components,
-                    classes=classes,
-                    class_name=class_name,
-                    dist_kws=dist_kws,
-                    scatter_kws=scatter_kws)
-
-    def plot_scores_vs(self, comp, y, norm=True, ylabel=''):
-        """
-        Scatter plot of one scores component vs. a continuous variable.
-
-        Parameters
-        ----------
-        comp: int
-            Which component.
-
-        y: (array-like), shape (n_samples, )
-            Variable to plot against.
-
-        norm: bool
-            Use normalized scores.
-
-        ylabel: str
-            Name of the variable.
-        """
-
-        s = self.scores(norm=norm).iloc[:, comp]
-
-        corr = np.corrcoef(s, y)[0, 1]
-        plt.scatter(s, y)
-        plt.xlabel('comp {} scores'.format(comp))
-        plt.ylabel(ylabel)
-        plt.title('correlation: {:1.4f}'.format(corr))
 
     def scores_corr_vs(self, y):
         """
@@ -461,46 +325,7 @@ class PCA(object):
         return np.array([np.corrcoef(self.scores(norm=norm).iloc[:, i], y)[0, 1]
                          for i in range(self.n_components)])
 
-    def plot_interactive_scores_slice(self, comp1, comp2, norm=True, classes=None):
-        """
-        Makes an interactive scatter plot of the scores from two components.
-        The user can drag the mouse to select a set of observations then
-        get their index values as a pandas data frame. See documentation.
-
-        Parameters
-        ----------
-        comp1, comp2: int
-            The component indices.
-
-        norm: bool
-            Use normalized scores.
-
-        cats: {list, None}, shape (n_samples, )
-            Categories to color points by.
-
-
-        Example usage
-        -------------
-        import numpy as np
-        from jive.PCA import PCA
-
-        pca = PCA().fit(np.random.normal(size=(100, 20)))
-        model, saved_selected = pca.plot_interactive_scores_slice(0, 1)
-
-        # user selects some points using Lasso Select tool
-
-        model.to_df() the contains a pd.DataFrame listing the selected points
-        """
-        scores = self.scores(norm=norm)
-        return interactive_slice(x=scores.iloc[:, comp1],
-                                 y=scores.iloc[:, comp2],
-                                 cats=classes,
-                                 obs_names=self.obs_names(),
-                                 xlab='component {}'.format(comp1),
-                                 ylab='component {}'.format(comp2))
-
-
-def _arg_checker(X, n_components):
+   def _arg_checker(X, n_components):
 
     if n_components is None:
         n_components = min(X.shape)
