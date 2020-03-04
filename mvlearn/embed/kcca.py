@@ -131,7 +131,7 @@ class KCCA(BaseEmbed):
 
         # Solving eigenvalue problem
         R = 0.5*np.r_[np.c_[self.Kx, self.Ky], np.c_[self.Kx, self.Ky]]
-        D = np.r_[np.c_[self.Kx+self.reg*Id, Z],np.c_[Z, self.Ky+self.reg*Id]]
+        D = np.r_[np.c_[self.Kx+self.reg*Id, Z], np.c_[Z, self.Ky+self.reg*Id]]
 
         betas = linalg.eig(R, D)[0]  # eigenvalues
         alphas = linalg.eig(R, D)[1]  # right eigenvectors
