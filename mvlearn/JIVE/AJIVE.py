@@ -11,6 +11,7 @@ import warnings
 from mvlearn.JIVE.utils import svd_wrapper, centering
 from mvlearn.JIVE.wedin_bound import get_wedin_samples
 from mvlearn.JIVE.random_direction import sample_randdir
+from mvlearn.JIVE.diagnostic_plot import plot_joint_diagnostic
 from mvlearn.JIVE.PCA import PCA
 
 
@@ -65,7 +66,7 @@ class AJIVE(object):
     Attributes
     ----------
 
-    common: jive.PCA.PCA
+    common: mvlearn.JIVE.PCA.PCA
         The common joint space.
 
     blocks: dict of BlockSpecificResults
@@ -145,7 +146,7 @@ class AJIVE(object):
         self.n_jobs = n_jobs
 
     def __repr__(self):
-        # return 'JIVE'
+
         if self.is_fit:
             r = 'AJIVE, joint rank: {}'.format(self.common.rank)
             for bn in self.block_names:
@@ -154,7 +155,7 @@ class AJIVE(object):
             return r
 
         else:
-            return 'Nothing computed yet'
+            return 'No data has been fitted yet'
 
     def fit(self, blocks, precomp_init_svd=None):
         """
@@ -408,6 +409,19 @@ class AJIVE(object):
             return list(self.blocks.keys())
         else:
             return None
+
+    def plot_joint_diagnostic(self, fontsize=20):
+        """
+        Plots joint rank threshold diagnostic plot
+        """
+
+        plot_joint_diagnostic(joint_svals=self.all_joint_svals_,
+                              wedin_sv_samples=self.wedin_sv_samples_,
+                              min_signal_rank=min(self.init_signal_ranks.values()),
+                              random_sv_samples=self.random_sv_samples_,
+                              wedin_percentile=self.wedin_percentile,
+                              random_percentile=self.randdir_percentile,
+                              fontsize=fontsize)
 
     def save(self, fpath, compress=9):
         dump(self, fpath, compress=compress)
