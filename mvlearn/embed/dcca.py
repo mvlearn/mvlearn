@@ -128,6 +128,20 @@ class DCCA(BaseEmbed):
     optimizer : torch.optim.RMSprop object
         Optimizer used to train the networks.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mvlearn.embed.dcca import DCCA
+    >>> view1 = np.exp(np.random.normal(size=(1000, 100)))
+    >>> view2 = np.random.normal(loc=2, size=(1000, 75))
+    >>> input_size1, input_size2 = 100, 75
+    >>> outdim_size = 2
+    >>> layer_sizes1 = [1024, 2]
+    >>> layer_sizes2 = [1024, 2]
+    >>> dcca = DCCA(input_size1, input_size2, outdim_size, layer_sizes1
+                    layer_sizes2)
+    >>> outputs = dcca.fit_transform([view1, view2])
+
     References
     ----------
     .. [#1DCCA] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
