@@ -114,12 +114,12 @@ class KCCA(BaseEmbed):
         y = Xs[1]
 
         N = len(x)
-        x = center_norm(x)
-        y = center_norm(y)
+        x = _center_norm(x)
+        y = _center_norm(y)
 
-        self.Kx = make_kernel(x, self.ktype, self.constant,
+        self.Kx = _make_kernel(x, self.ktype, self.constant,
                               self.degree, self.sigma)
-        self.Ky = make_kernel(y, self.ktype, self.constant,
+        self.Ky = _make_kernel(y, self.ktype, self.constant,
                               self.degree, self.sigma)
 
         I = np.eye(N)
@@ -209,12 +209,12 @@ class KCCA(BaseEmbed):
 
         return self.fit(Xs).transform(Xs)
 
-def center_norm(x):
+def _center_norm(x):
     N = len(x)
     x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
     return x@np.sqrt(np.diag(np.divide(1,np.diag(np.transpose(x)@x))))
 
-def make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
+def _make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
     N = len(x)
     N0 = np.eye(N)-1/N*np.ones((N,N))
 

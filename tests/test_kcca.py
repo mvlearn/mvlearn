@@ -1,6 +1,6 @@
 # KCCA Unit Tests
 
-from mvlearn.embed.kcca import KCCA, center_norm, make_kernel
+from mvlearn.embed.kcca import KCCA, _center_norm, _make_kernel
 import numpy as np
 import pytest
 
@@ -78,14 +78,14 @@ c[1] = 0
     
 # Test that center_nrom works
 def test_center_norm():
-    b = center_norm(a)
+    b = _center_norm(a)
     assert np.allclose(np.mean(b),0)
     
 # Test make_kernel
 def test_make_kernel(): 
-    lkernel = make_kernel(c, ktype="linear", constant=10.0)
-    gkernel = make_kernel(c, ktype="gaussian", sigma=1.0, degree=2.0)
-    pkernel = make_kernel(c, ktype="poly", sigma=1.0, degree=2.0)
+    lkernel = _make_kernel(c, ktype="linear", constant=10.0)
+    gkernel = _make_kernel(c, ktype="gaussian", sigma=1.0, degree=2.0)
+    pkernel = _make_kernel(c, ktype="poly", sigma=1.0, degree=2.0)
     assert lkernel.shape==gkernel.shape==pkernel.shape == (10,10)
     
 # Test error handling
