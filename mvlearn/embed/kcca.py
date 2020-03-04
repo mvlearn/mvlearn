@@ -36,6 +36,8 @@ class KCCA(BaseEmbed):
 
     The kernel generalization of CCA, kernel CCA, is used when
     there are nonlinear relations between two views.
+    
+    More information to come.
 
     Parameters
     ----------
