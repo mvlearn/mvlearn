@@ -47,7 +47,7 @@ class GaussianMixture:
                     ) for i in range(len(class_sizes))
                 ]
             )
-            self.y = np.concatenate([i*np.zeros(class_sizes[i]) 
+            self.y = np.concatenate([i*np.ones(class_sizes[i]) 
                                      for i in range(len(class_sizes))
                                     ])
 
