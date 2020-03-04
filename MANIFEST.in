@@ -1,0 +1,2 @@
+recursive-include mvlearn/datasets *.csv
+exclude tests/*
