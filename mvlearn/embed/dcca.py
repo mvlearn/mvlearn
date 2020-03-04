@@ -36,9 +36,7 @@ class DCCA(BaseEmbed):
     An implementation of Deep Canonical Correlation Analysis [#1DCCA]_ with
     PyTorch. It computes projections into a common subspace in order to
     maximize the correlation between pairwise projections into the subspace
-    from two views of data. Deep CCA can be thought of as using deep networks
-    to learn the best potentially nonlinear kernels for a variant of kernel
-    CCA.
+    from two views of data.
 
     Parameters
     ----------
@@ -133,6 +131,17 @@ class DCCA(BaseEmbed):
     threshold : float
         Threshold difference between successive iteration losses to define
         convergence and stop training.
+
+    Notes
+    -----
+    Deep Canonical Correlation Analysis is a method of finding highly
+    correlated subspaces for 2 views of data using nonlinear transformations
+    learned by deep networks. It can be thought of as using deep networks
+    to learn the best potentially nonlinear kernels for a variant of kernel
+    CCA.
+
+    The networks used for each view in DCCA consist of fully connected linear
+    layers with sigmoid activation functions.
 
     Examples
     --------
