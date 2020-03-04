@@ -231,7 +231,7 @@ class DCCA(BaseEmbed):
         current_loss = np.inf
         train_loss = 1
         while (current_loss - train_loss > self.threshold)\
-            and epoch < self.epoch_num:
+                and epoch < self.epoch_num:
             self.model.train()
             batch_idxs = list(BatchSampler(RandomSampler(range(data_size)),
                                            batch_size=self.batch_size,
