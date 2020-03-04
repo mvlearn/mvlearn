@@ -282,7 +282,7 @@ class linear_cca():
 class cca_loss():
     """
     An implementation of the loss function of linear CCA as introduced
-    in the original paper for ''DCCA'' [#1Utils].
+    in the original paper for ``DCCA`` [#1Utils].
 
     Parameters
     ----------
@@ -386,7 +386,7 @@ class cca_loss():
 class MlpNet(nn.Module):
     """
     Multilayer perceptron implementation for fully connected network. Used
-    by ''DCCA'' for the fully transformation of a single view before linear
+    by ``DCCA`` for the fully transformation of a single view before linear
     CCA.
 
     Parameters
@@ -444,7 +444,7 @@ class MlpNet(nn.Module):
 class DeepCCA(nn.Module):
     """
     A pair of deep networks for operating on the two views of data. Consists
-    of two ''MlpNet'' objects for transforming 2 views of data in ''DCCA''.
+    of two ``MlpNet`` objects for transforming 2 views of data in ``DCCA``.
 
     Parameters
     ----------

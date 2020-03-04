@@ -202,7 +202,7 @@ class DCCA(BaseEmbed):
             different n_features_i.
         loss : float
             Average loss over data, defined as negative correlation of
-            transformed views. Only returned if ''return_loss''=True.
+            transformed views. Only returned if ``return_loss``=True.
         """
 
         if not self.is_fit:
