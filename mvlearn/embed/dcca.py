@@ -28,7 +28,7 @@
 # all copies or substantial portions of the Software.
 
 from .base import BaseEmbed
-from .utils import *
+from ..utils.utils import *
 
 
 class DCCA(BaseEmbed):
@@ -78,6 +78,9 @@ class DCCA(BaseEmbed):
     print_train_log_info : boolean, default=False
         Whether or not to print the logging info (training loss at each epoch)
         when calling DCCA.fit().
+    threshold : float, default=1e-2
+        Threshold difference between successive iteration losses to define
+        convergence and stop training.
 
     Attributes
     ----------
@@ -127,6 +130,9 @@ class DCCA(BaseEmbed):
         between outputs of transformed views.
     optimizer : torch.optim.RMSprop object
         Optimizer used to train the networks.
+    threshold : float
+        Threshold difference between successive iteration losses to define
+        convergence and stop training.
 
     Examples
     --------
@@ -156,7 +162,7 @@ class DCCA(BaseEmbed):
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
             epoch_num=10, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
-            print_train_log_info=False
+            print_train_log_info=False, threshold=1e-2
             ):
 
         super().__init__()
@@ -178,6 +184,7 @@ class DCCA(BaseEmbed):
         self.learning_rate = learning_rate
         self.reg_par = reg_par
         self.print_train_log_info = print_train_log_info
+        self.threshold = threshold
 
         self.deep_model = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
                                   input_size2, outdim_size,
@@ -220,11 +227,16 @@ class DCCA(BaseEmbed):
         checkpoint = 'checkpoint.model'
 
         train_losses = []
-        for epoch in range(self.epoch_num):
+        epoch = 0
+        current_loss = np.inf
+        train_loss = 1
+        while (current_loss - train_loss > self.threshold)\
+            and epoch < self.epoch_num:
             self.model.train()
             batch_idxs = list(BatchSampler(RandomSampler(range(data_size)),
                                            batch_size=self.batch_size,
                                            drop_last=False))
+            current_loss = train_loss
             for batch_idx in batch_idxs:
                 self.optimizer.zero_grad()
                 batch_x1 = x1[batch_idx, :]
@@ -234,14 +246,15 @@ class DCCA(BaseEmbed):
                 train_losses.append(loss.item())
                 loss.backward()
                 self.optimizer.step()
+            train_loss = np.mean(train_losses)
             if self.print_train_log_info:
-                train_loss = np.mean(train_losses)
                 info_string = "Epoch {:d}/{:d},"\
                     " training_loss: {:.4f}"
                 print(info_string.format(epoch + 1, self.epoch_num,
                       train_loss))
 
             torch.save(self.model.state_dict(), checkpoint)
+            epoch += 1
 
         # train_linear_cca
         if self.linear_cca is not None:
