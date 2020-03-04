@@ -33,11 +33,12 @@ from ..utils.utils import *
 
 class DCCA(BaseEmbed):
     r"""
-    An implementation of Deep Canonical Correlation Analysis [#1DCCA]_ with PyTorch.
-    Computes projections into a common subspace in order to maximize the
-    correlation between pairwise projections into the subspace from two views
-    of data. Deep CCA can be thought of as using deep networks to learn the
-    best potentially nonlinear kernels for a variant of kernel CCA.
+    An implementation of Deep Canonical Correlation Analysis [#1DCCA]_ with
+    PyTorch. It computes projections into a common subspace in order to
+    maximize the correlation between pairwise projections into the subspace
+    from two views of data. Deep CCA can be thought of as using deep networks
+    to learn the best potentially nonlinear kernels for a variant of kernel
+    CCA.
 
     Parameters
     ----------
