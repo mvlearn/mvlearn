@@ -1,6 +1,6 @@
 # KCCA Unit Tests
 
-from multiview.embed.kcca import KCCA, center_norm, make_kernel
+from mvlearn.embed.kcca import KCCA, center_norm, make_kernel
 import numpy as np
 import pytest
 
