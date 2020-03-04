@@ -36,7 +36,7 @@ class KCCA(BaseEmbed):
 
     The kernel generalization of CCA, kernel CCA, is used when
     there are nonlinear relations between two views.
-    
+
     More information to come.
 
     Parameters
@@ -212,12 +212,14 @@ class KCCA(BaseEmbed):
 
         return self.fit(Xs).transform(Xs)
 
+
 def _center_norm(x):
     N = len(x)
     x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
     return x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
 
-def _make_kernel(x, ktype, constant=10, degree=2.0, sigma = 1.0):
+
+def _make_kernel(x, ktype, constant=10, degree=2.0, sigma=1.0):
     N = len(x)
     N0 = np.eye(N)-1/N*np.ones((N, N))
 
