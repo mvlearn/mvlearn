@@ -4,6 +4,6 @@ import mvlearn.construct
 import mvlearn.cotraining
 import mvlearn.datasets
 import mvlearn.utils
-import mvlearn.JIVE
+import mvlearn.jive
 
 __version__ = "0.0.1"

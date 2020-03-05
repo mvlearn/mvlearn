@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from scipy.sparse import issparse
 
-from mvlearn.JIVE.utils import svd_wrapper, centering
+from .utils import svd_wrapper, centering
 
 
 class PCA(object):
@@ -323,9 +323,9 @@ class PCA(object):
         variable.
         """
         return np.array([np.corrcoef(self.scores(norm=norm).iloc[:, i], y)[0, 1]
-                         for i in range(self.n_components)])
+                        for i in range(self.n_components)])
 
-   def _arg_checker(X, n_components):
+def _arg_checker(X, n_components):
 
     if n_components is None:
         n_components = min(X.shape)

@@ -1,5 +1,5 @@
 import numpy as np
-from jive.utils import svd_wrapper
+from .utils import svd_wrapper
 from sklearn.externals.joblib import Parallel, delayed
 
 
@@ -31,13 +31,14 @@ def sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
     """
 
     if n_jobs is not None:
-        random_sv_samples = Parallel(n_jobs=n_jobs)\
-            (delayed(_get_sample)(num_obs, signal_ranks)
-             for i in range(R))
+        random_sv_samples = Parallel(n_jobs=n_jobs)(
+            delayed(_get_sample)(num_obs, signal_ranks) for i in range(R)
+        )
 
     else:
-        random_sv_samples = [_get_sample(num_obs, signal_ranks)
-                             for r in range(R)]
+        random_sv_samples = [
+            _get_sample(num_obs, signal_ranks) for r in range(R)
+        ]
 
     return np.array(random_sv_samples)
 

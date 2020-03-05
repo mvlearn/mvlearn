@@ -29,17 +29,19 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
     """
 
     # resample for U and V
-    U_norm_samples = norms_sample_project(X=X.T,
-                                          basis=U[:, 0:rank],
-                                          R=R, n_jobs=n_jobs)
+    U_norm_samples = norms_sample_project(
+        X=X.T, basis=U[:, 0:rank], R=R, n_jobs=n_jobs
+    )
 
-    V_norm_samples = norms_sample_project(X=X,
-                                          basis=V[:, 0:rank],
-                                          R=R, n_jobs=n_jobs)
+    V_norm_samples = norms_sample_project(
+        X=X, basis=V[:, 0:rank], R=R, n_jobs=n_jobs
+    )
 
     sigma_min = D[rank - 1]  # TODO: double check -1
-    wedin_bound_samples = [min(max(U_norm_samples[r], V_norm_samples[r])/sigma_min, 1)
-                           for r in range(R)]
+    wedin_bound_samples = [
+        min(max(U_norm_samples[r], V_norm_samples[r]) / sigma_min, 1)
+        for r in range(R)
+    ]
 
     return wedin_bound_samples
 
@@ -76,8 +78,9 @@ def norms_sample_project(X, basis, R=1000, n_jobs=None):
     """
 
     if n_jobs is not None:
-        samples = Parallel(n_jobs=n_jobs)\
-            (delayed(_get_sample)(X, basis) for i in range(R))
+        samples = Parallel(n_jobs=n_jobs)(
+            delayed(_get_sample)(X, basis) for i in range(R)
+        )
     else:
         samples = [_get_sample(X, basis) for r in range(R)]
 

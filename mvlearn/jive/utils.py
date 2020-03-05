@@ -3,8 +3,9 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
 
-from jive.lazymatpy.interface import LinearOperator
-from jive.lazymatpy.convert2scipy import convert2scipy
+#TODO Imports don't exist
+#from mvlearn.jive.lazymatpy.interface import LinearOperator
+#from mvlearn.jive.lazymatpy.convert2scipy import convert2scipy
 
 
 def svd_wrapper(X, rank=None):
@@ -83,7 +84,7 @@ def fix_scipy_svds(scipy_svds):
     return U, D, V
 
 
-def centering(X, method='mean'):
+def centering(X, method="mean"):
     """
     Mean centers columns of a matrix.
 
@@ -107,13 +108,13 @@ def centering(X, method='mean'):
     """
 
     if type(method) == bool and method:
-        method = 'mean'
+        method = "mean"
 
     if issparse(X):
         raise NotImplementedError
         # X_centered = MeanCentered(blocks[bn], centers_[bn])
     else:
-        if method == 'mean':
+        if method == "mean":
             center = np.array(X.mean(axis=0)).reshape(-1)
             X_centered = X - center
         else:
