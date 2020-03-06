@@ -47,7 +47,7 @@ class KCCA(BaseEmbed):
                    Number of canonical dimensions to keep
     ktype : string, default = 'linear'
             Type of kernel
-        - value can be 'linear', 'gaussian' or 'polynomial'
+        - value can be 'linear', 'gaussian' or 'poly'
     cutoff : float, default = 1x10^-15
              Optional regularization parameter
              to perform spectral cutoff when computing the canonical
