@@ -28,6 +28,7 @@
 # all copies or substantial portions of the Software.
 
 from .base import BaseEmbed
+import torch
 from ..utils.utils import *
 
 
