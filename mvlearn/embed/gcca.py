@@ -19,7 +19,7 @@ import numpy as np
 from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
-from mvlearn.embed.utils import select_dimension
+from .utils import select_dimension
 
 
 class GCCA(BaseEmbed):
