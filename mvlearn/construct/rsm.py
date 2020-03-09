@@ -6,7 +6,7 @@ Random subspace method for view construction.
 
 import numpy as np
 import random
-from mvlearn.construct.utils import check_n_views, check_n_features
+from .utils import check_n_views, check_n_features
 
 
 def random_subspace_method(X, n_features=None, n_views=1):
