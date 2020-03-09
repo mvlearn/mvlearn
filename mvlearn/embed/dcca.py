@@ -518,7 +518,7 @@ class DCCA(BaseEmbed):
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
             epoch_num=50, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
-            threshold=1e-2, print_train_log_info=False
+            threshold=1e-3, print_train_log_info=False
             ):
 
         super().__init__()
