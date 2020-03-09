@@ -29,7 +29,8 @@
 
 from .base import BaseEmbed
 import torch
-from ..utils.utils import *
+from ..utils.utils import check_Xs
+from ..utils.dcca_utils import *
 
 
 class DCCA(BaseEmbed):
