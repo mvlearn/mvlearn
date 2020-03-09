@@ -123,7 +123,7 @@ class linear_cca():
         result = np.dot(result, self.w[idx])
         return result
 
-    def test(self, H1, H2):
+    def transform(self, H1, H2):
         """
         Transform inputs based on already fit matrices.
 
@@ -136,7 +136,7 @@ class linear_cca():
 
         Returns
         -------
-        Results : list, length=2
+        results : list, length=2
             Results of linear transformation on input data.
         """
         return [self._get_result(H1, 0), self._get_result(H2, 1)]
@@ -656,7 +656,7 @@ class DCCA(BaseEmbed):
 
         with torch.no_grad():
             losses, outputs = self._get_outputs(x1, x2)
-            outputs = self.linear_cca.test(outputs[0], outputs[1])
+            outputs = self.linear_cca.transform(outputs[0], outputs[1])
             if return_loss:
                 return outputs, np.mean(losses)
             return outputs
