@@ -45,16 +45,16 @@ class linear_cca():
 
     Attributes
     ----------
-    w : list (length=2)
+    w_ : list (length=2)
         w[i] : nd-array
         List of the two weight matrices for projecting each view.
-    m : list (length=2)
+    m_ : list (length=2)
         m[i] : nd-array
         List of the means of the data in each view.
     """
     def __init__(self):
-        self.w = [None, None]
-        self.m = [None, None]
+        self.w_ = [None, None]
+        self.m_ = [None, None]
 
     def fit(self, H1, H2, n_components):
         """
@@ -76,10 +76,10 @@ class linear_cca():
         o1 = H1.shape[1]
         o2 = H2.shape[1]
 
-        self.m[0] = np.mean(H1, axis=0)
-        self.m[1] = np.mean(H2, axis=0)
-        H1bar = H1 - np.tile(self.m[0], (m, 1))
-        H2bar = H2 - np.tile(self.m[1], (m, 1))
+        self.m_[0] = np.mean(H1, axis=0)
+        self.m_[1] = np.mean(H2, axis=0)
+        H1bar = H1 - np.tile(self.m_[0], (m, 1))
+        H2bar = H2 - np.tile(self.m_[1], (m, 1))
 
         SigmaHat12 = (1.0 / (m - 1)) * np.dot(H1bar.T, H2bar)
         SigmaHat11 = (1.0 / (m - 1)) * np.dot(H1bar.T,
@@ -99,8 +99,8 @@ class linear_cca():
 
         [U, D, V] = np.linalg.svd(Tval)
         V = V.T
-        self.w[0] = np.dot(SigmaHat11RootInv, U[:, 0:n_components])
-        self.w[1] = np.dot(SigmaHat22RootInv, V[:, 0:n_components])
+        self.w_[0] = np.dot(SigmaHat11RootInv, U[:, 0:n_components])
+        self.w_[1] = np.dot(SigmaHat22RootInv, V[:, 0:n_components])
         D = D[0:n_components]
 
     def _get_result(self, x, idx):
@@ -119,8 +119,8 @@ class linear_cca():
         result : nd-array
             Result of linear transformation on input data.
         """
-        result = x - self.m[idx].reshape([1, -1]).repeat(len(x), axis=0)
-        result = np.dot(result, self.w[idx])
+        result = x - self.m_[idx].reshape([1, -1]).repeat(len(x), axis=0)
+        result = np.dot(result, self.w_[idx])
         return result
 
     def transform(self, H1, H2):
@@ -161,10 +161,10 @@ class cca_loss():
     ----------
     n_components_ : int (positive)
         The output dimensionality of the CCA transformation.
-    use_all_singular_values : boolean
+    use_all_singular_values_ : boolean
         Whether or not to use all the singular values in the loss calculation.
         If False, only use the top ``n_components`` singular values.
-    device : torch.device object
+    device_ : torch.device object
         The torch device being used in DCCA.
 
     References
@@ -175,8 +175,8 @@ class cca_loss():
     """
     def __init__(self, n_components, use_all_singular_values, device):
         self.n_components_ = n_components
-        self.use_all_singular_values = use_all_singular_values
-        self.device = device
+        self.use_all_singular_values_ = use_all_singular_values
+        self.device_ = device
 
     def loss(self, H1, H2):
         """
@@ -205,9 +205,9 @@ class cca_loss():
 
         SigmaHat12 = (1.0 / (m - 1)) * torch.matmul(H1bar, H2bar.t())
         SigmaHat11 = (1.0 / (m - 1)) * torch.matmul(H1bar, H1bar.t()) + \
-            r1 * torch.eye(o1, device=self.device)
+            r1 * torch.eye(o1, device=self.device_)
         SigmaHat22 = (1.0 / (m - 1)) * torch.matmul(H2bar, H2bar.t()) + \
-            r2 * torch.eye(o2, device=self.device)
+            r2 * torch.eye(o2, device=self.device_)
 
         # Calculating the root inverse of covariance matrices by using
         # eigen decomposition
@@ -230,7 +230,7 @@ class cca_loss():
         Tval = torch.matmul(torch.matmul(SigmaHat11RootInv,
                                          SigmaHat12), SigmaHat22RootInv)
 
-        if self.use_all_singular_values:
+        if self.use_all_singular_values_:
             # all singular values are used to calculate the correlation
             tmp = torch.trace(torch.matmul(Tval.t(), Tval))
             # print(tmp)
@@ -259,13 +259,12 @@ class MlpNet(nn.Module):
         CCA. For example, if the input dimensionality is 256, and there is one
         hidden layer with 1024 units and the output dimensionality is 100
         before applying CCA, layer_sizes1=[1024, 100].
-
     input_size : int (positive)
         The dimensionality of the input vectors to the deep network.
 
     Attributes
     ----------
-    layers : torch.nn.ModuleList object
+    layers_ : torch.nn.ModuleList object
         The layers in the network.
 
     """
@@ -283,7 +282,7 @@ class MlpNet(nn.Module):
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
                     nn.Sigmoid(),
                 ))
-        self.layers = nn.ModuleList(layers)
+        self.layers_ = nn.ModuleList(layers)
 
     def forward(self, x):
         """
@@ -299,7 +298,7 @@ class MlpNet(nn.Module):
         x : torch.tensor
             The output after being fed forward through network.
         """
-        for layer in self.layers:
+        for layer in self.layers_:
             x = layer(x)
         return x
 
@@ -338,21 +337,21 @@ class DeepCCA(nn.Module):
 
     Attributes
     ----------
-    model1 : ``MlpNet`` object
+    model1_ : ``MlpNet`` object
         Deep network for view 1 transformation.
-    model2 : ``MlpNet`` object
+    model2_ : ``MlpNet`` object
         Deep network for view 2 transformation.
-    loss : ``cca_loss`` object
+    loss_ : ``cca_loss`` object
         Loss function for the 2 view DCCA.
     """
     def __init__(self, layer_sizes1, layer_sizes2, input_size1, input_size2,
                  n_components, use_all_singular_values,
                  device=torch.device('cpu')):
         super(DeepCCA, self).__init__()
-        self.model1 = MlpNet(layer_sizes1, input_size1).double()
-        self.model2 = MlpNet(layer_sizes2, input_size2).double()
+        self.model1_ = MlpNet(layer_sizes1, input_size1).double()
+        self.model2_ = MlpNet(layer_sizes2, input_size2).double()
 
-        self.loss = cca_loss(n_components,
+        self.loss_ = cca_loss(n_components,
                              use_all_singular_values, device).loss
 
     def forward(self, x1, x2):
@@ -374,8 +373,8 @@ class DeepCCA(nn.Module):
 
         """
         # feature * batch_size
-        output1 = self.model1(x1)
-        output2 = self.model2(x2)
+        output1 = self.model1_(x1)
+        output2 = self.model2_(x2)
 
         return output1, output2
 
@@ -421,62 +420,62 @@ class DCCA(BaseEmbed):
         Learning rate for training the deep networks.
     reg_par : float (positive), default=1e-5
         Weight decay parameter used in the RMSprop optimizer.
-    print_train_log_info : boolean, default=False
-        Whether or not to print the logging info (training loss at each epoch)
-        when calling DCCA.fit().
     threshold : float, default=1e-2
         Threshold difference between successive iteration losses to define
         convergence and stop training.
+    print_train_log_info : boolean, default=False
+        Whether or not to print the logging info (training loss at each epoch)
+        when calling DCCA.fit().
 
     Attributes
     ----------
-    input_size1 : int (positive)
+    input_size1_ : int (positive)
         The dimensionality of the input vectors in view 1.
-    input_size2 : int (positive)
+    input_size2_ : int (positive)
         The dimensionality of the input vectors in view 2.
     n_components_ : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
         network wil transform the data to this size. If not specified, will
         be set to 2.
-    layer_sizes1 : list of ints
+    layer_sizes1_ : list of ints
         The sizes of the layers of the deep network applied to view 1 before
         CCA. For example, if the input dimensionality is 256, and there is one
         hidden layer with 1024 units and the output dimensionality is 100
         before applying CCA, layer_sizes1=[1024, 100].
-    layer_sizes2 : list of ints
+    layer_sizes2_ : list of ints
         The sizes of the layers of the deep network applied to view 2 before
         CCA. Does not need to have the same hidden layer architecture as
         layer_sizes1, but the final dimensionality must be the same.
-    use_all_singular_values : boolean (default=False)
+    use_all_singular_values_ : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
         to calculate the loss. If False, only the top n_components singular
         values are used.
-    device : string, default='cpu'
+    device_ : string, default='cpu'
         The torch device for processing.
-    epoch_num : int (positive)
+    epoch_num_ : int (positive)
         The max number of epochs to train the deep networks.
-    batch_size : int (positive)
+    batch_size_ : int (positive)
         Batch size for training the deep networks.
-    learning_rate : float (positive), default=1e-3
+    learning_rate_ : float (positive), default=1e-3
         Learning rate for training the deep networks
-    reg_par : float (positive), default=1e-5
+    reg_par_ : float (positive), default=1e-5
         Weight decay parameter used in the RMSprop optimizer.
-    print_train_log_info : boolean, default=False
+    print_train_log_info_ : boolean, default=False
         Whether or not to print the logging info (training loss at each epoch)
         when calling DCCA.fit().
-    deep_model : ``DeepCCA`` object
+    deep_model_ : ``DeepCCA`` object
         2 view Deep CCA object used to transform 2 views of data together.
-    linear_cca : ``linear_cca`` object
+    linear_cca_ : ``linear_cca`` object
         Linear CCA object used to project final transformations from output
         of ``deep_model`` to the ``n_components``.
-    model : torch.nn.DataParallel object
+    model_ : torch.nn.DataParallel object
         Wrapper around ``deep_model`` to allow parallelisation.
-    loss : ``cca_loss`` object
+    loss_ : ``cca_loss`` object
         Loss function for ``deep_model``. Defined as the negative correlation
         between outputs of transformed views.
-    optimizer : torch.optim.RMSprop object
+    optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
-    threshold : float
+    threshold_ : float, default=1e-3
         Threshold difference between successive iteration losses to define
         convergence and stop training.
 
@@ -518,42 +517,42 @@ class DCCA(BaseEmbed):
             self, input_size1=None, input_size2=None, n_components=2,
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
-            epoch_num=10, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
-            print_train_log_info=False, threshold=1e-2
+            epoch_num=50, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
+            threshold=1e-2, print_train_log_info=False
             ):
 
         super().__init__()
         # check input_size1/2
 
-        self.input_size1 = input_size1
-        self.input_size2 = input_size2
+        self.input_size1_ = input_size1
+        self.input_size2_ = input_size2
         self.n_components_ = n_components
 
         if layer_sizes1 is None:
-            self.layer_sizes1 = [1000, n_components]
+            self.layer_sizes1_ = [1000, n_components]
         if layer_sizes2 is None:
-            self.layer_sizes2 = [1000, n_components]
+            self.layer_sizes2_ = [1000, n_components]
 
-        self.use_all_singular_values = use_all_singular_values
-        self.device = device
-        self.epoch_num = epoch_num
-        self.batch_size = batch_size
-        self.learning_rate = learning_rate
-        self.reg_par = reg_par
-        self.print_train_log_info = print_train_log_info
-        self.threshold = threshold
+        self.use_all_singular_values_ = use_all_singular_values
+        self.device_ = device
+        self.epoch_num_ = epoch_num
+        self.batch_size_ = batch_size
+        self.learning_rate_ = learning_rate
+        self.reg_par_ = reg_par
+        self.print_train_log_info_ = print_train_log_info
+        self.threshold_ = threshold
 
-        self.deep_model = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
+        self.deep_model_ = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
                                   input_size2, n_components,
                                   use_all_singular_values, device=device)
-        self.linear_cca = linear_cca()
+        self.linear_cca_ = linear_cca()
 
-        self.model = nn.DataParallel(self.deep_model)
-        self.model.to(device)
-        self.loss = self.deep_model.loss
-        self.optimizer = torch.optim.RMSprop(self.model.parameters(),
-                                             lr=self.learning_rate,
-                                             weight_decay=reg_par)
+        self.model_ = nn.DataParallel(self.deep_model_)
+        self.model_.to(device)
+        self.loss_ = self.deep_model_.loss_
+        self.optimizer_ = torch.optim.RMSprop(self.model_.parameters(),
+                                             lr=self.learning_rate_,
+                                             weight_decay=self.reg_par_)
 
     def fit(self, Xs, y=None):
         r"""
@@ -576,8 +575,8 @@ class DCCA(BaseEmbed):
         Xs = check_Xs(Xs, multiview=True)  # ensure valid input
         x1 = torch.DoubleTensor(Xs[0])
         x2 = torch.DoubleTensor(Xs[1])
-        x1.to(self.device)
-        x2.to(self.device)
+        x1.to(self.device_)
+        x2.to(self.device_)
 
         data_size = x1.size(0)
 
@@ -587,39 +586,39 @@ class DCCA(BaseEmbed):
         epoch = 0
         current_loss = np.inf
         train_loss = 1
-        while (current_loss - train_loss > self.threshold)\
-                and epoch < self.epoch_num:
-            self.model.train()
+        while (current_loss - train_loss > self.threshold_)\
+                and epoch < self.epoch_num_:
+            self.model_.train()
             batch_idxs = list(BatchSampler(RandomSampler(range(data_size)),
-                                           batch_size=self.batch_size,
+                                           batch_size=self.batch_size_,
                                            drop_last=False))
             current_loss = train_loss
             for batch_idx in batch_idxs:
-                self.optimizer.zero_grad()
+                self.optimizer_.zero_grad()
                 batch_x1 = x1[batch_idx, :]
                 batch_x2 = x2[batch_idx, :]
-                o1, o2 = self.model(batch_x1, batch_x2)
-                loss = self.loss(o1, o2)
+                o1, o2 = self.model_(batch_x1, batch_x2)
+                loss = self.loss_(o1, o2)
                 train_losses.append(loss.item())
                 loss.backward()
-                self.optimizer.step()
+                self.optimizer_.step()
             train_loss = np.mean(train_losses)
-            if self.print_train_log_info:
+            if self.print_train_log_info_:
                 info_string = "Epoch {:d}/{:d},"\
                     " training_loss: {:.4f}"
-                print(info_string.format(epoch + 1, self.epoch_num,
+                print(info_string.format(epoch + 1, self.epoch_num_,
                       train_loss))
 
-            torch.save(self.model.state_dict(), checkpoint)
+            torch.save(self.model_.state_dict(), checkpoint)
             epoch += 1
 
         # train_linear_cca
-        if self.linear_cca is not None:
+        if self.linear_cca_ is not None:
             losses, outputs = self._get_outputs(x1, x2)
             self._train_linear_cca(outputs[0], outputs[1])
 
         checkpoint_ = torch.load(checkpoint)
-        self.model.load_state_dict(checkpoint_)
+        self.model_.load_state_dict(checkpoint_)
 
         self.is_fit = True
         return self
@@ -656,7 +655,7 @@ class DCCA(BaseEmbed):
 
         with torch.no_grad():
             losses, outputs = self._get_outputs(x1, x2)
-            outputs = self.linear_cca.transform(outputs[0], outputs[1])
+            outputs = self.linear_cca_.transform(outputs[0], outputs[1])
             if return_loss:
                 return outputs, np.mean(losses)
             return outputs
@@ -673,7 +672,7 @@ class DCCA(BaseEmbed):
         x2 : torch.tensor
             Input view 2 data.
         """
-        self.linear_cca.fit(x1, x2, self.n_components_)
+        self.linear_cca_.fit(x1, x2, self.n_components_)
 
     def _get_outputs(self, x1, x2):
         """
@@ -695,10 +694,10 @@ class DCCA(BaseEmbed):
             outputs[i] is the output of the deep models for view i.
         """
         with torch.no_grad():
-            self.model.eval()
+            self.model_.eval()
             data_size = x1.size(0)
             batch_idxs = list(BatchSampler(SequentialSampler(range(data_size)),
-                              batch_size=self.batch_size,
+                              batch_size=self.batch_size_,
                               drop_last=False))
             losses = []
             outputs1 = []
@@ -706,10 +705,10 @@ class DCCA(BaseEmbed):
             for batch_idx in batch_idxs:
                 batch_x1 = x1[batch_idx, :]
                 batch_x2 = x2[batch_idx, :]
-                o1, o2 = self.model(batch_x1, batch_x2)
+                o1, o2 = self.model_(batch_x1, batch_x2)
                 outputs1.append(o1)
                 outputs2.append(o2)
-                loss = self.loss(o1, o2)
+                loss = self.loss_(o1, o2)
                 losses.append(loss.item())
         outputs = [torch.cat(outputs1, dim=0).cpu().numpy(),
                    torch.cat(outputs2, dim=0).cpu().numpy()]
