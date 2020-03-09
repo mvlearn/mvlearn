@@ -90,7 +90,7 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
 
     Parameters
     ----------
-    Xs : np-array, list
+    Xs : nd-array, list
         Input data. F
 
     y : nd-array, list

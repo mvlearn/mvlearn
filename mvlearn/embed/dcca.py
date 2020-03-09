@@ -56,7 +56,7 @@ class linear_cca():
         self.w = [None, None]
         self.m = [None, None]
 
-    def fit(self, H1, H2, outdim_size):
+    def fit(self, H1, H2, n_components):
         """
         An implementation of linear CCA.
 
@@ -66,7 +66,7 @@ class linear_cca():
             View 1 data.
         H2: nd-array, shape (n_samples, n_features)
             View 2 data.
-        outdim_size : int (positive)
+        n_components : int (positive)
             The output dimensionality of the CCA transformation.
         """
         r1 = 1e-4
@@ -99,9 +99,9 @@ class linear_cca():
 
         [U, D, V] = np.linalg.svd(Tval)
         V = V.T
-        self.w[0] = np.dot(SigmaHat11RootInv, U[:, 0:outdim_size])
-        self.w[1] = np.dot(SigmaHat22RootInv, V[:, 0:outdim_size])
-        D = D[0:outdim_size]
+        self.w[0] = np.dot(SigmaHat11RootInv, U[:, 0:n_components])
+        self.w[1] = np.dot(SigmaHat22RootInv, V[:, 0:n_components])
+        D = D[0:n_components]
 
     def _get_result(self, x, idx):
         """
@@ -149,21 +149,21 @@ class cca_loss():
 
     Parameters
     ----------
-    outdim_size : int (positive)
+    n_components : int (positive)
         The output dimensionality of the CCA transformation.
     use_all_singular_values : boolean
         Whether or not to use all the singular values in the loss calculation.
-        If False, only use the top outdim_size singular values.
+        If False, only use the top n_components singular values.
     device : torch.device object
         The torch device being used in DCCA.
 
     Attributes
     ----------
-    outdim_size : int (positive)
+    n_components_ : int (positive)
         The output dimensionality of the CCA transformation.
     use_all_singular_values : boolean
         Whether or not to use all the singular values in the loss calculation.
-        If False, only use the top outdim_size singular values.
+        If False, only use the top ``n_components`` singular values.
     device : torch.device object
         The torch device being used in DCCA.
 
@@ -173,8 +173,8 @@ class cca_loss():
                  February). Deep canonical correlation analysis. In
                  International conference on machine learning (pp. 1247-1255).
     """
-    def __init__(self, outdim_size, use_all_singular_values, device):
-        self.outdim_size = outdim_size
+    def __init__(self, n_components, use_all_singular_values, device):
+        self.n_components_ = n_components
         self.use_all_singular_values = use_all_singular_values
         self.device = device
 
@@ -237,11 +237,11 @@ class cca_loss():
             corr = torch.sqrt(tmp)
             # assert torch.isnan(corr).item() == 0
         else:
-            # just the top self.outdim_size singular values are used
+            # just the top self.n_components_ singular values are used
             U, V = torch.symeig(torch.matmul(
                 Tval.t(), Tval), eigenvectors=True)
             # U = U[torch.gt(U, eps).nonzero()[:, 0]]
-            U = U.topk(self.outdim_size)[0]
+            U = U.topk(self.n_components_)[0]
             corr = torch.sum(torch.sqrt(U))
         return -corr
 
@@ -325,13 +325,13 @@ class DeepCCA(nn.Module):
         The dimensionality of the input vectors in view 1.
     input_size2 : int (positive)
         The dimensionality of the input vectors in view 2.
-    outdim_size : int (positive), default=2
+    n_components : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
         network will transform the data to this size. If not specified, will
         be set to 2.
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
-        to calculate the loss. If False, only the top outdim_size singular
+        to calculate the loss. If False, only the top ``n_components`` singular
         values are used.
     device : string, default='cpu'
         The torch device for processing.
@@ -346,13 +346,13 @@ class DeepCCA(nn.Module):
         Loss function for the 2 view DCCA.
     """
     def __init__(self, layer_sizes1, layer_sizes2, input_size1, input_size2,
-                 outdim_size, use_all_singular_values,
+                 n_components, use_all_singular_values,
                  device=torch.device('cpu')):
         super(DeepCCA, self).__init__()
         self.model1 = MlpNet(layer_sizes1, input_size1).double()
         self.model2 = MlpNet(layer_sizes2, input_size2).double()
 
-        self.loss = cca_loss(outdim_size,
+        self.loss = cca_loss(n_components,
                              use_all_singular_values, device).loss
 
     def forward(self, x1, x2):
@@ -392,24 +392,24 @@ class DCCA(BaseEmbed):
         The dimensionality of the input vectors in view 1.
     input_size2 : int (positive)
         The dimensionality of the input vectors in view 2.
-    outdim_size : int (positive), default=2
+    n_components : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
-        network wil transform the data to this size. If not specified, will
-        be set to 2.
+        network wil transform the data to this size. Must satisfy:
+        ``n_components`` <= max(layer_sizes1[-1], layer_sizes2[-1]).
     layer_sizes1 : list of ints, default=None
         The sizes of the layers of the deep network applied to view 1 before
         CCA. For example, if the input dimensionality is 256, and there is one
         hidden layer with 1024 units and the output dimensionality is 100
         before applying CCA, layer_sizes1=[1024, 100]. If ``None``, set to
-        [1000, ``self.outdim_size``].
+        [1000, ``self.n_components_``].
     layer_sizes2 : list of ints, default=None
         The sizes of the layers of the deep network applied to view 2 before
         CCA. Does not need to have the same hidden layer architecture as
         layer_sizes1, but the final dimensionality must be the same. If
-        ``None``, set to [1000, ``self.outdim_size``].
+        ``None``, set to [1000, ``self.n_components_``].
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
-        to calculate the loss. If False, only the top outdim_size singular
+        to calculate the loss. If False, only the top n_components singular
         values are used.
     device : string, default='cpu'
         The torch device for processing.
@@ -434,7 +434,7 @@ class DCCA(BaseEmbed):
         The dimensionality of the input vectors in view 1.
     input_size2 : int (positive)
         The dimensionality of the input vectors in view 2.
-    outdim_size : int (positive), default=2
+    n_components_ : int (positive), default=2
         The output dimensionality of the correlated projections. The deep
         network wil transform the data to this size. If not specified, will
         be set to 2.
@@ -449,7 +449,7 @@ class DCCA(BaseEmbed):
         layer_sizes1, but the final dimensionality must be the same.
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
-        to calculate the loss. If False, only the top outdim_size singular
+        to calculate the loss. If False, only the top n_components singular
         values are used.
     device : string, default='cpu'
         The torch device for processing.
@@ -468,7 +468,7 @@ class DCCA(BaseEmbed):
         2 view Deep CCA object used to transform 2 views of data together.
     linear_cca : ``linear_cca`` object
         Linear CCA object used to project final transformations from output
-        of ``deep_model`` to the ``outdim_size``.
+        of ``deep_model`` to the ``n_components``.
     model : torch.nn.DataParallel object
         Wrapper around ``deep_model`` to allow parallelisation.
     loss : ``cca_loss`` object
@@ -498,10 +498,10 @@ class DCCA(BaseEmbed):
     >>> view1 = np.exp(np.random.normal(size=(1000, 100)))
     >>> view2 = np.random.normal(loc=2, size=(1000, 75))
     >>> input_size1, input_size2 = 100, 75
-    >>> outdim_size = 2
+    >>> n_components = 2
     >>> layer_sizes1 = [1024, 2]
     >>> layer_sizes2 = [1024, 2]
-    >>> dcca = DCCA(input_size1, input_size2, outdim_size, layer_sizes1,
+    >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
                     layer_sizes2)
     >>> outputs = dcca.fit_transform([view1, view2])
     >>> print(outputs[0].shape)
@@ -515,7 +515,7 @@ class DCCA(BaseEmbed):
     """
 
     def __init__(
-            self, input_size1=None, input_size2=None, outdim_size=2,
+            self, input_size1=None, input_size2=None, n_components=2,
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
             epoch_num=10, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
@@ -527,12 +527,12 @@ class DCCA(BaseEmbed):
 
         self.input_size1 = input_size1
         self.input_size2 = input_size2
-        self.outdim_size = outdim_size
+        self.n_components_ = n_components
 
         if layer_sizes1 is None:
-            self.layer_sizes1 = [1000, outdim_size]
+            self.layer_sizes1 = [1000, n_components]
         if layer_sizes2 is None:
-            self.layer_sizes2 = [1000, outdim_size]
+            self.layer_sizes2 = [1000, n_components]
 
         self.use_all_singular_values = use_all_singular_values
         self.device = device
@@ -544,7 +544,7 @@ class DCCA(BaseEmbed):
         self.threshold = threshold
 
         self.deep_model = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
-                                  input_size2, outdim_size,
+                                  input_size2, n_components,
                                   use_all_singular_values, device=device)
         self.linear_cca = linear_cca()
 
@@ -665,13 +665,34 @@ class DCCA(BaseEmbed):
         """
         Private function to fit the linear CCA model for use after the
         deep layers.
+
+        Parameters
+        ----------
+        x1 : torch.tensor
+            Input view 1 data.
+        x2 : torch.tensor
+            Input view 2 data.
         """
-        self.linear_cca.fit(x1, x2, self.outdim_size)
+        self.linear_cca.fit(x1, x2, self.n_components_)
 
     def _get_outputs(self, x1, x2):
         """
         Private function to get the transformed data and the corresponding
         loss for the given inputs.
+
+        Parameters
+        ----------
+        x1 : torch.tensor
+            Input view 1 data.
+        x2 : torch.tensor
+            Input view 2 data.
+
+        Returns
+        -------
+        losses : list
+            List of losses for each batch taken from the input data.
+        outputs : list of tensors
+            outputs[i] is the output of the deep models for view i.
         """
         with torch.no_grad():
             self.model.eval()
