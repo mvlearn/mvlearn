@@ -352,7 +352,7 @@ class DeepCCA(nn.Module):
         self.model2_ = MlpNet(layer_sizes2, input_size2).double()
 
         self.loss_ = cca_loss(n_components,
-                             use_all_singular_values, device).loss
+                              use_all_singular_values, device).loss
 
     def forward(self, x1, x2):
         """
@@ -377,6 +377,7 @@ class DeepCCA(nn.Module):
         output2 = self.model2_(x2)
 
         return output1, output2
+
 
 class DCCA(BaseEmbed):
     r"""
@@ -549,16 +550,16 @@ class DCCA(BaseEmbed):
         self.threshold_ = threshold
 
         self.deep_model_ = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
-                                  input_size2, n_components,
-                                  use_all_singular_values, device=device)
+                                   input_size2, n_components,
+                                   use_all_singular_values, device=device)
         self.linear_cca_ = linear_cca()
 
         self.model_ = nn.DataParallel(self.deep_model_)
         self.model_.to(device)
         self.loss_ = self.deep_model_.loss_
         self.optimizer_ = torch.optim.RMSprop(self.model_.parameters(),
-                                             lr=self.learning_rate_,
-                                             weight_decay=self.reg_par_)
+                                              lr=self.learning_rate_,
+                                              weight_decay=self.reg_par_)
 
     def fit(self, Xs, y=None):
         r"""
