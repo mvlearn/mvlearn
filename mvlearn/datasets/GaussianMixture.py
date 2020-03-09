@@ -9,7 +9,7 @@ def add_noise(X, n_noise):
 
 def linear2view(X, n_noise, seed=2):
     np.random.seed(seed)
-    if X.shape[1] > 1:
+    if X.shape[1] == 1:
         X = X * np.random.normal(2, 1)
     else:
         X = X @ ortho_group.rvs(X.shape[1])
@@ -29,26 +29,26 @@ def sin2view(X, n_noise, seed=2):
 
 
 class GaussianMixture:
-    def __init__(self, n, seed, mu, sigma, class_sizes = None):
+    def __init__(self, n, seed, mu, sigma, class_probs = None):
         self.mu = mu
         self.sigma = sigma
         self.views = len(mu)
-        self.class_sizes = class_sizes
+        self.class_probs = class_probs
 
         np.random.seed(seed)
-        if class_sizes is None:
+        if class_probs is None:
             self.latent = np.random.multivariate_normal(mu, sigma, size=n)
             self.y = None
         else:
             self.latent = np.concatenate(
                 [
                     np.random.multivariate_normal(
-                        self.mu[i], self.sigma[i], size=class_sizes[i]
-                    ) for i in range(len(class_sizes))
+                        self.mu[i], self.sigma[i], size=int(class_probs[i]*n)
+                    ) for i in range(len(class_probs))
                 ]
             )
-            self.y = np.concatenate([i*np.ones(class_sizes[i]) 
-                                     for i in range(len(class_sizes))
+            self.y = np.concatenate([i*np.ones(int(class_probs[i]*n))
+                                     for i in range(len(class_probs))
                                     ])
 
     def sample_views(self, n_noise=1, transform='linear', seeds=[1,2]):
@@ -74,11 +74,15 @@ class GaussianMixture:
             X = polyinv2view(self.latent, n_noise=n_noise, seed=seeds[1])
         elif transform == "sin":
             X = sin2view(self.latent, n_noise=n_noise, seed=seeds[1])
+        else:
+            raise ValueError(
+                "invalid transformation"
+                )
 
         X = add_noise(X, n_noise=n_noise)
         self.Xs = [add_noise(self.latent, n_noise=n_noise), X]
 
-    def plot_2views(self, Xs=None, figsize=(10, 10), title=""):
+    def plot_2views(self, Xs=None, figsize=(10, 10), title="", show=True):
         if Xs is None:
             Xs = self.Xs
         n = Xs[0].shape[1]
@@ -87,10 +91,31 @@ class GaussianMixture:
             dim2 = int(i / n)
             dim1 = i % n
             ax.scatter(Xs[0][:, dim1], Xs[1][:, dim2])
-            if dim2 == 2:
+            if dim2 == n-1:
                 ax.set_xlabel(f"View 1 Dim {dim1+1}")
             if dim1 == 0:
                 ax.set_ylabel(f"View 2 Dim {dim2+1}")
 
         plt.suptitle(title)
-        return (fig, axes)
+        if show:
+            plt.show()
+        else:
+            return (fig, axes)
+
+    def plot_latents(self, figsize=(5, 5), title="", show=True):
+        n = self.latent.shape[1]
+        fig, axes = plt.subplots(n, n, figsize=figsize)
+        for i, ax in enumerate(axes.flatten()):
+            dim2 = int(i / n)
+            dim1 = i % n
+            ax.scatter(self.latent[:, dim1], self.latent[:, dim2])
+            if dim2 == n-1:
+                ax.set_xlabel(f"View 1 Dim {dim1+1}")
+            if dim1 == 0:
+                ax.set_ylabel(f"View 2 Dim {dim2+1}")
+
+        plt.suptitle(title)
+        if show:
+            plt.show()
+        else:
+            return (fig, axes)
