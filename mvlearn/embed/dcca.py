@@ -293,10 +293,9 @@ class MlpNet(nn.Module):
         layer_sizes = [input_size] + layer_sizes
         for l_id in range(len(layer_sizes) - 1):
             if l_id == len(layer_sizes) - 2:
-                layers.append(nn.Sequential(
+                layers.append(
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
-                    nn.Sigmoid(),
-                ))
+                )
             else:
                 layers.append(nn.Sequential(
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
