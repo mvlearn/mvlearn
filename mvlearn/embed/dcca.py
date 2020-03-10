@@ -599,9 +599,11 @@ class DCCA(BaseEmbed):
         self.print_train_log_info_ = print_train_log_info
         self.threshold_ = threshold
 
-        self.deep_model_ = DeepPairedNetworks(layer_sizes1, layer_sizes2, input_size1,
-                                   input_size2, n_components,
-                                   use_all_singular_values, device=device)
+        self.deep_model_ = DeepPairedNetworks(layer_sizes1, layer_sizes2,
+                                              input_size1, input_size2,
+                                              n_components,
+                                              use_all_singular_values,
+                                              device=device)
         self.linear_cca_ = linear_cca()
 
         self.model_ = nn.DataParallel(self.deep_model_)
