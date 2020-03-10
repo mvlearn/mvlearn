@@ -440,7 +440,7 @@ class DCCA(BaseEmbed):
         Learning rate for training the deep networks.
     reg_par : float (positive), default=1e-5
         Weight decay parameter used in the RMSprop optimizer.
-    threshold : float, default=1e-2
+    tolerance : float, default=1e-2
         Threshold difference between successive iteration losses to define
         convergence and stop training.
     print_train_log_info : boolean, default=False
@@ -495,7 +495,7 @@ class DCCA(BaseEmbed):
         between outputs of transformed views.
     optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
-    threshold_ : float, default=1e-3
+    tolerance_ : float, default=1e-3
         Threshold difference between successive iteration losses to define
         convergence and stop training.
 
@@ -574,12 +574,16 @@ class DCCA(BaseEmbed):
             self, input_size1=None, input_size2=None, n_components=2,
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
-            epoch_num=50, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
-            threshold=1e-3, print_train_log_info=False
+            epoch_num=100, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
+            tolerance=1e-3, print_train_log_info=False
             ):
 
         super().__init__()
-        # check input_size1/2
+        
+        # check inputs
+        if input_size1 is None or input_size2 is None:
+            raise ValueError('Must enter input sizes for both views.')
+
 
         self.input_size1_ = input_size1
         self.input_size2_ = input_size2
@@ -597,7 +601,7 @@ class DCCA(BaseEmbed):
         self.learning_rate_ = learning_rate
         self.reg_par_ = reg_par
         self.print_train_log_info_ = print_train_log_info
-        self.threshold_ = threshold
+        self.tolerance_ = tolerance
 
         self.deep_model_ = DeepPairedNetworks(layer_sizes1, layer_sizes2,
                                               input_size1, input_size2,
@@ -645,7 +649,7 @@ class DCCA(BaseEmbed):
         epoch = 0
         current_loss = np.inf
         train_loss = 1
-        while (current_loss - train_loss > self.threshold_)\
+        while (current_loss - train_loss > self.tolerance_)\
                 and epoch < self.epoch_num_:
             self.model_.train()
             batch_idxs = list(BatchSampler(RandomSampler(range(data_size)),
