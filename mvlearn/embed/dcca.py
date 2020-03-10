@@ -62,14 +62,7 @@ class linear_cca():
 
         Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
         Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
-        the correlation :math:`X_1 a_1` and :math:`X_2 a_2`, expanded below.
-
-        .. math::
-            \left(\frac{a_1^TC_{12}a_2}
-                {\sqrt{a_1^TC_{11}a_1a_2^TC_{22}a_2}}
-                \right)
-        where :math:`C_{11}`, :math:`C_{22}`, and :math:`C_{12}` are respectively
-        the view 1, view 2, and between view covariance matrix estimates.
+        the correlation between :math:`X_1 a_1` and :math:`X_2 a_2`.
 
         Parameters
         ----------
@@ -434,13 +427,13 @@ class DCCA(BaseEmbed):
         ``None``, set to [1000, ``self.n_components_``].
     use_all_singular_values : boolean (default=False)
         Whether or not to use all the singular values in the CCA computation
-        to calculate the loss. If False, only the top n_components singular
-        values are used.
+        to calculate the loss. If False, only the top ``n_components``
+        singular values are used.
     device : string, default='cpu'
-        The torch device for processing.
+        The torch device for processing. Can be used with a GPU if available.
     epoch_num : int (positive)
         The max number of epochs to train the deep networks.
-    batch_size : int (positive)
+    batch_size : int (positive), default=800
         Batch size for training the deep networks.
     learning_rate : float (positive), default=1e-3
         Learning rate for training the deep networks.
@@ -450,8 +443,8 @@ class DCCA(BaseEmbed):
         Threshold difference between successive iteration losses to define
         convergence and stop training.
     print_train_log_info : boolean, default=False
-        Whether or not to print the logging info (training loss at each epoch)
-        when calling DCCA.fit().
+        If ``True``, the training loss at each epoch will be printed to the
+        console when DCCA.fit() is called.
 
     Attributes
     ----------
@@ -483,7 +476,7 @@ class DCCA(BaseEmbed):
     batch_size_ : int (positive)
         Batch size for training the deep networks.
     learning_rate_ : float (positive), default=1e-3
-        Learning rate for training the deep networks
+        Learning rate for training the deep networks.
     reg_par_ : float (positive), default=1e-5
         Weight decay parameter used in the RMSprop optimizer.
     print_train_log_info_ : boolean, default=False
