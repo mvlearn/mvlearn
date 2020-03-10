@@ -19,15 +19,16 @@ import numpy as np
 from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
-from mvlearn.embed.utils import select_dimension
+from .utils import select_dimension
 
 
 class GCCA(BaseEmbed):
-    """
-    An implementation of Generalized Canonical Correalation Analysis. Computes
-    individual projections into a common subspace such that the correlations
-    between pairwise projections are minimized (ie. maximize pairwise
-    correlation). Reduces to CCA in the two sample case.
+    r"""
+    An implementation of Generalized Canonical Correalation Analysis suitable
+    for cases where the number of features exceeds the number of samples by
+    first applying single view dimensionality reduction. Computes individual
+    projections into a common subspace such that the correlations between
+    pairwise projections are minimized (ie. maximize pairwise correlation).
 
     Parameters
     ----------
@@ -35,20 +36,24 @@ class GCCA(BaseEmbed):
         Selects the number of SVD components to keep for each view by
         thresholding singular values. If none, another selection
         method is used.
+
     n_components : int (positive), optional, default=None
         If ``self.sv_tolerance=None``, selects the number of SVD
         components to keep for each view. If none, another selection
         method is used.
+
     fraction_var : float, default=None
         If ``self.sv_tolerance=None``, and ``self.n_components=None``,
         selects the number of SVD components to keep for each view by
         capturing enough of the variance. If none, another selection
         method is used.
+
     n_elbows : int, optional, default: 2
         If ``self.fraction_var=None``, ``self.sv_tolerance=None``, and
         ``self.n_components=None``, then compute the optimal embedding
         dimension using :func:`~mvlearn.embed.gcca.select_dimension`.
         Otherwise, ignored.
+
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD
 
@@ -57,9 +62,28 @@ class GCCA(BaseEmbed):
     projection_mats_ : list of arrays
         A projection matrix for each view, from the given space to the
         latent space
+
     ranks_ : list of ints
         number of left singular vectors kept for each view during the first
         SVD
+
+    Notes
+    -----
+    Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
+    Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
+    the correlation :math:`X_1 a_1` and :math:`X_2 a_2`, expanded below.
+
+    .. math::
+        \left(\frac{a_1^TC_{12}a_2}
+            {\sqrt{a_1^TC_{11}a_1a_2^TC_{22}a_2}}
+            \right)
+
+    where :math:`C_{11}`, :math:`C_{22}`, and :math:`C_{12}` are respectively
+    the view 1, view 2, and between view covariance matrix estimates. GCCA
+    maximizes the sum of these correlations across all pairwise views and
+    computes a set of linearly independent components. This specific algorithm
+    first applies priciple component analysis and then aligns the most
+    informative projections.
 
     References
     ----------
@@ -87,7 +111,7 @@ class GCCA(BaseEmbed):
         self.ranks_ = None
 
     def center(self, X):
-        """
+        r"""
         Subtracts the row means and divides by the row standard deviations.
         Then subtracts column means.
 
@@ -109,7 +133,7 @@ class GCCA(BaseEmbed):
         return centered_X
 
     def fit(self, Xs):
-        """
+        r"""
         Calculates a projection from each view to a latentent space such that
         the sum of pairwise latent space correlations is maximized. Each view
         'X' is normalized and the left singular vectors of 'X^T X' are
@@ -236,7 +260,7 @@ class GCCA(BaseEmbed):
         return self
 
     def transform(self, Xs, view_idx=None):
-        """
+        r"""
         Embeds data matrix(s) using the fitted projection matrices. May be
         used for out-of-sample embeddings.
 
@@ -257,6 +281,7 @@ class GCCA(BaseEmbed):
         -------
         Xs_transformed : list of array-likes or array-like
             Same shape as Xs
+
         """
         if self.projection_mats_ is None:
             raise RuntimeError("Must call fit function before transform")
@@ -272,7 +297,7 @@ class GCCA(BaseEmbed):
             )
 
     def fit_transform(self, Xs):
-        """
+        r"""
         Fits transformer to Xs and returns a transformed version of the Xs.
 
         Parameters
@@ -285,7 +310,7 @@ class GCCA(BaseEmbed):
 
         Returns
         -------
-        Xs_transformed : array-like 2D if view_idx not None, otherwise
+        Xs_transformed : array-like, 2D if view_idx not None, otherwise
             (n_views, n_samples, self.n_components)
         """
 
