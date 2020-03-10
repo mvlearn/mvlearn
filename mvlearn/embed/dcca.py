@@ -432,7 +432,7 @@ class DCCA(BaseEmbed):
         singular values are used.
     device : string, default='cpu'
         The torch device for processing. Can be used with a GPU if available.
-    epoch_num : int (positive)
+    epoch_num : int (positive), default=200
         The max number of epochs to train the deep networks.
     batch_size : int (positive), default=800
         Batch size for training the deep networks.
@@ -574,7 +574,7 @@ class DCCA(BaseEmbed):
             self, input_size1=None, input_size2=None, n_components=2,
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
-            epoch_num=100, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
+            epoch_num=200, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
             tolerance=1e-3, print_train_log_info=False
             ):
 
@@ -674,6 +674,13 @@ class DCCA(BaseEmbed):
 
             torch.save(self.model_.state_dict(), checkpoint)
             epoch += 1
+
+        # Check if converged before max iterations
+        if epoch == self.epoch_num_:
+            message = 'Loss did not converge before {} epochs. Consider'\
+                ' increasing epoch_num to train for'\
+                ' longer.'.format(self.epoch_num_)
+            warnings.warn(message, Warning)
 
         # train_linear_cca
         if self.linear_cca_ is not None:
