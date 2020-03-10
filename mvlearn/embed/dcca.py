@@ -60,6 +60,17 @@ class linear_cca():
         """
         An implementation of linear CCA.
 
+        Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
+        Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
+        the correlation :math:`X_1 a_1` and :math:`X_2 a_2`, expanded below.
+
+        .. math::
+            \left(\frac{a_1^TC_{12}a_2}
+                {\sqrt{a_1^TC_{11}a_1a_2^TC_{22}a_2}}
+                \right)
+        where :math:`C_{11}`, :math:`C_{22}`, and :math:`C_{12}` are respectively
+        the view 1, view 2, and between view covariance matrix estimates.
+
         Parameters
         ----------
         H1: nd-array, shape (n_samples, n_features)
@@ -81,6 +92,7 @@ class linear_cca():
         H1bar = H1 - np.tile(self.m_[0], (m, 1))
         H2bar = H2 - np.tile(self.m_[1], (m, 1))
 
+        # Compute covariance matrices
         SigmaHat12 = (1.0 / (m - 1)) * np.dot(H1bar.T, H2bar)
         SigmaHat11 = (1.0 / (m - 1)) * np.dot(H1bar.T,
                                               H1bar) + r1 * np.identity(o1)
@@ -145,7 +157,9 @@ class linear_cca():
 class cca_loss():
     """
     An implementation of the loss function of linear CCA as introduced
-    in the original paper for ``DCCA`` [#1Utils]_.
+    in the original paper for ``DCCA`` [#1Utils]_. Details of how this loss
+    is computed can be found in the paper or in the documentation for
+    ``DCCA``.
 
     Parameters
     ----------
@@ -180,7 +194,8 @@ class cca_loss():
 
     def loss(self, H1, H2):
         """
-        Compute the loss (negative correlation) between 2 views.
+        Compute the loss (negative correlation) between 2 views. Details can
+        be found in [#1Utils]_ or the documentation for ``DCCA``.
 
         Parameters
         ----------
@@ -194,6 +209,7 @@ class cca_loss():
         r2 = 1e-3
         eps = 1e-9
 
+        # Transpose matrices so each column is a sample
         H1, H2 = H1.t(), H2.t()
 
         o1 = o2 = H1.size(0)
@@ -203,18 +219,20 @@ class cca_loss():
         H1bar = H1 - H1.mean(dim=1).unsqueeze(dim=1)
         H2bar = H2 - H2.mean(dim=1).unsqueeze(dim=1)
 
+        # Compute covariance matrices and add diagonal so they are
+        # positive definite
         SigmaHat12 = (1.0 / (m - 1)) * torch.matmul(H1bar, H2bar.t())
         SigmaHat11 = (1.0 / (m - 1)) * torch.matmul(H1bar, H1bar.t()) + \
             r1 * torch.eye(o1, device=self.device_)
         SigmaHat22 = (1.0 / (m - 1)) * torch.matmul(H2bar, H2bar.t()) + \
             r2 * torch.eye(o2, device=self.device_)
 
-        # Calculating the root inverse of covariance matrices by using
+        # Calculate the root inverse of covariance matrices by using
         # eigen decomposition
         [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
         [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
 
-        # Added to increase stability
+        # Additional code to increase numerical stability
         posInd1 = torch.gt(D1, eps).nonzero()[:, 0]
         D1 = D1[posInd1]
         V1 = V1[:, posInd1]
@@ -222,25 +240,26 @@ class cca_loss():
         D2 = D2[posInd2]
         V2 = V2[:, posInd2]
 
+        # Compute sigma hat matrices using the edited covariance matrices
         SigmaHat11RootInv = torch.matmul(
             torch.matmul(V1, torch.diag(D1 ** -0.5)), V1.t())
         SigmaHat22RootInv = torch.matmul(
             torch.matmul(V2, torch.diag(D2 ** -0.5)), V2.t())
 
+        # Compute the T matrix, whose matrix trace norm is the loss
         Tval = torch.matmul(torch.matmul(SigmaHat11RootInv,
                                          SigmaHat12), SigmaHat22RootInv)
 
         if self.use_all_singular_values_:
-            # all singular values are used to calculate the correlation
+            # all singular values are used to calculate the correlation (and
+            # thus the loss as well)
             tmp = torch.trace(torch.matmul(Tval.t(), Tval))
-            # print(tmp)
             corr = torch.sqrt(tmp)
-            # assert torch.isnan(corr).item() == 0
         else:
-            # just the top self.n_components_ singular values are used
+            # just the top self.n_components_ singular values are used to
+            # compute the loss
             U, V = torch.symeig(torch.matmul(
                 Tval.t(), Tval), eigenvectors=True)
-            # U = U[torch.gt(U, eps).nonzero()[:, 0]]
             U = U.topk(self.n_components_)[0]
             corr = torch.sum(torch.sqrt(U))
         return -corr
@@ -274,9 +293,10 @@ class MlpNet(nn.Module):
         layer_sizes = [input_size] + layer_sizes
         for l_id in range(len(layer_sizes) - 1):
             if l_id == len(layer_sizes) - 2:
-                layers.append(
+                layers.append(nn.Sequential(
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
-                )
+                    nn.Sigmoid(),
+                ))
             else:
                 layers.append(nn.Sequential(
                     nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
@@ -496,6 +516,43 @@ class DCCA(BaseEmbed):
 
     The networks used for each view in DCCA consist of fully connected linear
     layers with a sigmoid activation function.
+
+    The problem DCCA problem is formulated from [#1DCCA]_. Consider two
+    views :math:`X_1` and :math:`X_2`. DCCA seeks to find the parameters for
+    each view, :math:`\Theta_1` and :math:`\Theta_2`, such that they maximize
+
+    .. math::
+        \text{corr}\left(f_1\left(X_1;\Theta_1\right),
+        f_2\left(X_2;\Theta_2\right)\right)
+
+    These parameters are estimated in the deep network by following gradient
+    descent on the input data. Taking :math:`H_1, H_2 \in R^{o \times m}` to
+    be the outputs of the deep network in each column for the input data of
+    size :math:`m`. Take the centered matrix :math:`\bar{H}_1 =
+    H_1-\frac{1}{m}H_1{1}`, and :math:`\bar{H}_2 = H_2-\frac{1}{m}H_2{1}`.
+    Then, define
+
+    .. math::
+        \begin{align*}
+        \hat{\Sigma}_{12} &= \frac{1}{m-1}\bar{H}_1\bar{H}_2^T \\
+        \hat{\Sigma}_{11} &= \frac{1}{m-1}\bar{H}_1\bar{H}_1^T + r_1I \\
+        \hat{\Sigma}_{22} &= \frac{1}{m-1}\bar{H}_2\bar{H}_2^T + r_2I
+        \end{align*}
+
+    Where :math:`r_1` and :math:`r_2` are regularization constants :math:`>0`
+    so the matrices are guaranteed to be positive definite.
+
+    The correlation objective function is the sum of the top :math:`k`
+    singular values of the matrix :math:`T`, where
+
+    .. math::
+        T = \hat{\Sigma}_{11}^{-1/2}\hat{\Sigma}_{12}\hat{\Sigma}_{22}^{-1/2}
+
+    Which is the matrix norm of T. Thus, the loss is
+
+    .. math::
+        L(X_1, X2) = -\text{corr}\left(H_1, H_2\right) =
+        -\text{tr}(T^TT)^{1/2}.
 
     Examples
     --------
