@@ -440,7 +440,7 @@ class DCCA(BaseEmbed):
         Learning rate for training the deep networks.
     reg_par : float (positive), default=1e-5
         Weight decay parameter used in the RMSprop optimizer.
-    tolerance : float, default=1e-2
+    tolerance : float, (positive), default=1e-2
         Threshold difference between successive iteration losses to define
         convergence and stop training.
     print_train_log_info : boolean, default=False
@@ -495,7 +495,7 @@ class DCCA(BaseEmbed):
         between outputs of transformed views.
     optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
-    tolerance_ : float, default=1e-3
+    tolerance_ : float, (positive), default=1e-3
         Threshold difference between successive iteration losses to define
         convergence and stop training.
 
@@ -579,11 +579,12 @@ class DCCA(BaseEmbed):
             ):
 
         super().__init__()
-        
-        # check inputs
-        if input_size1 is None or input_size2 is None:
-            raise ValueError('Must enter input sizes for both views.')
 
+        self._valid_inputs(input_size1, input_size2, n_components,
+                           layer_sizes1, layer_sizes2,
+                           use_all_singular_values, device,
+                           epoch_num, batch_size, learning_rate, reg_par,
+                           tolerance, print_train_log_info)
 
         self.input_size1_ = input_size1
         self.input_size2_ = input_size2
@@ -636,6 +637,19 @@ class DCCA(BaseEmbed):
         self : returns an instance of self.
         """
         Xs = check_Xs(Xs, multiview=True)  # ensure valid input
+
+        # Check valid shapes based on initialization
+        if Xs[0].shape[1] != self.input_size1_:
+            raise ValueError('View 1 input data is incorrect shape based on'
+                             ' self.input_size1_. Found {} features but'
+                             'expected {}'.format(Xs[0].shape[1],
+                                                  self.input_size1_))
+        if Xs[1].shape[1] != self.input_size2_:
+            raise ValueError('View 2 input data is incorrect shape based on'
+                             ' self.input_size2_. Found {} features but'
+                             'expected {}'.format(Xs[1].shape[1],
+                                                  self.input_size2_))
+
         x1 = torch.DoubleTensor(Xs[0])
         x2 = torch.DoubleTensor(Xs[1])
         x1.to(self.device_)
@@ -784,3 +798,108 @@ class DCCA(BaseEmbed):
                    torch.cat(outputs2, dim=0).cpu().numpy()]
 
         return losses, outputs
+
+    def _valid_inputs(self, input_size1, input_size2, n_components,
+                      layer_sizes1, layer_sizes2,
+                      use_all_singular_values, device,
+                      epoch_num, batch_size, learning_rate, reg_par,
+                      tolerance, print_train_log_info
+                      ):
+        r"""
+        Check that the inputs passed to __init__() are valid.
+
+        Parameters
+        ----------
+        input_size1 : int (positive)
+            The dimensionality of the input vectors in view 1.
+        input_size2 : int (positive)
+            The dimensionality of the input vectors in view 2.
+        n_components : int (positive), default=2
+            The output dimensionality of the correlated projections. The deep
+            network wil transform the data to this size. Must satisfy:
+            ``n_components`` <= max(layer_sizes1[-1], layer_sizes2[-1]).
+        layer_sizes1 : list of ints, default=None
+            The sizes of the layers of the deep network applied to view 1
+            before CCA. For example, if the input dimensionality is 256, and
+            there is one hidden layer with 1024 units and the output
+            dimensionality is 100 before applying CCA,
+            layer_sizes1=[1024, 100]. If ``None``, set to
+            [1000, ``self.n_components_``].
+        layer_sizes2 : list of ints, default=None
+            The sizes of the layers of the deep network applied to view 2
+            before CCA. Does not need to have the same hidden layer
+            architecture as layer_sizes1, but the final dimensionality must
+            be the same. If ``None``, set to [1000, ``self.n_components_``].
+        use_all_singular_values : boolean (default=False)
+            Whether or not to use all the singular values in the CCA
+            computation to calculate the loss. If False, only the top
+            ``n_components`` singular values are used.
+        device : string, default='cpu'
+            The torch device for processing. Can be used with a GPU if
+            available.
+        epoch_num : int (positive), default=200
+            The max number of epochs to train the deep networks.
+        batch_size : int (positive), default=800
+            Batch size for training the deep networks.
+        learning_rate : float (positive), default=1e-3
+            Learning rate for training the deep networks.
+        reg_par : float (positive), default=1e-5
+            Weight decay parameter used in the RMSprop optimizer.
+        tolerance : float, (positive), default=1e-2
+            Threshold difference between successive iteration losses to define
+            convergence and stop training.
+        print_train_log_info : boolean, default=False
+            If ``True``, the training loss at each epoch will be printed to
+            the console when DCCA.fit() is called.
+
+        Returns
+        -------
+        """
+        # Check input_size parameters
+        if (not isinstance(input_size1, int)) or\
+           (not isinstance(input_size2, int)) or\
+           input_size1 < 1 or input_size2 < 1:
+            raise ValueError('input_size1 and input_size2 must be'
+                             ' positive integers')
+
+        # Check n_components
+        if not isinstance(n_components, int) or n_components < 1:
+            raise ValueError('n_components must be positive integer')
+
+        # Check layer_sizes
+        if (isinstance(layer_sizes1, list)) or\
+           (isinstance(layer_sizes2, list)):
+            for elem in layer_sizes1:
+                if not isinstance(elem, int) or elem < 1:
+                    raise ValueError('All layer sizes must be positive'
+                                     ' integers')
+            for elem in layer_sizes2:
+                if not isinstance(elem, int) or elem < 1:
+                    raise ValueError('All layer sizes must be positive'
+                                     ' integers')
+        else:
+            raise ValueError('layer_sizes1 and layer_sizes2 must be of type'
+                             ' list')
+        if layer_sizes1[-1] != layer_sizes2[-1]:
+            raise ValueError('Output size of deep networks must match. Make'
+                             ' sure layer_sizes1[-1] == layer_sizes2[-1]')
+
+        # Check epoch_num
+        if not isinstance(epoch_num, int) or epoch_num < 1:
+            raise ValueError('epoch_num must be positive integer')
+
+        # Check batch_size
+        if not isinstance(batch_size, int) or batch_size < 1:
+            raise ValueError('epoch_num must be positive integer')
+
+        # Check learning_rate
+        if learning_rate <= 0:
+            raise ValueError('learning_rate must be positive')
+
+        # Check reg_par
+        if reg_par <= 0:
+            raise ValueError('reg_par must be positive')
+
+        # Check tolerance
+        if tolerance <= 0:
+            raise ValueError('tolerance must be positive')
