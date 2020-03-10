@@ -91,10 +91,10 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     single-view analog run on a concatenated version of the two views of data.
     This is quite useful for applications where you wish to cluster data from
     two different modalities or data with features that naturally fall into two
-    different partitions. Multi-view Spherical KMeans works by iteratively 
-    performing the maximization and expectation steps of traditional EM in 
+    different partitions. Multi-view Spherical KMeans works by iteratively
+    performing the maximization and expectation steps of traditional EM in
     one view, and then using the computed hidden variables as the input for the
-    maximization step in the other view. This algorithm, referred to as Co-EM, 
+    maximization step in the other view. This algorithm, referred to as Co-EM,
     is described below.
 
     *Co-EM Algorithm*
