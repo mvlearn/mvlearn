@@ -59,7 +59,7 @@ DCCA Utilities
 		double, float, half, named_buffers, zero_grad, to, state_dict,
 		requires_grad, modules, cpu, cuda, load_state_dict
 
-.. autoclass:: DeepCCA
+.. autoclass:: DeepPairedNetworks
 	:exclude-members: add_module, apply, buffers, children, named_children,
 		named_modules, named_parameters, register_backward_hook,
 		register_buffer, register_forward_hook, register_forward_pre_hook,

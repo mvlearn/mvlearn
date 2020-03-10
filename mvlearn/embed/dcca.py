@@ -43,6 +43,10 @@ class linear_cca():
     Implementation of linear CCA to act on the output of the deep networks
     in DCCA.
 
+    Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
+    Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
+    the correlation between :math:`X_1 a_1` and :math:`X_2 a_2`.
+
     Attributes
     ----------
     w_ : list (length=2)
@@ -58,18 +62,15 @@ class linear_cca():
 
     def fit(self, H1, H2, n_components):
         """
-        An implementation of linear CCA.
-
-        Consider two views :math:`X_1` and :math:`X_2`. Canonical Correlation
-        Analysis seeks to find vectors :math:`a_1` and :math:`a_2` to maximize
-        the correlation between :math:`X_1 a_1` and :math:`X_2 a_2`.
+        Fit the linear CCA model to the outputs of the deep network
+        transformations on the two views of data.
 
         Parameters
         ----------
         H1: nd-array, shape (n_samples, n_features)
-            View 1 data.
+            View 1 data after deep network.
         H2: nd-array, shape (n_samples, n_features)
-            View 2 data.
+            View 2 data after deep network.
         n_components : int (positive)
             The output dimensionality of the CCA transformation.
         """
@@ -315,7 +316,7 @@ class MlpNet(nn.Module):
         return x
 
 
-class DeepCCA(nn.Module):
+class DeepPairedNetworks(nn.Module):
     """
     A pair of deep networks for operating on the two views of data. Consists
     of two ``MlpNet`` objects for transforming 2 views of data in ``DCCA``.
@@ -359,7 +360,7 @@ class DeepCCA(nn.Module):
     def __init__(self, layer_sizes1, layer_sizes2, input_size1, input_size2,
                  n_components, use_all_singular_values,
                  device=torch.device('cpu')):
-        super(DeepCCA, self).__init__()
+        super(DeepPairedNetworks, self).__init__()
         self.model1_ = MlpNet(layer_sizes1, input_size1).double()
         self.model2_ = MlpNet(layer_sizes2, input_size2).double()
 
@@ -482,7 +483,7 @@ class DCCA(BaseEmbed):
     print_train_log_info_ : boolean, default=False
         Whether or not to print the logging info (training loss at each epoch)
         when calling DCCA.fit().
-    deep_model_ : ``DeepCCA`` object
+    deep_model_ : ``DeepPairedNetworks`` object
         2 view Deep CCA object used to transform 2 views of data together.
     linear_cca_ : ``linear_cca`` object
         Linear CCA object used to project final transformations from output
@@ -598,7 +599,7 @@ class DCCA(BaseEmbed):
         self.print_train_log_info_ = print_train_log_info
         self.threshold_ = threshold
 
-        self.deep_model_ = DeepCCA(layer_sizes1, layer_sizes2, input_size1,
+        self.deep_model_ = DeepPairedNetworks(layer_sizes1, layer_sizes2, input_size1,
                                    input_size2, n_components,
                                    use_all_singular_values, device=device)
         self.linear_cca_ = linear_cca()
