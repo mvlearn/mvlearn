@@ -16,7 +16,7 @@ from scipy import linalg
 
 
 class KCCA(BaseEmbed):
-    """
+    r"""
     The kernel canonical correlation analysis (KCCA) is a method 
     that generalizes the classical linear canonical correlation
     analysis (CCA) to nonlinear setting.  It allows us to depict the
@@ -243,8 +243,8 @@ class KCCA(BaseEmbed):
             comp1.append(self.Kx@weight1[:, i])
             comp2.append(self.Ky@weight2[:, i])
 
-        comp1 = np.asarray([l*(-10**18) for l in comp1])
-        comp2 = np.asarray([l*10**18 for l in comp2])
+        comp1 = np.transpose(np.asarray([l*(-10**18) for l in comp1]))
+        comp2 = np.transpose(np.asarray([l*10**18 for l in comp2]))
 
         self.components_ = [comp1, comp2]
 
