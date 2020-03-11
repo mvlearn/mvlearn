@@ -29,6 +29,7 @@
 
 import warnings
 from sklearn.utils import check_X_y, check_array
+from sklearn.exceptions import NotFittedError
 import numpy as np
 import torch
 import torch.nn as nn
@@ -453,7 +454,7 @@ class DCCA(BaseEmbed):
         The dimensionality of the input vectors in view 1.
     input_size2_ : int (positive)
         The dimensionality of the input vectors in view 2.
-    n_components_ : int (positive), default=2
+    n_components_ : int (positive)
         The output dimensionality of the correlated projections. The deep
         network wil transform the data to this size. If not specified, will
         be set to 2.
@@ -470,15 +471,15 @@ class DCCA(BaseEmbed):
         Whether or not to use all the singular values in the CCA computation
         to calculate the loss. If False, only the top n_components singular
         values are used.
-    device_ : string, default='cpu'
+    device_ : string
         The torch device for processing.
     epoch_num_ : int (positive)
         The max number of epochs to train the deep networks.
     batch_size_ : int (positive)
         Batch size for training the deep networks.
-    learning_rate_ : float (positive), default=1e-3
+    learning_rate_ : float (positive)
         Learning rate for training the deep networks.
-    reg_par_ : float (positive), default=1e-5
+    reg_par_ : float (positive)
         Weight decay parameter used in the RMSprop optimizer.
     print_train_log_info_ : boolean, default=False
         Whether or not to print the logging info (training loss at each epoch)
@@ -495,9 +496,12 @@ class DCCA(BaseEmbed):
         between outputs of transformed views.
     optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
-    tolerance_ : float, (positive), default=1e-3
+    tolerance_ : float, (positive)
         Threshold difference between successive iteration losses to define
         convergence and stop training.
+    is_fit_ : boolean
+        Whether or not .fit() has been called yet. Permits .transform() to
+        be called.
 
     Notes
     -----
@@ -580,6 +584,11 @@ class DCCA(BaseEmbed):
 
         super().__init__()
 
+        if layer_sizes1 is None:
+            layer_sizes1 = [1000, n_components]
+        if layer_sizes2 is None:
+            layer_sizes2 = [1000, n_components]
+
         self._valid_inputs(input_size1, input_size2, n_components,
                            layer_sizes1, layer_sizes2,
                            use_all_singular_values, device,
@@ -589,11 +598,6 @@ class DCCA(BaseEmbed):
         self.input_size1_ = input_size1
         self.input_size2_ = input_size2
         self.n_components_ = n_components
-
-        if layer_sizes1 is None:
-            self.layer_sizes1_ = [1000, n_components]
-        if layer_sizes2 is None:
-            self.layer_sizes2_ = [1000, n_components]
 
         self.use_all_singular_values_ = use_all_singular_values
         self.device_ = device
@@ -617,6 +621,7 @@ class DCCA(BaseEmbed):
         self.optimizer_ = torch.optim.RMSprop(self.model_.parameters(),
                                               lr=self.learning_rate_,
                                               weight_decay=self.reg_par_)
+        self.is_fit_ = False
 
     def fit(self, Xs, y=None):
         r"""
@@ -697,14 +702,13 @@ class DCCA(BaseEmbed):
             warnings.warn(message, Warning)
 
         # train_linear_cca
-        if self.linear_cca_ is not None:
-            losses, outputs = self._get_outputs(x1, x2)
-            self._train_linear_cca(outputs[0], outputs[1])
+        losses, outputs = self._get_outputs(x1, x2)
+        self._train_linear_cca(outputs[0], outputs[1])
 
         checkpoint_ = torch.load(checkpoint)
         self.model_.load_state_dict(checkpoint_)
 
-        self.is_fit = True
+        self.is_fit_ = True
         return self
 
     def transform(self, Xs, return_loss=False):
@@ -731,8 +735,8 @@ class DCCA(BaseEmbed):
             transformed views. Only returned if ``return_loss=True``.
         """
 
-        if not self.is_fit:
-            raise RuntimeError("Must call fit function before transform")
+        if not self.is_fit_:
+            raise NotFittedError("Must call fit function before transform")
         Xs = check_Xs(Xs, multiview=True)
         x1 = torch.DoubleTensor(Xs[0])
         x2 = torch.DoubleTensor(Xs[1])
