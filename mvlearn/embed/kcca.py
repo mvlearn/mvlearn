@@ -17,27 +17,12 @@ from scipy import linalg
 
 class KCCA(BaseEmbed):
     """
-    CCA aims to find useful projections of the
-    high- dimensional variable sets onto the compact
-    linear representations, the canonical components (components_).
-
-    Each resulting canonical variate is computed from
-    the weighted sum of every original variable indicated
-    by the canonical weights (weights_).
-
-    The canonical correlation (cancorrs_) quantifies the linear
-    correspondence between the two views of data
-    based on Pearson’s correlation between their
-    canonical components.
-
-    Canonical correlation can be seen as a metric of
-    successful joint information reduction between two views
-    and, therefore, routinely serves as a performance measure for CCA.
-
-    The kernel generalization of CCA, kernel CCA, is used when
-    there are nonlinear relations between two views.
-
-    More information to come.
+    The kernel canonical correlation analysis (KCCA) is a method 
+    that generalizes the classical linear canonical correlation
+    analysis (CCA) to nonlinear setting.  It allows us to depict the
+    nonlinear relation of two sets of variables and enables
+    applications of classical multivariate data analysis
+    originally constrained to linearity relation (CCA).
 
     Parameters
     ----------
@@ -57,12 +42,83 @@ class KCCA(BaseEmbed):
     degree : integer, default = 2
              Parameter if Polynomial kernel
 
+    Notes
+    -----
+    CCA aims to find useful projections of the
+    high- dimensional variable sets onto the compact
+    linear representations, the canonical components (components_).
+
+    Each resulting canonical variate is computed from
+    the weighted sum of every original variable indicated
+    by the canonical weights (weights_).
+
+    The canonical correlation quantifies the linear
+    correspondence between the two views of data
+    based on Pearson’s correlation between their
+    canonical components.
+
+    Canonical correlation can be seen as a metric of
+    successful joint information reduction between two views
+    and, therefore, routinely serves as a performance measure for CCA.
+
+    CCA may not extract useful descriptors of the data because of
+    its linearity. kCCA offers an alternative solution by first
+    projecting the data onto a higher dimensional feature space.
+
+    .. math::
+        \phi: \mathbf{x} = (x_1,...,x_m) \mapsto
+        \phi(\mathbf{x}) = (\phi(x_1),...,\phi(x_N)),
+        (m < N)
+
+    before performing CCA in the new feature space.
+
+    Kernels are methods of implicitly mapping data into a higher
+    dimensional feature space, a method known as the kernel trick.
+    A kernel function K, such that for all :math:`\mathbf{x},
+    \mathbf{z} \in X`,
+
+    .. math::
+        K(\mathbf{x}, \mathbf{z}) = \langle\phi(\mathbf{x})
+        \cdot \phi(\mathbf{z})\rangle,
+
+    where :math:`\phi` is a mapping from X to feature space F.
+
+    The directions :math:`\mathbf{w_x}` and :math:`\mathbf{w_y}`
+    (of length N) can be rewritten as the projection of the data
+    onto the direction :math:`\alpha` and :math:`\alpha`
+    (of length m):
+
+    .. math::
+        \mathbf{w_x} = X'\alpha
+        \mathbf{w_y} = Y'\beta
+
+    Letting :math:`K_x = XX'` and :math:`K_x = XX'` be the kernel
+    matrices and adding a regularization term (:math:`\kappa`)
+    to prevent overfitting, we are effectively solving for:
+
+    .. math::
+        \rho = \underset{\alpha,\beta}{\text{max}}
+        \frac{\alpha'K_xK_y\beta}
+        {\sqrt{(\alpha'K_x^2\alpha+\kappa\alpha'K_x\alpha)
+        \cdot (\beta'K_y^2\beta + \kappa\beta'K_y\beta)}}
+
+
+    References
+    ----------
+    .. [#1] D. R. Hardoon, S. Szedmak and J. Shawe-Taylor,
+            "Canonical Correlation Analysis: An Overview with
+            Application to Learning Methods", Neural Computation,
+            Volume 16 (12), Pages 2639--2664, 2004.
+    .. [#2] Su-Yun Huang, Mei-Hsien Lee and Chuhsing Kate Hsiao,
+            "Kernel Canonical Correlation Analysis and its Applications
+            to Nonlinear Measures of Association and Test of Independence",
+            draft, May 25, 2006
     """
 
     def __init__(
         self,
         reg=0.00001,
-        n_components=10,
+        n_components=2,
         ktype='linear',
         sigma=1.0,
         degree=2.0,
@@ -145,8 +201,8 @@ class KCCA(BaseEmbed):
         alphass = np.real(np.dot(alphas, perm_mat)/np.linalg.norm(alphas))
 
         # weights
-        weight1 = alphass[:N, :dim]
-        weight2 = alphass[N:, :dim]
+        weight1 = np.asarray(alphass[:N, :dim])
+        weight2 = np.asarray(alphass[N:, :dim])
         self.weights_ = [weight1, weight2]
 
         return self
@@ -158,17 +214,20 @@ class KCCA(BaseEmbed):
 
         Parameters
         ----------
-        vdata: float
-               Standardized data (z-score)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data for kcca to fit to.
+            Each sample will receive its own embedding.
+
+        weights_ : list of array-likes
+                   Canonical weights
 
         Returns
         -------
-        weights_ : list of array-likes
-                   Canonical weights
-        preds_: list of array-likes
-                Prediction components of test dataset
-        corrs_: list of array-likes
-                Correlations on the test dataset
+        Xs_transformed : array-like 2D with transformed views
+             - Xs_transformed length: n_views
+             - Xs_transformed[i] shape: (n_samples, n_samples)
         """
 
         if not hasattr(self, "weights_"):
@@ -184,8 +243,8 @@ class KCCA(BaseEmbed):
             comp1.append(self.Kx@weight1[:, i])
             comp2.append(self.Ky@weight2[:, i])
 
-        comp1 = [l*(-10**18) for l in comp1]
-        comp2 = [l*10**18 for l in comp2]
+        comp1 = np.asarray([l*(-10**18) for l in comp1])
+        comp2 = np.asarray([l*10**18 for l in comp2])
 
         self.components_ = [comp1, comp2]
 
@@ -208,6 +267,8 @@ class KCCA(BaseEmbed):
         Returns
         -------
         Xs_transformed : array-like 2D with transformed views
+             - Xs_transformed length: n_views
+             - Xs_transformed[i] shape: (n_samples, n_samples)
         """
 
         return self.fit(Xs).transform(Xs)
