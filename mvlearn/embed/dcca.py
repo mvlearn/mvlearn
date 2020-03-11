@@ -500,8 +500,8 @@ class DCCA(BaseEmbed):
         Threshold difference between successive iteration losses to define
         convergence and stop training.
     is_fit_ : boolean
-        Whether or not .fit() has been called yet. Permits .transform() to
-        be called.
+        Whether or not ``.fit()`` has been called yet. Permits
+        ``.transform()`` to be called.
 
     Notes
     -----
@@ -559,8 +559,8 @@ class DCCA(BaseEmbed):
     >>> view2 = np.random.normal(loc=2, size=(1000, 75))
     >>> input_size1, input_size2 = 100, 75
     >>> n_components = 2
-    >>> layer_sizes1 = [1024, 2]
-    >>> layer_sizes2 = [1024, 2]
+    >>> layer_sizes1 = [1024, 4]
+    >>> layer_sizes2 = [1024, 4]
     >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
                     layer_sizes2)
     >>> outputs = dcca.fit_transform([view1, view2])
@@ -869,6 +869,15 @@ class DCCA(BaseEmbed):
         # Check n_components
         if not isinstance(n_components, int) or n_components < 1:
             raise ValueError('n_components must be positive integer')
+
+        # Check n_components vs last layer size
+        if not (n_components <= layer_sizes1[-1]) and not\
+           (n_components <= layer_sizes2[-1]):
+            raise ValueError('n_components must be no greater than final'
+                             ' layer size. Desired {} components but {}'
+                             ' and {} dimensional final layers'
+                             ''.format(n_components, layer_sizes1[-1],
+                                       layer_sizes2[-1]))
 
         # Check layer_sizes
         if (isinstance(layer_sizes1, list)) or\

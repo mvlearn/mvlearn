@@ -64,6 +64,8 @@ def test_bad_n_components():
         dcca = DCCA(3, 5, 5.5, [10, 10], [10, 10])
     with pytest.raises(ValueError):
         dcca = DCCA(3, 5, 0, [10, 10], [10, 10])
+    with pytest.raises(ValueError):
+        dcca = DCCA(10, 10, 4, [10, 2], [10, 3])
 
 def test_bad_layer_sizes():
     with pytest.raises(ValueError):
