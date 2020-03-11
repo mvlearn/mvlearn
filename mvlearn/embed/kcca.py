@@ -17,7 +17,7 @@ from scipy import linalg
 
 class KCCA(BaseEmbed):
     r"""
-    The kernel canonical correlation analysis (KCCA) is a method 
+    The kernel canonical correlation analysis (KCCA) is a method
     that generalizes the classical linear canonical correlation
     analysis (CCA) to nonlinear setting.  It allows us to depict the
     nonlinear relation of two sets of variables and enables
@@ -33,13 +33,11 @@ class KCCA(BaseEmbed):
     ktype : string, default = 'linear'
             Type of kernel
         - value can be 'linear', 'gaussian' or 'poly'
-    cutoff : float, default = 1x10^-15
-             Optional regularization parameter
-             to perform spectral cutoff when computing the canonical
-             weight pseudoinverse during held-out data prediction
     sigma : float, default = 1.0
             Parameter if Gaussian kernel
-    degree : integer, default = 2
+    degree : float, default = 2.0
+             Parameter if Polynomial kernel
+    constant : float, default = 1.0
              Parameter if Polynomial kernel
 
     Notes
