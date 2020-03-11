@@ -39,7 +39,7 @@ kcca_t = kcca_l.transform([train1, train2])
 
 # Test that number of components is equal to n_components
 def test_numCC_components_():
-    assert len(kcca_ft.components_[0]) and len(kcca_ft.components_[1]) == n_components
+    assert len(kcca_ft.components_[0][0]) and len(kcca_ft.components_[1][0]) == n_components
 
 # Test that number of views is equal to number of ws_
 def test_numCC_ws_():
