@@ -1,6 +1,6 @@
 import pytest
 
-from multiview.example.example import example_function
+from mvlearn.example.example import example_function
 
 
 def test_example_function():
