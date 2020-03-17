@@ -16,6 +16,7 @@ import os
 data_dir = Path('/mnt/ssd3/ronan/satterthwaite')
 
 bblid_path = data_dir / 'matched_data' / 'matched_bblids.csv'
+bblid_filtered_path = data_dir / 'matched_data' / 'filtered_matched_bblids.csv'
 
 fmri_dir = data_dir / 'matched_data' / 'REST_data'
 fmri_metadata_path = data_dir / 'raw' / 'fMRI' / 'SubjectsIDs_Schaefer_rest_Alone.csv'
@@ -32,7 +33,7 @@ schaefer_coords_path = data_dir / 'supplementary' / 'Schaefer2018_400Parcels_17N
 
 # In[15]:
 
-bblids = np.genfromtxt(bblid_path, delimiter=',').astype(int)
+bblids = np.genfromtxt(bblid_filtered_path, delimiter=',').astype(int)
 fmri_metadata = pd.read_csv(fmri_metadata_path)
 sc_metadata = pd.read_csv(sc_metadata_path)
 demographics = pd.read_csv(demographics_path)
@@ -46,21 +47,25 @@ fmri_dict = {int(f.split('_')[0]): f for f in os.listdir(fmri_dir)}
 # In[51]:
 sc_dict = {int(f.split('_')[0]): f for f in os.listdir(sc_dir)}
 
-def get_files():
-    fmri_files = [np.genfromtxt(fmri_dir / fmri_dict[bblid], delimiter=',') for bblid in bblids]
-    sc_files = [np.genfromtxt(sc_dir / sc_dict[bblid], delimiter=',') for bblid in bblids]
-    goa_matched = [goa_scores.query(f'bblid == {bblid}').to_numpy()[0,1:-6] for bblid in bblids]
+def get_files(n=-1):
+    if n == -1:
+        n = len(bblids)
+    fmri_files = np.array([np.genfromtxt(fmri_dir / fmri_dict[bblid], delimiter=',') for bblid in bblids[:n]])
+    sc_files = np.array([np.genfromtxt(sc_dir / sc_dict[bblid], delimiter=',') for bblid in bblids[:n]])
+    clinical_matched = np.array([clinical_scores.query(f'bblid == {bblid}').to_numpy()[0,3:-6] for bblid in bblids[:n]])
     
-    return(bblids,fmri_files,sc_files,goa_matched) 
+    return(bblids,fmri_files,sc_files,clinical_matched) 
         
-def get_covariates():
+def get_covariates(n=-1):
+    if n == -1:
+        n = len(bblids)
     ## Sex
-    sexes = [demographics.query(f'bblid == {bblid}')['sex'].iloc[0] for bblid in bblids]
+    sexes = np.array([demographics.query(f'bblid == {bblid}')['sex'].iloc[0] for bblid in bblids[:n]])
     ## Age
-    ages = [demographics.query(f'bblid == {bblid}')['ageAtCnb1'].iloc[0] for bblid in bblids]
+    ages = np.array([demographics.query(f'bblid == {bblid}')['ageAtCnb1'].iloc[0] for bblid in bblids[:n]])
     ## RMS Motion
-    fmri_rms_motion = [fmri_metadata.query(f'bblid == {bblid}')['restRelMeanRMSMotion'].iloc[0] for bblid in bblids]
-    sc_rms_motion = [sc_metadata.query(f'bblid == {bblid}')['dti64MeanRelRMS'].iloc[0] for bblid in bblids]
+    fmri_rms_motion = np.array([fmri_metadata.query(f'bblid == {bblid}')['restRelMeanRMSMotion'].iloc[0] for bblid in bblids[:n]])
+    sc_rms_motion = np.array([sc_metadata.query(f'bblid == {bblid}')['dti64MeanRelRMS'].iloc[0] for bblid in bblids[:n]])
 
     return((sexes, ages), (fmri_rms_motion, sc_rms_motion))
 #%%
