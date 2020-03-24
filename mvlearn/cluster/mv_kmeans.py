@@ -24,8 +24,8 @@ from scipy.spatial.distance import cdist
 class MultiviewKMeans(BaseKMeans):
 
     r'''
-    This class implements Multi-View K-Means using the co-EM framework
-    as described in [#1Clu]_. This algorithm is most suitable for cases
+    This class implements multi-view k-means using the co-EM framework
+    as described in [#2Clu]_. This algorithm is most suitable for cases
     in which the different views of data are conditionally independent.
     This algorithm currently handles two views of data.
 
@@ -79,19 +79,21 @@ class MultiviewKMeans(BaseKMeans):
     Notes
     -----
 
-    Multi-view KMeans clustering adapts the traditional kmeans clustering
+    Multi-view k-means clustering adapts the traditional k-means clustering
     algorithm to handle two views of data. This algorithm requires that a
     conditional independence assumption between views holds true. In cases
-    where both views are informative and conditionally independent, Multi-view
-    KMeans clustering can outperform its single-view analog run on a
+    where both views are informative and conditionally independent, multi-view
+    k-means clustering can outperform its single-view analog run on a
     concatenated version of the two views of data. This is quite useful for
     applications where you wish to cluster data from two different modalities
     or data with features that naturally fall into two different partitions.
-    Multi-view KMeans works by iteratively performing the maximization and
+    Multi-view k-means works by iteratively performing the maximization and
     expectation steps of traditional EM in one view, and then using the
     computed hidden variables as the input for the maximization step in
     the other view. This algorithm, referred to as Co-EM, is described
     below.
+
+    |
 
     *Co-EM Algorithm*
 
@@ -103,16 +105,16 @@ class MultiviewKMeans(BaseKMeans):
 
         #. Loop until stopping criterion is true:
 
-            #. For v = 1 ... 2:
+            a. For v = 1 ... 2:
 
-                #. :math:`t = t + 1`
+                i. :math:`t = t + 1`
 
-                #. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
+                ii. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
                    that maximize the likelihood for the data given the expected
                    values for hidden variables of view :math:`\overline{v}` of
                    iteration :math:`t` - 1
 
-                #. E step view :math:`v`: compute expectation for hidden
+                iii. E step view :math:`v`: compute expectation for hidden
                    variables given the model parameters :math:`\Theta_t^{(v)}`
 
         #. return combined :math:`\hat{\Theta} = \Theta_{t-1}^{(1)} \cup
@@ -124,7 +126,7 @@ class MultiviewKMeans(BaseKMeans):
 
     References
     ----------
-    .. [#1Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
+    .. [#2Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
             of the 4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 

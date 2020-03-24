@@ -261,24 +261,6 @@ def test_predict_random_small(data_random):
     for cl in cluster_pred:
         assert(cl >= 0 and cl < data_random['n_clusters'])
 
-'''
-def test_predict_deterministic():
-
-    n_clusters = 2
-    v1_centroid = np.array([[0, 0],[1, 1]])
-    v2_centroid = np.array([[0, 0],[1, 1]])
-    centroids = [v1_centroid, v2_centroid]
-    v1_data = np.array([[0, 0],[0.3, 0.2],[0.5, 0.5],[0.7, 0.7],[1, 1]])
-    v2_data = np.array([[0, 0],[0.2, 0.4],[0.5, 0.5],[0.4, 0.7],[1, 1]])
-    data = [v1_data, v2_data]
-    kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters)
-    kmeans.centroids_ = centroids
-    cluster_pred = kmeans.predict(data)
-    true_clusters = [0, 0, 0, 1, 1]
-
-    for ind in range(len(true_clusters)):
-        assert cluster_pred[ind] == true_clusters[ind]
-'''
 
 def test_fit_predict(data_random):
     
@@ -335,18 +317,6 @@ def test_fit_predict_init_random(data_random):
     assert(data_random['n_test'] ==  cluster_pred.shape[0])
     for cl in cluster_pred:
         assert(cl >= 0 and cl < data_random['n_clusters'])
-'''        
-def test_fit_predict_n_clusters():
-
-    n_clusters = 3
-    v1_data = np.array([[0, 0],[1, 0],[0, 1]])
-    v2_data = np.array([[0, 0],[1, 0],[0, 1]])
-    data = [v1_data, v2_data]
-    kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters)
-    cluster_pred = kmeans.fit_predict(data)
-    cluster_pred = list(set(cluster_pred))
-    assert(len(cluster_pred) == n_clusters)
-'''
     
 def test_fit_predict_init_predefined():
 
@@ -367,8 +337,4 @@ def test_preprocess_data(data_random):
     for mat in processed:
         mat = np.linalg.norm(mat, axis=1)
         ones = np.ones(mat.shape)
-        assert(np.allclose(mat, ones))
-
-
-# def test_em_step(data_random):
-    
+        assert(np.allclose(mat, ones))    

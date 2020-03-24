@@ -33,8 +33,8 @@ AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']
 class MultiviewSpectralClustering(BaseEstimator):
 
     r'''
-    An implementation of Multi-View Spectral using the
-    basic co-training framework as described in [#2Clu]_.
+    An implementation of multi-view spectral clustering using the
+    basic co-training framework as described in [#1Clu]_.
     This algorithm can handle 2 or more views of data.
 
     Parameters
@@ -46,7 +46,7 @@ class MultiviewSpectralClustering(BaseEstimator):
         The number of different views of data.
 
     random_state : int, optional, default=None
-        Determines random number generation for kmeans.
+        Determines random number generation for k-means.
 
     info_view : int, optional, default=None
         The most informative view. Must be between 0 and n_views-1
@@ -59,7 +59,7 @@ class MultiviewSpectralClustering(BaseEstimator):
         algorithm.
 
     n_init : int, optional, default=10
-        The number of random initializations to use for kmeans clustering.
+        The number of random initializations to use for k-means clustering.
 
     affinity : string, optional, default='rbf'
         The affinity metric used to construct the affinity matrix. Options
@@ -77,21 +77,27 @@ class MultiviewSpectralClustering(BaseEstimator):
 
     Notes
     -----
-    Multi-view Spectral clustering adapts the spectral clustering algorithm
+    Multi-view spectral clustering adapts the spectral clustering algorithm
     to applications where more than one view of data is available. This
-    algorithm relies on the basic assumptions of the co-training, which are
-    sufficiency, compatibility, and conditional independence of views. In
-    contrast to Multi-view KMeans clustering, Multi-view Spectral clustering
-    performs well on arbitrary shaped clusters, and can therefore be readily
-    used in applications where clusters are not expected to be convex. However
-    Multi-view Spectral clustering tends to be computationally expensive unless
-    the similarity graph for the data is sparse.
+    algorithm relies on the basic assumptions of the co-training, which are:
+    (a) Sufficiency: each view is sufficient for classification on its own,
+    (b) Compatibility: the target functions in both views predict the same
+    labels for co-occurring features with high probability, and (c)
+    Conditional independence: the views are conditionally independent given
+    the class labels. In contrast to multi-view k-means clustering,
+    multi-view spectral clustering performs well on arbitrary shaped clusters,
+    and can therefore be readily used in applications where clusters are not
+    expected to be convex. However multi-view spectral clustering tends to be
+    computationally expensive unless the similarity graph for the data is
+    sparse.
 
-    Multi-view Spectral clustering works by using the spectral embedding
+    Multi-view spectral clustering works by using the spectral embedding
     from one view to constrain the similarity graph in the other view. By
     iteratively applying this procedure, the clustering of the two views
     tend to each other. Here we outline the algorithm for the Multi-view
     Spectral clustering algorithm for 2 views.
+
+    |
 
     *Multi-view Spectral Clustering Algorithm (for 2 views)*
 
@@ -101,18 +107,18 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         #. Initialize: :math:`\mathbf{L}_v = \mathbf{D}_v^{-1/2}
            \mathbf{K}_v\mathbf{D}_v^{-1/2}` for :math:`v = 1, 2`
-           :math:`\mathbf{U}_v^0` is an :math:`n \times k` matrix with the top
-           k eigenvectors of :math:`\mathbf{L}_v` for :math:`v = 1, 2`
+            :math:`\mathbf{U}_v^0` is an :math:`n \times k` matrix with the
+            top k eigenvectors of :math:`\mathbf{L}_v` for :math:`v = 1, 2`
 
         #. For :math:`i = 1` to iter:
 
-            #. :math:`\mathbf{S}_1 = sym(\mathbf{U}_2^{i-1}\mathbf{U}_2^{i-1}^T
-               \mathbf{K}_1)`
+            a. :math:`\mathbf{S}_1 = sym(\mathbf{U}_2^{i-1}
+               {\mathbf{U}_2^{i-1}}^T\mathbf{K}_1)`
 
-            #. :math:`\mathbf{S}_2 = sym(\mathbf{U}_1^{i-1}\mathbf{U}_1^{i-1}^T
-               \mathbf{K}_2)`
+            b. :math:`\mathbf{S}_2 = sym(\mathbf{U}_1^{i-1}
+               {\mathbf{U}_1^{i-1}}^T\mathbf{K}_2)`
 
-            #. Use :math:`\mathbf{S}_1` and :math:`\mathbf{S}_2` as the new
+            c. Use :math:`\mathbf{S}_1` and :math:`\mathbf{S}_2` as the new
                graph similarities and compute the Laplacians. Solve for the
                largest k eigenvectors to obtain :math:`\mathbf{U}_1^i` and
                :math:`\mathbf{U}_2^i`.
@@ -123,7 +129,7 @@ class MultiviewSpectralClustering(BaseEstimator):
            believed to be the most informative view a priori. If there is no
            prior knowledge on the view informativeness, matrix
            :math:`\mathbf{V}` can also be set to the column-wise concatenation
-           of the two :math:`\mathbf{U}_v^i`s.
+           of the two :math:`\mathbf{U}_v^i` s.
 
         #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
            is assigned to cluster c by the k-means algorithm.
@@ -131,7 +137,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
     References
     ----------
-    .. [#2Clu] Abhishek Kumar and Hal Daume. A Co-training Approach for
+    .. [#1Clu] Abhishek Kumar and Hal Daume. A Co-training Approach for
             Multiview Spectral Clustering. In International Conference
             on Machine Learning, 2011
     '''
@@ -178,11 +184,10 @@ class MultiviewSpectralClustering(BaseEstimator):
             msg = 'affinity must be a valid affinity metric'
             raise ValueError(msg)
 
-        if gamma is not None:
-            if not ((isinstance(gamma, float) or
-                     isinstance(gamma, int)) and gamma > 0):
-                msg = 'gamma must be a positive float'
-                raise ValueError(msg)
+        if gamma is not None and not ((isinstance(gamma, float) or
+                                       isinstance(gamma, int)) and gamma > 0):
+            msg = 'gamma must be a positive float'
+            raise ValueError(msg)
 
         if not (isinstance(n_neighbors, int) and n_neighbors > 0):
             msg = 'n_neighbors must be a positive integer'
@@ -264,7 +269,7 @@ class MultiviewSpectralClustering(BaseEstimator):
         laplacian = (laplacian + np.transpose(laplacian)) / 2.0
 
         # Obtain the top n_cluster eigenvectors of the laplacian
-        u_mat, s_mat, v_mat = np.linalg.svd(laplacian)
+        u_mat, _, _ = sp.sparse.linalg.svds(laplacian, k=self.n_clusters)
         la_eigs = u_mat[:, :self.n_clusters]
         return la_eigs
 
@@ -327,7 +332,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_norm[U_norm == 0] = 1
             U_mats[view] /= U_norm
 
-        # Performing kmeans clustering
+        # Performing k-means clustering
         kmeans = KMeans(n_clusters=self.n_clusters,
                         random_state=self.random_state)
         predictions = None

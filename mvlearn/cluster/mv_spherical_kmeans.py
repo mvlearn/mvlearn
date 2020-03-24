@@ -1,3 +1,4 @@
+
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +24,8 @@ from sklearn.preprocessing import normalize
 class MultiviewSphericalKMeans(MultiviewKMeans):
 
     r'''
-    An implementation of Multi-View Spherical K-Means using the
-    co-EM framework as described in [#1Clu]_. This algorithm is
+    An implementation of multi-view spherical K-Means using the
+    co-EM framework as described in [#2Clu]_. This algorithm is
     most suitable for cases in which the different views of data
     are conditionally independent. This algorithm currently handles
     two views of data.
@@ -80,56 +81,23 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     Notes
     -----
 
-    Multi-view Spherical KMeans clustering adapts the traditional spherical
+    Multi-view spherical k-means clustering adapts the traditional spherical
     kmeans clustering algorithm to handle two views of data. This algorithm
-    is similar to the Mult-view KMeans algorithm, except it uses cosine
+    is similar to the mult-view k-means algorithm, except it uses cosine
     distance instead of euclidean distance for the purposes of computing
     the optimization objective and making assignments. This algorithm
     requires that a conditional independence assumption between views holds
     true. In cases where both views are informative and conditionally
-    independent, Multi-view Spherical KMeans clustering can outperform its
+    independent, multi-view spherical k-means clustering can outperform its
     single-view analog run on a concatenated version of the two views of data.
     This is quite useful for applications where you wish to cluster data from
     two different modalities or data with features that naturally fall into two
-    different partitions. Multi-view Spherical KMeans works by iteratively
+    different partitions. Multi-view spherical k-means works by iteratively
     performing the maximization and expectation steps of traditional EM in
     one view, and then using the computed hidden variables as the input for the
-    maximization step in the other view. This algorithm, referred to as Co-EM,
-    is described below.
+    maximization step in the other view. This algorithm is described in the
+    section for multi-view k-means clustering.
 
-    *Co-EM Algorithm*
-
-    Input: Unlabeled data D with 2 views
-
-        #. Initialize :math:`\Theta_0^{(2)}`, T, :math:`t = 0`.
-
-        #. E step for view 2: compute expectation for hidden variables given
-
-        #. Loop until stopping criterion is true:
-
-            #. For v = 1 ... 2:
-
-                #. :math:`t = t + 1`
-
-                #. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
-                   that maximize the likelihood for the data given the expected
-                   values for hidden variables of view :math:`\overline{v}` of
-                   iteration :math:`t` - 1
-
-                #. E step view :math:`v`: compute expectation for hidden
-                   variables given the model parameters :math:`\Theta_t^{(v)}`
-
-        #. return combined :math:`\hat{\Theta} = \Theta_{t-1}^{(1)} \cup
-           \Theta_t^{(2)}`
-
-    The final assignment of examples to partitions is performed by assigning
-    each example to the cluster with the largest averaged posterior
-    probability over both views.
-
-    References
-    ----------
-    .. [#1Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
-            of the 4th IEEE International Conference on Data Mining, pp. 19–26
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
@@ -167,7 +135,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     def _init_centroids(self, Xs):
 
         r'''
-        Initializes the centroids for Multi-view KMeans or KMeans++ depending
+        Initializes the centroids for multi-view k-means or k-means++ depending
         on which has been selected.
 
         Parameters
@@ -217,7 +185,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
             centers2 = np.array(centers2)
             centroids = [centers1, centers2]
         else:
-            # Somewhere here, check that centroids are normalized
+            # Uses user-defined precomputed centroids
             centroids = self.init
             try:
                 centroids = check_Xs(centroids, enforce_views=2)
@@ -235,6 +203,8 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
                     msg = ('feature dimensions of cluster centroids'
                            + ' must match those of data')
                     raise ValueError(msg)
+            for ind in range(len(centroids)):
+                centroids[ind] = normalize(centroids[ind])
 
         return centroids
 
