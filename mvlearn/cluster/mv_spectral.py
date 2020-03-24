@@ -63,7 +63,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
     affinity : string, optional, default='rbf'
         The affinity metric used to construct the affinity matrix. Options
-        include 'rbf' (radial basis function), 'nearest_neighbors', and 
+        include 'rbf' (radial basis function), 'nearest_neighbors', and
         'poly' (polynomial)
 
     gamma : float, optional, default=None
