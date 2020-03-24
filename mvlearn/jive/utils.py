@@ -3,9 +3,8 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
 
-#TODO Imports don't exist
-#from mvlearn.jive.lazymatpy.interface import LinearOperator
-#from mvlearn.jive.lazymatpy.convert2scipy import convert2scipy
+from mvlearn.jive.interface import LinearOperator
+from mvlearn.jive.convert2scipy import convert2scipy
 
 
 def svd_wrapper(X, rank=None):

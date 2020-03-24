@@ -110,22 +110,16 @@ class AJIVE(object):
 
     """
 
-    def __init__(
-        self,
-        init_signal_ranks,
-        joint_rank=None,
-        indiv_ranks=None,
-        center=True,
-        reconsider_joint_components=True,
-        wedin_percentile=5,
-        n_wedin_samples=1000,
-        precomp_wedin_samples=None,
-        randdir_percentile=95,
-        n_randdir_samples=1000,
-        precomp_randdir_samples=None,
-        store_full=True,
-        n_jobs=None,
-    ):
+    def __init__(self,
+                 init_signal_ranks,
+                 joint_rank=None, indiv_ranks=None,
+                 center=True,
+                 reconsider_joint_components=True,
+                 wedin_percentile=5, n_wedin_samples=1000,
+                 precomp_wedin_samples=None,
+                 randdir_percentile=95, n_randdir_samples=1000,
+                 precomp_randdir_samples=None,
+                 store_full=True, n_jobs=None):
 
         self.init_signal_ranks = init_signal_ranks
         self.joint_rank = joint_rank
@@ -142,7 +136,6 @@ class AJIVE(object):
         self.randdir_percentile = randdir_percentile
         self.n_randdir_samples = n_randdir_samples
         self.random_sv_samples_ = precomp_randdir_samples
-
         if precomp_randdir_samples is not None:
             self.n_randdir_samples = len(precomp_randdir_samples)
 
@@ -182,23 +175,14 @@ class AJIVE(object):
             of jive.utils.svd_wrapper for formatting details.
 
         """
-        (
-            blocks,
-            self.init_signal_ranks,
-            self.indiv_ranks,
-            precomp_init_svd,
-            self.center,
-            obs_names,
-            var_names,
-            self.shapes_,
-        ) = arg_checker(
-            blocks,
-            self.init_signal_ranks,
-            self.joint_rank,
-            self.indiv_ranks,
-            precomp_init_svd,
-            self.center,
-        )
+        blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
+            self.center, obs_names, var_names, self.shapes_ = \
+                arg_checker(blocks,
+                            self.init_signal_ranks,
+                            self.joint_rank,
+                            self.indiv_ranks,
+                            precomp_init_svd,
+                            self.center)
 
         block_names = list(blocks.keys())
         num_obs = list(blocks.values())[0].shape[0]
@@ -206,13 +190,10 @@ class AJIVE(object):
         # center blocks
         self.centers_ = {}
         for bn in block_names:
-            blocks[bn], self.centers_[bn] = centering(
-                blocks[bn], method=self.center[bn]
-            )
+            blocks[bn], self.centers_[bn] = centering(blocks[bn],
+                                                      method=self.center[bn])
 
-        ################################################################
-        # step 1: initial signal space extraction by SVD on each block #
-        ################################################################
+        # Initial signal space extraction by SVD on each block #
 
         init_signal_svd = {}
         self.sv_threshold_ = {}
@@ -221,9 +202,7 @@ class AJIVE(object):
             # compute rank init_signal_ranks[bn] + 1 SVD of the data block
             if precomp_init_svd[bn] is None:
                 # signal rank + 1 to get individual rank sv threshold
-                U, D, V = svd_wrapper(
-                    blocks[bn], self.init_signal_ranks[bn] + 1
-                )
+                U, D, V = svd_wrapper(blocks[bn], self.init_signal_ranks[bn] + 1)
             else:
                 U = precomp_init_svd[bn]["scores"]
                 D = precomp_init_svd[bn]["svals"]
@@ -232,111 +211,83 @@ class AJIVE(object):
             # The SV threshold is halfway between the init_signal_ranks[bn]th
             # and init_signal_ranks[bn] + 1 st singular value. Recall that
             # python is zero indexed.
-            self.sv_threshold_[bn] = (
-                D[self.init_signal_ranks[bn] - 1]
-                + D[self.init_signal_ranks[bn]]
-            ) / 2
+            self.sv_threshold_[bn] = (D[self.init_signal_ranks[bn] - 1] \
+                                      + D[self.init_signal_ranks[bn]])/2
 
-            init_signal_svd[bn] = {
-                "scores": U[:, 0 : self.init_signal_ranks[bn]],
-                "svals": D[0 : self.init_signal_ranks[bn]],
-                "loadings": V[:, 0 : self.init_signal_ranks[bn]],
-            }
+            init_signal_svd[bn] = {'scores': U[:, 0:self.init_signal_ranks[bn]],
+                                   'svals': D[0:self.init_signal_ranks[bn]],
+                                   'loadings': V[:, 0:self.init_signal_ranks[bn]]}
 
-        ##################################
-        # step 2: joint space estimation #
-        ##################################
+        # step 2: joint space estimation
         # this step estimates the joint rank and computes the common
         # joint space basis
 
         # SVD of joint signal matrix
-        joint_scores_matrix = np.bmat(
-            [init_signal_svd[bn]["scores"] for bn in block_names]
-        )
-        joint_scores, joint_svals, joint_loadings = svd_wrapper(
-            joint_scores_matrix
-        )
+
+        joint_scores_matrix = np.bmat([init_signal_svd[bn]['scores'] for bn in block_names])
+        joint_scores, joint_svals, joint_loadings = svd_wrapper(joint_scores_matrix)
         self.all_joint_svals_ = deepcopy(joint_svals)
 
         # estimate joint rank using wedin bound and random direction if a
         # joint rank estimate has not already been provided
-        # TODO: maybe make this into an object or function
+
         if self.joint_rank is None:
 
             # if the random sv samples are not already provided compute them
             if self.random_sv_samples_ is None:
-                self.random_sv_samples_ = sample_randdir(
-                    num_obs,
-                    signal_ranks=list(self.init_signal_ranks.values()),
-                    R=self.n_randdir_samples,
-                    n_jobs=self.n_jobs,
-                )
+                self.random_sv_samples_ = \
+                    sample_randdir(num_obs,
+                                   signal_ranks=list(self.init_signal_ranks.values()),
+                                   R=self.n_randdir_samples,
+                                   n_jobs=self.n_jobs)
 
             # if the wedin samples are not already provided compute them
             if self.wedin_samples_ is None:
                 self.wedin_samples_ = {}
                 for bn in block_names:
-                    self.wedin_samples_[bn] = get_wedin_samples(
-                        X=blocks[bn],
-                        U=init_signal_svd[bn]["scores"],
-                        D=init_signal_svd[bn]["svals"],
-                        V=init_signal_svd[bn]["loadings"],
-                        rank=self.init_signal_ranks[bn],
-                        R=self.n_wedin_samples,
-                        n_jobs=self.n_jobs,
-                    )
+                    self.wedin_samples_[bn] = \
+                        get_wedin_samples(X=blocks[bn],
+                                          U=init_signal_svd[bn]['scores'],
+                                          D=init_signal_svd[bn]['svals'],
+                                          V=init_signal_svd[bn]['loadings'],
+                                          rank=self.init_signal_ranks[bn],
+                                          R=self.n_wedin_samples,
+                                          n_jobs=self.n_jobs)
 
-            self.wedin_sv_samples_ = len(blocks) - np.array(
-                [
-                    sum(self.wedin_samples_[bn][i] ** 2 for bn in block_names)
-                    for i in range(self.n_wedin_samples)
-                ]
-            )
+            self.wedin_sv_samples_ = len(blocks) - \
+                np.array([sum(self.wedin_samples_[bn][i] ** 2 for bn in block_names)
+                          for i in range(self.n_wedin_samples)])
 
             # given the wedin and random bound samples, compute the joint rank
             # SV cutoff
-            self.wedin_cutoff_ = np.percentile(
-                self.wedin_sv_samples_, self.wedin_percentile
-            )
-            self.rand_cutoff_ = np.percentile(
-                self.random_sv_samples_, self.randdir_percentile
-            )
+
+            self.wedin_cutoff_ = np.percentile(self.wedin_sv_samples_,
+                                               self.wedin_percentile)
+            self.rand_cutoff_ = np.percentile(self.random_sv_samples_,
+                                              self.randdir_percentile)
             self.svalsq_cutoff_ = max(self.wedin_cutoff_, self.rand_cutoff_)
-            self.joint_rank_wedin_est_ = sum(
-                joint_svals ** 2 > self.svalsq_cutoff_
-            )
+            self.joint_rank_wedin_est_ = sum(joint_svals ** 2 > self.svalsq_cutoff_)
             self.joint_rank = deepcopy(self.joint_rank_wedin_est_)
 
         # check identifiability constraint and possibly remove some
         # joint components
+
         if self.reconsider_joint_components:
-            (
-                joint_scores,
-                joint_svals,
-                joint_loadings,
-                self.joint_rank,
-            ) = reconsider_joint_components(
-                blocks,
-                self.sv_threshold_,
-                joint_scores,
-                joint_svals,
-                joint_loadings,
-                self.joint_rank,
-            )
+            joint_scores, joint_svals, joint_loadings, self.joint_rank = \
+                reconsider_joint_components(blocks, self.sv_threshold_,
+                                            joint_scores, joint_svals, joint_loadings,
+                                            self.joint_rank)
 
         # TODO: include center?
         # TODO: comp_names, var_names
         # The common joint space has now been estimated
-        self.common = PCA.from_precomputed(
-            scores=joint_scores[:, 0 : self.joint_rank],
-            svals=joint_svals[0 : self.joint_rank],
-            loadings=joint_loadings[:, 0 : self.joint_rank],
-            obs_names=obs_names,
-        )
+        self.common = PCA.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
+                                           svals=joint_svals[0:self.joint_rank],
+                                           loadings=joint_loadings[:, 0:self.joint_rank],
+                                           obs_names=obs_names)
 
-        self.common.set_comp_names(
-            ["common_comp_{}".format(i) for i in range(self.common.rank)]
-        )
+        self.common.set_comp_names(['common_comp_{}'.format(i)
+                                    for i in range(self.common.rank)])
 
         #######################################
         # step 3: compute final decomposition #
@@ -352,10 +303,14 @@ class AJIVE(object):
             ########################################
             # project X onto the joint space then compute SVD
             if self.joint_rank != 0:
-                J = np.array(np.dot(joint_scores, np.dot(joint_scores.T, X)))
-                U, D, V = svd_wrapper(J, self.joint_rank)
-                if not self.store_full:
-                    J = None  # kill J matrix to save memory
+                if issparse(X):  # Write sparse jive
+                    raise ValueError('An input matrix is sparse. This functionality' +
+                                     ' is not available yet')                    
+                else:
+                    J = np.array(np.dot(joint_scores, np.dot(joint_scores.T, X)))
+                    U, D, V = svd_wrapper(J, self.joint_rank)
+                    if not self.store_full:
+                        J = None  # kill J matrix to save memory
 
             else:
                 U, D, V = None, None, None
@@ -364,13 +319,12 @@ class AJIVE(object):
                 else:
                     J = None
 
-            block_specific[bn]["joint"] = {
-                "full": J,
-                "scores": U,
-                "svals": D,
-                "loadings": V,
-                "rank": self.joint_rank,
-            }
+            block_specific[bn]['joint'] = {'full': J,
+                                           'scores': U,
+                                           'svals': D,
+                                           'loadings': V,
+                                           'rank': self.joint_rank}
+
 
             #############################################
             # step 3.2: block specific individual space #
@@ -415,37 +369,34 @@ class AJIVE(object):
             else:
                 I = None  # Kill I matrix to save memory
 
-            block_specific[bn]["individual"] = {
-                "full": I,
-                "scores": U,
-                "svals": D,
-                "loadings": V,
-                "rank": rank,
-            }
+            block_specific[bn]['individual'] = {'full': I,
+                                            'scores': U,
+                                            'svals': D,
+                                            'loadings': V,
+                                            'rank': rank}
 
             ###################################
             # step 3.3: estimate noise matrix #
             ###################################
 
-            if self.store_full:
+            if self.store_full and not issparse(X):
                 E = X - (J + I)
             else:
                 E = None
-            block_specific[bn]["noise"] = E
+            block_specific[bn]['noise'] = E
 
         # save block specific estimates
         self.blocks = {}
+
         for bn in block_specific.keys():
-            self.blocks[bn] = BlockSpecificResults(
-                joint=block_specific[bn]["joint"],
-                individual=block_specific[bn]["individual"],
-                noise=block_specific[bn]["noise"],
-                block_name=bn,
-                obs_names=obs_names,
-                var_names=var_names[bn],
-                m=self.centers_[bn],
-                shape=blocks[bn].shape,
-            )
+            self.blocks[bn] = BlockSpecificResults(joint=block_specific[bn]['joint'],
+                                                   individual=block_specific[bn]['individual'],
+                                                   noise=block_specific[bn]['noise'],
+                                                   block_name=bn,
+                                                   obs_names=obs_names,
+                                                   var_names=var_names[bn],
+                                                   m=self.centers_[bn],
+                                                   shape=blocks[bn].shape)
 
         return self
 
@@ -468,15 +419,13 @@ class AJIVE(object):
         Plots joint rank threshold diagnostic plot
         """
 
-        plot_joint_diagnostic(
-            joint_svals=self.all_joint_svals_,
-            wedin_sv_samples=self.wedin_sv_samples_,
-            min_signal_rank=min(self.init_signal_ranks.values()),
-            random_sv_samples=self.random_sv_samples_,
-            wedin_percentile=self.wedin_percentile,
-            random_percentile=self.randdir_percentile,
-            fontsize=fontsize,
-        )
+        plot_joint_diagnostic(joint_svals=self.all_joint_svals_,
+                              wedin_sv_samples=self.wedin_sv_samples_,
+                              min_signal_rank=min(self.init_signal_ranks.values()),
+                              random_sv_samples=self.random_sv_samples_,
+                              wedin_percentile=self.wedin_percentile,
+                              random_percentile=self.randdir_percentile,
+                              fontsize=fontsize)
 
     def save(self, fpath, compress=9):
         dump(self, fpath, compress=compress)
@@ -496,11 +445,9 @@ class AJIVE(object):
         """
         full = {}
         for bn in self.block_names:
-            full[bn] = {
-                "joint": self.blocks[bn].joint.full_,
-                "individual": self.blocks[bn].individual.full_,
-                "noise": self.blocks[bn].noise_,
-            }
+            full[bn] = {'joint': self.blocks[bn].joint.full_,
+                        'individual': self.blocks[bn].individual.full_,
+                        'noise': self.blocks[bn].noise_}
 
         return full
 
@@ -510,34 +457,28 @@ class AJIVE(object):
 
         """
         results = {}
-        results["common"] = {
-            "scores": self.common.scores_,
-            "svals": self.common.svals_,
-            "loadings": self.common.loadings_,
-            "rank": self.common.rank,
-        }
+        results['common'] = {'scores': self.common.scores_,
+                             'svals': self.common.svals_,
+                             'loadings': self.common.loadings_,
+                             'rank': self.common.rank}
 
         for bn in self.block_names:
             joint = self.blocks[bn].joint
             indiv = self.blocks[bn].individual
 
-            results[bn] = {
-                "joint": {
-                    "scores": joint.scores_,
-                    "svals": joint.svals_,
-                    "loadings": joint.loadings_,
-                    "rank": joint.rank,
-                    "full": joint.full_,
-                },
-                "individual": {
-                    "scores": indiv.scores_,
-                    "svals": indiv.svals_,
-                    "loadings": indiv.loadings_,
-                    "rank": indiv.rank,
-                    "full": indiv.full_,
-                },
-                "noise": self.blocks[bn].noise_,
-            }
+            results[bn] = {'joint': {'scores': joint.scores_,
+                                     'svals': joint.svals_,
+                                     'loadings': joint.loadings_,
+                                     'rank': joint.rank,
+                                     'full': joint.full_},
+
+                           'individual': {'scores': indiv.scores_,
+                                          'svals': indiv.svals_,
+                                          'loadings': indiv.loadings_,
+                                          'rank': indiv.rank,
+                                          'full': indiv.full_},
+
+                           'noise': self.blocks[bn].noise_}
 
         return results
 
@@ -553,9 +494,7 @@ class AJIVE(object):
             raise ValueError("Decomposition has not yet been computed")
 
         joint_rank = self.common.rank
-        indiv_ranks = {
-            bn: self.blocks[bn].individual.rank for bn in self.block_names
-        }
+        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in self.block_names}
         return joint_rank, indiv_ranks
 
 
@@ -568,14 +507,8 @@ def _dict_formatting(x):
     return {n: x[n] for n in names}
 
 
-def arg_checker(
-    blocks,
-    init_signal_ranks,
-    joint_rank,
-    indiv_ranks,
-    precomp_init_svd,
-    center,
-):
+def arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
+                precomp_init_svd, center):
     """
 
     """
@@ -605,7 +538,10 @@ def arg_checker(
     # format blocks
     # make sure blocks are either csr or np.array
     for bn in block_names:
-        blocks[bn] = np.array(blocks[bn])
+        if issparse(blocks[bn]):  # TODO: allow for general linear operators
+            raise ValueError('Cannot currently allow general linear operators')
+        else:
+            blocks[bn] = np.array(blocks[bn])
 
     shapes = {bn: blocks[bn].shape for bn in block_names}
 
@@ -636,6 +572,8 @@ def arg_checker(
     if precomp_init_svd is None:
         precomp_init_svd = {bn: None for bn in block_names}
     init_signal_ranks = _dict_formatting(init_signal_ranks)
+    print(set(init_signal_ranks.keys()))
+    print(block_names)
     assert set(init_signal_ranks.keys()) == set(block_names)
 
     # initial signal rank must be at least one lower than the shape of the block
