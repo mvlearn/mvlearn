@@ -246,6 +246,7 @@ class KCCA(BaseEmbed):
 
         return self
 
+
 def _center_norm(x):
     N = len(x)
     x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
