@@ -212,7 +212,7 @@ class KCCA(BaseEmbed):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
+             - Xs length: 2
              - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
@@ -222,7 +222,9 @@ class KCCA(BaseEmbed):
 
         Returns
         -------
-        self : returns an instance of self
+        components_ : returns Xs_transformed, a list of numpy.ndarray
+             - Xs length: 2
+             - Xs[i] shape: (n_samples, n_samples)
         """
 
         if not hasattr(self, "weights_"):
@@ -243,7 +245,7 @@ class KCCA(BaseEmbed):
 
         self.components_ = [comp1, comp2]
 
-        return self
+        return self.components_
 
 
 def _center_norm(x):
