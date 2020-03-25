@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import warnings
-
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 
