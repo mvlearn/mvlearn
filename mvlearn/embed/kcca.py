@@ -184,8 +184,8 @@ class KCCA(BaseEmbed):
             comp1.append(self.Kx@weight1[:, i])
             comp2.append(self.Ky@weight2[:, i])
 
-        comp1 = np.asarray([l*(-10**18) for l in comp1]).T
-        comp2 = np.asarray([l*10**18 for l in comp2]).T
+        comp1 = [l*(-10**18) for l in comp1]
+        comp2 = [l*10**18 for l in comp2]
 
         self.components_ = [comp1, comp2]
 
