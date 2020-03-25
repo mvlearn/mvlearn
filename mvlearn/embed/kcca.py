@@ -223,9 +223,7 @@ class KCCA(BaseEmbed):
 
         Returns
         -------
-        Xs_transformed : array-like 2D with transformed views
-             - Xs_transformed length: n_views
-             - Xs_transformed[i] shape: (n_samples, n_samples)
+        self : returns an instance of self
         """
 
         if not hasattr(self, "weights_"):
@@ -247,29 +245,6 @@ class KCCA(BaseEmbed):
         self.components_ = [comp1, comp2]
 
         return self
-
-    def fit_transform(self, Xs):
-        """
-        Fits KCCA mapping with given parameters and transforms Xs
-        with the KCCA weights to calculate canonical components
-        or projects of the views into a shared embedding.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data for kcca to fit to.
-            Each sample will receive its own embedding.
-
-        Returns
-        -------
-        Xs_transformed : array-like 2D with transformed views
-             - Xs_transformed length: n_views
-             - Xs_transformed[i] shape: (n_samples, n_samples)
-        """
-
-        return self.fit(Xs).transform(Xs)
 
 
 def _center_norm(x):
