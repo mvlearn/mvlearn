@@ -146,7 +146,7 @@ class KCCA(BaseEmbed):
         if not type(self.constant) == float:
             raise ValueError("constant must be positive float")
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         r"""
         Creates kcca mapping by determining
         canonical weghts from Xs.
@@ -245,23 +245,6 @@ class KCCA(BaseEmbed):
         self.components_ = [comp1, comp2]
 
         return self
-    
-    def fit_transform(self, Xs):
-        r"""
-        Fits transformer to Xs and returns a transformed version of the Xs.
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each view will receive its own
-            transformation matrix and projection.
-        Returns
-        -------
-        Xs_transformed : array-like, 2D
-        """
-
-        return self.fit(Xs).transform(Xs)
 
 
 def _center_norm(x):
