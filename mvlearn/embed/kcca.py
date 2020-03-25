@@ -26,7 +26,7 @@ class KCCA(BaseEmbed):
 
     Parameters
     ----------
-    reg : float, default = 0.1
+    reg : float, default = 0.00001
           Regularization parameter
     n_components : int, default = 10
                    Number of canonical dimensions to keep
