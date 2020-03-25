@@ -161,8 +161,7 @@ class KCCA(BaseEmbed):
 
         Returns
         -------
-        weights_ : list of array-likes
-                   Canonical weights
+        self : returns an instance of self
 
         """
         Xs = check_Xs(Xs, multiview=True)
