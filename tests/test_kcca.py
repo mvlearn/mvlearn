@@ -39,35 +39,32 @@ kcca_t = kcca_l.transform([train1, train2])
 
 # Test that number of components is equal to n_components
 def test_numCC_components_():
-    assert len(kcca_ft.components_[0][0]) and len(kcca_ft.components_[1][0]) == n_components
+    assert len(kcca_ft[0][0]) and len(kcca_ft[1][0]) == n_components
 
 # Test that number of views is equal to number of ws_
 def test_numCC_ws_():
-    assert len(kcca_ft.weights_) == 2
+    assert len(kcca_f.weights_) == 2
     
 # Test that number of views is equal to number of comps_
 def test_numCC_comps_():
-    assert len(kcca_ft.components_) == 2
+    assert len(kcca_ft) == 2
 
-# Test that weights from fit equals fit.transform weights
-def test_ktype_weights():
-    assert kcca_t.weights_ == kcca_f.weights_
     
 # Test that components from transform equals fit.transform weights
 def test_ktype_components():
-    assert np.allclose(kcca_ft.components_, kcca_t.components_)
+    assert np.allclose(kcca_ft, kcca_t)
     
 # Test that gaussian kernel runs
 def test_ktype_gaussian():
     kgauss = KCCA(ktype = 'gaussian', reg = 0.0001, n_components = 2, sigma=2.0)
-    kgauss.fit_transform([train1, train2])
-    assert len(kgauss.components_) == 2
+    a = kgauss.fit_transform([train1, train2])
+    assert len(a) == 2
     
 # Test that polynomial kernel runs
 def test_ktype_polynomial():
     kpoly = KCCA(ktype = 'poly', reg = 0.0001, n_components = 2, degree=3.0)
-    kpoly.fit_transform([train1, train2])
-    assert len(kpoly.components_) == 2
+    b = kpoly.fit_transform([train1, train2])
+    assert len(b) == 2
 
 ### Testing helper functions
 np.random.seed(30)
