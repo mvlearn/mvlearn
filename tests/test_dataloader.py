@@ -16,6 +16,30 @@ def test_UCImultifeature_dataloader():
     for i in range(6):
         assert data[i].shape[0] == 2000
 
+    # load data
+    data, labels = load_UCImultifeature(random_state=2)
+
+    assert len(data) == 6
+    assert labels.shape[0] == 2000
+
+    # check size of data
+    for i in range(6):
+        assert data[i].shape[0] == 2000
+
+def test_UCImultifeature_dataloader_notrandom():
+    # load data
+    data, labels = load_UCImultifeature(shuffle=False)
+
+    assert len(data) == 6
+    assert labels.shape[0] == 2000
+
+    # check size of data
+    for i in range(6):
+        assert data[i].shape[0] == 2000
+
+    for i in range(200):
+        assert labels[i] == 0
+
 def test_UCImultifeature_dataloader_select():
     # load data
     lab = [0,1,2]

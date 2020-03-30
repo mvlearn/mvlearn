@@ -2,8 +2,9 @@ from os.path import dirname, join
 import numpy as np
 
 
-def load_UCImultifeature(select_labeled="all"):
-    """
+def load_UCImultifeature(select_labeled="all", shuffle=True,
+                         random_state=None):
+    r"""
     Load the UCI multiple features dataset, taken from
     https://archive.ics.uci.edu/ml/datasets/Multiple+Features This data set
     consists of 6 views of handwritten digit images, with classes 0-9. The
@@ -25,9 +26,13 @@ def load_UCImultifeature(select_labeled="all"):
         specified, all examples in the dataset are returned. Repeated labels
         are ignored.
 
+    shuffle : bool, default=True
+        If ``True``, returns each array with its rows and corresponding
+        labels shuffled randomly according to random_state.
+
     Returns
     -------
-    data : list of np.ndarray, each of size (2000,n_features)
+    data : list of np.ndarray, each of size (200*num_classes, n_features)
         List of length 6 with each element being the data for one of the
         views.
 
@@ -43,6 +48,9 @@ def load_UCImultifeature(select_labeled="all"):
 
     if select_labeled == "all":
         select_labeled = range(10)
+
+    if shuffle and (random_state is None):
+        random_state = np.random.randint(1, 100)
 
     select_labeled = list(set(select_labeled))
 
@@ -74,6 +82,14 @@ def load_UCImultifeature(select_labeled="all"):
             indices = np.nonzero(labels == label)
             datatemp[j * 200: (j+1) * 200, :] = data[i][indices, :]
             selected_labels[j*200:(j+1)*200] = labels[indices]
+
+        if shuffle:
+            np.random.seed(random_state)
+            np.random.shuffle(datatemp)
         selected_data.append(datatemp)
+
+    if shuffle:
+        np.random.seed(random_state)
+        np.random.shuffle(selected_labels)
 
     return selected_data, selected_labels
