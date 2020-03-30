@@ -54,7 +54,9 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     >>> import numpy as np
     >>> single_view_data = np.random.rand(1000, 50)
     >>> # Project to 10 components
-    >>> multi_view_data = random_gaussian_projection(single_view_data, n_views=3, n_components=10)
+    >>> multi_view_data = random_gaussian_projection(single_view_data,
+                                                     n_views=3,
+                                                     n_components=10)
     >>> print(len(multi_view_data))
     '3'
     >>> print(multi_view_data[0].shape)
