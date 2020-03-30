@@ -2,7 +2,7 @@ from os.path import dirname, join
 import numpy as np
 
 
-def load_UCImultifeature(select_labeled="all", shuffle=True,
+def load_UCImultifeature(select_labeled="all", shuffle=False,
                          random_state=None):
     r"""
     Load the UCI multiple features dataset, taken from
@@ -26,9 +26,13 @@ def load_UCImultifeature(select_labeled="all", shuffle=True,
         specified, all examples in the dataset are returned. Repeated labels
         are ignored.
 
-    shuffle : bool, default=True
+    shuffle : bool, default=False
         If ``True``, returns each array with its rows and corresponding
         labels shuffled randomly according to random_state.
+
+    random_state : int, default=None
+        Determines the order data is shuffled if ``shuffle=True``. Used so
+        that data loaded is reproducible but shuffled.
 
     Returns
     -------
@@ -49,8 +53,10 @@ def load_UCImultifeature(select_labeled="all", shuffle=True,
     if select_labeled == "all":
         select_labeled = range(10)
 
-    if shuffle and (random_state is None):
-        random_state = np.random.randint(1, 100)
+    if not shuffle:
+        random_state = 1
+    elif random_state is None:
+        random_state = np.random.randint(1, 10000)
 
     select_labeled = list(set(select_labeled))
 
@@ -83,13 +89,11 @@ def load_UCImultifeature(select_labeled="all", shuffle=True,
             datatemp[j * 200: (j+1) * 200, :] = data[i][indices, :]
             selected_labels[j*200:(j+1)*200] = labels[indices]
 
-        if shuffle:
-            np.random.seed(random_state)
-            np.random.shuffle(datatemp)
+        np.random.seed(random_state)
+        np.random.shuffle(datatemp)
         selected_data.append(datatemp)
 
-    if shuffle:
-        np.random.seed(random_state)
-        np.random.shuffle(selected_labels)
+    np.random.seed(random_state)
+    np.random.shuffle(selected_labels)
 
     return selected_data, selected_labels
