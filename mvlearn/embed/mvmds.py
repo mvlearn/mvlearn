@@ -20,12 +20,11 @@ from sklearn.metrics import euclidean_distances
 
 
 class MVMDS(BaseEmbed):
-
-    """"
+    r"""
     An implementation of Classical Multiview Multidimensional Scaling for
     jointly reducing the dimensions of multiple views of data. A Euclidean
-    distance matrix is created for each view, double centered, and the k l
-    argest common eigenvectors between the matrices are returned based on
+    distance matrix is created for each view, double centered, and the k
+    largest common eigenvectors between the matrices are returned based on
     the stepwise estimation of common principal components.
 
     Parameters
@@ -42,17 +41,33 @@ class MVMDS(BaseEmbed):
     Attributes
     ----------
     components: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+        MVMDS components of Xs, omponents shape: (n_samples, n_components)
+
+    Notes
+    -----
+    This class does not support ``MVMDS.transform()`` due to the iterative
+    nature of the algorithm and the fact that all transformations should be
+    done on the fitted data. Use ``MVMDS.fit_transform()`` to do both
+    fitting and transforming at once.
+
+    Examples
+    --------
+    >>> from mvlearn.embed import MVMDS
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> Xs, _ = load_UCImultifeature()
+    >>> print(Xs[0].shape[0])  # number of samples in each view
+    '2000'
+    >>> mvmds = MVMDS(n_components=5)
+    >>> components = mvmds.fit_transform(Xs)
+    >>> print(components.shape)
+    '(2000, 5)'
 
     References
     ----------
     .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
             Components.” Computational Statistics &amp; Data Analysis, vol. 54,
             no. 12, 2010, pp. 3446–3457., doi:10.1016/j.csda.2010.03.010.
-
     """
-
     def __init__(self, n_components=None, num_iter=15):
 
         super().__init__()
@@ -61,7 +76,6 @@ class MVMDS(BaseEmbed):
         self.num_iter = num_iter
 
     def _commonpcs(self, Xs):
-
         """
         Finds Stepwise Estimation of Common Principal Components as described
         by common Trendafilov implementations based on the following paper:
@@ -147,7 +161,6 @@ class MVMDS(BaseEmbed):
         return(components)
 
     def fit(self, Xs):
-
         """
         Calculates dimensionally reduced components by inputting the Euclidean
         distances of each view, double centering them, and using the _commonpcs
@@ -156,7 +169,6 @@ class MVMDS(BaseEmbed):
 
         Parameters
         ----------
-
         Xs: list of array-likes or numpy.ndarray
                 - Xs length: n_views
                 - Xs[i] shape: (n_samples, n_features_i)

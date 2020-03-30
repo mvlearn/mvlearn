@@ -42,6 +42,23 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     -------
     views : list of array-like matrices
         List of constructed views (each matrix has shape [n_rows, n_cols]).
+
+    Notes
+    -----
+    From an implementation perspective, this wraps GaussianRandomProjection
+    from sklearn.random_projection.
+
+    Examples
+    --------
+    >>> from mvlearn.construct import random_gaussian_projection
+    >>> import numpy as np
+    >>> single_view_data = np.random.rand(1000, 50)
+    >>> # Project to 10 components
+    >>> multi_view_data = random_gaussian_projection(single_view_data, n_views=3, n_components=10)
+    >>> print(len(multi_view_data))
+    '3'
+    >>> print(multi_view_data[0].shape)
+    '(1000, 10)'
     """
 
     check_n_views(n_views)

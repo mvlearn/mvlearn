@@ -57,6 +57,18 @@ class Omnibus(BaseEmbed):
     ----------
     .. [#1] https://graspy.neurodata.io/tutorials/embedding/omnibus
 
+    Examples
+    --------
+    >>> from mvlearn.embed import omnibus
+    >>> import numpy as np
+    >>> # Create 2 random data views with feature sizes 50 and 100
+    >>> view1 = np.random.rand(1000, 50)
+    >>> view2 = np.random.rand(1000, 100)
+    >>> embedder = omnibus.Omnibus(n_components=3)
+    >>> embeddings = embedder.fit_transform([view1, view2])
+    >>> view1_hat, view2_hat = embeddings
+    >>> print(view1_hat.shape, view2_hat.shape)
+    '(1000, 3) (1000, 3)'
     """
 
     def __init__(self, n_components=2, distance_metric="euclidean",

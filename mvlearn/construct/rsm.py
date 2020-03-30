@@ -39,8 +39,19 @@ def random_subspace_method(X, n_features=None, n_views=1):
     views : list of array-like matrices
         List of constructed views (each matrix has shape [n_rows, n_cols]).
 
+    Examples
+    --------
+    >>> from mvlearn.construct import random_subspace_method
+    >>> single_view_data = np.random.rand(1000,50)
+    >>> single_view_data = np.random.rand(1000, 50)
+    >>> # Randomly select 10 of the 50 features to keep nonzero in each view
+    >>> multi_view_data = random_subspace_method(single_view_data,
+                                                 n_features=10, n_views=3)
+    >>> print(len(multi_view_data))
+    '3'
+    >>> print(multi_view_data[0].shape)
+    '(1000, 50)'
     """
-
     _, cols = X.shape
 
     check_n_views(n_views)

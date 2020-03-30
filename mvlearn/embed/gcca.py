@@ -91,6 +91,18 @@ class GCCA(BaseEmbed):
             Soltanian-Zadeh. Enhancing reproducibility of fMRI statistical
             maps using generalized canonical correlation analysis in NPAIRS
             framework. Neuroimage, 60 (2012), pp. 1970-1981
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.embed import GCCA
+    >>> # Load full dataset, labels not needed
+    >>> Xs, _ = load_UCImultifeature()
+    >>> gcca = GCCA(fraction_var = 0.9)
+    >>> # Transform the first 5 views
+    >>> Xs_latents = gcca.fit_transform(Xs[:5])
+    >>> print([X.shape[1] for X in Xs_latents])
+    '[9, 9, 9, 9, 9]'
     """
 
     def __init__(

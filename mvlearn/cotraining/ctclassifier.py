@@ -113,6 +113,27 @@ class CTClassifier(BaseCoTrainEstimator):
         The starting random seed for fit() and class operations, passed to
         numpy.random.seed().
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn.model_selection import train_test_split
+    >>> from mvlearn.cotraining import CTClassifier
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
+    >>> X1, X2 = data[0], data[1]  # Use the first 2 views
+    >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
+    >>> X2_train, X2_test, _, _ = train_test_split(X2, labels)
+    >>> remove_idx = np.random.rand(len(l_train),) < 0.97
+    >>> l_train[remove_idx] = np.nan  # simulate semi-supervised
+    >>> label_ratio = len(np.where(remove_idx==False)) / len(l_train)
+    >>> print('%.3f' % label_ratio)  # check labeled data proportion
+    0.030
+    >>> ctc = CTClassifier()
+    >>> ctc.fit([X1_train, X2_train], l_train)
+    >>> y_pred = ctc.predict([X1_test, X2_test])
+    >>> print(y_pred[:10])  # first 10 predictions
+    [0. 0. 1. 0. 1. 1. 0. 0. 0. 0.]
+
     Notes
     -----
     Multi-view co-training is most helpful for tasks in semi-supervised where
@@ -377,27 +398,6 @@ class CTClassifier(BaseCoTrainEstimator):
             The predicted class of each input example. If the two classifiers
             don't agree, pick the one with the highest predicted probability
             from predict_proba()
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from sklearn.model_selection import train_test_split
-        >>> from mvlearn.cotraining.ctclassifier import CTClassifier
-        >>> from mvlearn.datasets.base import load_UCImultifeature
-        >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
-        >>> X1, X2 = data[0], data[1]  # Use the first 2 views
-        >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
-        >>> X2_train, X2_test, _, _ = train_test_split(X2, labels)
-        >>> remove_idx = np.random.rand(len(l_train),) < 0.97
-        >>> l_train[remove_idx] = np.nan  # simulate semi-supervised
-        >>> label_ratio = len(np.where(remove_idx==False)) / len(l_train)
-        >>> print('%.3f' % label_ratio)  # check labeled data proportion
-        0.030
-        >>> ctc = CTClassifier()
-        >>> ctc.fit([X1_train, X2_train], l_train)
-        >>> y_pred = ctc.predict([X1_test, X2_test])
-        >>> print(y_pred[:10])  # first 10 predictions
-        [0. 0. 1. 0. 1. 1. 0. 0. 0. 0.]
         """
 
         Xs = check_Xs(Xs,

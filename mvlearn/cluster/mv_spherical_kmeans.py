@@ -98,6 +98,20 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     maximization step in the other view. This algorithm is described in the
     section for multi-view k-means clustering.
 
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>>from mvlearn.cluster import MultiviewSphericalKMeans
+    >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
+    >>> # Get 5-class data
+    >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
+    >>> mv_data = data[:2]  # first 2 views only
+    >>> mv_kmeans = MultiviewSphericalKMeans(n_clusters=5, random_state=5)
+    >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
+    >>> # Compute nmi between true class labels and multi-view cluster labels
+    >>> nmi = nmi_score(labels, mv_clusters)
+    >>> print('{0:.3f}\n'.format(nmi))
+    '0.741'
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',

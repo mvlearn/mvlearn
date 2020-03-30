@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# MIT License
-
 # Original work Copyright (c) 2016 Vahid Noroozi
 # Modified work Copyright 2019 Zhanghao Wu
 
@@ -553,19 +551,30 @@ class DCCA(BaseEmbed):
 
     Examples
     --------
-    >>> import numpy as np
     >>> from mvlearn.embed.dcca import DCCA
-    >>> view1 = np.exp(np.random.normal(size=(1000, 100)))
-    >>> view2 = np.random.normal(loc=2, size=(1000, 75))
-    >>> input_size1, input_size2 = 100, 75
+    >>> import numpy as np
+    >>> # Exponential data as example of finding good correlation
+    >>> view1 = np.random.normal(loc=2, size=(1000, 75))
+    >>> view2 = np.exp(view1)
+    >>> view1_test = np.random.normal(loc=2, size=(200, 75))
+    >>> view2_test = np.exp(view1_test)
+    >>> input_size1, input_size2 = 75, 75
     >>> n_components = 2
     >>> layer_sizes1 = [1024, 4]
     >>> layer_sizes2 = [1024, 4]
     >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
                     layer_sizes2)
-    >>> outputs = dcca.fit_transform([view1, view2])
+    >>> dcca.fit([view1, view2])
+    >>> outputs = dcca.transform([view1_test, view2_test])
     >>> print(outputs[0].shape)
-    (1000, 2)
+    '(200, 2)'
+    >>> # Feature 1 output correlation
+    >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,0],
+                                           outputs[1][:,0])[0,1]))
+    '0.834'
+    >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,1],
+                                           outputs[1][:,1])[0,1]))
+    '0.783'
 
     References
     ----------
