@@ -551,7 +551,7 @@ class DCCA(BaseEmbed):
 
     Examples
     --------
-    >>> from mvlearn.embed.dcca import DCCA
+    >>> from mvlearn.embed import DCCA
     >>> import numpy as np
     >>> # Exponential data as example of finding good correlation
     >>> view1 = np.random.normal(loc=2, size=(1000, 75))
@@ -568,10 +568,11 @@ class DCCA(BaseEmbed):
     >>> outputs = dcca.transform([view1_test, view2_test])
     >>> print(outputs[0].shape)
     '(200, 2)'
-    >>> # Feature 1 output correlation
+    >>> # First feature correlation
     >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,0],
                                            outputs[1][:,0])[0,1]))
     '0.834'
+    >>> Second feature correlation
     >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,1],
                                            outputs[1][:,1])[0,1]))
     '0.783'

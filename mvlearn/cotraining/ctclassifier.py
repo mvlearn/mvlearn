@@ -115,10 +115,10 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from sklearn.model_selection import train_test_split
     >>> from mvlearn.cotraining import CTClassifier
     >>> from mvlearn.datasets import load_UCImultifeature
+    >>> import numpy as np
+    >>> from sklearn.model_selection import train_test_split
     >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
     >>> X1, X2 = data[0], data[1]  # Use the first 2 views
     >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)

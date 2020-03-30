@@ -42,15 +42,22 @@ def random_subspace_method(X, n_features=None, n_views=1):
     Examples
     --------
     >>> from mvlearn.construct import random_subspace_method
-    >>> single_view_data = np.random.rand(1000,50)
-    >>> single_view_data = np.random.rand(1000, 50)
-    >>> # Randomly select 10 of the 50 features to keep nonzero in each view
+    >>> # Random integer data for compressed viewing
+    >>> single_view_data = np.random.randint(low=1, high=10, size=(4, 5))
     >>> multi_view_data = random_subspace_method(single_view_data,
-                                                 n_features=10, n_views=3)
+                                                 n_features=3, n_views=2)
     >>> print(len(multi_view_data))
-    '3'
-    >>> print(multi_view_data[0].shape)
-    '(1000, 50)'
+    '2'
+    >>> print(multi_view_data[0])
+    [[0 8 0 8 3]
+     [0 6 0 5 7]
+     [0 8 0 2 8]
+     [0 4 0 9 9]]
+    >>> print(multi_view_data[1])
+    [[7 0 6 8 0]
+     [6 0 6 5 0]
+     [2 0 5 2 0]
+     [2 0 5 9 0]]
     """
     _, cols = X.shape
 
