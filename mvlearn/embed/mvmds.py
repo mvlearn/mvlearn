@@ -41,7 +41,7 @@ class MVMDS(BaseEmbed):
     Attributes
     ----------
     components: numpy.ndarray
-        MVMDS components of Xs, omponents shape: (n_samples, n_components)
+        MVMDS components of Xs, components shape: (n_samples, n_components)
 
     Notes
     -----
