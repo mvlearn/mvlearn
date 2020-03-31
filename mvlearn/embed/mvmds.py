@@ -41,9 +41,8 @@ class MVMDS(BaseEmbed):
 
     Attributes
     ----------
-    components: numpy.ndarray
-        Joint MVMDS components of the input views, with
-        shape: (n_samples, n_components)
+    components: numpy.ndarray, shape(n_samples, n_components)
+        Joint transformed MVMDS components of the input views.
 
     Notes
     -----
@@ -66,9 +65,10 @@ class MVMDS(BaseEmbed):
 
     References
     ----------
-    .. [#1MVMDS] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
-            Components.” Computational Statistics &amp; Data Analysis, vol. 54,
-            no. 12, 2010, pp. 3446–3457., doi:10.1016/j.csda.2010.03.010.
+    .. [#1MVMDS] Trendafilov, Nickolay T. “Stepwise Estimation of Common
+            Principal Components.” Computational Statistics &amp; Data
+            Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
+            doi:10.1016/j.csda.2010.03.010.
     """
     def __init__(self, n_components=None, num_iter=15):
 
@@ -92,9 +92,8 @@ class MVMDS(BaseEmbed):
 
         Returns
         -------
-        components: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+        components: numpy.ndarray, shape(n_samples, n_components)
+            Joint transformed MVMDS components of the input views.
         """
         n = p = Xs.shape[1]
 
@@ -221,9 +220,8 @@ class MVMDS(BaseEmbed):
 
         Returns
         -------
-        X_transformed: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+        X_transformed: numpy.ndarray, shape(n_samples, n_components)
+            Joint transformed MVMDS components of the input views.
         """
         Xs = check_Xs(Xs)
         self.fit(Xs)
