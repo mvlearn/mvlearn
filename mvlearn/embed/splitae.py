@@ -50,7 +50,8 @@ class _FullyConnectedNet(torch.nn.Module):
 class SplitAE(BaseEmbed):
     r"""
     Implements an autoencoder that creates an embedding of a view View1 and
-    from that embedding reconstructs View1 and another view View2.
+    from that embedding reconstructs View1 and another view View2, as
+    described in [#1Split]_.
 
     .. figure:: /figures/splitAE.png
         :width: 250px
@@ -111,7 +112,7 @@ class SplitAE(BaseEmbed):
 
     References
     ----------
-    .. [#cca] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
+    .. [#1Split] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
         "`On Deep Multi-View Representation Learning.
         <http://proceedings.mlr.press/v37/wangb15.pdf>`_",
         ICML, 2015.

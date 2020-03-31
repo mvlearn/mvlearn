@@ -22,10 +22,12 @@ from sklearn.metrics import euclidean_distances
 class MVMDS(BaseEmbed):
     r"""
     An implementation of Classical Multiview Multidimensional Scaling for
-    jointly reducing the dimensions of multiple views of data. A Euclidean
-    distance matrix is created for each view, double centered, and the k
-    largest common eigenvectors between the matrices are returned based on
-    the stepwise estimation of common principal components.
+    jointly reducing the dimensions of multiple views of data [#1MVMDS]_.
+    A Euclidean distance matrix is created for each view, double centered,
+    and the k largest common eigenvectors between the matrices are found
+    based on the stepwise estimation of common principal components. Using
+    these common principal components, the views are jointly reduced and
+    a single view of k-dimensions is returned.
 
     Parameters
     ----------
@@ -35,19 +37,19 @@ class MVMDS(BaseEmbed):
         0 and less than the number of samples within each view.
 
     num_iter: int (positive), default=15
-        Number of iterations stepwise estimation goes through. Detailed
-        in Trendafilov paper.
+        Number of iterations stepwise estimation goes through.
 
     Attributes
     ----------
     components: numpy.ndarray
-        MVMDS components of Xs, components shape: (n_samples, n_components)
+        Joint MVMDS components of the input views, with
+        shape: (n_samples, n_components)
 
     Notes
     -----
     This class does not support ``MVMDS.transform()`` due to the iterative
-    nature of the algorithm and the fact that all transformations should be
-    done on the fitted data. Use ``MVMDS.fit_transform()`` to do both
+    nature of the algorithm and the fact that the transformation is done
+    during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
     fitting and transforming at once.
 
     Examples
@@ -64,7 +66,7 @@ class MVMDS(BaseEmbed):
 
     References
     ----------
-    .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
+    .. [#1MVMDS] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
             Components.” Computational Statistics &amp; Data Analysis, vol. 54,
             no. 12, 2010, pp. 3446–3457., doi:10.1016/j.csda.2010.03.010.
     """
@@ -219,7 +221,7 @@ class MVMDS(BaseEmbed):
 
         Returns
         -------
-        components: numpy.ndarray
+        X_transformed: numpy.ndarray
             - components shape: (n_samples, n_components)
             MVMDS components of Xs
         """

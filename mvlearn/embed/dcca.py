@@ -150,7 +150,7 @@ class linear_cca():
 class cca_loss():
     """
     An implementation of the loss function of linear CCA as introduced
-    in the original paper for ``DCCA`` [#1Utils]_. Details of how this loss
+    in the original paper for ``DCCA`` [#1DCCA]_. Details of how this loss
     is computed can be found in the paper or in the documentation for
     ``DCCA``.
 
@@ -174,11 +174,6 @@ class cca_loss():
     device_ : torch.device object
         The torch device being used in DCCA.
 
-    References
-    ----------
-    .. [#1Utils] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
-                 February). Deep canonical correlation analysis. In
-                 International conference on machine learning (pp. 1247-1255).
     """
     def __init__(self, n_components, use_all_singular_values, device):
         self.n_components_ = n_components
@@ -188,7 +183,7 @@ class cca_loss():
     def loss(self, H1, H2):
         """
         Compute the loss (negative correlation) between 2 views. Details can
-        be found in [#1Utils]_ or the documentation for ``DCCA``.
+        be found in [#1DCCA]_ or the documentation for ``DCCA``.
 
         Parameters
         ----------
@@ -576,6 +571,15 @@ class DCCA(BaseEmbed):
     >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,1],
                                            outputs[1][:,1])[0,1]))
     '0.783'
+
+    >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
+                    layer_sizes2, epoch_num=5, print_train_log_info=True)
+    >>> dcca.fit([view1, view2])
+    Epoch 1/5, training_loss: -0.6086
+    Epoch 2/5, training_loss: -1.0725
+    Epoch 3/5, training_loss: -1.3000
+    Epoch 4/5, training_loss: -1.4332
+    Epoch 5/5, training_loss: -1.5177
 
     References
     ----------
