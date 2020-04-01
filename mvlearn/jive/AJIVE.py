@@ -55,7 +55,7 @@ class AJIVE(object):
         Centers matrix. If None, will not center.
 
     reconsider_joint_components: bool
-        Triggers reconsider_joint_components function
+        Triggers _reconsider_joint_components function
 
     wedin_percentile: int, default=5
         Percentile used for wedin (lower) bound cutoff for squared 
@@ -297,7 +297,7 @@ class AJIVE(object):
 
         if self.reconsider_joint_components:
             joint_scores, joint_svals, joint_loadings, self.joint_rank = \
-                reconsider_joint_components(blocks, self.sv_threshold_,
+                _reconsider_joint_components(blocks, self.sv_threshold_,
                                             joint_scores, 
                                             joint_svals, joint_loadings,
                                             self.joint_rank)
@@ -348,13 +348,10 @@ class AJIVE(object):
                                            'loadings': V,
                                            'rank': self.joint_rank}
 
-
-            # project X onto the orthogonal complement of the joint space,
-            # estimate the individual rank, then compute SVD
-            # project X columns onto orthogonal complement of joint_scores
-
             # Here we are creating the individual representations for 
             # each view. 
+            
+            # Finding the orthogonal complement to the joint matrix
             if self.joint_rank == 0:
                 X_orthog = X
             else:
@@ -375,12 +372,15 @@ class AJIVE(object):
 
                 self.indiv_ranks[bn] = rank
 
-            else:  # indiv_rank has been provided by the user
+            # SVD on the orthogonal complement
+            else:  # if user inputs rank list for individual matrices
                 rank = self.indiv_ranks[bn]
                 if rank == 0:
                     U, D, V = None, None, None
                 else:
                     U, D, V = svd_wrapper(X_orthog, rank)
+            
+            # projecting X columns onto orthogonal complement of joint_scores
 
             if self.store_full:
                 if rank == 0:
@@ -396,23 +396,24 @@ class AJIVE(object):
                                             'loadings': V,
                                             'rank': rank}
 
-            ###################################
-            # step 3.3: estimate noise matrix #
-            ###################################
-
+            # Getting the noise matrix, E
             if self.store_full and not issparse(X):
                 E = X - (J + I)
             else:
                 E = None
             block_specific[bn]['noise'] = E
 
-        # save block specific estimates
+        # save view specific estimates
         self.blocks = {}
 
+        # Stores info for easy information checking
         for bn in block_specific.keys():
-            self.blocks[bn] = BlockSpecificResults(joint=block_specific[bn]['joint'],
-                                                   individual=block_specific[bn]['individual'],
-                                                   noise=block_specific[bn]['noise'],
+            self.blocks[bn] = \
+            ViewSpecificResults(joint=block_specific[bn]['joint'],
+                                                   individual=block_specific\
+                                                   [bn]['individual'],
+                                                   noise=block_specific[bn]\
+                                                   ['noise'],
                                                    block_name=bn,
                                                    obs_names=obs_names,
                                                    var_names=var_names[bn],
@@ -434,19 +435,6 @@ class AJIVE(object):
             return list(self.blocks.keys())
         else:
             return None
-
-    def plot_joint_diagnostic(self, fontsize=20):
-        """
-        Plots joint rank threshold diagnostic plot
-        """
-
-        plot_joint_diagnostic(joint_svals=self.all_joint_svals_,
-                              wedin_sv_samples=self.wedin_sv_samples_,
-                              min_signal_rank=min(self.init_signal_ranks.values()),
-                              random_sv_samples=self.random_sv_samples_,
-                              wedin_percentile=self.wedin_percentile,
-                              random_percentile=self.randdir_percentile,
-                              fontsize=fontsize)
 
     def save(self, fpath, compress=9):
         dump(self, fpath, compress=compress)
@@ -535,13 +523,6 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
     criteria not met, errors are raised.
         
     """
-    # TODO: document
-    # TODO: change assert to raise ValueError with informative message
-
-    ##########
-    # blocks #
-    ##########
-
     blocks = _dict_formatting(blocks)
     block_names = list(blocks.keys())
 
@@ -568,9 +549,7 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
 
     shapes = {bn: blocks[bn].shape for bn in block_names}
 
-    ####################
-    # precomp_init_svd #
-    ####################
+    # Checking precomputed SVD
     if precomp_init_svd is None:
         precomp_init_svd = {bn: None for bn in block_names}
     precomp_init_svd = _dict_formatting(precomp_init_svd)
@@ -584,19 +563,10 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
                 "loadings": udv[2],
             }
 
-    # TODO: check either None or SVD provided
-    # TODO: check correct SVD formatting
-    # TODO: check SVD ranks are the same
-    # TODO: check SVD rank is at least init_signal_ranks + 1
-
-    #####################
-    # init_signal_ranks #
-    #####################
+    # Check initial signal ranks
     if precomp_init_svd is None:
         precomp_init_svd = {bn: None for bn in block_names}
     init_signal_ranks = _dict_formatting(init_signal_ranks)
-    print(set(init_signal_ranks.keys()))
-    print(block_names)
     assert set(init_signal_ranks.keys()) == set(block_names)
 
     # initial signal rank must be at least one lower than the shape of the block
@@ -604,17 +574,13 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
         assert 1 <= init_signal_ranks[bn]
         assert init_signal_ranks[bn] <= min(blocks[bn].shape) - 1
 
-    ##############
-    # joint_rank #
-    ##############
+    # Check the joint ranks
     if joint_rank is not None and joint_rank > sum(init_signal_ranks.values()):
         raise ValueError(
             "joint_rank must be smaller than the sum of the initial signal ranks"
         )
 
-    ###############
-    # indiv_ranks #
-    ###############
+    # Check individual ranks
     if indiv_ranks is None:
         indiv_ranks = {bn: None for bn in block_names}
     indiv_ranks = _dict_formatting(indiv_ranks)
@@ -622,11 +588,8 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
 
     for k in indiv_ranks.keys():
         assert indiv_ranks[k] is None or type(indiv_ranks[k]) in [int, float]
-        # TODO: better check for numeric
 
-    ##########
-    # center #
-    ##########
+    # Check centering
     if type(center) == bool:
         center = {bn: center for bn in block_names}
     center = _dict_formatting(center)
@@ -643,12 +606,11 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
     )
 
 
-def reconsider_joint_components(
+def _reconsider_joint_components(
     blocks, sv_threshold, joint_scores, joint_svals, joint_loadings, joint_rank
 ):
     """
     Checks the identifiability constraint on the joint singular values
-
     """
 
     # check identifiability constraint
@@ -661,7 +623,6 @@ def reconsider_joint_components(
 
             # if sv is below the threshold for any data block remove j
             if sv < sv_threshold[bn]:
-                # TODO: should probably keep track of this
                 print("removing column " + str(j))
                 to_keep.remove(j)
                 break
@@ -674,17 +635,17 @@ def reconsider_joint_components(
     return joint_scores, joint_svals, joint_loadings, joint_rank
 
 
-class BlockSpecificResults(object):
+class ViewSpecificResults(object):
     """
-    Contains the block specific results.
+    Contains the view specific results.
 
     Parameters
     ----------
     joint: dict
-        The block specific joint PCA.
+        The view specific joint PCA.
 
     individual: dict
-        The block specific individual PCA.
+        The view specific individual PCA.
 
     noise: array-like
         The noise matrix estimate.
@@ -693,33 +654,32 @@ class BlockSpecificResults(object):
         Observation names.
 
     var_names: None, array-like
-        Variable names for this block.
+        Variable names for this view.
 
     block_name: None, int, str
-        Name of this block.
+        Name of this view.
 
     m: None, array-like
-        The vector used to column mean center this block.
+        The vector used to column mean center this view.
 
 
     Attributes
     ----------
-    joint: jive.PCA.PCA
-        Block specific joint PCA.
-        Has an extra attribute joint.full_ which contains the full block
+    joint: mvlearn.jive.PCA.PCA
+        View specific joint PCA.
+        Has an extra attribute joint.full_ which contains the full view
         joint estimate.
 
-    individual: jive.PCA.PCA
-        Block specific individual PCA.
-        Has an extra attribute individual.full_ which contains the full block
+    individual: mvlearn.jive.PCA.PCA
+        view specific individual PCA.
+        Has an extra attribute individual.full_ which contains the full view
         joint estimate.
-
 
     noise: array-like
-        The full noise block estimate.
+        The full noise view estimate.
 
     block_name:
-        Name of this block.
+        Name of this view.
 
     """
 

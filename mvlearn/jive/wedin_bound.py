@@ -54,11 +54,13 @@ def norms_sample_project(X, basis, R=1000, n_jobs=None):
 
     Parameters
     ---------
-    X:
-        Rhe observed data
+    X: array-like  
+        - X shape: shape(N, D)
+        The observed data
 
-    B:
-        Rhe basis for the signal col/rows space (e.g. the left/right singular vectors)
+    B: array-like  
+        The basis for the signal col/rows space (e.g. the left/right singular\
+        vectors)
 
     rank: int
         Number of columns to resample
@@ -74,7 +76,7 @@ def norms_sample_project(X, basis, R=1000, n_jobs=None):
 
     Output
     ------
-    an array of the resampled norms
+    Array of the resampled norms
     """
 
     if n_jobs is not None:

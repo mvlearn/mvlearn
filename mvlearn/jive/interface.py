@@ -274,7 +274,8 @@ class LinearOperator(object):
         elif x.ndim == 2:
             y = y.reshape(N,1)
         else:
-            raise ValueError('invalid shape returned by user-defined rmatvec()')
+            raise ValueError('invalid shape returned by user-defined\
+                             rmatvec()')
 
         return y
 
@@ -514,7 +515,8 @@ class LinearOperator(object):
 class _CustomLinearOperator(LinearOperator):
     """Linear operator defined in terms of user-specified operations."""
 
-    def __init__(self, shape, matvec, rmatvec=None, matmat=None, rmatmat=None, dtype=None):
+    def __init__(self, shape, matvec, rmatvec=None, matmat=None, rmatmat=None,\
+                 dtype=None):
         super(_CustomLinearOperator, self).__init__(dtype, shape)
 
         self.args = ()

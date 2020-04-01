@@ -2,42 +2,47 @@ import numpy as np
 from scipy.sparse import issparse
 from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
+from scipy.sparse.linalg import aslinearoperator as scipyaslinearoperator
 
-from mvlearn.jive.interface import LinearOperator
-from mvlearn.jive.convert2scipy import convert2scipy
+
+from .interface import LinearOperator
+from .convert2scipy import convert2scipy
 
 
 def svd_wrapper(X, rank=None):
     """
-    Computes the (possibly partial) SVD of a matrix. Handles the case where
+    Computes the full or partial SVD of a matrix. Handles the case where
     X is either dense or sparse.
 
     Parameters
     ----------
-    X: array-like,  shape (N, D)
+    X: array-like  
+        - X shape: shape(N, D)
 
-    rank: rank of the desired SVD (required for sparse matrices)
+    rank: int
+        rank of the desired SVD
 
     Output
     ------
-    U, D, V
-
-    U: array-like, shape (N, rank)
+    U: array-like
+        - U shape: shape(N, rank)
         Orthonormal matrix of left singular vectors.
 
-    D: list, shape (rank, )
-        Singular values in non-increasing order (e.g. D[0] is the largest).
+    D: list
+        - (rank,)
+        Singular values in decreasing order
 
-    V: array-like, shape (D, rank)
+    V: array-like
+        - V shape: (D, rank)
         Orthonormal matrix of right singular vectors
 
     """
     full = False
     if rank is None or rank == min(X.shape):
         full = True
-
+    # checks linear operator
     if isinstance(X, LinearOperator):
-        scipy_svds = svds(convert2scipy(X), rank)
+        scipy_svds = svds(scipyaslinearoperator(X), rank) 
         U, D, V = fix_scipy_svds(scipy_svds)
 
     elif issparse(X) or not full:
@@ -59,13 +64,11 @@ def svd_wrapper(X, rank=None):
 
 def fix_scipy_svds(scipy_svds):
     """
-    scipy.sparse.linalg.svds orders the singular values backwards,
-    this function fixes this insanity and returns the singular values
-    in decreasing order
-
+    scipy.sparse.linalg.svds orders the singular values in increasing order.
+    This function flips this order.
     Parameters
     ----------
-    scipy_svds: the out put from scipy.sparse.linalg.svds
+    scipy_svds: scipy.sparse.linalg.svds
 
     Output
     ------
@@ -89,7 +92,8 @@ def centering(X, method="mean"):
 
     Parameters
     ----------
-    X: array-like, shape (n_samples, n_features)
+    X: array-like
+        - X shape: (n_samples, n_features)
         The input matrix.
 
     method: str, None
@@ -97,12 +101,12 @@ def centering(X, method="mean"):
 
     Output
     ------
-    X_centered, center
-
-    X_centered: array-like, shape (n_samples, n_features)
+    X_centered: array-like
+        - X_centered shape: (n_samples, n_features)
         The centered version of X whose columns have mean zero.
 
-    center: array-like, shape (n_features, )
+    center: array-like
+        - center shape: (n_features, )
         The column means of X.
     """
 
@@ -111,7 +115,6 @@ def centering(X, method="mean"):
 
     if issparse(X):
         raise NotImplementedError
-        # X_centered = MeanCentered(blocks[bn], centers_[bn])
     else:
         if method == "mean":
             center = np.array(X.mean(axis=0)).reshape(-1)
