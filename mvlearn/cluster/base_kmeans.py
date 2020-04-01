@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# A base class for multi-view clustering algorithms that apply the
+# A base class for multi-view kmeans clustering algorithms that apply the
 # co-EM framework.
 
 import numpy as np
@@ -20,9 +20,9 @@ from abc import abstractmethod
 from sklearn.base import BaseEstimator
 
 
-class BaseCluster(BaseEstimator):
+class BaseKMeans(BaseEstimator):
     '''
-    A base class for clustering multiview data.
+    A base class for kmeans clustering.
     Parameters
     ----------
     Attributes
@@ -44,6 +44,7 @@ class BaseCluster(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different views to fit the model on.
 
         Returns
@@ -63,6 +64,7 @@ class BaseCluster(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different views to cluster.
 
         Returns
@@ -83,6 +85,7 @@ class BaseCluster(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
             This list must be of size 2, corresponding to the two views
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.
