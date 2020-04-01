@@ -126,7 +126,7 @@ class KCCA(BaseEmbed):
 
         self.Kx = _make_kernel(x, x, self.ktype, self.constant,
                                self.degree, self.sigma)
-        self.Ky = _make_kernel(y, y, self.ktype2, self.constant,
+        self.Ky = _make_kernel(y, y, self.ktype, self.constant,
                                self.degree, self.sigma)
 
         Id = np.eye(N)
@@ -140,14 +140,14 @@ class KCCA(BaseEmbed):
         # R = [ 0   KxKy]
         #     [KyKx   0 ]
         # D = []
-        #R = np.r_[np.c_[Z, self.Ky @ self.Kx], 
-        #        np.c_[self.Kx @ self.Ky, Z]]
-        #D = np.r_[np.c_[self.Kx @ self.Kx + self.reg * Id, Z],
-        #        np.c_[Z, self.Ky @ self.Ky + self.reg * Id]]
+        R = np.r_[np.c_[Z, self.Ky @ self.Kx], 
+                np.c_[self.Kx @ self.Ky, Z]]
+        D = np.r_[np.c_[self.Kx @ self.Kx + self.reg * Id, Z],
+                np.c_[Z, self.Ky @ self.Ky + self.reg * Id]]
 
         # # R\alpha = \lambda D \beta
-        #betas, alphas= linalg.eigh(0.5*(R+R.T), 0.5*(D + D.T))  # eigenvalues, right eigenvectors
-        betas, alphas= linalg.eig(R, D) 
+        betas, alphas= linalg.eigh(0.5*(R+R.T), 0.5*(D+D.T))  # eigenvalues, right eigenvectors
+        #betas, alphas= linalg.eig(R, D) 
         
         # # Top eigenvalues
         ind = np.argsort(betas)[::-1][:self.n_components]
@@ -194,9 +194,9 @@ class KCCA(BaseEmbed):
 
         Xs = check_Xs(Xs, multiview=True)
 
-        Kx = _make_kernel(Xs[0], self.Xs[0], self.ktype, self.constant,
+        Kx = _make_kernel(_center_norm(Xs[0]), _center_norm(self.Xs[0]), self.ktype, self.constant,
                         self.degree, self.sigma)
-        Ky = _make_kernel(Xs[1], self.Xs[1], self.ktype2, self.constant,
+        Ky = _make_kernel(_center_norm(Xs[1]), _center_norm(self.Xs[1]), self.ktype, self.constant,
                         self.degree, self.sigma)
 
         comp1 = Kx @ self.weights_[0]
@@ -228,14 +228,15 @@ class KCCA(BaseEmbed):
 
 def _center_norm(x):
     N = len(x)
-    x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
-    return x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
+    x = x - x.mean(0)
+    #x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
+    return x#x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
 
 def _make_kernel(X, Y, ktype, constant=10, degree=2.0, sigma=1.0):
     Nl = len(X)
     Nr = len(Y)
-    N0l = np.eye(Nl)-1/Nl*np.ones(Nl)
-    N0r = np.eye(Nr)-1/Nr*np.ones(Nr)
+    N0l = np.eye(Nl)#-1/Nl*np.ones(Nl)
+    N0r = np.eye(Nr)#-1/Nr*np.ones(Nr)
     # Linear kernel
     if ktype == "linear":
         return N0l@(X@Y.T + constant)@N0r
