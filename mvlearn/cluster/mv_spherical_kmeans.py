@@ -27,8 +27,13 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     An implementation of multi-view spherical K-Means using the
     co-EM framework as described in [#2Clu]_. This algorithm is
     most suitable for cases in which the different views of data
-    are conditionally independent. This algorithm currently handles
-    two views of data.
+    are conditionally independent. Additionally, this can be effective
+    when the dataset naturally contains features that are of 2 different
+    data types, such as continuous features and categorical features
+    [#3Clu]_, and then the original features are separated into two
+    views in this way.
+
+    This algorithm currently handles two views of data.
 
     Parameters
     ----------

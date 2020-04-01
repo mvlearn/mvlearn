@@ -27,6 +27,11 @@ class MultiviewKMeans(BaseKMeans):
     This class implements multi-view k-means using the co-EM framework
     as described in [#2Clu]_. This algorithm is most suitable for cases
     in which the different views of data are conditionally independent.
+    Additionally, this can be effective when the dataset naturally
+    contains features that are of 2 different data types, such as
+    continuous features and categorical features [#3Clu]_, and then the
+    original features are separated into two views in this way.
+
     This algorithm currently handles two views of data.
 
     Parameters
@@ -128,6 +133,8 @@ class MultiviewKMeans(BaseKMeans):
     ----------
     .. [#2Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
             of the 4th IEEE International Conference on Data Mining, pp. 19–26
+    .. [#3Clu] Chao, Guoqing, Shiliang Sun, and Jinbo Bi. "A survey on
+            multi-view clustering." arXiv preprint arXiv:1712.06246 (2017).
 
     Examples
     --------

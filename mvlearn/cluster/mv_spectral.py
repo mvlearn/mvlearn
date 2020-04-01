@@ -35,6 +35,11 @@ class MultiviewSpectralClustering(BaseEstimator):
     r'''
     An implementation of multi-view spectral clustering using the
     basic co-training framework as described in [#1Clu]_.
+    Additionally, this can be effective when the dataset naturally
+    contains features that are of 2 different data types, such as
+    continuous features and categorical features [#3Clu]_, and then the
+    original features are separated into two views in this way.
+
     This algorithm can handle 2 or more views of data.
 
     Parameters
