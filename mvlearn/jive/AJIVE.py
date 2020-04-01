@@ -255,11 +255,12 @@ class AJIVE(object):
 
         if self.joint_rank is None:
 
-            # if the random sv samples are not already provided compute them
+            # Calculating sv samples if not provided
             if self.random_sv_samples_ is None:
                 self.random_sv_samples_ = \
                     sample_randdir(num_obs,
-                                   signal_ranks=list(self.init_signal_ranks.values()),
+                                   signal_ranks=\
+                                   list(self.init_signal_ranks.values()),
                                    R=self.n_randdir_samples,
                                    n_jobs=self.n_jobs)
 
@@ -277,59 +278,59 @@ class AJIVE(object):
                                           n_jobs=self.n_jobs)
 
             self.wedin_sv_samples_ = len(blocks) - \
-                np.array([sum(self.wedin_samples_[bn][i] ** 2 for bn in block_names)
+                np.array([sum(self.wedin_samples_[bn][i] ** \
+                              2 for bn in block_names)
                           for i in range(self.n_wedin_samples)])
 
-            # given the wedin and random bound samples, compute the joint rank
-            # SV cutoff
+            # Now calculate joint matrix rank
 
             self.wedin_cutoff_ = np.percentile(self.wedin_sv_samples_,
                                                self.wedin_percentile)
             self.rand_cutoff_ = np.percentile(self.random_sv_samples_,
                                               self.randdir_percentile)
             self.svalsq_cutoff_ = max(self.wedin_cutoff_, self.rand_cutoff_)
-            self.joint_rank_wedin_est_ = sum(joint_svals ** 2 > self.svalsq_cutoff_)
+            self.joint_rank_wedin_est_ = sum(joint_svals ** 2 > \
+                                             self.svalsq_cutoff_)
             self.joint_rank = deepcopy(self.joint_rank_wedin_est_)
 
-        # check identifiability constraint and possibly remove some
-        # joint components
+        # check identifiability constraint
 
         if self.reconsider_joint_components:
             joint_scores, joint_svals, joint_loadings, self.joint_rank = \
                 reconsider_joint_components(blocks, self.sv_threshold_,
-                                            joint_scores, joint_svals, joint_loadings,
+                                            joint_scores, 
+                                            joint_svals, joint_loadings,
                                             self.joint_rank)
 
-        # TODO: include center?
-        # TODO: comp_names, var_names
-        # The common joint space has now been estimated
-        self.common = PCA.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
-                                           svals=joint_svals[0:self.joint_rank],
-                                           loadings=joint_loadings[:, 0:self.joint_rank],
+        # Using rank and joint SVD, calls PCA class to get joint basis
+        self.common = \
+        PCA.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
+                                           svals=\
+                                           joint_svals[0:self.joint_rank], 
+                                           loadings=joint_loadings\
+                                           [:, 0:self.joint_rank],
                                            obs_names=obs_names)
 
         self.common.set_comp_names(['common_comp_{}'.format(i)
                                     for i in range(self.common.rank)])
 
-        #######################################
-        # step 3: compute final decomposition #
-        #######################################
-        # this step computes the block specific estimates
 
+        # view estimates
+        
         block_specific = {bn: {} for bn in block_names}
         for bn in block_names:
-            X = blocks[bn]
-
-            ########################################
-            # step 3.1: block specific joint space #
-            ########################################
-            # project X onto the joint space then compute SVD
+            X = blocks[bn] #individual matrix
+            
+            # View specific joint space creation
+            # projecting X onto the joint space then compute SVD
             if self.joint_rank != 0:
-                if issparse(X):  # Write sparse jive
-                    raise ValueError('An input matrix is sparse. This functionality' +
+                if issparse(X):  # Implement sparse JIVE later
+                    raise ValueError('An input matrix is sparse. This ' 
+                                     'functionality '+
                                      ' is not available yet')                    
                 else:
-                    J = np.array(np.dot(joint_scores, np.dot(joint_scores.T, X)))
+                    J = np.array(np.dot(joint_scores, \
+                                        np.dot(joint_scores.T, X)))
                     U, D, V = svd_wrapper(J, self.joint_rank)
                     if not self.store_full:
                         J = None  # kill J matrix to save memory
@@ -340,7 +341,7 @@ class AJIVE(object):
                     J = np.zeros(shape=blocks[bn].shape)
                 else:
                     J = None
-
+            #special zeros scenario
             block_specific[bn]['joint'] = {'full': J,
                                            'scores': U,
                                            'svals': D,
@@ -348,14 +349,12 @@ class AJIVE(object):
                                            'rank': self.joint_rank}
 
 
-            #############################################
-            # step 3.2: block specific individual space #
-            #############################################
             # project X onto the orthogonal complement of the joint space,
             # estimate the individual rank, then compute SVD
-
             # project X columns onto orthogonal complement of joint_scores
 
+            # Here we are creating the individual representations for 
+            # each view. 
             if self.joint_rank == 0:
                 X_orthog = X
             else:
