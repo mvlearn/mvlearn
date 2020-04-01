@@ -120,14 +120,18 @@ class KCCA(BaseEmbed):
         ktype='linear',
         sigma=1.0,
         degree=2.0,
-        constant=1.0
+        decomp='full',
+        method='kettenring-like',
+        mrank = 100
     ):
         self.reg = reg
         self.n_components = n_components
         self.ktype = ktype
         self.sigma = sigma
         self.degree = degree
-        self.constant = constant
+        self.decomp = decomp
+        self.method = method
+        self.mrank = mrank
         if self.ktype is None:
             self.ktype = "linear"
 
@@ -137,14 +141,13 @@ class KCCA(BaseEmbed):
         if ((self.ktype != "linear") and (self.ktype != "poly")
                 and (self.ktype != "gaussian")):
             raise ValueError("ktype must be 'linear', 'gaussian', or 'poly'.")
-        if self.sigma < 0 or not type(self.sigma) == float:
-            raise ValueError("sigma must be positive float")
-        if not type(self.degree) == float:
-            raise ValueError("degree must be float")
+        if self.sigma < 0 or not (type(self.sigma) == float
+                                  or type(self.sigma) == int):
+            raise ValueError("sigma must be positive int/float")
+        if not (type(self.degree) == float or type(self.sigma) == int):
+            raise ValueError("degree must be int/float")
         if self.reg < 0 or not type(self.reg) == float:
             raise ValueError("reg must be positive float")
-        if not type(self.constant) == float:
-            raise ValueError("constant must be positive float")
 
     def fit(self, Xs, y=None):
         r"""
@@ -166,45 +169,98 @@ class KCCA(BaseEmbed):
         """
         Xs = check_Xs(Xs, multiview=True)
 
-        x = Xs[0]
-        y = Xs[1]
+        self.x = Xs[0]
+        self.y = Xs[1]
 
-        N = len(x)
-        x = _center_norm(x)
-        y = _center_norm(y)
+        N = len(self.x)
 
-        self.Kx = _make_kernel(x, self.ktype, self.constant,
-                               self.degree, self.sigma)
-        self.Ky = _make_kernel(y, self.ktype, self.constant,
-                               self.degree, self.sigma)
+        self.x = _center_norm(self.x)
+        self.y = _center_norm(self.y)
 
-        Id = np.eye(N)
-        Z = np.zeros((N, N))
-        dim = min(x.shape[1], y.shape[1])
+        if self.decomp == "full":
+            Kx = _make_kernel(self.x, self.x, self.ktype,
+                                   self.degree, self.sigma)
+            Ky = _make_kernel(self.y, self.y, self.ktype,
+                                   self.degree, self.sigma)
 
-        # Solving eigenvalue problem
-        R = 0.5*np.r_[np.c_[self.Kx, self.Ky], np.c_[self.Kx, self.Ky]]
-        D = np.r_[np.c_[self.Kx+self.reg*Id, Z], np.c_[Z, self.Ky+self.reg*Id]]
+            Id = np.eye(N)
+            Z = np.zeros((N, N))
+    
+            # Method 1: Standard Hardoon
+            if self.method == "standard_hardoon":
+                R = np.r_[np.c_[Z, Kx@Ky], np.c_[Ky@Kx, Z]]
+                D = 0.5*np.r_[np.c_[Kx@(Kx+self.reg*Id), Z],
+                              np.c_[Z, Ky@(Ky+self.reg*Id)]]
+                R = R/2+R.T/2
+                D = D/2+D.T/2
+    
+            # Method 2: Simplified Hardoon
+            elif self.method == "simplified_hardoon":
+                R = np.r_[np.c_[Z, Ky], np.c_[Kx, Z]]
+                D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
+                R = R/2+R.T/2
+                D = D/2+D.T/2
+    
+            # Method 3: Kettenring-like generalizable formulation
+            elif self.method == "kettenring-like":
+                R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
+                D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
+        
+        elif self.decomp == "icd":            
+            G1 = _make_icd_kernel(self.x, self.ktype, self.degree,
+                                  self.sigma, self.mrank)
+            G2 = _make_icd_kernel(self.y, self.ktype, self.degree,
+                                  self.sigma, self.mrank)
+            
+            G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
+            G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
+            
+            N1 = len(G1[0])
+            N2 = len(G2[0])
+            Z11 = np.zeros(N1)
+            Z22 = np.zeros(N2)
+            Z12 = np.zeros((N1,N2))
+            I11 = np.eye(N1)
+            I22 = np.eye(N2)
 
-        betas = linalg.eig(R, D)[0]  # eigenvalues
-        alphas = linalg.eig(R, D)[1]  # right eigenvectors
-        ind = np.argsort(np.sum(np.diag(betas), axis=0), axis=0)
+            # Method 1: Standard Hardoon
+            if self.method == "standard_hardoon":
+                R = np.r_[np.c_[Z11, G1.T@G1@G1.T@G2], 
+                          np.c_[G2.T@G2@G2.T@G1, Z22]]
+                D = np.r_[np.c_[G1.T@G1@G1.T@G1+self.reg*I11, Z12],
+                              np.c_[Z12.T, G2.T@G2@G2.T@G2+self.reg*I22]]
+    
+            # Method 2: Simplified Hardoon
+            elif self.method == "simplified_hardoon":
+                R = np.r_[np.c_[Z11, G1.T@G2], np.c_[G2.T@G1, Z22]]
+                D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
+                          np.c_[Z12.T, G2.T@G2+self.reg*I22]]
+    
+            # Method 3: Kettenring-like generalizable formulation
+            elif self.method == "kettenring-like":
+                R = 0.5*np.r_[np.c_[G1.T@G1, G1.T@G2],
+                              np.c_[G2.T@G1, G2.T@G2]]
+                D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
+                          np.c_[Z12.T, G2.T@G2+self.reg*I22]]
 
-        perm_mat = np.zeros((len(ind), len(ind)))
+        # Solve eigenvalue problem
+        betas, alphas = linalg.eig(R, D)
 
-        for idx, i in enumerate(ind):
-            perm_mat[idx, i] = 1
+        # Top eigenvalues
+        ind = np.argsort(betas)[::-1][:self.n_components]
 
-        alphass = np.real(np.dot(alphas, perm_mat)/np.linalg.norm(alphas))
+        # Extract relevant coordinates and normalize to unit length
+        weight1 = alphas[:N, ind]
+        weight2 = alphas[N:, ind]
 
-        # weights
-        weight1 = np.asarray(alphass[:N, :dim])
-        weight2 = np.asarray(alphass[N:, :dim])
+        weight1 /= np.linalg.norm(weight1, axis=0)
+        weight2 /= np.linalg.norm(weight2, axis=0)
+
         self.weights_ = [weight1, weight2]
 
         return self
 
-    def transform(self, Xs):
+    def transform(self, Xs_transform):
         r"""
         Uses KCCA weights to transform Xs into canonical components
         and calculates correlations.
@@ -229,6 +285,19 @@ class KCCA(BaseEmbed):
 
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")
+        
+        x_t = Xs_transform[0]
+        y_t = Xs_transform[1]
+        
+        #error if number of subjects does not equal fit number of subjects
+        
+        x_t = _center_norm(x_t)
+        y_t = _center_norm(y_t)
+
+        Kx_transform = _make_kernel(x_t, x_t, self.ktype,
+                               self.degree, self.sigma)
+        Ky_transform = _make_kernel(x_t, y_t, self.ktype,
+                               self.degree, self.sigma)
 
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
@@ -237,11 +306,11 @@ class KCCA(BaseEmbed):
         comp2 = []
 
         for i in range(weight1.shape[1]):
-            comp1.append(self.Kx@weight1[:, i])
-            comp2.append(self.Ky@weight2[:, i])
+            comp1.append(Kx_transform@weight1[:, i])
+            comp2.append(Ky_transform@weight2[:, i])
 
-        comp1 = np.transpose(np.asarray([l*(-10**18) for l in comp1]))
-        comp2 = np.transpose(np.asarray([l*10**18 for l in comp2]))
+        comp1 = np.transpose(np.asarray(comp1))
+        comp2 = np.transpose(np.asarray(comp2))
 
         self.components_ = [comp1, comp2]
 
@@ -254,25 +323,67 @@ def _center_norm(x):
     return x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
 
 
-def _make_kernel(x, ktype, constant=10, degree=2.0, sigma=1.0):
-    N = len(x)
+def _make_kernel(x1, x2, ktype, degree=2.0, sigma=1.0):
+    N = len(x1)
+    N2 = len(x2)
     N0 = np.eye(N)-1/N*np.ones((N, N))
 
     # Linear kernel
     if ktype == "linear":
-        return N0@(x@x.T + constant)@N0
+        return N0@(x1@x2.T)@N0
 
     # Polynomial kernel
     elif ktype == "poly":
-        return N0@(x@x.T + constant)**degree@N0
+        return N0@(x1@x2.T)**degree@N0
 
     # Gaussian kernel
     elif ktype == "gaussian":
-        norms1 = np.sum(np.square(x), axis=1)[np.newaxis].T
-        norms2 = np.sum(np.square(x), axis=1)
+        norms1 = np.sum(np.square(x1), axis=1)[np.newaxis].T
+        norms2 = np.sum(np.square(x2), axis=1)
 
-        mat1 = numpy.matlib.repmat(norms1, 1, N)
+        mat1 = numpy.matlib.repmat(norms1, 1, N2)
         mat2 = numpy.matlib.repmat(norms2, N, 1)
 
-        distmat = mat1 + mat2 - 2*x@(x.conj().T)
+        distmat = mat1 + mat2 - 2*x1@(x2.conj().T)
         return N0@np.exp(-distmat/(2*sigma**2))@N0
+    
+    # Gaussian diagonal kernel
+    elif ktype == "gaussian-diag":
+        return np.exp(-np.sum(np.power((x1-x2),2), axis=1)/(2*sigma**2))
+
+
+def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
+    N = len(x)
+    #precision = 0.000001
+    mrank = N
+    ktype = "gaussian-diag"
+    sigma = 1.0
+
+    perm = np.arange(N)
+    d = np.zeros((1,N))
+    G = np.zeros((N,mrank))
+    subset = np.zeros((1,mrank))
+
+    for i in range(mrank):
+        x_new = x[perm[i:N],:]
+        if i == 0:
+            d[i:N] = _make_kernel(x_new,x_new, ktype)
+        else:
+            d[i:N] = (_make_kernel(x_new,x_new, ktype) 
+                    - np.sum(np.power(G[i:N,:i-1],2),axis=1))
+
+        j = np.argmax(d[i:N])
+        m2 = np.max(d[i:N])
+        j = j+i-1
+        m1 = np.sqrt(m2)
+        subset[i] = j
+
+        perm[i], perm[j] = perm[j], perm[i]
+        G[i, :i-1], G[j, :i-1] = G[j, :i-1], G[i, :i-1]
+        G[i,i] = m1
+
+        G[i+1:N,i] = ((_make_kernel(x[perm[i],:],x[perm[i+1:N],:],ktype,sigma).T 
+                         - (G[i+1:N,:i-1]@(G[i,:i-1].T)))/m1)
+
+    ind = np.argsort(perm)
+    G = G[ind,:]
