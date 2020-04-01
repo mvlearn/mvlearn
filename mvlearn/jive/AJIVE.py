@@ -1,3 +1,17 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import warnings
 from scipy.sparse import issparse
@@ -18,7 +32,11 @@ from .PCA import PCA
 class AJIVE(object):
     """
     An implementation of Angle-based Joint and Individual Variation Explained.
-    This algorithm 
+    This algorithm takes multiple input views with the same number of samples
+    and decomposes them into 3 distinct matrices representing:
+        - Individual variation of each particular view
+        - Joint variation shared by all views
+        - Noise
 
     Parameters
     ----------
@@ -26,35 +44,35 @@ class AJIVE(object):
         The initial signal ranks.
 
     joint_rank: {None, int}
-        If None, will estimate the joint rank, otherwise will use
-        provided joint rank.
+        Rank of the joint variation matrix. If None, will estimate the 
+        joint rank. Otherwise, will use provided joint rank.
 
     indiv_ranks: {list, dict, None}
-        If None, will estimate the individual ranks. Otherwise will
-        use provided individual ranks.
+        Ranks of individual variation matrices. If None, will estimate the 
+        individual ranks. Otherwise, will use provided individual ranks.
 
-    center: {str, None}
-        How to center the data matrices. If None, will not center.
+    center: {bool, None}
+        Centers matrix. If None, will not center.
 
     reconsider_joint_components: bool
         Triggers reconsider_joint_components function
 
-    wedin_percentile: int (default=5)
-        Percentile for wedin (lower) bound cutoff for squared singular values
-        used to estimate joint rank.
+    wedin_percentile: int, default=5
+        Percentile used for wedin (lower) bound cutoff for squared 
+        singular values used to estimate joint rank.
 
-    n_wedin_samples: int (default=1000)
+    n_wedin_samples: int, default=1000
         Number of wedin bound samples to draw.
 
     precomp_wedin_samples {None, dict of array-like, list of array-like}
-        Precomputed Wedin samples for each data block.
+        Wedin samples that are precomputed for each view.
 
-    randdir_percentile: int (default=95)
+    randdir_percentile: int, default=95
         Percentile for random direction (lower) bound cutoff for squared
-        singular values used to estimate joint rank..
+        singular values used to estimate joint rank.
 
-    n_randdir_samples: int (default=1000)
-        Number of random directions samples to draw.
+    n_randdir_samples: int, default=1000
+        Number of random direction samples to draw.
 
     precomp_randdir_samples {None,  array-like}
         Precomputed random direction samples.
@@ -67,31 +85,30 @@ class AJIVE(object):
     Attributes
     ----------
 
-    common: mvlearn.JIVE.PCA.PCA
-        The common joint space.
+    common: mvlearn.jive.PCA.PCA
+        The common joint space found using PCA class in same directory
 
-    blocks: dict of BlockSpecificResults
-        The block specific results.
+    blocks: dict
+        The block-specific results.
 
     centers_: dict
         The the centering vectors computed for each matrix.
 
-
     sv_threshold_: dict
-        The singular value thresholds computed for each block based on the
-        initial SVD. Used to estimate the individual ranks.
+        The singular value thresholds computed for each block based on
+        initial SVD. Eventually used to estimate the individual ranks.
 
     all_joint_svals_: list
         All singular values from the concatenated joint matrix.
 
-    random_sv_samples_: list of floats
-        Random singular value samples from for random direction bound.
+    random_sv_samples_: list
+        Random singular value samples from random direction bound.
 
     rand_cutoff_: float
         Singular value squared cutoff for the random direction bound.
 
-    wedin_samples_: dict of lists of floats
-        The wedin samples for each block.
+    wedin_samples_: dict
+        The wedin samples for each view.
 
     wedin_cutoff_: float
         Singular value squared cutoff for the wedin bound.
@@ -103,10 +120,10 @@ class AJIVE(object):
         The joint rank estimated using the wedin/random direction bound.
 
     joint_rank: int
-        The estimated joint rank.
+        The rank of the joint matrix
 
     indiv_ranks: dict of ints
-        The individual ranks for each block.
+        Ranks of the individual matrices for each view.
 
     """
 
@@ -163,21 +180,22 @@ class AJIVE(object):
 
         Parameters
         ----------
-        blocks: list, dict
-            The data matrices. If dict, will name blocks by keys, otherwise
-            blocks are named by 0, 1, ...K. Data matrices must have observations
-            on the rows and have the same number of observations i.e. the
-            kth data matrix is shape (n_samples, n_features[k]).
-
+        blocks: {list of array-likes or numpy.ndarray, dict}
+            - blocks length: n_views
+            - blocks[i] shape: (n_samples, n_features_i) 
+            The different views that are input. Input as data matrices. 
+            If dict, will name blocks by keys, otherwise blocks are named by 
+            0, 1, ...K. 
+            
         precomp_init_svd: {list, dict, None}, optional
             Precomputed initial SVD. Must have one entry for each data block.
             The SVD should be a 3 tuple (scores, svals, loadings), see output
-            of jive.utils.svd_wrapper for formatting details.
+            of .svd_wrapper for formatting details.
 
         """
         blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
-                arg_checker(blocks,
+                _arg_checker(blocks,
                             self.init_signal_ranks,
                             self.joint_rank,
                             self.indiv_ranks,
@@ -185,47 +203,51 @@ class AJIVE(object):
                             self.center)
 
         block_names = list(blocks.keys())
-        num_obs = list(blocks.values())[0].shape[0]
+        num_obs = list(blocks.values())[0].shape[0] #number of views
 
-        # center blocks
+        # centering views
         self.centers_ = {}
         for bn in block_names:
             blocks[bn], self.centers_[bn] = centering(blocks[bn],
                                                       method=self.center[bn])
 
-        # Initial signal space extraction by SVD on each block #
+        # SVD to extract signal on each view
 
         init_signal_svd = {}
         self.sv_threshold_ = {}
         for bn in block_names:
 
-            # compute rank init_signal_ranks[bn] + 1 SVD of the data block
+            # compute SVD with rank init_signal_ranks[bn] + 1 for view
             if precomp_init_svd[bn] is None:
                 # signal rank + 1 to get individual rank sv threshold
-                U, D, V = svd_wrapper(blocks[bn], self.init_signal_ranks[bn] + 1)
+                U, D, V = svd_wrapper(blocks[bn], \
+                                      self.init_signal_ranks[bn] + 1)
+            # If precomputed return values already found
             else:
                 U = precomp_init_svd[bn]["scores"]
                 D = precomp_init_svd[bn]["svals"]
                 V = precomp_init_svd[bn]["loadings"]
 
             # The SV threshold is halfway between the init_signal_ranks[bn]th
-            # and init_signal_ranks[bn] + 1 st singular value. Recall that
-            # python is zero indexed.
+            # and init_signal_ranks[bn] + 1 st singular value.
             self.sv_threshold_[bn] = (D[self.init_signal_ranks[bn] - 1] \
                                       + D[self.init_signal_ranks[bn]])/2
 
-            init_signal_svd[bn] = {'scores': U[:, 0:self.init_signal_ranks[bn]],
-                                   'svals': D[0:self.init_signal_ranks[bn]],
-                                   'loadings': V[:, 0:self.init_signal_ranks[bn]]}
+            init_signal_svd[bn] = {'scores': \
+                           U[:, 0:self.init_signal_ranks[bn]],
+                                   'svals': \
+                                   D[0:self.init_signal_ranks[bn]],
+                                   'loadings': \
+                                   V[:, 0:self.init_signal_ranks[bn]]}
 
-        # step 2: joint space estimation
-        # this step estimates the joint rank and computes the common
-        # joint space basis
 
-        # SVD of joint signal matrix
+        # SVD of joint signal matrix. Here we are trying to estimate joint
+        # rank and find an apt joint basis.
 
-        joint_scores_matrix = np.bmat([init_signal_svd[bn]['scores'] for bn in block_names])
-        joint_scores, joint_svals, joint_loadings = svd_wrapper(joint_scores_matrix)
+        joint_scores_matrix = \
+        np.bmat([init_signal_svd[bn]['scores'] for bn in block_names])
+        joint_scores, joint_svals, joint_loadings = \
+        svd_wrapper(joint_scores_matrix)
         self.all_joint_svals_ = deepcopy(joint_svals)
 
         # estimate joint rank using wedin bound and random direction if a
@@ -507,10 +529,12 @@ def _dict_formatting(x):
     return {n: x[n] for n in names}
 
 
-def arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
+def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
                 precomp_init_svd, center):
     """
-
+    Checks the argument inputs at different points in the code. If various 
+    criteria not met, errors are raised.
+        
     """
     # TODO: document
     # TODO: change assert to raise ValueError with informative message
