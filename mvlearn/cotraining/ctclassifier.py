@@ -22,11 +22,17 @@ from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
 
 class CTClassifier(BaseCoTrainEstimator):
     r"""
-    This class implements the co-training classifier for semi-supervised
-    learning with the framework as described in [#1CTC]_. This should ideally
-    be used on 2 views of the input data which satisfy the 3 conditions for
-    multi-view co-training (sufficiency, compatibility, conditional
-    independence) as detailed in [#1CTC]_. Extends BaseCoTrainEstimator.
+    This class implements the co-training classifier for supervised and
+    semi-supervised learning with the framework as described in [#1CTC]_.
+    The best use case is when the 2 views of input data are sufficiently
+    distinct and independent as detailed in [#1CTC]_. However, this can
+    also be successful when a single matrix of input data is given as
+    both views and two estimators are chosen which are quite different.
+    [#2CTC]_. See the examples below.
+
+    In the semi-supervised case, performance can vary greatly, so using
+    a separate validation set or cross validation procedure is
+    recommended to ensure the classifier has fit well.
 
     Parameters
     ----------
@@ -115,24 +121,37 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Examples
     --------
+    >>> # Supervised learning of single-view data with 2 distinct estimators
     >>> from mvlearn.cotraining import CTClassifier
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> import numpy as np
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from sklearn.naive_bayes import GaussianNB
     >>> from sklearn.model_selection import train_test_split
     >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
+    >>> X1 = data[0]  # Only using the first view
+    >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
+
+    >>> # Supervised learning with a single view of data and 2 estimator types
+    >>> estimator1 = GaussianNB()
+    >>> estimator2 = RandomForestClassifier()
+    >>> ctc = CTClassifier(estimator1, estimator2)  # specify two distinct
+    >>> ctc.fit([X1_train, X1_train], l_train)  # Xs is a list the same matrix
+    >>> preds = ctc.predict([X1_test, X1_test])
+    >>> print("Accuracy: ", sum(preds==l_test) / len(preds))
+    'Accuracy: 1.0'
+
+    >>> # Semi-supervised learning with 2 distinct views
     >>> X1, X2 = data[0], data[1]  # Use the first 2 views
     >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
     >>> X2_train, X2_test, _, _ = train_test_split(X2, labels)
-    >>> remove_idx = np.random.rand(len(l_train),) < 0.97
+    >>> remove_idx = np.random.rand(len(l_train),) < 0.6  # 60% unlabeled data
     >>> l_train[remove_idx] = np.nan  # simulate semi-supervised
-    >>> label_ratio = len(np.where(remove_idx==False)) / len(l_train)
-    >>> print('%.3f' % label_ratio)  # check labeled data proportion
-    0.030
     >>> ctc = CTClassifier()
     >>> ctc.fit([X1_train, X2_train], l_train)
-    >>> y_pred = ctc.predict([X1_test, X2_test])
-    >>> print(y_pred[:10])  # first 10 predictions
-    [0. 0. 1. 0. 1. 1. 0. 0. 0. 0.]
+    >>> preds = ctc.predict([X1_test, X2_test])
+    >>> print("Accuracy: ", sum(preds==l_test) / len(preds))
+    'Accuracy: 0.9'
 
     Notes
     -----
@@ -182,6 +201,8 @@ class CTClassifier(BaseCoTrainEstimator):
             unlabeled_pool data with co-training. In Proceedings of the
             eleventh annual conference on Computational learning theory
             (pp. 92-100). ACM.
+    .. [#2CTC] Goldman, Sally, and Yan Zhou. "Enhancing supervised
+            learning with unlabeled data." ICML. 2000.
 
     """
 
