@@ -71,6 +71,14 @@ class GaussianMixture:
         multivariate Gaussian distribution according to the specified
         parameters and class probability priors if set.
 
+        For each class :math:`i` with prior probability :math:`p_i`,
+        mean and variance :math:`\mu_i` and :math:`\sigma^2_i`, and :math:`n`
+        total samples, the latent data is sampled such that:
+
+        .. math::
+            (X_1, y_1), \dots, (X_{np_i}, Y_{np_i}) \overset{i.i.d.}{\sim}
+                \mathcal{N}(\mu_i, \sigma^2_i)
+
         Parameters
         ----------
         mu : 1D array-like or list of 1D array-likes

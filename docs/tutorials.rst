@@ -41,12 +41,22 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/SplitAE Simulated Data
    tutorials/embed/pls_tutorial
    tutorials/embed/pls_simulation
+
+Plotting
+========
+Methods build on top of Matplotlib and Seaborn have been implemented for convenient plotting of multiview data. See examples of such plots on simulated data.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/datasets/GaussianMixtures
    
 Test Dataset
 ============
-In order to conviently run tools in this package on multview data, data from the publicly available  External hyperlinks, like `UCI multiple features dataset <https://archive.ics.uci.edu/ml/datasets/Multiple+Features>`_ are provided with a dataloader to make access simple.
+In order to conviently run tools in this package on multview data, data can be simulated or  be accessed from the publicly available `UCI multiple features dataset <https://archive.ics.uci.edu/ml/datasets/Multiple+Features>`_ using a dataloader in this package.
 
 .. toctree::
    :maxdepth: 1
 
    tutorials/datasets/load_UCImultifeature_data
+   tutorials/datasets/GaussianMixtures
