@@ -95,7 +95,7 @@ class GaussianMixture:
         if self.mu.shape[0] != self.sigma.shape[0]:
             msg = "length of mu and sigma must be equal"
             raise ValueError(msg)
-        if (self.mu.dtype == np.dtype("O") or 
+        if (self.mu.dtype == np.dtype("O") or
                 self.sigma.dtype == np.dtype("O")):
             msg = "elements of sigma or mu are of inconsistent lengths or \
                 are not floats nor ints"
