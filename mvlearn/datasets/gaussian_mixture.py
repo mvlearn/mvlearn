@@ -95,8 +95,8 @@ class GaussianMixture:
         if self.mu.shape[0] != self.sigma.shape[0]:
             msg = "length of mu and sigma must be equal"
             raise ValueError(msg)
-        if (self.mu.dtype == np.dtype("O") or
-            self.sigma.dtype == np.dtype("O")):
+        if (self.mu.dtype == np.dtype("O") or 
+                self.sigma.dtype == np.dtype("O")):
             msg = "elements of sigma or mu are of inconsistent lengths or \
                 are not floats nor ints"
             raise ValueError(msg)
@@ -114,8 +114,8 @@ class GaussianMixture:
             self.latent = np.random.multivariate_normal(mu, sigma, size=n)
             self.y = None
         else:
-            if (len(self.mu) != len(class_probs) or
-                len(self.sigma) != len(class_probs)):
+            if len(self.mu) != len(class_probs) or len(self.sigma) != len(
+                    class_probs):
                 msg = "mu, sigma, and class_probs must be of equal length"
                 raise ValueError(msg)
             self.latent = np.concatenate(
@@ -134,9 +134,9 @@ class GaussianMixture:
             )
 
     def sample_views(self, transform="linear", n_noise=1):
-        """
-        Transforms one latent view by a specified transformation and adds noise.
-    
+        r"""
+        Transforms one latent view by specified transformation and adds noise.
+
         Parameters
         ----------
         transform : function or one of {'linear', 'sin', poly'},

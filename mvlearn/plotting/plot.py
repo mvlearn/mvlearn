@@ -70,7 +70,7 @@ def crossviews_plot(
         Sets the title of the grid.
     show : boolean, default=True
         Shows the plots if true. Returns the objects otherwise.
-    context : one of {'paper', 'notebook', 'talk', 'poster, None}, 
+    context : one of {'paper', 'notebook', 'talk', 'poster, None},
         default='notebook'
         Sets the seaborn plotting context.
     equal_axes : boolean, default=False
