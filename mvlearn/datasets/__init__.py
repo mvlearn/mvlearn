@@ -1,4 +1,4 @@
 from .base import load_UCImultifeature
-from .GaussianMixture import GaussianMixture
+from .gaussian_mixture import GaussianMixture
 
-__all__ = ["load_UCImultifeature", "GaussianMixture"]
+__all__ = ["load_UCImultifeature", "gaussian_mixture"]
