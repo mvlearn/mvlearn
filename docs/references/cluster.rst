@@ -1,5 +1,5 @@
-mvlearn.cluster
-=================
+Clustering
+==========
 
 .. currentmodule:: mvlearn.cluster
 
