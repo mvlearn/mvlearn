@@ -63,7 +63,7 @@ def crossviews_plot(
         Sets the labels of the samples.
     dimensions : array-like of ints, default=None
         The dimensions of the views to plot. If `None`, all dimensions up
-        to the minimum bettern the views will be plotted.
+        to the minimum between the views will be plotted.
     figsize : tuple, default=(10,10)
         Sets the grid figure size.
     title : string, default=None
