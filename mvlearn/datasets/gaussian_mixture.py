@@ -94,7 +94,7 @@ class GaussianMixture:
             The number of samples to sample.
         class_probs : array-like, default=None
             A list correponding to the fraction of samples from each class and
-            whose entries sum to 1. If `None`, then data is sampled from a one
+            whose entries sum to 1. If `None`, then data is sampled from one
             class.
         """
         self.mu = np.array(mu)
