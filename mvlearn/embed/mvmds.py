@@ -28,7 +28,7 @@ class MVMDS(BaseEmbed):
     based on the stepwise estimation of common principal components. Using
     these common principal components, the views are jointly reduced and
     a single view of k-dimensions is returned.
-
+    
     MVMDS is often a better alternative to PCA for multi-view data. See
     the ``tutorials`` in the documentation.
 
