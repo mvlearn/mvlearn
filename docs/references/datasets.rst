@@ -1,5 +1,5 @@
-mvlearn.datasets
-================
+Multiview Datasets
+==================
 
 .. currentmodule:: mvlearn.datasets
 
@@ -7,3 +7,8 @@ UCI multiple feature dataset (located `here <https://archive.ics.uci.edu/ml/data
 ----------------------------------------------------------------------------------------------------------
 
 .. autofunction:: load_UCImultifeature
+
+Data Simulator
+--------------
+
+.. autoclass:: GaussianMixture
