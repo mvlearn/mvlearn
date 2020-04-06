@@ -122,6 +122,7 @@ class KCCA(BaseEmbed):
         reg=0.1,
         n_components=2,
         ktype='linear',
+        constant = 0.1,
         sigma=1.0,
         degree=2.0,
         decomp='full',
@@ -131,6 +132,7 @@ class KCCA(BaseEmbed):
         self.reg = reg
         self.n_components = n_components
         self.ktype = ktype
+        self.constant = constant
         self.sigma = sigma
         self.degree = degree
         self.decomp = decomp
@@ -152,6 +154,9 @@ class KCCA(BaseEmbed):
             raise ValueError("degree must be int/float")
         if self.reg < 0 or self.reg > 1 or not type(self.reg) == float:
             raise ValueError("reg must be positive float")
+        if self.constant < 0 or not (type(self.constant) == float 
+                                     or type(self.constant) == int):
+            raise ValueError("constant must be a positive integer")
 
     def fit(self, Xs, y=None):
         r"""
@@ -179,9 +184,9 @@ class KCCA(BaseEmbed):
         N = len(self.X)
 
         if self.decomp == "full":
-            Kx = _make_kernel(self.X, self.X, self.ktype,
+            Kx = _make_kernel(self.X, self.X, self.ktype, self.constant,
                               self.degree, self.sigma)
-            Ky = _make_kernel(self.Y, self.Y, self.ktype,
+            Ky = _make_kernel(self.Y, self.Y, self.ktype, self.constant,
                               self.degree, self.sigma)
 
             Id = np.eye(N)
@@ -207,10 +212,12 @@ class KCCA(BaseEmbed):
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
 
-        elif self.decomp == "icd":          
-            G1 = _make_icd_kernel(self.X, self.X, self.ktype, self.degree,
+        elif self.decomp == "icd":    
+            G1 = _make_icd_kernel(self.X, self.X, self.ktype,
+                                  self.constant, self.degree,
                                   self.sigma, self.mrank)
-            G2 = _make_icd_kernel(self.Y, self.Y, self.ktype, self.degree,
+            G2 = _make_icd_kernel(self.Y, self.Y, self.ktype,
+                                  self.constant, self.degree,
                                   self.sigma, self.mrank)
 
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
@@ -294,11 +301,13 @@ class KCCA(BaseEmbed):
         Kx_transform = _make_kernel(_center_norm(Xs[0]),
                                     _center_norm(self.X),
                                     self.ktype,
+                                    self.constant,
                                     self.degree,
                                     self.sigma)
         Ky_transform = _make_kernel(_center_norm(Xs[1]),
                                     _center_norm(self.Y),
                                     self.ktype,
+                                    self.constant,
                                     self.degree,
                                     self.sigma)
 
@@ -325,7 +334,7 @@ def _center_norm(x):
     return x
 
 
-def _make_kernel(X, Y, ktype, degree=2.0, sigma=1.0):
+def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
     Nl = len(X)
     Nr = len(Y)
     N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
@@ -337,7 +346,7 @@ def _make_kernel(X, Y, ktype, degree=2.0, sigma=1.0):
 
     # Polynomial kernel
     elif ktype == "poly":
-        return N0l @ (X @ Y.T) ** degree @ N0r
+        return N0l @ (X @ Y.T + constant) ** degree @ N0r
 
     # Gaussian kernel
     elif ktype == "gaussian":
@@ -352,7 +361,7 @@ def _make_kernel(X, Y, ktype, degree=2.0, sigma=1.0):
 
 def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
     N = len(x)
-    #precision = 0.000001
+    # precision = 0.000001
     mrank = N
     ktype = "gaussian-diag"
     sigma = 1.0
@@ -367,8 +376,8 @@ def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
         if i == 0:
             d[i:N] = _make_kernel(x_new, x_new, ktype)
         else:
-            d[i:N] = (_make_kernel(x_new, x_new, ktype) 
-                    - np.sum(np.power(G[i:N, :i-1],2),axis=1))
+            d[i:N] = (_make_kernel(x_new, x_new, ktype)
+                      - np.sum(np.power(G[i:N, :i-1], 2), axis=1))
 
         j = np.argmax(d[i:N])
         m2 = np.max(d[i:N])
@@ -382,8 +391,8 @@ def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
 
         G[i+1:N, i] = ((_make_kernel(x[perm[i], :],
                                      x[perm[i+1:N], :],
-                                     ktype,sigma).T
-                         - (G[i+1:N, :i-1]@(G[i, :i-1].T)))/m1)
+                                     ktype, sigma).T
+                        - (G[i+1:N, :i-1]@(G[i, :i-1].T)))/m1)
 
     ind = np.argsort(perm)
     G = G[ind, :]
