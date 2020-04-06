@@ -146,6 +146,7 @@ def crossviews_plot(
     else:
         return (fig, axes)
 
+
 def quick_visualize(
     Xs,
     labels=None,
@@ -160,11 +161,14 @@ def quick_visualize(
     fig_kwargs={},
 ):
     r"""
-    Computes common principal components and plots the multi-view data
-    on a single 2D plot for easy visualization. Uses MVMDS for
-    dimensionality reduction. This can be thought of as the multi-view
-    analog of using PCA to decompose data and plot on principal
-    components.
+    Computes common principal components using MVMDS for dimensionality
+    reduction and plots the multi-view data on a single 2D plot for easy
+    visualization. This can be thought of as the multi-view analog of
+    using PCA to decompose data and plot on principal components.
+
+    See Also
+    --------
+    mvlearn.embed.MVMDS
 
     Parameters
     ----------
@@ -192,12 +196,30 @@ def quick_visualize(
     scatter_kwargs : dict, default={}
         Additional matplotlib.pyplot.scatter arguments.
     fig_kwargs : dict, default={}
-        Additional matplotlib.pyplot.subplots arguments.
+        Additional matplotlib.pyplot.figure arguments.
 
     Returns
     -------
-    (fig, axes) : tuple of the figure and its axes.
+    fig : figure object
         Only returned if `show=False`.
+
+    Examples
+    --------
+    >>> # From within a jupyter notebook
+    >>> from mvlearn.plotting import quick_visualize
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> %matplotlib inline
+    >>> # Load 4-class, multi-view data
+    >>> Xs, _ = load_UCImultifeature(select_labeled=[0,1,2,3])
+    >>> quick_visualize(Xs, title="MVMDS Reduced Data")
+
+    .. figure:: /figures/quick_visualize.png
+        :width: 250px
+        :alt: Quick Visualization of Multi-view Data
+        :align: center
+
+    >>> # Or, to alter/save the figure
+    >>> fig = quick_visualize(Xs, show=False, title="MVMDS Reduced Data")
 
     """
     Xs = check_Xs(Xs)
@@ -205,34 +227,34 @@ def quick_visualize(
     mvmds = MVMDS(n_components=2)
     Xs_reduced = mvmds.fit_transform(Xs)
 
-    fig, ax = plt.subplots(1, 1, figsize=figsize, **fig_kwargs)
+    fig = plt.figure(figsize=figsize, **fig_kwargs)
     sns.set_context(context)
 
     if labels is None:
-        ax.scatter(
-            Xs_reduced[:,0], Xs_reduced[:,1],
+        plt.scatter(
+            Xs_reduced[:, 0], Xs_reduced[:, 1],
             cmap=cmap, **scatter_kwargs
         )
     else:
-        ax.scatter(
-            Xs_reduced[:,0], Xs_reduced[:,1],
+        plt.scatter(
+            Xs_reduced[:, 0], Xs_reduced[:, 1],
             cmap=cmap,
             c=labels,
             **scatter_kwargs,
         )
     if ax_labels:
-        ax.set_xlabel("Component 1")
-        ax.set_ylabel("Component 2")
+        plt.xlabel("Component 1")
+        plt.ylabel("Component 2")
     if not ax_ticks:
-        ax.set_xticks([], [])
-        ax.set_yticks([], [])
+        plt.xticks([], [])
+        plt.yticks([], [])
 
     if title is not None:
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-        plt.suptitle(title)
+        plt.title(title)
     else:
         plt.tight_layout()
     if show:
         plt.show()
     else:
-        return (fig, axes)
+        return fig
