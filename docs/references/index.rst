@@ -3,12 +3,15 @@
 Reference
 *********
 
-.. toctree::
-   :maxdepth: 2
+The package is split up into submodules.
 
-   cluster
-   construct
-   cotraining
-   datasets
-   embed
-   utils
+.. toctree::
+    :maxdepth: 2
+
+    cluster
+    cotraining
+    embed
+    construct
+    datasets
+    plotting
+    utils

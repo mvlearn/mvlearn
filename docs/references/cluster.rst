@@ -1,5 +1,5 @@
-mvlearn.cluster
-=================
+Clustering
+==========
 
 .. currentmodule:: mvlearn.cluster
 
@@ -13,4 +13,10 @@ Multiview K Means
 -----------------
 
 .. autoclass:: MultiviewKMeans
+    :exclude-members: get_params, set_params
+
+Multiview Spherical K Means
+---------------------------
+
+.. autoclass:: MultiviewSphericalKMeans
     :exclude-members: get_params, set_params
