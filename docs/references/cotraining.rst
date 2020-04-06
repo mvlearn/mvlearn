@@ -1,5 +1,5 @@
-mvlearn.cotraining
-====================
+Cotraining
+==========
 
 .. currentmodule:: mvlearn.cotraining
 
