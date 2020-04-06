@@ -122,7 +122,7 @@ class KCCA(BaseEmbed):
         reg=0.1,
         n_components=2,
         ktype='linear',
-        constant = 0.1,
+        constant=0.1,
         sigma=1.0,
         degree=2.0,
         decomp='full',
@@ -154,7 +154,7 @@ class KCCA(BaseEmbed):
             raise ValueError("degree must be int/float")
         if self.reg < 0 or self.reg > 1 or not type(self.reg) == float:
             raise ValueError("reg must be positive float")
-        if self.constant < 0 or not (type(self.constant) == float 
+        if self.constant < 0 or not (type(self.constant) == float
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
 
@@ -212,7 +212,7 @@ class KCCA(BaseEmbed):
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
 
-        elif self.decomp == "icd":    
+        elif self.decomp == "icd":
             G1 = _make_icd_kernel(self.X, self.X, self.ktype,
                                   self.constant, self.degree,
                                   self.sigma, self.mrank)
