@@ -13,6 +13,7 @@ from ..utils.utils import check_Xs
 import numpy as np
 import numpy.matlib
 from scipy import linalg
+from sklearn.metrics.pairwise import euclidean_distances
 
 
 class KCCA(BaseEmbed):
@@ -42,7 +43,10 @@ class KCCA(BaseEmbed):
 
     Notes
     -----
-    CCA aims to find useful projections of the
+    This class implements kernel canonical correlation analysis
+    as described in [#1KCCA]_ and [#2KCCA]_.
+    
+    Traditional CCA aims to find useful projections of the
     high- dimensional variable sets onto the compact
     linear representations, the canonical components (components_).
 
@@ -103,11 +107,11 @@ class KCCA(BaseEmbed):
 
     References
     ----------
-    .. [#1] D. R. Hardoon, S. Szedmak and J. Shawe-Taylor,
+    .. [#1KCCA] D. R. Hardoon, S. Szedmak and J. Shawe-Taylor,
             "Canonical Correlation Analysis: An Overview with
             Application to Learning Methods", Neural Computation,
             Volume 16 (12), Pages 2639--2664, 2004.
-    .. [#2] Su-Yun Huang, Mei-Hsien Lee and Chuhsing Kate Hsiao,
+    .. [#2KCCA] Su-Yun Huang, Mei-Hsien Lee and Chuhsing Kate Hsiao,
             "Kernel Canonical Correlation Analysis and its Applications
             to Nonlinear Measures of Association and Test of Independence",
             draft, May 25, 2006
@@ -115,7 +119,7 @@ class KCCA(BaseEmbed):
 
     def __init__(
         self,
-        reg=0.00001,
+        reg=0.1,
         n_components=2,
         ktype='linear',
         sigma=1.0,
@@ -146,7 +150,7 @@ class KCCA(BaseEmbed):
             raise ValueError("sigma must be positive int/float")
         if not (type(self.degree) == float or type(self.sigma) == int):
             raise ValueError("degree must be int/float")
-        if self.reg < 0 or not type(self.reg) == float:
+        if self.reg < 0 or self.reg > 1 or not type(self.reg) == float:
             raise ValueError("reg must be positive float")
 
     def fit(self, Xs, y=None):
@@ -169,18 +173,15 @@ class KCCA(BaseEmbed):
         """
         Xs = check_Xs(Xs, multiview=True)
 
-        self.x = Xs[0]
-        self.y = Xs[1]
+        self.X = _center_norm(Xs[0])
+        self.Y = _center_norm(Xs[1])
 
-        N = len(self.x)
-
-        self.x = _center_norm(self.x)
-        self.y = _center_norm(self.y)
+        N = len(self.X)
 
         if self.decomp == "full":
-            Kx = _make_kernel(self.x, self.x, self.ktype,
+            Kx = _make_kernel(self.X, self.X, self.ktype,
                                    self.degree, self.sigma)
-            Ky = _make_kernel(self.y, self.y, self.ktype,
+            Ky = _make_kernel(self.Y, self.Y, self.ktype,
                                    self.degree, self.sigma)
 
             Id = np.eye(N)
@@ -207,9 +208,9 @@ class KCCA(BaseEmbed):
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
         
         elif self.decomp == "icd":            
-            G1 = _make_icd_kernel(self.x, self.ktype, self.degree,
+            G1 = _make_icd_kernel(self.X, self.X, self.ktype, self.degree,
                                   self.sigma, self.mrank)
-            G2 = _make_icd_kernel(self.y, self.ktype, self.degree,
+            G2 = _make_icd_kernel(self.Y, self.Y, self.ktype, self.degree,
                                   self.sigma, self.mrank)
             
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
@@ -256,11 +257,11 @@ class KCCA(BaseEmbed):
         weight1 /= np.linalg.norm(weight1, axis=0)
         weight2 /= np.linalg.norm(weight2, axis=0)
 
-        self.weights_ = [weight1, weight2]
+        self.weights_ = np.real([weight1, weight2])
 
         return self
 
-    def transform(self, Xs_transform):
+    def transform(self, Xs):
         r"""
         Uses KCCA weights to transform Xs into canonical components
         and calculates correlations.
@@ -286,18 +287,20 @@ class KCCA(BaseEmbed):
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")
         
-        x_t = Xs_transform[0]
-        y_t = Xs_transform[1]
+        Xs = check_Xs(Xs, multiview=True)
         
         #error if number of subjects does not equal fit number of subjects
-        
-        x_t = _center_norm(x_t)
-        y_t = _center_norm(y_t)
 
-        Kx_transform = _make_kernel(x_t, x_t, self.ktype,
-                               self.degree, self.sigma)
-        Ky_transform = _make_kernel(x_t, y_t, self.ktype,
-                               self.degree, self.sigma)
+        Kx_transform = _make_kernel(_center_norm(Xs[0]),
+                                    _center_norm(self.X),
+                                    self.ktype,
+                                    self.degree,
+                                    self.sigma)
+        Ky_transform = _make_kernel(_center_norm(Xs[1]),
+                                    _center_norm(self.Y),
+                                    self.ktype,
+                                    self.degree,
+                                    self.sigma)
 
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
@@ -318,38 +321,33 @@ class KCCA(BaseEmbed):
 
 
 def _center_norm(x):
-    N = len(x)
-    x = x - numpy.matlib.repmat(np.mean(x, axis=0), N, 1)
-    return x@np.sqrt(np.diag(np.divide(1, np.diag(np.transpose(x)@x))))
+    x = x - x.mean(0)
+    return x
 
 
-def _make_kernel(x1, x2, ktype, degree=2.0, sigma=1.0):
-    N = len(x1)
-    N2 = len(x2)
-    N0 = np.eye(N)-1/N*np.ones((N, N))
-
+def _make_kernel(X, Y, ktype, degree=2.0, sigma=1.0):
+    Nl = len(X)
+    Nr = len(Y)
+    N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
+    N0r = np.eye(Nr) - 1 / Nr * np.ones(Nr)
+    
     # Linear kernel
     if ktype == "linear":
-        return N0@(x1@x2.T)@N0
+        return N0l @ (X @ Y.T) @ N0r
 
     # Polynomial kernel
     elif ktype == "poly":
-        return N0@(x1@x2.T)**degree@N0
+        return N0l @ (X @ Y.T) ** degree @ N0r
 
     # Gaussian kernel
     elif ktype == "gaussian":
-        norms1 = np.sum(np.square(x1), axis=1)[np.newaxis].T
-        norms2 = np.sum(np.square(x2), axis=1)
+        distmat = euclidean_distances(X, Y, squared=True)
 
-        mat1 = numpy.matlib.repmat(norms1, 1, N2)
-        mat2 = numpy.matlib.repmat(norms2, N, 1)
-
-        distmat = mat1 + mat2 - 2*x1@(x2.conj().T)
-        return N0@np.exp(-distmat/(2*sigma**2))@N0
+        return N0l @ np.exp(-distmat / (2 * sigma ** 2)) @ N0r
     
     # Gaussian diagonal kernel
     elif ktype == "gaussian-diag":
-        return np.exp(-np.sum(np.power((x1-x2),2), axis=1)/(2*sigma**2))
+        return np.exp(-np.sum(np.power((X-Y),2), axis=1)/(2*sigma**2))
 
 
 def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
