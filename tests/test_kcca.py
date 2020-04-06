@@ -80,9 +80,9 @@ def test_center_norm():
     
 # Test make_kernel
 def test_make_kernel(): 
-    lkernel = _make_kernel(c, ktype="linear", constant=10.0)
-    gkernel = _make_kernel(c, ktype="gaussian", sigma=1.0, degree=2.0)
-    pkernel = _make_kernel(c, ktype="poly", sigma=1.0, degree=2.0)
+    lkernel = _make_kernel(c, c, ktype="linear")
+    gkernel = _make_kernel(c, c, ktype="gaussian", sigma=1.0, degree=2.0)
+    pkernel = _make_kernel(c, c, ktype="poly", sigma=1.0, degree=2.0)
     assert lkernel.shape==gkernel.shape==pkernel.shape == (10,10)
     
 # Test error handling
@@ -109,11 +109,6 @@ def test_neg_reg():
 def test_neg_sigma():
     with pytest.raises(ValueError):
         kcca_e = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =-1.0)
-        
-# Test error handling
-def test_int_sigma():
-    with pytest.raises(ValueError):
-        kcca_f = KCCA(ktype ="gaussian", reg = 0.001, n_components = 1, sigma =1)
 
 # Test error handling
 def test_neg_degree():
