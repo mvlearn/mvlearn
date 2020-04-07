@@ -558,28 +558,11 @@ class DCCA(BaseEmbed):
     >>> layer_sizes1 = [1024, 4]
     >>> layer_sizes2 = [1024, 4]
     >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
-                    layer_sizes2)
-    >>> dcca.fit([view1, view2])
+    ...             layer_sizes2)
+    >>> dcca = dcca.fit([view1, view2])
     >>> outputs = dcca.transform([view1_test, view2_test])
     >>> print(outputs[0].shape)
-    '(200, 2)'
-    >>> # First feature correlation
-    >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,0],
-                                           outputs[1][:,0])[0,1]))
-    '0.834'
-    >>> Second feature correlation
-    >>> print('{0:.3f}'.format(np.corrcoef(outputs[0][:,1],
-                                           outputs[1][:,1])[0,1]))
-    '0.783'
-
-    >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
-                    layer_sizes2, epoch_num=5, print_train_log_info=True)
-    >>> dcca.fit([view1, view2])
-    Epoch 1/5, training_loss: -0.6086
-    Epoch 2/5, training_loss: -1.0725
-    Epoch 3/5, training_loss: -1.3000
-    Epoch 4/5, training_loss: -1.4332
-    Epoch 5/5, training_loss: -1.5177
+    (200, 2)
 
     References
     ----------

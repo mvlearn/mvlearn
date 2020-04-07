@@ -117,30 +117,6 @@ class SplitAE(BaseEmbed):
         <http://proceedings.mlr.press/v37/wangb15.pdf>`_",
         ICML, 2015.
 
-    Examples
-    --------
-    >>> from mvlearn.embed import SplitAE
-    >>> import numpy as np
-    >>> # Create nonlinearly related views
-    >>> view1 = np.random.randn(10000, 10)
-    >>> view2 = view1 ** 2
-    >>> # Split into train and test
-    >>> view1_train = view1[:5000]
-    >>> view2_train = view2[:5000]
-    >>> view1_test = view1[5000:]
-    >>> view2_test = view2[5000:]
-    >>> splitae = SplitAE(hidden_size=32, num_hidden_layers=1, embed_size=20,
-                          training_epochs=50, batch_size=32,
-                          learning_rate=0.01, print_info=False,
-                          print_graph=True)
-    >>> splitae.fit([view1_train, view2_train],
-                     validationXs=[view1_test, view2_test])
-    >>> # Predict view 2 (view2_hat) based on only view1
-    >>> embeddings, view1_recon, view2_hat = splitae.transform([view1_test])
-    >>> # MSE loss between predicted view2 and true view2
-    >>> print('{0:.3f}'.format(np.mean((view2_hat - view2_test)**2)))
-    '0.052'
-
     For more extensive examples, see the ``tutorials`` for SplitAE in this
     documentation.
     """

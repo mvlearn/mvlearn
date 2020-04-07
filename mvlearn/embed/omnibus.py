@@ -73,7 +73,7 @@ class Omnibus(BaseEmbed):
     >>> embeddings = embedder.fit_transform([view1, view2])
     >>> view1_hat, view2_hat = embeddings
     >>> print(view1_hat.shape, view2_hat.shape)
-    '(1000, 3) (1000, 3)'
+    (1000, 3) (1000, 3)
     """
 
     def __init__(self, n_components=2, distance_metric="euclidean",

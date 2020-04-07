@@ -144,11 +144,12 @@ class MultiviewKMeans(BaseKMeans):
     >>> # Get 5-class data
     >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
     >>> mv_data = data[:2]  # first 2 views only
-    >>> mv_kmeans = MultiviewKMeans(n_clusters=5, random_state=5)
+    >>> mv_kmeans = MultiviewKMeans(n_clusters=5, random_state=10)
     >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
     >>> nmi = nmi_score(labels, mv_clusters)
-    >>> print('{0:.3f}\n'.format(nmi))
-    '0.778'
+    >>> print('{0:.3f}'.format(nmi))
+    0.559
+
     ""
     '''
 

@@ -103,7 +103,7 @@ class GCCA(BaseEmbed):
     >>> # Transform the first 5 views
     >>> Xs_latents = gcca.fit_transform(Xs[:5])
     >>> print([X.shape[1] for X in Xs_latents])
-    '[9, 9, 9, 9, 9]'
+    [9, 9, 9, 9, 9]
     """
 
     def __init__(

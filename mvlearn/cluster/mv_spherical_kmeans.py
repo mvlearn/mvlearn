@@ -82,7 +82,6 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         corresponds to the centroids of view 1 and centroids_[1] corresponds
         to the centroids of view 2.
 
-
     Notes
     -----
 
@@ -106,7 +105,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
-    >>>from mvlearn.cluster import MultiviewSphericalKMeans
+    >>> from mvlearn.cluster import MultiviewSphericalKMeans
     >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
     >>> # Get 5-class data
     >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
@@ -115,8 +114,9 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
     >>> # Compute nmi between true class labels and multi-view cluster labels
     >>> nmi = nmi_score(labels, mv_clusters)
-    >>> print('{0:.3f}\n'.format(nmi))
-    '0.741'
+    >>> print('{0:.3f}'.format(nmi))
+    0.739
+
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',

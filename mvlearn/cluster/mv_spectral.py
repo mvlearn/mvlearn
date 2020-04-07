@@ -155,11 +155,12 @@ class MultiviewSpectralClustering(BaseEstimator):
     >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
     >>> mv_data = data[:2]  # first 2 views only
     >>> mv_spectral = MultiviewSpectralClustering(n_clusters=5,
-            random_state=10, n_init=100)
+    ...     random_state=10, n_init=100)
     >>> mv_clusters = mv_spectral.fit_predict(mv_data)
     >>> nmi = nmi_score(labels, mv_clusters)
-    >>> print('{0:.3f}\n'.format(nmi))
-    '0.872'
+    >>> print('{0:.3f}'.format(nmi))
+    0.872
+
     '''
     def __init__(self, n_clusters=2, n_views=2, random_state=None,
                  info_view=None, max_iter=10, n_init=10, affinity='rbf',

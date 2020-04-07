@@ -135,23 +135,12 @@ class CTClassifier(BaseCoTrainEstimator):
     >>> # Supervised learning with a single view of data and 2 estimator types
     >>> estimator1 = GaussianNB()
     >>> estimator2 = RandomForestClassifier()
-    >>> ctc = CTClassifier(estimator1, estimator2)  # specify two distinct
-    >>> ctc.fit([X1_train, X1_train], l_train)  # Xs is a list the same matrix
+    >>> ctc = CTClassifier(estimator1, estimator2, random_state=1)
+    >>> # Use the same matrix for each view
+    >>> ctc = ctc.fit([X1_train, X1_train], l_train)
     >>> preds = ctc.predict([X1_test, X1_test])
     >>> print("Accuracy: ", sum(preds==l_test) / len(preds))
-    'Accuracy: 1.0'
-
-    >>> # Semi-supervised learning with 2 distinct views
-    >>> X1, X2 = data[0], data[1]  # Use the first 2 views
-    >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
-    >>> X2_train, X2_test, _, _ = train_test_split(X2, labels)
-    >>> remove_idx = np.random.rand(len(l_train),) < 0.6  # 60% unlabeled data
-    >>> l_train[remove_idx] = np.nan  # simulate semi-supervised
-    >>> ctc = CTClassifier()
-    >>> ctc.fit([X1_train, X2_train], l_train)
-    >>> preds = ctc.predict([X1_test, X2_test])
-    >>> print("Accuracy: ", sum(preds==l_test) / len(preds))
-    'Accuracy: 0.9'
+    Accuracy:  0.97
 
     Notes
     -----
