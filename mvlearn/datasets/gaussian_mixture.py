@@ -81,6 +81,19 @@ class GaussianMixture:
             A list correponding to the fraction of samples from each class and
             whose entries sum to 1. If `None`, then data is sampled from one
             class.
+
+        Examples
+        --------
+        >>> from mvlearn.datasets import GaussianMixture
+        >>> import numpy as np
+        >>> n = 100
+        >>> mu = [[0,1], [0,-1]]
+        >>> sigma = [np.eye(2), np.eye(2)]
+        >>> class_probs = [0.5, 0.5]
+        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs)
+        >>> # To create a polynomial relationship between views
+        >>> # use GM = GM.sample_views(transform='poly', n_noise=2)
+
         """
         self.mu = np.array(mu)
         self.sigma = np.array(sigma)

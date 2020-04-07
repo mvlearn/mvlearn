@@ -114,7 +114,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     >>> # Compute nmi between true class labels and multi-view cluster labels
     >>> nmi = nmi_score(labels, mv_clusters)
     >>> print('{0:.3f}'.format(nmi))
-    0.739
+    0.823
 
     '''
 

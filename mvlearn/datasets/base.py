@@ -66,22 +66,9 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
-    >>> # Load full dataset with all 10 classes
-    >>> full_data, full_labels = load_UCImultifeature()
-    >>> print(len(full_data))
-    6
-    >>> print(full_data[0].shape)
-    (2000, 76)
-    >>> print(np.unique(full_labels))
-    [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
-    >>> # Load only the examples labeled 0 or 1 (2 classes)
-    >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
-    >>> print(len(data))
-    6
-    >>> print(data[0].shape)
-    (400, 76)
-    >>> print(np.unique(labels))
-    [0. 1.]
+    >>> # Load 6-view dataset with all 10 classes
+    >>> mv_data, labels = load_UCImultifeature()
+
     """
 
     if select_labeled == "all":
