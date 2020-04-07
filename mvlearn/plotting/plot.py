@@ -92,6 +92,16 @@ def crossviews_plot(
     (fig, axes) : tuple of the figure and its axes.
         Only returned if `show=False`.
 
+    Notes
+    -----
+    Below is an example figure generated from 2 views with 2 features
+    each.
+
+    .. figure:: /figures/crossviews_plot_example.png
+        :width: 250px
+        :alt: Quick Visualization of Multi-view Data
+        :align: center
+
     """
     Xs = check_Xs(Xs)
     if dimensions is None:
@@ -203,23 +213,16 @@ def quick_visualize(
     fig : figure object
         Only returned if `show=False`.
 
-    Examples
-    --------
-    >>> # From within a jupyter notebook
-    >>> from mvlearn.plotting import quick_visualize
-    >>> from mvlearn.datasets import load_UCImultifeature
-    >>> %matplotlib inline
-    >>> # Load 4-class, multi-view data
-    >>> Xs, _ = load_UCImultifeature(select_labeled=[0,1,2,3])
-    >>> quick_visualize(Xs, title="MVMDS Reduced Data")
+    Notes
+    -----
+    This function simply uses ``MVMDS`` with ``n_components=2`` to
+    reduce arbitrarily many views of input data to 2-dimensions, then
+    makes a scatter plot.
 
     .. figure:: /figures/quick_visualize.png
         :width: 250px
         :alt: Quick Visualization of Multi-view Data
         :align: center
-
-    >>> # Or, to alter/save the figure
-    >>> fig = quick_visualize(Xs, show=False, title="MVMDS Reduced Data")
 
     """
     Xs = check_Xs(Xs)
