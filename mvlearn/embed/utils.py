@@ -1,3 +1,17 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from scipy.stats import norm
 import numpy as np
 from scipy.sparse.linalg import svds
@@ -57,8 +71,9 @@ def select_dimension(
     return_likelihoods=False,
 ):
     """
-    Generates profile likelihood from array based on Zhu and Godsie method.
-    Elbows correspond to the optimal embedding dimension.
+    Generates profile likelihood from array based on Zhu and Godsie
+    method [#1EUtils]_. Elbows correspond to the optimal embedding
+    dimension.
 
     Parameters
     ----------
@@ -92,9 +107,9 @@ def select_dimension(
 
     References
     ----------
-    .. [#1] Code from the https://github.com/neurodata/graspy package,
+    .. [#1EUtils] Code from the https://github.com/neurodata/graspy package,
         reproduced and shared with permission.
-    .. [#2] Zhu, M. and Ghodsi, A. (2006).
+    .. [#2EUtils] Zhu, M. and Ghodsi, A. (2006).
         Automatic dimensionality selection from the scree plot via the
         use of profile likelihood. Computational Statistics & Data
         Analysis, 51(2), pp.918-930.

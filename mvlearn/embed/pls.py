@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------
+#
 # Implements the Partial Least Squares view construction method
 # by wrapping the PLS regression function from sklearn. View
 # construction generates a new projection of the data.
