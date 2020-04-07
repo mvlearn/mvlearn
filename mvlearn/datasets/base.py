@@ -4,7 +4,7 @@ import numpy as np
 
 def load_UCImultifeature(select_labeled="all"):
     """
-    Load the UCI multiple features dataset, taken from
+    Load the UCI multiple features dataset [#1Data]_, taken from
     https://archive.ics.uci.edu/ml/datasets/Multiple+Features This data set
     consists of 6 views of handwritten digit images, with classes 0-9. The
     6 views are the following:
@@ -39,6 +39,26 @@ def load_UCImultifeature(select_labeled="all"):
     .. [#1Data] M. van Breukelen, R.P.W. Duin, D.M.J. Tax, and J.E. den Hartog,
             Handwritten digit recognition by combined classifiers, Kybernetika,
             vol. 34, no. 4, 1998, 381-386
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> # Load full dataset with all 10 classes
+    >>> full_data, full_labels = load_UCImultifeature()
+    >>> print(len(full_data))
+    6
+    >>> print(full_data[0].shape)
+    (2000, 76)
+    >>> print(np.unique(full_labels))
+    [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+    >>> # Load only the examples labeled 0 or 1 (2 classes)
+    >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
+    >>> print(len(data))
+    6
+    >>> print(data[0].shape)
+    (400, 76)
+    >>> print(np.unique(labels))
+    [0. 1.]
     """
 
     if select_labeled == "all":

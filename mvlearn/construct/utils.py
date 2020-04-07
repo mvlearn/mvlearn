@@ -46,6 +46,9 @@ def check_n_features(n_features, cols):
         Number of features in data matrix.
     """
 
+    if n_features is None:
+        raise Exception("n_features must be specified.")
+
     if n_features <= 0:
         raise Exception("n_features cannot be 0 or a negative number.")
 
