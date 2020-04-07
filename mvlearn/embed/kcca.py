@@ -167,7 +167,7 @@ class KCCA(BaseEmbed):
         reg=0.1,
         decomp='full',
         method='kettenring-like',
-    ): 
+    ):
         self.n_components = n_components
         self.ktype = ktype
         self.constant = constant
