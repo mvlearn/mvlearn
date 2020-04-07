@@ -47,6 +47,11 @@ def partial_least_squares_embedding(
     OR (if return_embedding is False)
     X_weights : shape (features, n_components)
         The PLS feature weights to embed the data
+
+    Notes
+    -----
+    From an implementation perspective, this wraps PLSRegresion from
+    sklearn.cross_decomposition.
     """
     pls = PLSRegression(n_components=n_components)
     pls.fit(X, Y)

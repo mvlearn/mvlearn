@@ -35,6 +35,11 @@ class MultiviewSpectralClustering(BaseEstimator):
     r'''
     An implementation of multi-view spectral clustering using the
     basic co-training framework as described in [#1Clu]_.
+    Additionally, this can be effective when the dataset naturally
+    contains features that are of 2 different data types, such as
+    continuous features and categorical features [#3Clu]_, and then the
+    original features are separated into two views in this way.
+
     This algorithm can handle 2 or more views of data.
 
     Parameters
@@ -140,6 +145,22 @@ class MultiviewSpectralClustering(BaseEstimator):
     .. [#1Clu] Abhishek Kumar and Hal Daume. A Co-training Approach for
             Multiview Spectral Clustering. In International Conference
             on Machine Learning, 2011
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.cluster import MultiviewSpectralClustering
+    >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
+    >>> # Get 5-class data
+    >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
+    >>> mv_data = data[:2]  # first 2 views only
+    >>> mv_spectral = MultiviewSpectralClustering(n_clusters=5,
+    ...     random_state=10, n_init=100)
+    >>> mv_clusters = mv_spectral.fit_predict(mv_data)
+    >>> nmi = nmi_score(labels, mv_clusters)
+    >>> print('{0:.3f}'.format(nmi))
+    0.872
+
     '''
     def __init__(self, n_clusters=2, n_views=2, random_state=None,
                  info_view=None, max_iter=10, n_init=10, affinity='rbf',
