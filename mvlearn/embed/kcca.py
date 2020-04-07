@@ -11,7 +11,6 @@ from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
 import numpy as np
-import numpy.matlib
 from scipy import linalg
 from sklearn.metrics.pairwise import euclidean_distances
 
@@ -27,19 +26,26 @@ class KCCA(BaseEmbed):
 
     Parameters
     ----------
-    reg : float, default = 0.00001
-          Regularization parameter
     n_components : int, default = 10
                    Number of canonical dimensions to keep
     ktype : string, default = 'linear'
             Type of kernel
         - value can be 'linear', 'gaussian' or 'poly'
-    sigma : float, default = 1.0
-            Parameter if Gaussian kernel
     degree : float, default = 2.0
              Parameter if Polynomial kernel
     constant : float, default = 1.0
              Parameter if Polynomial kernel
+    sigma : float, default = 1.0
+            Parameter if Gaussian kernel
+    reg : float, default = 0.00001
+          Regularization parameter
+    decomp : string, default = 'full'
+             Decomposition type
+        - value can be only be 'full'. adding 'icd' soon.
+    method : string, default = 'kettenring-like'
+             Decomposition method
+        - value can be 'kettenring-like', 'simplified_hardoon',
+          or 'standard_hardoon'
 
     Notes
     -----
@@ -115,31 +121,61 @@ class KCCA(BaseEmbed):
             "Kernel Canonical Correlation Analysis and its Applications
             to Nonlinear Measures of Association and Test of Independence",
             draft, May 25, 2006
+
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> from scipy import stats
+    >>> from mvlearn.embed.kcca import KCCA
+    >>> np.random.seed(1)
+    >>> # Define two latent variables
+    >>> N = 100
+    >>> latvar1 = np.random.randn(N, )
+    >>> latvar2 = np.random.randn(N, )
+    >>> # Define independent components for each dataset
+    >>> indep1 = np.random.randn(N, 4)
+    >>> indep2 = np.random.randn(N, 5)
+    >>> x = 0.25*indep1 + 0.75*np.vstack((latvar1, latvar2,
+    ...                                   latvar1, latvar2)).T
+    >>> y = 0.25*indep2 + 0.75*np.vstack((latvar1, latvar2,
+    ...                                   latvar1, latvar2, latvar1)).T
+    >>> Xs = [x, y]
+    >>> Xs_train = [Xs[0][:20], Xs[1][:20]]
+    >>> Xs_test = [Xs[0][20:], Xs[1][20:]]
+    >>> kcca_l = KCCA(ktype ="linear", n_components = 4)
+    >>> a = kcca_l.fit(Xs_train)
+    >>> linearkcca = kcca_l.transform(Xs_test)
+    >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
+    >>> (r2, _) = stats.pearsonr(linearkcca[0][:,1], linearkcca[1][:,1])
+    >>> (r3, _) = stats.pearsonr(linearkcca[0][:,2], linearkcca[1][:,2])
+    >>> (r4, _) = stats.pearsonr(linearkcca[0][:,3], linearkcca[1][:,3])
+    >>> #Below are the canonical correlation for the four components:
+    >>> print(round(r1, 2), round(r2, 2), round(r3, 2), round(r4,2))
+    0.85 0.94 -0.25 -0.03
+
+
     """
 
     def __init__(
         self,
-        reg=0.1,
         n_components=2,
         ktype='linear',
         constant=0.1,
         sigma=1.0,
         degree=2.0,
+        reg=0.1,
         decomp='full',
         method='kettenring-like',
-        mrank=100
-    ):
-        self.reg = reg
+    ): 
         self.n_components = n_components
         self.ktype = ktype
         self.constant = constant
         self.sigma = sigma
         self.degree = degree
+        self.reg = reg
         self.decomp = decomp
         self.method = method
-        self.mrank = mrank
-        if self.ktype is None:
-            self.ktype = "linear"
 
         # Error Handling
         if self.n_components < 0 or not type(self.n_components) == int:
@@ -212,45 +248,6 @@ class KCCA(BaseEmbed):
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
 
-        elif self.decomp == "icd":
-            G1 = _make_icd_kernel(self.X, self.X, self.ktype,
-                                  self.constant, self.degree,
-                                  self.sigma, self.mrank)
-            G2 = _make_icd_kernel(self.Y, self.Y, self.ktype,
-                                  self.constant, self.degree,
-                                  self.sigma, self.mrank)
-
-            G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
-            G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
-
-            N1 = len(G1[0])
-            N2 = len(G2[0])
-            Z11 = np.zeros(N1)
-            Z22 = np.zeros(N2)
-            Z12 = np.zeros((N1, N2))
-            I11 = np.eye(N1)
-            I22 = np.eye(N2)
-
-            # Method 1: Standard Hardoon
-            if self.method == "standard_hardoon":
-                R = np.r_[np.c_[Z11, G1.T@G1@G1.T@G2],
-                          np.c_[G2.T@G2@G2.T@G1, Z22]]
-                D = np.r_[np.c_[G1.T@G1@G1.T@G1+self.reg*I11, Z12],
-                          np.c_[Z12.T, G2.T@G2@G2.T@G2+self.reg*I22]]
-
-            # Method 2: Simplified Hardoon
-            elif self.method == "simplified_hardoon":
-                R = np.r_[np.c_[Z11, G1.T@G2], np.c_[G2.T@G1, Z22]]
-                D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
-                          np.c_[Z12.T, G2.T@G2+self.reg*I22]]
-
-            # Method 3: Kettenring-like generalizable formulation
-            elif self.method == "kettenring-like":
-                R = 0.5*np.r_[np.c_[G1.T@G1, G1.T@G2],
-                              np.c_[G2.T@G1, G2.T@G2]]
-                D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
-                          np.c_[Z12.T, G2.T@G2+self.reg*I22]]
-
         # Solve eigenvalue problem
         betas, alphas = linalg.eig(R, D)
 
@@ -295,8 +292,6 @@ class KCCA(BaseEmbed):
             raise NameError("kCCA has not been trained.")
 
         Xs = check_Xs(Xs, multiview=True)
-
-        # error if number of subjects does not equal fit number of subjects
 
         Kx_transform = _make_kernel(_center_norm(Xs[0]),
                                     _center_norm(self.X),
@@ -357,42 +352,3 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
     # Gaussian diagonal kernel
     elif ktype == "gaussian-diag":
         return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
-
-
-def _make_icd_kernel(x, ktype, degree=2.0, sigma=1.0, mrank=100):
-    N = len(x)
-    # precision = 0.000001
-    mrank = N
-    ktype = "gaussian-diag"
-    sigma = 1.0
-
-    perm = np.arange(N)
-    d = np.zeros((1, N))
-    G = np.zeros((N, mrank))
-    subset = np.zeros((1, mrank))
-
-    for i in range(mrank):
-        x_new = x[perm[i:N], :]
-        if i == 0:
-            d[i:N] = _make_kernel(x_new, x_new, ktype)
-        else:
-            d[i:N] = (_make_kernel(x_new, x_new, ktype)
-                      - np.sum(np.power(G[i:N, :i-1], 2), axis=1))
-
-        j = np.argmax(d[i:N])
-        m2 = np.max(d[i:N])
-        j = j+i-1
-        m1 = np.sqrt(m2)
-        subset[i] = j
-
-        perm[i], perm[j] = perm[j], perm[i]
-        G[i, :i-1], G[j, :i-1] = G[j, :i-1], G[i, :i-1]
-        G[i, i] = m1
-
-        G[i+1:N, i] = ((_make_kernel(x[perm[i], :],
-                                     x[perm[i+1:N], :],
-                                     ktype, sigma).T
-                        - (G[i+1:N, :i-1]@(G[i, :i-1].T)))/m1)
-
-    ind = np.argsort(perm)
-    G = G[ind, :]
