@@ -577,7 +577,8 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
     # Check the joint ranks
     if joint_rank is not None and joint_rank > sum(init_signal_ranks.values()):
         raise ValueError(
-            "joint_rank must be smaller than the sum of the initial signal ranks"
+            "joint_rank must be smaller than the sum of the initial signal \
+            ranks"
         )
 
     # Check individual ranks
