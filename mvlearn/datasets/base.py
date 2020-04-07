@@ -28,7 +28,7 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
 
     shuffle : bool, default=False
         If ``True``, returns each array with its rows and corresponding
-        labels shuffled randomly according to random_state.
+        labels shuffled randomly according to ``random_state``.
 
     random_state : int, default=None
         Determines the order data is shuffled if ``shuffle=True``. Used so
@@ -55,8 +55,6 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
 
     if not shuffle:
         random_state = 1
-    elif random_state is None:
-        random_state = np.random.randint(1, 10000)
 
     select_labeled = list(set(select_labeled))
 
