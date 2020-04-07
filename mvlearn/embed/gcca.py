@@ -24,11 +24,12 @@ from .utils import select_dimension
 
 class GCCA(BaseEmbed):
     r"""
-    An implementation of Generalized Canonical Correalation Analysis suitable
-    for cases where the number of features exceeds the number of samples by
-    first applying single view dimensionality reduction. Computes individual
-    projections into a common subspace such that the correlations between
-    pairwise projections are minimized (ie. maximize pairwise correlation).
+    An implementation of Generalized Canonical Correalation Analysis [#1GCCA]_
+    suitable for cases where the number of features exceeds the number of
+    samples by first applying single view dimensionality reduction. Computes
+    individual projections into a common subspace such that the correlations
+    between pairwise projections are minimized (ie. maximize pairwise
+    correlation).
 
     Parameters
     ----------
@@ -87,10 +88,22 @@ class GCCA(BaseEmbed):
 
     References
     ----------
-    .. [#1] B. Afshin-Pour, G.A. Hossein-Zadeh, S.C. Strother, H.
+    .. [#1GCCA] B. Afshin-Pour, G.A. Hossein-Zadeh, S.C. Strother, H.
             Soltanian-Zadeh. Enhancing reproducibility of fMRI statistical
             maps using generalized canonical correlation analysis in NPAIRS
             framework. Neuroimage, 60 (2012), pp. 1970-1981
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.embed import GCCA
+    >>> # Load full dataset, labels not needed
+    >>> Xs, _ = load_UCImultifeature()
+    >>> gcca = GCCA(fraction_var = 0.9)
+    >>> # Transform the first 5 views
+    >>> Xs_latents = gcca.fit_transform(Xs[:5])
+    >>> print([X.shape[1] for X in Xs_latents])
+    [9, 9, 9, 9, 9]
     """
 
     def __init__(
