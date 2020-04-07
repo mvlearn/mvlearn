@@ -25,7 +25,7 @@ def _compute_likelihood(arr):
 
     References:
     -----------
-    .. [#1] Code from the https://github.com/neurodata/graspy package,
+    .. [#3EUtils] Code from the https://github.com/neurodata/graspy package,
         reproduced and shared with permission.
     """
     n_elements = len(arr)
@@ -72,7 +72,7 @@ def select_dimension(
 ):
     """
     Generates profile likelihood from array based on Zhu and Godsie
-    method [#1EUtils]_. Elbows correspond to the optimal embedding
+    method [#2EUtils]_. Elbows correspond to the optimal embedding
     dimension.
 
     Parameters
