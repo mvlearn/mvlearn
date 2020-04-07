@@ -50,7 +50,8 @@ class _FullyConnectedNet(torch.nn.Module):
 class SplitAE(BaseEmbed):
     r"""
     Implements an autoencoder that creates an embedding of a view View1 and
-    from that embedding reconstructs View1 and another view View2.
+    from that embedding reconstructs View1 and another view View2, as
+    described in [#1Split]_.
 
     .. figure:: /figures/splitAE.png
         :width: 250px
@@ -111,12 +112,14 @@ class SplitAE(BaseEmbed):
 
     References
     ----------
-    .. [#cca] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
+    .. [#1Split] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
         "`On Deep Multi-View Representation Learning.
         <http://proceedings.mlr.press/v37/wangb15.pdf>`_",
         ICML, 2015.
-    """
 
+    For more extensive examples, see the ``tutorials`` for SplitAE in this
+    documentation.
+    """
     def __init__(self, hidden_size=64, num_hidden_layers=2, embed_size=20,
                  training_epochs=10, batch_size=16, learning_rate=0.001,
                  print_info=False, print_graph=True):
@@ -254,11 +257,12 @@ class SplitAE(BaseEmbed):
 
     def transform(self, Xs):
         r"""
-        Transform the given view with the trained autoencoder.
+        Transform the given view with the trained autoencoder. Provide
+        a single view within a list.
 
         Parameters
         ----------
-        Xs : a list of one array-like, or an np.ndarray
+        Xs : a list of exactly one array-like, or an np.ndarray
             Represents the View1 of some data. The array must have the same
             number of columns  (features) as the View1 presented
             in the :code:`fit(...)` step.
