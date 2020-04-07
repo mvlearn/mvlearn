@@ -27,8 +27,13 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     An implementation of multi-view spherical K-Means using the
     co-EM framework as described in [#2Clu]_. This algorithm is
     most suitable for cases in which the different views of data
-    are conditionally independent. This algorithm currently handles
-    two views of data.
+    are conditionally independent. Additionally, this can be effective
+    when the dataset naturally contains features that are of 2 different
+    data types, such as continuous features and categorical features
+    [#3Clu]_, and then the original features are separated into two
+    views in this way.
+
+    This algorithm currently handles two views of data.
 
     Parameters
     ----------
@@ -77,7 +82,6 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         corresponds to the centroids of view 1 and centroids_[1] corresponds
         to the centroids of view 2.
 
-
     Notes
     -----
 
@@ -97,6 +101,21 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     one view, and then using the computed hidden variables as the input for the
     maximization step in the other view. This algorithm is described in the
     section for multi-view k-means clustering.
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.cluster import MultiviewSphericalKMeans
+    >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
+    >>> # Get 5-class data
+    >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
+    >>> mv_data = data[:2]  # first 2 views only
+    >>> mv_kmeans = MultiviewSphericalKMeans(n_clusters=5, random_state=5)
+    >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
+    >>> # Compute nmi between true class labels and multi-view cluster labels
+    >>> nmi = nmi_score(labels, mv_clusters)
+    >>> print('{0:.3f}'.format(nmi))
+    0.739
 
     '''
 
