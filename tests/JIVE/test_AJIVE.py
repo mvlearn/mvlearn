@@ -3,17 +3,58 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from jive.AJIVE import AJIVE
-from jive.ajive_fig2 import generate_data_ajive_fig2
-from jive.tests.utils import svd_checker
+from mvlearn.jive.AJIVE import AJIVE
+from .utils import svd_checker
 
 
 class TestFig2Runs(unittest.TestCase):
 
     @classmethod
     def setUp(self):
-        X, Y = generate_data_ajive_fig2()
+        
+        np.random.seed(12)
 
+        # First View
+        V1_joint = np.bmat([[-1 * np.ones((10, 20))],
+                               [np.ones((10, 20))]])
+        
+        V1_joint = np.bmat([np.zeros((20, 80)), V1_joint])
+        
+        V1_indiv_t = np.bmat([[np.ones((4, 50))],
+                                [-1 * np.ones((4, 50))],
+                                [np.zeros((4, 50))],
+                                [np.ones((4, 50))],
+                                [-1 * np.ones((4, 50))]])
+        
+        V1_indiv_b = np.bmat([[np.ones((5, 50))],
+                                [-1 * np.ones((10, 50))],
+                                [np.ones((5, 50))]])
+        
+        V1_indiv_tot = np.bmat([V1_indiv_t, V1_indiv_b])
+        
+        V1_noise = np.random.normal(loc=0, scale=1, size=(20, 100))
+        
+        
+        # Second View
+        V2_joint = np.bmat([[np.ones((10, 10))],
+                              [-1*np.ones((10, 10))]])
+        
+        V2_joint = 5000 * np.bmat([V2_joint, np.zeros((20, 10))])
+        
+        V2_indiv = 5000 * np.bmat([[-1 * np.ones((5, 20))],
+                                      [np.ones((5, 20))],
+                                      [-1 * np.ones((5, 20))],
+                                      [np.ones((5, 20))]])
+        
+        V2_noise = 5000 * np.random.normal(loc=0, scale=1, size=(20, 20))
+      
+        # View Construction
+        
+        X = V1_indiv_tot + V1_joint + V1_noise
+        
+        Y = V2_indiv + V2_joint + V2_noise
+
+        
         obs_names = ['sample_{}'.format(i) for i in range(X.shape[0])]
         var_names = {'x': ['x_var_{}'.format(i) for i in range(X.shape[1])],
                      'y': ['y_var_{}'.format(i) for i in range(Y.shape[1])]}

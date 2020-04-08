@@ -8,9 +8,9 @@ Created on Mon Apr  6 21:55:10 2020
 
 import pytest
 import numpy as np
-from mvlearn.embed.mvmds import MVMDS
 from mvlearn.jive.AJIVE import AJIVE
-import math
+from scipy.sparse import csr_matrix
+
 
 '''
 DATA INITIALIZATION
@@ -37,7 +37,7 @@ def data():
                             [-1 * np.ones((10, 50))],
                             [np.ones((5, 50))]])
     
-    V1_indiv_tot = np.bmat([V1_indiv_t, V1_indiv_t])
+    V1_indiv_tot = np.bmat([V1_indiv_t, V1_indiv_b])
     
     V1_noise = np.random.normal(loc=0, scale=1, size=(20, 100))
     
@@ -54,28 +54,48 @@ def data():
                                   [np.ones((5, 20))]])
     
     V2_noise = 5000 * np.random.normal(loc=0, scale=1, size=(20, 20))
-    
+  
     # View Construction
     
     V1 = V1_indiv_tot + V1_joint + V1_noise
     
     V2 = V2_indiv + V2_joint + V2_noise
 
+    # Creating Sparse views
+    V1_sparse = np.array(np.zeros_like(V1))
+    V2_sparse = np.array(np.zeros_like(V2))
+    V1_sparse[0,0] = 1
+    V2_sparse[0,0] = 3
+    V1_Bad = csr_matrix([[1, 2, 0], [0, 0, 3], [4, 0, 5]])
+    V2_Bad = csr_matrix([[1, 2, 3], [7, 0, 3], [1, 2, 2]])
+   
     Views_Same = [V1, V1]
     Views_Different = [V1, V2]
+    Views_Sparse = [V1_sparse, V2_sparse]
+    Views_Bad = [V1_Bad, V2_Bad]
+
     
-    return {'same_views' : Views_Same, 'diff_views' : Views_Different}
+    return {'same_views' : Views_Same, 'diff_views' : Views_Different,
+            'sparse_views' : Views_Sparse, 'bad_views': Views_Bad}
 
 '''
 TESTS
 '''
 
 
-def test_component_num_greater(data):
-    mvmds = MVMDS(len(data['random_views'][0] + 1))
-    comp = mvmds.fit_transform(data['random_views'])
-    
-    assert len(comp) == len(data['random_views'][0])       
+def test_joint_indiv_length(data):
+    dat = data['same_views']
+    ajive = AJIVE(init_signal_ranks= [2,2])
+    ajive.fit(blocks = dat)
+    blocks = ajive.get_full_block_estimates()
+    assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
+
+def test_joint_noise_length(data):
+    dat = data['same_views']
+    ajive = AJIVE(init_signal_ranks= [2,2])
+    ajive.fit(blocks = dat)
+    blocks = ajive.get_full_block_estimates()
+    assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
 
           
 def test_joint(data):
@@ -106,42 +126,59 @@ def test_wrong_sig(data):
     except:
         j = 1
     assert j == 1
-        
-def test_fit_transformdifferent_wrong_samples(data):
+
+def check_sparse(data):
+    dat = data['sparse_views']
+    spar_mat = dat[0]
+    assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
+    ajive = AJIVE(init_signal_ranks= [2,2])
+    ajive.fit(blocks = dat)
+    blocks = ajive.get_full_block_estimates()
+    assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
+    np.sum(np.sum(blocks[0]['individual'] != 0)) 
+
+#Check valueerror for general linear operators
+def check_gen_lin_op_scipy(data):
     with pytest.raises(ValueError):
-       
-        mvmds = MVMDS(2)
-        comp = mvmds.fit_transform(data['wrong_views'])
+        dat = data['bad_views']
+        ajive = AJIVE(init_signal_ranks= [2,2])
+        ajive.fit(blocks = dat)
 
-#This is about taking in views that are the same.
-
-def test_depend_views(data):
-    mvmds = MVMDS(2)
-    fit = mvmds.fit_transform(data['dep_views'])
-    
-    for i in range(fit.shape[0]):
-        for j in range(fit.shape[1]):     
-            assert math.isnan(fit[i,j])
-
-'''
-Parameter Checks
-'''
-
-def test_fit_transform_values_0(data):
+def check_joint_rank_large(data):
     with pytest.raises(ValueError):
-       
-        mvmds = MVMDS(n_components=0)
-        comp = mvmds.fit_transform(data['samp_views'])
+        dat = data['same_views']
+        ajive = AJIVE(init_signal_ranks= [2,2], joint_rank=5)
+        ajive.fit(blocks = dat)
 
-        
-def test_fit_transform_values_neg(data):
+def decomp_not_computed_ranks():
     with pytest.raises(ValueError):
-       
-        mvmds = MVMDS(n_components=-4)
-        comp = mvmds.fit_transform(data['samp_views'])
+        ajive = AJIVE(init_signal_ranks=[2,2])
+        ajive.get_ranks()
 
-def check_num_iter(data):
-    with pytest.raises(ValueError):
-        
-        mvmds = MVMDS(n_components=-3)
-        comp = mvmds.fit_transform(data['samp_views'])
+def test_indiv_rank(data):
+    dat = data['same_views']
+    ajive = AJIVE(init_signal_ranks= [2,2], indiv_ranks=[2,1])
+    ajive.fit(blocks = dat)
+    assert ajive.indiv_ranks[0] == 2
+
+def test_joint_rank(data):
+    dat = data['same_views']
+    ajive = AJIVE(init_signal_ranks= [2,2], joint_rank=2)
+    ajive.fit(blocks = dat)
+    assert ajive.joint_rank == 2
+
+def test_is_fit():
+    ajive = AJIVE(init_signal_ranks = [2,2],joint_rank=2)
+    assert ajive.is_fit == False
+
+def test_n_randdir():
+    ajive = AJIVE(init_signal_ranks = [2,2],n_randdir_samples=5)
+    assert ajive.n_randdir_samples == 5
+
+def test_n_jobs():
+    ajive = AJIVE(init_signal_ranks = [2,2], n_jobs=4)
+    assert ajive.n_jobs == 4
+
+def test_n_wedin():
+    ajive = AJIVE(init_signal_ranks = [2,2], n_wedin_samples = 6)
+    assert ajive.n_wedin_samples == 6
