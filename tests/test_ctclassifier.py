@@ -31,6 +31,11 @@ def data():
     'random_data' : random_data, 'random_labels' : random_labels,
     'random_test' : random_test, 'random_seed' : random_seed}
 
+def test_fit_one_class(data):
+    random_labels_bad = np.floor(np.random.rand(100,))
+    random_labels_bad[:-10] = np.nan
+    data['clf_test'].fit(data['random_data'], random_labels_bad)
+
 '''
 EXCEPTION TESTING
 '''
@@ -58,12 +63,6 @@ def test_fit_over_two_classes(data):
         random_labels_bad = np.floor(2*np.random.rand(100,)+2)
         random_labels_bad[:-10] = np.nan
         random_labels_bad[0] = 10
-        data['clf_test'].fit(data['random_data'], random_labels_bad)
-
-def test_fit_one_class(data):
-    with pytest.raises(ValueError):
-        random_labels_bad = np.floor(np.random.rand(100,))
-        random_labels_bad[:-10] = np.nan
         data['clf_test'].fit(data['random_data'], random_labels_bad)
 
 def test_fit_zero_classes(data):
