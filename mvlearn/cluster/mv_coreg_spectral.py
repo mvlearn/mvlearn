@@ -77,62 +77,6 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
 
     Notes
     -----
-    Multi-view spectral clustering adapts the spectral clustering algorithm
-    to applications where more than one view of data is available. This
-    algorithm relies on the basic assumptions of the co-training, which are:
-    (a) Sufficiency: each view is sufficient for classification on its own,
-    (b) Compatibility: the target functions in both views predict the same
-    labels for co-occurring features with high probability, and (c)
-    Conditional independence: the views are conditionally independent given
-    the class labels. In contrast to multi-view k-means clustering,
-    multi-view spectral clustering performs well on arbitrary shaped clusters,
-    and can therefore be readily used in applications where clusters are not
-    expected to be convex. However multi-view spectral clustering tends to be
-    computationally expensive unless the similarity graph for the data is
-    sparse.
-
-    Multi-view spectral clustering works by using the spectral embedding
-    from one view to constrain the similarity graph in the other view. By
-    iteratively applying this procedure, the clustering of the two views
-    tend to each other. Here we outline the algorithm for the Multi-view
-    Spectral clustering algorithm for 2 views.
-
-    |
-
-    *Multi-view Spectral Clustering Algorithm (for 2 views)*
-
-    Input: Similarity matrix for both views: :math:`\mathbf{K}_1, \mathbf{K}_2`
-
-    Output: Assignments to k clusters
-
-        #. Initialize: :math:`\mathbf{L}_v = \mathbf{D}_v^{-1/2}
-           \mathbf{K}_v\mathbf{D}_v^{-1/2}` for :math:`v = 1, 2`
-            :math:`\mathbf{U}_v^0` is an :math:`n \times k` matrix with the
-            top k eigenvectors of :math:`\mathbf{L}_v` for :math:`v = 1, 2`
-
-        #. For :math:`i = 1` to iter:
-
-            a. :math:`\mathbf{S}_1 = sym(\mathbf{U}_2^{i-1}
-               {\mathbf{U}_2^{i-1}}^T\mathbf{K}_1)`
-
-            b. :math:`\mathbf{S}_2 = sym(\mathbf{U}_1^{i-1}
-               {\mathbf{U}_1^{i-1}}^T\mathbf{K}_2)`
-
-            c. Use :math:`\mathbf{S}_1` and :math:`\mathbf{S}_2` as the new
-               graph similarities and compute the Laplacians. Solve for the
-               largest k eigenvectors to obtain :math:`\mathbf{U}_1^i` and
-               :math:`\mathbf{U}_2^i`.
-
-        #. Row-normalize :math:`\mathbf{U}_1^i` and :math:`\mathbf{U}_2^i`.
-
-        #. Form matrix :math:`\mathbf{V} = \mathbf{U}_v^i`, where :math:`v` is
-           believed to be the most informative view a priori. If there is no
-           prior knowledge on the view informativeness, matrix
-           :math:`\mathbf{V}` can also be set to the column-wise concatenation
-           of the two :math:`\mathbf{U}_v^i` s.
-
-        #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
-           is assigned to cluster c by the k-means algorithm.
 
 
     References
@@ -194,7 +138,6 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
             raise ValueError(msg)
 
         # Need to check if lambda is a valid value
-        
 
         self.n_clusters = n_clusters
         self.n_views = n_views
@@ -207,6 +150,7 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
         self.n_neighbors = n_neighbors
         self.v_lambda = v_lambda
         self._objective = None
+        self._embedding = None
         
     def _affinity_mat(self, X):
 
@@ -246,7 +190,7 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
 
         return sims
 
-    def _compute_eigs(self, X):
+    def _init_umat(self, X):
 
         r'''
         Computes the top several eigenvectors of the
@@ -267,15 +211,24 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
 
         # Compute the normalized laplacian
         d_mat = np.diag(np.sum(X, axis=1))
-        d_alt = np.sqrt(np.linalg.inv(np.abs(d_mat)))
+        # Check abs in the other spectral clustering algo
+        d_alt = np.sqrt(np.linalg.inv(d_mat))
         laplacian = d_alt @ X @ d_alt
 
         # Make the resulting matrix symmetric
         laplacian = (laplacian + np.transpose(laplacian)) / 2.0
-
         # Obtain the top n_cluster eigenvectors of the laplacian
-        u_mat, d_mat, _ = sp.sparse.linalg.svds(laplacian, k=self.n_clusters)
-        return u_mat, laplacian, np.sum(d_mat)
+        # u_mat, d_mat, _ = sp.sparse.linalg.svds(laplacian, k=self.n_clusters)
+        e_vals, e_vecs = np.linalg.eig(laplacian)
+        obj_val = np.sum(e_vals[:self.n_clusters])
+        u_mat = np.real(e_vecs[:, :self.n_clusters])
+        return u_mat, laplacian, obj_val
+
+    def _compute_eigs(self, X):
+        e_vals, e_vecs = np.linalg.eig(X)
+        obj_val = np.sum(e_vals[:self.n_clusters])
+        u_mat = np.real(e_vecs[:, :self.n_clusters])
+        return u_mat, obj_val
 
     def fit_predict(self, Xs):
 
@@ -307,23 +260,24 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
 
         # Compute the similarity matrices
         sims = [self._affinity_mat(X) for X in Xs]
-
+        
         # Initialize matrices of eigenvectors
         U_mats = []
         L_mats = []
         obj_vals = np.zeros((self.n_views, self.max_iter))
         for ind in range(len(sims)):
-            u_mat, l_mat, o_val = self._compute_eigs(sims[ind])
+            u_mat, l_mat, o_val = self._init_umat(sims[ind])
             U_mats.append(u_mat)
             L_mats.append(l_mat)
             obj_vals[ind, 0] = o_val
             
         # Perform clustering for the first view
         U_1 = U_mats[0]
-        normed_1 = np.sqrt(U_1 @ U_1.T)
-        normed_1[normed_1 == 0] = 1
-        U_1 = np.linalg.inv(np.diag(np.diag(normed_1))) @ U_1
-
+        normed_1 = np.sqrt(np.diag(U_1 @ U_1.T))
+        normed_1[normed_1 == 0.0] = 1
+        U_1 = np.linalg.inv(np.diag(normed_1)) @ U_1
+        print(U_1[:6])
+        
         # Now iteratively solve for all U's
         n_items = Xs[0].shape[0]
         for it in range(1, self.max_iter):
@@ -334,18 +288,19 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
                         l_comp = l_comp + U_mats[v2] @ U_mats[v2].T
                 l_comp = (l_comp + l_comp.T) / 2
                 l_mat = L_mats[v1] + self.v_lambda * l_comp
-                U_mats[v1], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
-                obj_vals[v1, it] = np.sum(d_mat)
+                #U_mats[v1], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
+                U_mats[v1], obj_vals[v1, it] = self._compute_eigs(l_mat)
 
             l_comp = np.zeros((n_items, n_items))
             for vi in range(self.n_views):
                 if vi != 0:
                     l_comp = l_comp + U_mats[vi] @ U_mats[vi].T
-
-                    l_comp = (l_comp + l_comp.T) / 2
+            l_comp = (l_comp + l_comp.T) / 2
             l_mat = L_mats[0] + self.v_lambda * l_comp
-            U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
-            obj_vals[0, it] = np.sum(d_mat)
+            U_mats[0], obj_vals[0, it] = self._compute_eigs(l_mat)
+            print(U_mats[0])
+            #U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
+            #obj_vals[0, it] = np.sum(d_mat)
 
         self._objective = obj_vals
         
@@ -356,10 +311,11 @@ class MultiviewCoRegSpectralClustering(BaseEstimator):
             U_norm.append(np.linalg.inv(np.diag(np.diag(normed_v))) @ U_mats[vi])
 
             
-        V_mat = np.hstack(U_norm)
-        norm_v = np.sqrt(np.diag(np.diag(V_mat @ V_mat.T)))
+        #V_mat = np.hstack(U_norm)
+        V_mat = np.hstack(U_mats)
+        norm_v = np.sqrt(np.diag(V_mat @ V_mat.T))
         norm_v[norm_v == 0] = 1
-        V_mat = np.linalg.inv(np.diag(np.diag(norm_v))) @ V_mat
+        self._embedding = np.linalg.inv(np.diag(norm_v)) @ V_mat
         
         kmeans = KMeans(n_clusters=self.n_clusters,
                         random_state=self.random_state)

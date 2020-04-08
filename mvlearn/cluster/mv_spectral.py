@@ -262,6 +262,8 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Compute the normalized laplacian
         d_mat = np.diag(np.sum(X, axis=1))
+
+        # Double check why we take absolute value of d_mat
         d_alt = np.sqrt(np.linalg.inv(np.abs(d_mat)))
         laplacian = d_alt @ X @ d_alt
 
