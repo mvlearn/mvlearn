@@ -212,8 +212,8 @@ def test_compute_eigs(data):
     spectral = data['spectral']
     eigs = spectral._compute_eigs(g_kernel)
 
-    assert(eigs.shape[0] == n_fit)
-    assert(eigs.shape[1] == n_clusts)
+    assert(eigs[0].shape[0] == n_fit)
+    assert(eigs[0].shape[1] == n_clusts)
 
     col_mags = np.linalg.norm(eigs, axis=0)
 
