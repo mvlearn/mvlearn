@@ -113,7 +113,12 @@ def test_neg_sigma():
 # Test error handling
 def test_neg_degree():
     with pytest.raises(ValueError):
-        kcca_g = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =-1)
+        kcca_f = KCCA(ktype ="poly", reg = 0.001, n_components = 1, degree =-1)
+        
+# Test error handling
+def test_neg_constant():
+    with pytest.raises(ValueError):
+        kcca_g = KCCA(ktype ="poly", reg = 0.001, constant = -1)
         
 # Test if error when transform before fit
 def test_no_weights():

@@ -44,8 +44,8 @@ class KCCA(BaseEmbed):
         - value can be only be 'full'. adding 'icd' soon.
     method : string, default = 'kettenring-like'
              Decomposition method
-        - value can be 'kettenring-like', 'simplified_hardoon',
-          or 'standard_hardoon'
+        - value can be only be 'kettenring-like'. adding 'simplified_hardoon'
+          and 'standard_hardoon'
 
     Notes
     -----
@@ -226,23 +226,8 @@ class KCCA(BaseEmbed):
             Id = np.eye(N)
             Z = np.zeros((N, N))
 
-            # Method 1: Standard Hardoon
-            if self.method == "standard_hardoon":
-                R = np.r_[np.c_[Z, Kx@Ky], np.c_[Ky@Kx, Z]]
-                D = 0.5*np.r_[np.c_[Kx@(Kx+self.reg*Id), Z],
-                              np.c_[Z, Ky@(Ky+self.reg*Id)]]
-                R = R/2+R.T/2
-                D = D/2+D.T/2
-
-            # Method 2: Simplified Hardoon
-            elif self.method == "simplified_hardoon":
-                R = np.r_[np.c_[Z, Ky], np.c_[Kx, Z]]
-                D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
-                R = R/2+R.T/2
-                D = D/2+D.T/2
-
-            # Method 3: Kettenring-like generalizable formulation
-            elif self.method == "kettenring-like":
+            # Method: Kettenring-like generalizable formulation
+            if self.method == "kettenring-like":
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
 
