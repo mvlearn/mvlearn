@@ -117,7 +117,7 @@ class KCCA(BaseEmbed):
             "Canonical Correlation Analysis: An Overview with
             Application to Learning Methods", Neural Computation,
             Volume 16 (12), Pages 2639--2664, 2004.
-    .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of 
+    .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of
             variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
 
 
