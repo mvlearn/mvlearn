@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from mvlearn.jive.AJIVE import AJIVE
-from .utils import svd_checker
 
 
 class TestFig2Runs(unittest.TestCase):
@@ -87,7 +86,7 @@ class TestFig2Runs(unittest.TestCase):
         """
         self.assertEqual(self.ajive.common.rank, 1)
         self.assertEqual(self.ajive.blocks['x'].individual.rank, 1)
-        self.assertEqual(self.ajive.blocks['y'].individual.rank, 2)
+        self.assertEqual(self.ajive.blocks['y'].individual.rank, 3)
 
     def test_matrix_decomposition(self):
         """
@@ -106,12 +105,6 @@ class TestFig2Runs(unittest.TestCase):
                        self.ajive.blocks['y'].noise_)
 
         self.assertTrue(np.allclose(Ry, 0))
-
-    def test_diagnostic_plot(self):
-        """
-        Check the diagnostic plot runs
-        """
-        self.ajive.plot_joint_diagnostic()
 
     def test_common_SVD(self):
         """
@@ -142,12 +135,6 @@ class TestFig2Runs(unittest.TestCase):
 
         U, D, V = self.ajive.blocks['y'].joint.get_UDV()
         rank = 1
-        n, d = self.Y.shape
-        checks = svd_checker(U, D, V, n, d, rank)
-        self.assertTrue(all(checks.values()))
-
-        U, D, V = self.ajive.blocks['y'].individual.get_UDV()
-        rank = 2
         n, d = self.Y.shape
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
@@ -222,11 +209,13 @@ class TestFig2Runs(unittest.TestCase):
 
         self.assertTrue(np.allclose(self.ajive.centers_['x'], xmean))
         self.assertTrue(np.allclose(self.ajive.blocks['x'].joint.m_, xmean))
-        self.assertTrue(np.allclose(self.ajive.blocks['x'].individual.m_, xmean))
+        self.assertTrue(np.allclose(self.ajive.blocks['x'].individual.m_, \
+                                    xmean))
 
         self.assertTrue(np.allclose(self.ajive.centers_['y'], ymean))
         self.assertTrue(np.allclose(self.ajive.blocks['y'].joint.m_, ymean))
-        self.assertTrue(np.allclose(self.ajive.blocks['y'].individual.m_, ymean))
+        self.assertTrue(np.allclose(self.ajive.blocks['y'].individual.m_, \
+                                    ymean))
 
         # no centering
         ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, center=False)
@@ -235,11 +224,39 @@ class TestFig2Runs(unittest.TestCase):
         self.assertTrue(ajive.centers_['y'] is None)
 
         # only center x
-        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, 'y': False})
+        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, \
+                      'y': False})
         ajive = ajive.fit(blocks={'x': self.X, 'y': self.Y})
         self.assertTrue(np.allclose(ajive.centers_['x'], xmean))
         self.assertTrue(ajive.centers_['y'] is None)
-
-
+        
 if __name__ == '__main__':
     unittest.main()
+
+
+def svd_checker(U, D, V, n, d, rank):
+    checks = {}
+
+    # scores shape
+    checks['scores_shape'] = U.shape == (n, rank)
+
+    # scores have orthonormal columns
+    checks['scores_ortho'] = np.allclose(np.dot(U.T, U), np.eye(rank))
+
+    # singular values shape
+    checks['svals_shape'] = D.shape == (rank, )
+
+    # singular values are in non-increasing order
+    svals_nonincreasing = True
+    for i in range(len(D) - 1):
+        if D[i] < D[i+1]:
+            svals_nonincreasing = False
+    checks['svals_nonincreasing'] = svals_nonincreasing
+
+    # loadings shape
+    checks['loading_shape'] = V.shape == (d, rank)
+
+    # loadings have orthonormal columns
+    checks['loadings_ortho'] = np.allclose(np.dot(V.T, V), np.eye(rank))
+    
+    return checks

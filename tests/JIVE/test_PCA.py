@@ -2,8 +2,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from jive.PCA import PCA
-from jive.tests.utils import svd_checker
+from mvlearn.jive.PCA import PCA
 
 
 class TestPCA(unittest.TestCase):
@@ -78,19 +77,6 @@ class TestPCA(unittest.TestCase):
         pca = PCA().fit(self.X)
         self.assertTrue(np.allclose(self.X, pca.predict_reconstruction()))
 
-    def test_plots(self):
-        """
-        Check all plotting functions run without error
-        """
-        self.pca.plot_loading(comp=0)
-        self.pca.plot_scores_hist(comp=1)
-        self.pca.plot_scree()
-        self.pca.plot_var_expl_prop()
-        self.pca.plot_var_expl_cum()
-        self.pca.plot_scores()
-        self.pca.plot_scores_vs(comp=1, y=np.random.normal(size=self.X.shape[0]))
-        # self.pca.plot_interactive_scores_slice(1, 3)
-
     def test_frob_norm(self):
         """
         Check Frobenius norm is calculated correctly whether the full
@@ -131,5 +117,35 @@ class TestPCA(unittest.TestCase):
         Z_cent = Z - m.reshape(-1)
         A = np.dot(Z_cent, V)
         B = self.pca.predict_scores(Z)
-
+        
         self.assertTrue(np.allclose(A, B))
+        
+        
+    
+def svd_checker(U, D, V, n, d, rank):
+    checks = {}
+
+    # scores shape
+    checks['scores_shape'] = U.shape == (n, rank)
+
+    # scores have orthonormal columns
+    checks['scores_ortho'] = np.allclose(np.dot(U.T, U), np.eye(rank))
+
+    # singular values shape
+    checks['svals_shape'] = D.shape == (rank, )
+
+    # singular values are in non-increasing order
+    svals_nonincreasing = True
+    for i in range(len(D) - 1):
+        if D[i] < D[i+1]:
+            svals_nonincreasing = False
+    checks['svals_nonincreasing'] = svals_nonincreasing
+
+    # loadings shape
+    checks['loading_shape'] = V.shape == (d, rank)
+
+    # loadings have orthonormal columns
+    checks['loadings_ortho'] = np.allclose(np.dot(V.T, V), np.eye(rank))
+
+    return checks
+
