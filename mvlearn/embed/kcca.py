@@ -1,23 +1,65 @@
-"""
-kcca.py
-====================================
-Python module for kernel canonical correlation analysis (kCCA)
-
-Code modified from UC Berkeley, Gallant lab
-(https://github.com/gallantlab/pyrcca)
-Copyright 2016, UC Berkeley, Gallant lab.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Adopted from Steven Van Vaerenbergh's MATLAB Package 'KMBOX'
+# https://github.com/steven2358/kmbox
 
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
 import numpy as np
-from scipy.linalg import eigh
+from scipy import linalg
+from sklearn.metrics.pairwise import euclidean_distances
 
 
 class KCCA(BaseEmbed):
-    """
-    CCA aims to find useful projections of the
+    r"""
+    The kernel canonical correlation analysis (KCCA) is a method
+    that generalizes the classical linear canonical correlation
+    analysis (CCA) to nonlinear setting.  It allows us to depict the
+    nonlinear relation of two sets of variables and enables
+    applications of classical multivariate data analysis
+    originally constrained to linearity relation (CCA).
+
+    Parameters
+    ----------
+    n_components : int, default = 2
+                   Number of canonical dimensions to keep
+    ktype : string, default = 'linear'
+            Type of kernel
+        - value can be 'linear', 'gaussian' or 'poly'
+    degree : float, default = 2.0
+             Degree of Polynomial kernel
+    constant : float, default = 1.0
+             Balances impact of lower-degree terms in Polynomial kernel
+    sigma : float, default = 1.0
+            Standard deviation of Gaussian kernel
+    reg : float, default = 0.1
+          Regularization parameter
+    decomp : string, default = 'full'
+             Decomposition type
+        - value can be only be 'full'
+    method : string, default = 'kettenring-like'
+             Decomposition method
+        - value can be only be 'kettenring-like'
+
+    Notes
+    -----
+    This class implements kernel canonical correlation analysis
+    as described in [#1KCCA]_ and [#2KCCA]_.
+
+    Traditional CCA aims to find useful projections of the
     high- dimensional variable sets onto the compact
     linear representations, the canonical components (components_).
 
@@ -25,7 +67,7 @@ class KCCA(BaseEmbed):
     the weighted sum of every original variable indicated
     by the canonical weights (weights_).
 
-    The canonical correlation (cancorrs_) quantifies the linear
+    The canonical correlation quantifies the linear
     correspondence between the two views of data
     based on Pearson’s correlation between their
     canonical components.
@@ -34,46 +76,111 @@ class KCCA(BaseEmbed):
     successful joint information reduction between two views
     and, therefore, routinely serves as a performance measure for CCA.
 
-    The kernel generalization of CCA, kernel CCA, is used when
-    there are nonlinear relations between two views.
+    CCA may not extract useful descriptors of the data because of
+    its linearity. kCCA offers an alternative solution by first
+    projecting the data onto a higher dimensional feature space.
 
-    Parameters
+    .. math::
+        \phi: \mathbf{x} = (x_1,...,x_m) \mapsto
+        \phi(\mathbf{x}) = (\phi(x_1),...,\phi(x_N)),
+        (m < N)
+
+    before performing CCA in the new feature space.
+
+    Kernels are methods of implicitly mapping data into a higher
+    dimensional feature space, a method known as the kernel trick.
+    A kernel function K, such that for all :math:`\mathbf{x},
+    \mathbf{z} \in X`,
+
+    .. math::
+        K(\mathbf{x}, \mathbf{z}) = \langle\phi(\mathbf{x})
+        \cdot \phi(\mathbf{z})\rangle,
+
+    where :math:`\phi` is a mapping from X to feature space F.
+
+    The directions :math:`\mathbf{w_x}` and :math:`\mathbf{w_y}`
+    (of length N) can be rewritten as the projection of the data
+    onto the direction :math:`\alpha` and :math:`\alpha`
+    (of length m):
+
+    .. math::
+        \mathbf{w_x} = X'\alpha
+        \mathbf{w_y} = Y'\beta
+
+    Letting :math:`K_x = XX'` and :math:`K_x = XX'` be the kernel
+    matrices and adding a regularization term (:math:`\kappa`)
+    to prevent overfitting, we are effectively solving for:
+
+    .. math::
+        \rho = \underset{\alpha,\beta}{\text{max}}
+        \frac{\alpha'K_xK_y\beta}
+        {\sqrt{(\alpha'K_x^2\alpha+\kappa\alpha'K_x\alpha)
+        \cdot (\beta'K_y^2\beta + \kappa\beta'K_y\beta)}}
+
+
+    References
     ----------
-    reg : float, default = 0.1
-          Regularization parameter
-    n_components : int, default = 10
-                   Number of canonical dimensions to keep
-    ktype : string, default = 'linear'
-            Type of kernel
-        - value can be 'linear', 'gaussian' or 'polynomial'
-    cutoff : float, default = 1x10^-15
-             Optional regularization parameter
-             to perform spectral cutoff when computing the canonical
-             weight pseudoinverse during held-out data prediction
-    sigma : float, default = 1.0
-            Parameter if Gaussian kernel
-    degree : integer, default = 2
-             Parameter if Polynomial kernel
+    .. [#1KCCA] D. R. Hardoon, S. Szedmak and J. Shawe-Taylor,
+            "Canonical Correlation Analysis: An Overview with
+            Application to Learning Methods", Neural Computation,
+            Volume 16 (12), Pages 2639--2664, 2004.
+    .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of
+            variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
+
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> from scipy import stats
+    >>> from mvlearn.embed.kcca import KCCA
+    >>> np.random.seed(1)
+    >>> # Define two latent variables
+    >>> N = 100
+    >>> latvar1 = np.random.randn(N, )
+    >>> latvar2 = np.random.randn(N, )
+    >>> # Define independent components for each dataset
+    >>> indep1 = np.random.randn(N, 4)
+    >>> indep2 = np.random.randn(N, 5)
+    >>> x = 0.25*indep1 + 0.75*np.vstack((latvar1, latvar2,
+    ...                                   latvar1, latvar2)).T
+    >>> y = 0.25*indep2 + 0.75*np.vstack((latvar1, latvar2,
+    ...                                   latvar1, latvar2, latvar1)).T
+    >>> Xs = [x, y]
+    >>> Xs_train = [Xs[0][:20], Xs[1][:20]]
+    >>> Xs_test = [Xs[0][20:], Xs[1][20:]]
+    >>> kcca_l = KCCA(ktype ="linear", n_components = 4)
+    >>> a = kcca_l.fit(Xs_train)
+    >>> linearkcca = kcca_l.transform(Xs_test)
+    >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
+    >>> (r2, _) = stats.pearsonr(linearkcca[0][:,1], linearkcca[1][:,1])
+    >>> (r3, _) = stats.pearsonr(linearkcca[0][:,2], linearkcca[1][:,2])
+    >>> (r4, _) = stats.pearsonr(linearkcca[0][:,3], linearkcca[1][:,3])
+    >>> #Below are the canonical correlation for the four components:
+    >>> print(round(r1, 2), round(r2, 2), round(r3, 2), round(r4,2))
+    0.85 0.94 -0.25 -0.03
+
 
     """
 
     def __init__(
         self,
-        reg=0.1,
-        n_components=10,
+        n_components=2,
         ktype='linear',
-        cutoff=1e-15,
+        constant=0.1,
         sigma=1.0,
-        degree=2,
+        degree=2.0,
+        reg=0.1,
+        decomp='full',
+        method='kettenring-like',
     ):
-        self.reg = reg
         self.n_components = n_components
         self.ktype = ktype
-        self.cutoff = cutoff
+        self.constant = constant
         self.sigma = sigma
         self.degree = degree
-        if self.ktype is None:
-            self.ktype = "linear"
+        self.reg = reg
+        self.decomp = decomp
+        self.method = method
 
         # Error Handling
         if self.n_components < 0 or not type(self.n_components) == int:
@@ -81,17 +188,19 @@ class KCCA(BaseEmbed):
         if ((self.ktype != "linear") and (self.ktype != "poly")
                 and (self.ktype != "gaussian")):
             raise ValueError("ktype must be 'linear', 'gaussian', or 'poly'.")
-        if self.sigma < 0 or not type(self.sigma) == float:
-            raise ValueError("sigma must be positive float")
-        if self.degree < 0 or not type(self.degree) == int:
-            raise ValueError("degree must be positive int")
-        if self.reg < 0 or not type(self.reg) == float:
+        if self.sigma < 0 or not (type(self.sigma) == float
+                                  or type(self.sigma) == int):
+            raise ValueError("sigma must be positive int/float")
+        if not (type(self.degree) == float or type(self.sigma) == int):
+            raise ValueError("degree must be int/float")
+        if self.reg < 0 or self.reg > 1 or not type(self.reg) == float:
             raise ValueError("reg must be positive float")
-        if self.cutoff < 0 or not type(self.cutoff) == float:
-            raise ValueError("cutoff must be positive float")
+        if self.constant < 0 or not (type(self.constant) == float
+                                     or type(self.constant) == int):
+            raise ValueError("constant must be a positive integer")
 
-    def fit(self, Xs):
-        """
+    def fit(self, Xs, y=None):
+        r"""
         Creates kcca mapping by determining
         canonical weghts from Xs.
 
@@ -105,328 +214,127 @@ class KCCA(BaseEmbed):
 
         Returns
         -------
-        weights_ : list of array-likes
-                   Canonical weights
+        self : returns an instance of self
 
         """
         Xs = check_Xs(Xs, multiview=True)
 
-        components_ = kcca(
-            Xs,
-            self.reg,
-            self.n_components,
-            ktype=self.ktype,
-            sigma=self.sigma,
-            degree=self.degree,
-        )
+        self.X = _center_norm(Xs[0])
+        self.Y = _center_norm(Xs[1])
 
-        self.weights_ = _listdot(Xs, components_)
+        N = len(self.X)
 
-        return self.weights_
+        if self.decomp == "full":
+            Kx = _make_kernel(self.X, self.X, self.ktype, self.constant,
+                              self.degree, self.sigma)
+            Ky = _make_kernel(self.Y, self.Y, self.ktype, self.constant,
+                              self.degree, self.sigma)
+
+            Id = np.eye(N)
+            Z = np.zeros((N, N))
+
+            # Method: Kettenring-like generalizable formulation
+            if self.method == "kettenring-like":
+                R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
+                D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
+
+        # Solve eigenvalue problem
+        betas, alphas = linalg.eig(R, D)
+
+        # Top eigenvalues
+        ind = np.argsort(betas)[::-1][:self.n_components]
+
+        # Extract relevant coordinates and normalize to unit length
+        weight1 = alphas[:N, ind]
+        weight2 = alphas[N:, ind]
+
+        weight1 /= np.linalg.norm(weight1, axis=0)
+        weight2 /= np.linalg.norm(weight2, axis=0)
+
+        self.weights_ = np.real([weight1, weight2])
+
+        return self
 
     def transform(self, Xs):
-        """
+        r"""
         Uses KCCA weights to transform Xs into canonical components
         and calculates correlations.
 
         Parameters
         ----------
-        vdata: float
-               Standardized data (z-score)
-
-        Returns
-        -------
-        weights_ : list of array-likes
-                   Canonical weights
-        preds_: list of array-likes
-                Prediction components of test dataset
-        corrs_: list of array-likes
-                Correlations on the test dataset
-        """
-
-        if not hasattr(self, "weights_"):
-            raise NameError("kCCA has not been trained.")
-
-        self.components_ = _listdot([d.T for d in Xs], self.weights_)
-        self.cancorrs_ = _listcorr(self.components_)
-        self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
-
-        return self
-
-    def fit_transform(self, Xs):
-        """
-        Fits KCCA mapping with given parameters and transforms Xs
-        with the KCCA weights to calculate canonical components
-        or projects of the views into a shared embedding.
-
-        Parameters
-        ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
+             - Xs length: 2
              - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
 
-        Returns
-        -------
         weights_ : list of array-likes
                    Canonical weights
-        components_ : list of array-likes
-                     Canonical components
-        cancorrs_ : list of array-likes
-                   Correlations of the canonical components on
-                   the training dataset
-        """
-        Xs = check_Xs(Xs, multiview=True)
-
-        components_ = kcca(
-            Xs,
-            self.reg,
-            self.n_components,
-            ktype=self.ktype,
-            sigma=self.sigma,
-            degree=self.degree,
-        )
-
-        self.weights_ = _listdot(Xs, components_)
-        self.components_ = _listdot([d.T for d in Xs], self.weights_)
-        self.cancorrs_ = _listcorr(self.components_)
-
-        if len(Xs) == 2:
-            self.cancorrs_ = self.cancorrs_[np.nonzero(self.cancorrs_)]
-        return self
-
-    def validate(self, vdata):
-        """
-        Uses the kCCA mapping and generalizes to other data
-        For each dimension in the test data, correlations between
-        predicted and actual data are computed.
-
-        Parameters
-        ----------
-        vdata: float
-               Standardized data (z-score)
 
         Returns
         -------
-        preds_: list of array-likes
-                Prediction components of test dataset
-        vcorrs_: list of array-likes
-                Correlations on the test dataset
+        components_ : returns Xs_transformed, a list of numpy.ndarray
+             - Xs length: 2
+             - Xs[i] shape: (n_samples, n_samples)
         """
-
-        vdata = [np.nan_to_num(_zscore(d)) for d in vdata]
 
         if not hasattr(self, "weights_"):
             raise NameError("kCCA has not been trained.")
 
-        iws = [np.linalg.pinv(w.T, rcond=self.cutoff) for w in self.weights_]
-        ccomp = _listdot([d.T for d in vdata], self.weights_)
-        ccomp = np.array(ccomp)
-        self.vpreds_ = []
-        self.vcorrs_ = []
+        Xs = check_Xs(Xs, multiview=True)
 
-        for dnum in range(len(vdata)):
-            idx = np.ones((len(vdata),))
-            idx[dnum] = False
-            proj = ccomp[idx > 0].mean(0)
-            pred = np.dot(iws[dnum], proj.T).T
-            pred = np.nan_to_num(_zscore(pred))
-            self.vpreds_.append(pred)
-            cs = np.nan_to_num(_rowcorr(vdata[dnum].T, pred.T))
-            self.vcorrs_.append(cs)
+        Kx_transform = _make_kernel(_center_norm(Xs[0]),
+                                    _center_norm(self.X),
+                                    self.ktype,
+                                    self.constant,
+                                    self.degree,
+                                    self.sigma)
+        Ky_transform = _make_kernel(_center_norm(Xs[1]),
+                                    _center_norm(self.Y),
+                                    self.ktype,
+                                    self.constant,
+                                    self.degree,
+                                    self.sigma)
 
-        return self.vcorrs_
+        weight1 = self.weights_[0]
+        weight2 = self.weights_[1]
 
+        comp1 = []
+        comp2 = []
 
-def kcca(
-    Xs, reg=0.0, n_components=None,
-    ktype="linear", sigma=1.0, degree=2
-):
+        for i in range(weight1.shape[1]):
+            comp1.append(Kx_transform@weight1[:, i])
+            comp2.append(Ky_transform@weight2[:, i])
 
-    """
-    Sets up and solves the kernel CCA eigenproblem
+        comp1 = np.transpose(np.asarray(comp1))
+        comp2 = np.transpose(np.asarray(comp2))
 
-    Parameters
-    ----------
-    Xs : list of array-likes
-        - Xs shape: (n_views,)
-        - Xs[i] shape: (n_samples, n_features_i)
-        The data for kcca to fit to.
-        Each sample will receive its own embedding.
+        self.components_ = [comp1, comp2]
+
+        return self.components_
 
 
-    Returns
-    -------
-    comp : list of array-likes
-           Component to determine the canonical weights
-    """
-
-    kernel = [
-        _make_kernel(d, ktype=ktype, sigma=sigma,
-                     degree=degree) for d in Xs
-    ]
-
-    nDs = len(kernel)
-    nFs = [k.shape[0] for k in kernel]
-    n_components = (min([k.shape[1] for k in kernel])
-                    if n_components is None else n_components)
-
-    # Get the auto- and cross-covariance matrices
-    crosscovs = [np.dot(ki, kj.T) for ki in kernel for kj in kernel]
-
-    # Allocate left-hand side (LH) and right-hand side (RH):
-    LH = np.zeros((sum(nFs), sum(nFs)))
-    RH = np.zeros((sum(nFs), sum(nFs)))
-
-    # Fill the left and right sides of the eigenvalue problem
-    for i in range(nDs):
-        RH[
-            sum(nFs[:i]): sum(nFs[: i + 1]), sum(nFs[:i]): sum(nFs[: i + 1])
-        ] = crosscovs[i * (nDs + 1)] + reg * np.eye(nFs[i])
-
-        for j in range(nDs):
-            if i != j:
-                LH[
-                    sum(nFs[:j]): sum(nFs[: j + 1]),
-                    sum(nFs[:i]): sum(nFs[: i + 1])
-                ] = crosscovs[nDs * j + i]
-
-    LH = (LH + LH.T) / 2.0
-    RH = (RH + RH.T) / 2.0
-
-    maxCC = LH.shape[0]
-    r, Vs = eigh(LH, RH, eigvals=(maxCC - n_components, maxCC - 1))
-    r[np.isnan(r)] = 0
-    rindex = np.argsort(r)[::-1]
-    comp = []
-    Vs = Vs[:, rindex]
-    for i in range(nDs):
-        comp.append(Vs[sum(nFs[:i]): sum(nFs[: i + 1]), :n_components])
-    return comp
+def _center_norm(x):
+    x = x - x.mean(0)
+    return x
 
 
-def _zscore(d):
-    """
-    Calculates z-score of data
+def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
+    Nl = len(X)
+    Nr = len(Y)
+    N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
+    N0r = np.eye(Nr) - 1 / Nr * np.ones(Nr)
 
-    Parameters
-    ----------
-    d : array
-        Data of interest
-
-    Returns
-    -------
-    z : array
-        Z-score
-    """
-    z = (d - d.mean(0)) / d.std(0)
-    return z
-
-
-def _listdot(d1, d2):
-    """
-    Calculates the dot product between two arrays
-
-    Parameters
-    ----------
-    d1 : array
-         Data of interest
-    d1 : array
-         Data of interest
-
-    Returns
-    -------
-    ld : list
-        Dot product
-    """
-    ld = [np.dot(x[0].T, x[1]) for x in zip(d1, d2)]
-    return ld
-
-
-def _listcorr(a):
-    """
-    Returns pairwise row correlations for all items
-    in array as a list of matrices
-
-    Parameters
-    ----------
-    a : list of array-likes
-
-    Returns
-    -------
-    corrs_ : list of array-likes
-             Pairwise row correlations for all items in array
-    """
-    corrs_ = np.zeros((a[0].shape[1], len(a), len(a)))
-    for i in range(len(a)):
-        for j in range(len(a)):
-            if j > i:
-                corrs_[:, i, j] = [
-                    np.nan_to_num(np.corrcoef(ai, aj)[0, 1])
-                    for (ai, aj) in zip(a[i].T, a[j].T)
-                ]
-    return corrs_
-
-
-def _rowcorr(a, b):
-    """
-    Finds correlations between corresponding matrix rows (a and b)
-
-    Parameters
-    ----------
-    a : array
-        Matrix row 1
-    b : array
-        Matrix row 2
-
-    Returns
-    -------
-    cs: array
-        Correlations between corresponding rows
-
-    """
-    cs = np.zeros((a.shape[0]))
-    for idx in range(a.shape[0]):
-        cs[idx] = np.corrcoef(a[idx], b[idx])[0, 1]
-    return cs
-
-
-def _make_kernel(d, normalize=True, ktype="linear", sigma=1.0, degree=2):
-    """
-    Makes a kernel for data d
-      If ktype is 'linear', kernel is a linear inner product
-      If ktype is 'gaussian', kernel is a Gaussian kernel, sigma = sigma
-      If ktype is 'poly', kernel is a polynomial kernel with degree=degree
-
-    Parameters
-    ----------
-    d : array
-        Data
-    ktype : string, default = 'linear'
-        - Type of kernel
-        - Value can be 'linear', 'gaussian' or 'polynomial'.
-    sigma : float, default = 1.0
-            Parameter if the kernel is a Gaussian kernel.
-    degree : int, default = 2
-             Parameter if the kernel is a Polynomial kernel.
-
-    Returns
-    -------
-    kernel: array
-            Kernel that data is projected to
-    """
-    d = np.nan_to_num(d)
-    cd = d - d.mean(0)
+    # Linear kernel
     if ktype == "linear":
-        kernel_ = np.dot(cd, cd.T)
-    elif ktype == "gaussian":
-        from scipy.spatial.distance import pdist, squareform
-        # originally just d and no parentheses in denominator
-        pairwise_dists = squareform(pdist(cd, "euclidean"))
-        kernel_ = np.exp(-pairwise_dists ** 2 / (2 * sigma ** 2))
+        return N0l @ (X @ Y.T) @ N0r
+
+    # Polynomial kernel
     elif ktype == "poly":
-        kernel_ = np.dot(cd, cd.T) ** degree
-    kernel = (kernel_ + kernel_.T) / 2.0
-    kernel = kernel / np.linalg.eigvalsh(kernel).max()  # normalize
-    return _zscore(kernel)
+        return N0l @ (X @ Y.T + constant) ** degree @ N0r
+
+    # Gaussian kernel
+    elif ktype == "gaussian":
+        distmat = euclidean_distances(X, Y, squared=True)
+
+        return N0l @ np.exp(-distmat / (2 * sigma ** 2)) @ N0r
