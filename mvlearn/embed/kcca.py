@@ -34,7 +34,7 @@ class KCCA(BaseEmbed):
 
     Parameters
     ----------
-    n_components : int, default = 10
+    n_components : int, default = 2
                    Number of canonical dimensions to keep
     ktype : string, default = 'linear'
             Type of kernel
