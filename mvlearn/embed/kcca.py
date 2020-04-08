@@ -117,10 +117,8 @@ class KCCA(BaseEmbed):
             "Canonical Correlation Analysis: An Overview with
             Application to Learning Methods", Neural Computation,
             Volume 16 (12), Pages 2639--2664, 2004.
-    .. [#2KCCA] Su-Yun Huang, Mei-Hsien Lee and Chuhsing Kate Hsiao,
-            "Kernel Canonical Correlation Analysis and its Applications
-            to Nonlinear Measures of Association and Test of Independence",
-            draft, May 25, 2006
+    .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of 
+            variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
 
 
     Example
@@ -348,7 +346,3 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
         distmat = euclidean_distances(X, Y, squared=True)
 
         return N0l @ np.exp(-distmat / (2 * sigma ** 2)) @ N0r
-
-    # Gaussian diagonal kernel
-    elif ktype == "gaussian-diag":
-        return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
