@@ -44,16 +44,15 @@ class KCCA(BaseEmbed):
     constant : float, default = 1.0
              Balances impact of lower-degree terms in Polynomial kernel
     sigma : float, default = 1.0
-            Sigma of Gaussian kernel
-    reg : float, default = 0.00001
+            Standard deviation of Gaussian kernel
+    reg : float, default = 0.1
           Regularization parameter
     decomp : string, default = 'full'
              Decomposition type
-        - value can be only be 'full'. adding 'icd' soon.
+        - value can be only be 'full'
     method : string, default = 'kettenring-like'
              Decomposition method
-        - value can be only be 'kettenring-like'. adding 'simplified_hardoon'
-          and 'standard_hardoon'
+        - value can be only be 'kettenring-like'
 
     Notes
     -----
