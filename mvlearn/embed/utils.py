@@ -18,7 +18,7 @@ from scipy.sparse.linalg import svds
 
 
 def _compute_likelihood(arr):
-    """
+    r"""
     Computes the log likelihoods based on normal distribution given
     a 1d-array of sorted values. If the input has no variance,
     the likelihood will be nan.
@@ -70,7 +70,7 @@ def select_dimension(
     threshold=None,
     return_likelihoods=False,
 ):
-    """
+    r"""
     Generates profile likelihood from array based on Zhu and Godsie
     method [#2EUtils]_. Elbows correspond to the optimal embedding
     dimension.
