@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from mvlearn.jive.PCA import PCA
+from mvlearn.ajive.pca import pca
 
 
 class TestPCA(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestPCA(unittest.TestCase):
                          index=obs_names, columns=var_names)
         X_cent = X - X.mean(axis=0)
 
-        pca = PCA(n_components=n_components).fit(X)
+        PCA = pca(n_components=n_components).fit(X)
 
         # store these for testing
         self.n = n
@@ -29,7 +29,7 @@ class TestPCA(unittest.TestCase):
         self.var_names = var_names
         self.X = X
         self.X_cent = X_cent
-        self.pca = pca
+        self.pca = PCA
 
     def test_has_attributes(self):
         """
@@ -74,8 +74,8 @@ class TestPCA(unittest.TestCase):
         We can reconstruct the original data matrix exactly from the full
         reconstruction.
         """
-        pca = PCA().fit(self.X)
-        self.assertTrue(np.allclose(self.X, pca.predict_reconstruction()))
+        PCA= pca().fit(self.X)
+        self.assertTrue(np.allclose(self.X, PCA.predict_reconstruction()))
 
     def test_frob_norm(self):
         """
@@ -83,12 +83,12 @@ class TestPCA(unittest.TestCase):
         or partial PCA is computed.
         """
         true_frob_norm = np.linalg.norm(self.X_cent, ord='fro')
-        pca = PCA(n_components=None).fit(self.X)
-        self.assertTrue(np.allclose(pca.frob_norm_, true_frob_norm))
+        PCA = pca(n_components=None).fit(self.X)
+        self.assertTrue(np.allclose(PCA.frob_norm_, true_frob_norm))
 
         # TODO: this is failing, it could be a numerical issue.
-        pca = PCA(n_components=3).fit(self.X)
-        self.assertTrue(np.allclose(pca.frob_norm_, true_frob_norm))
+        PCA = pca(n_components=3).fit(self.X)
+        self.assertTrue(np.allclose(PCA.frob_norm_, true_frob_norm))
 
     def test_centering(self):
         """
@@ -98,12 +98,12 @@ class TestPCA(unittest.TestCase):
         self.assertTrue(np.allclose(self.pca.m_, self.X.mean(axis=0)))
 
         # no centering
-        pca = PCA(n_components=4, center=False).fit(self.X)
-        self.assertTrue(pca.m_ is None)
+        PCA = pca(n_components=4, center=False).fit(self.X)
+        self.assertTrue(PCA.m_ is None)
 
         Z = np.random.normal(size=(20, self.X.shape[1]))
         V = pca.loadings_.values
-        self.assertTrue(np.allclose(pca.predict_scores(Z), np.dot(Z, V)))
+        self.assertTrue(np.allclose(PCA.predict_scores(Z), np.dot(Z, V)))
 
     def test_projection(self):
         """

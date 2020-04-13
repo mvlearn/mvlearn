@@ -8,7 +8,7 @@ from scipy.sparse import issparse
 from .utils import svd_wrapper, centering
 
 
-class PCA(object):
+class pca(object):
     """
     Computes the Principal Components Analysis (PCA) of a data matrix
     X (n_samples x n_features).
@@ -53,9 +53,9 @@ class PCA(object):
 
     def __repr__(self):
         if not hasattr(self, 'scores_'):
-            return 'PCA object, nothing has been computed yet'
+            return 'pca object, nothing has been computed yet'
         else:
-            return 'Rank {} PCA of a {} matrix'.format(self.n_components, self.shape_)
+            return 'Rank {} pca of a {} matrix'.format(self.n_components, self.shape_)
 
     def fit(self, X):
         """
@@ -102,7 +102,7 @@ class PCA(object):
                          shape=None):
 
         """
-        Loads the PCA object from a precomputed PCA decomposition.
+        Loads the pca object from a precomputed PCA decomposition.
         """
 
         x = cls()
@@ -158,7 +158,7 @@ class PCA(object):
 
     def save(self, fpath, compress=9):
         """
-        Saves the PCA object to disk using sklearn.externals.joblib
+        Saves the pca object to disk using sklearn.externals.joblib
 
         Parameters
         ----------
@@ -174,7 +174,7 @@ class PCA(object):
     @classmethod
     def load(cls, fpath):
         """
-        Loads a PCA object from disk.
+        Loads a pca object from disk.
 
         Parameters
         ----------
@@ -183,7 +183,7 @@ class PCA(object):
 
         Output
         ------
-        jive.PCA.PCA
+        ajive.pca.pca
         """
         return load(fpath)
 

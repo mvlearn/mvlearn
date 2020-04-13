@@ -8,7 +8,7 @@ Created on Mon Apr  6 21:55:10 2020
 
 import pytest
 import numpy as np
-from mvlearn.jive.AJIVE import AJIVE
+from mvlearn.ajive.ajive import ajive
 from scipy.sparse import csr_matrix
 
 
@@ -85,33 +85,33 @@ TESTS
 
 def test_joint_indiv_length(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2])
-    ajive.fit(blocks = dat)
-    blocks = ajive.get_full_block_estimates()
+    jive = ajive(init_signal_ranks= [2,2])
+    jive.fit(blocks = dat)
+    blocks = jive.get_full_block_estimates()
     assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
 
 def test_joint_noise_length(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2])
-    ajive.fit(blocks = dat)
-    blocks = ajive.get_full_block_estimates()
+    jive = ajive(init_signal_ranks= [2,2])
+    jive.fit(blocks = dat)
+    blocks = jive.get_full_block_estimates()
     assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
 
           
 def test_joint(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2])
-    ajive.fit(blocks = dat)
-    blocks = ajive.get_full_block_estimates()
+    jive = ajive(init_signal_ranks= [2,2])
+    jive.fit(blocks = dat)
+    blocks = jive.get_full_block_estimates()
     for i in np.arange(100):
         j = np.sum(blocks[0]['joint'][i] == blocks[1]['joint'][i])
         assert j == 20
 
 def test_indiv(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2])
-    ajive.fit(blocks = dat)
-    blocks = ajive.get_full_block_estimates()
+    jive = ajive(init_signal_ranks= [2,2])
+    jive.fit(blocks = dat)
+    blocks = jive.get_full_block_estimates()
     for i in np.arange(100):
         j = np.sum(blocks[0]['individual'][i] == blocks[1]['individual'][i])
         assert j == 20
@@ -119,9 +119,9 @@ def test_indiv(data):
 #Sees whether incorrect signals will work
 def test_wrong_sig(data):
     dat = data['diff_views']
-    ajive = AJIVE(init_signal_ranks= [-1,-4])
+    jive = ajive(init_signal_ranks= [-1,-4])
     try:
-        ajive.fit(blocks=dat)
+        jive.fit(blocks=dat)
         j = 0
     except:
         j = 1
@@ -131,9 +131,9 @@ def check_sparse(data):
     dat = data['sparse_views']
     spar_mat = dat[0]
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
-    ajive = AJIVE(init_signal_ranks= [2,2])
-    ajive.fit(blocks = dat)
-    blocks = ajive.get_full_block_estimates()
+    jive = ajive(init_signal_ranks= [2,2])
+    jive.fit(blocks = dat)
+    blocks = jive.get_full_block_estimates()
     assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
     np.sum(np.sum(blocks[0]['individual'] != 0)) 
 
@@ -141,44 +141,44 @@ def check_sparse(data):
 def check_gen_lin_op_scipy(data):
     with pytest.raises(ValueError):
         dat = data['bad_views']
-        ajive = AJIVE(init_signal_ranks= [2,2])
-        ajive.fit(blocks = dat)
+        jive = ajive(init_signal_ranks= [2,2])
+        jive.fit(blocks = dat)
 
 def check_joint_rank_large(data):
     with pytest.raises(ValueError):
         dat = data['same_views']
-        ajive = AJIVE(init_signal_ranks= [2,2], joint_rank=5)
-        ajive.fit(blocks = dat)
+        jive = ajive(init_signal_ranks= [2,2], joint_rank=5)
+        jive.fit(blocks = dat)
 
 def decomp_not_computed_ranks():
     with pytest.raises(ValueError):
-        ajive = AJIVE(init_signal_ranks=[2,2])
-        ajive.get_ranks()
+        jive = ajive(init_signal_ranks=[2,2])
+        jive.get_ranks()
 
 def test_indiv_rank(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2], indiv_ranks=[2,1])
-    ajive.fit(blocks = dat)
-    assert ajive.indiv_ranks[0] == 2
+    jive = ajive(init_signal_ranks= [2,2], indiv_ranks=[2,1])
+    jive.fit(blocks = dat)
+    assert jive.indiv_ranks[0] == 2
 
 def test_joint_rank(data):
     dat = data['same_views']
-    ajive = AJIVE(init_signal_ranks= [2,2], joint_rank=2)
-    ajive.fit(blocks = dat)
-    assert ajive.joint_rank == 2
+    jive = ajive(init_signal_ranks= [2,2], joint_rank=2)
+    jive.fit(blocks = dat)
+    assert jive.joint_rank == 2
 
 def test_is_fit():
-    ajive = AJIVE(init_signal_ranks = [2,2],joint_rank=2)
-    assert ajive.is_fit == False
+    jive = ajive(init_signal_ranks = [2,2],joint_rank=2)
+    assert jive.is_fit == False
 
 def test_n_randdir():
-    ajive = AJIVE(init_signal_ranks = [2,2],n_randdir_samples=5)
-    assert ajive.n_randdir_samples == 5
+    jive = ajive(init_signal_ranks = [2,2],n_randdir_samples=5)
+    assert jive.n_randdir_samples == 5
 
 def test_n_jobs():
-    ajive = AJIVE(init_signal_ranks = [2,2], n_jobs=4)
-    assert ajive.n_jobs == 4
+    jive = ajive(init_signal_ranks = [2,2], n_jobs=4)
+    assert jive.n_jobs == 4
 
 def test_n_wedin():
-    ajive = AJIVE(init_signal_ranks = [2,2], n_wedin_samples = 6)
-    assert ajive.n_wedin_samples == 6
+    jive = ajive(init_signal_ranks = [2,2], n_wedin_samples = 6)
+    assert jive.n_wedin_samples == 6

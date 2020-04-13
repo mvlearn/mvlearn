@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from mvlearn.jive.AJIVE import AJIVE
+from mvlearn.ajive.ajive import ajive
 
 
 class TestFig2Runs(unittest.TestCase):
@@ -61,9 +61,9 @@ class TestFig2Runs(unittest.TestCase):
         X = pd.DataFrame(X, index=obs_names, columns=var_names['x'])
         Y = pd.DataFrame(Y, index=obs_names, columns=var_names['y'])
 
-        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}).fit(blocks={'x': X, 'y': Y})
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(blocks={'x': X, 'y': Y})
 
-        self.ajive = ajive
+        self.ajive = jive
         self.X = X
         self.Y = Y
         self.obs_names = obs_names
@@ -164,44 +164,44 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check wedin/random samples works with parallel processing.
         """
-        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, n_jobs=-1)
-        ajive.fit(blocks={'x': self.X, 'y': self.Y})
-        self.assertTrue(hasattr(ajive, 'blocks'))
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, n_jobs=-1)
+        jive.fit(blocks={'x': self.X, 'y': self.Y})
+        self.assertTrue(hasattr(jive, 'blocks'))
 
     def test_list_input(self):
         """
         Check AJIVE can take a list input.
         """
-        ajive = AJIVE(init_signal_ranks=[2, 3])
-        ajive.fit(blocks=[self.X, self.Y])
-        self.assertTrue(set(ajive.block_names) == set([0, 1]))
+        jive = ajive(init_signal_ranks=[2, 3])
+        jive.fit(blocks=[self.X, self.Y])
+        self.assertTrue(set(jive.block_names) == set([0, 1]))
 
     def test_dont_store_full(self):
         """
         Make sure setting store_full = False works
         """
-        ajive = AJIVE(init_signal_ranks=[2, 3], store_full=False)
-        ajive.fit(blocks=[self.X, self.Y])
+        jive = ajive(init_signal_ranks=[2, 3], store_full=False)
+        jive.fit(blocks=[self.X, self.Y])
 
-        self.assertTrue(ajive.blocks[0].joint.full_ is None)
-        self.assertTrue(ajive.blocks[0].individual.full_ is None)
-        self.assertTrue(ajive.blocks[1].joint.full_ is None)
-        self.assertTrue(ajive.blocks[1].individual.full_ is None)
+        self.assertTrue(jive.blocks[0].joint.full_ is None)
+        self.assertTrue(jive.blocks[0].individual.full_ is None)
+        self.assertTrue(jive.blocks[1].joint.full_ is None)
+        self.assertTrue(jive.blocks[1].individual.full_ is None)
 
     def test_rank0(self):
         """
         Check setting joint/individual rank to zero works
         """
-        ajive = AJIVE(init_signal_ranks=[2, 3], joint_rank=0)
-        ajive.fit(blocks=[self.X, self.Y])
-        self.assertTrue(ajive.common.rank == 0)
-        self.assertTrue(ajive.blocks[0].joint.rank == 0)
-        self.assertTrue(ajive.blocks[0].joint.scores_ is None)
+        jive = ajive(init_signal_ranks=[2, 3], joint_rank=0)
+        jive.fit(blocks=[self.X, self.Y])
+        self.assertTrue(jive.common.rank == 0)
+        self.assertTrue(jive.blocks[0].joint.rank == 0)
+        self.assertTrue(jive.blocks[0].joint.scores_ is None)
 
-        ajive = AJIVE(init_signal_ranks=[2, 3], indiv_ranks=[0, 1])
-        ajive.fit(blocks=[self.X, self.Y])
-        self.assertTrue(ajive.blocks[0].individual.rank == 0)
-        self.assertTrue(ajive.blocks[0].individual.scores_ is None)
+        jive = ajive(init_signal_ranks=[2, 3], indiv_ranks=[0, 1])
+        jive.fit(blocks=[self.X, self.Y])
+        self.assertTrue(jive.blocks[0].individual.rank == 0)
+        self.assertTrue(jive.blocks[0].individual.scores_ is None)
 
     def test_centering(self):
         xmean = self.X.mean(axis=0)
@@ -218,17 +218,17 @@ class TestFig2Runs(unittest.TestCase):
                                     ymean))
 
         # no centering
-        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, center=False)
-        ajive = ajive.fit(blocks={'x': self.X, 'y': self.Y})
-        self.assertTrue(ajive.centers_['x'] is None)
-        self.assertTrue(ajive.centers_['y'] is None)
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center=False)
+        jive = jive.fit(blocks={'x': self.X, 'y': self.Y})
+        self.assertTrue(jive.centers_['x'] is None)
+        self.assertTrue(jive.centers_['y'] is None)
 
         # only center x
-        ajive = AJIVE(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, \
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, \
                       'y': False})
-        ajive = ajive.fit(blocks={'x': self.X, 'y': self.Y})
-        self.assertTrue(np.allclose(ajive.centers_['x'], xmean))
-        self.assertTrue(ajive.centers_['y'] is None)
+        jive = jive.fit(blocks={'x': self.X, 'y': self.Y})
+        self.assertTrue(np.allclose(jive.centers_['x'], xmean))
+        self.assertTrue(jive.centers_['y'] is None)
         
 if __name__ == '__main__':
     unittest.main()

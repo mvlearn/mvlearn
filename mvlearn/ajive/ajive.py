@@ -26,10 +26,10 @@ from .utils import svd_wrapper, centering
 from .wedin_bound import get_wedin_samples
 from .random_direction import sample_randdir
 from .diagnostic_plot import plot_joint_diagnostic
-from .PCA import PCA
+from .pca import pca
 
 
-class AJIVE(object):
+class ajive(object):
     """
     An implementation of Angle-based Joint and Individual Variation Explained.
     This algorithm takes multiple input views with the same number of samples
@@ -85,8 +85,8 @@ class AJIVE(object):
     Attributes
     ----------
 
-    common: mvlearn.jive.PCA.PCA
-        The common joint space found using PCA class in same directory
+    common: mvlearn.ajive.pca.pca
+        The common joint space found using pca class in same directory
 
     blocks: dict
         The block-specific results.
@@ -165,7 +165,7 @@ class AJIVE(object):
     def __repr__(self):
 
         if self.is_fit:
-            r = "AJIVE, joint rank: {}".format(self.common.rank)
+            r = "joint rank: {}".format(self.common.rank)
             for bn in self.block_names:
                 indiv_rank = self.blocks[bn].individual.rank
                 r += ", block {} indiv rank: {}".format(bn, indiv_rank)
@@ -302,9 +302,9 @@ class AJIVE(object):
                                             joint_svals, joint_loadings,
                                             self.joint_rank)
 
-        # Using rank and joint SVD, calls PCA class to get joint basis
+        # Using rank and joint SVD, calls pca class to get joint basis
         self.common = \
-        PCA.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
+        pca.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
                                            svals=\
                                            joint_svals[0:self.joint_rank], 
                                            loadings=joint_loadings\
@@ -666,12 +666,12 @@ class ViewSpecificResults(object):
 
     Attributes
     ----------
-    joint: mvlearn.jive.PCA.PCA
+    joint: mvlearn.ajive.pca.pca
         View specific joint PCA.
         Has an extra attribute joint.full_ which contains the full view
         joint estimate.
 
-    individual: mvlearn.jive.PCA.PCA
+    individual: mvlearn.ajive.pca.pca
         view specific individual PCA.
         Has an extra attribute individual.full_ which contains the full view
         joint estimate.
@@ -696,7 +696,7 @@ class ViewSpecificResults(object):
         shape=None,
     ):
 
-        self.joint = PCA.from_precomputed(
+        self.joint = pca.from_precomputed(
             n_components=joint["rank"],
             scores=joint["scores"],
             loadings=joint["loadings"],
