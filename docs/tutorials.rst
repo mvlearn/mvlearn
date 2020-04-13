@@ -9,10 +9,11 @@ for multiview datasets.
 
 .. toctree::
    :maxdepth: 1
-      
+   
    tutorials/cluster/MVKMeans/MultiviewKMeans_Tutorial
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralClustering_Tutorial
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
+   tutorials/cluster/multiview_vs_singleview_clustering.ipynb
 
 Cotraining
 ==========
@@ -59,4 +60,5 @@ In order to conviently run tools in this package on multview data, data can be s
    :maxdepth: 1
 
    tutorials/datasets/load_UCImultifeature_data
+   tutorials/cluster/multiview_vs_singleview_clustering.ipynb
    tutorials/datasets/GaussianMixtures
