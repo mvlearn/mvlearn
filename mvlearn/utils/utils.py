@@ -13,30 +13,30 @@
 # limitations under the License.
 
 import warnings
-
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 
 
 def check_Xs(Xs, multiview=False, enforce_views=None):
-    """
+    r"""
     Checks Xs and ensures it to be a list of 2D matrices.
+
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
 
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix
+    multiview : boolean, (default=False)
+        If True, throws error if just 1 data matrix given.
 
-    enforce_views : int, default (not checked)
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
 
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
@@ -70,8 +70,9 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
 
 
 def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
-    """
-    Checks Xs and y for consistent length. Xs is set to be of dimension 3
+    r"""
+    Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+
     Parameters
     ----------
     Xs : nd-array, list
@@ -80,16 +81,17 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     y : nd-array, list
         Labels.
 
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix.
+    multiview : boolean, (default=False)
+        If True, throws error if just 1 data matrix given.
 
-    enforce_views : int, default (not checked)
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
+
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
 
     y_converted : object
         The converted and validated y.
@@ -106,29 +108,38 @@ def check_Xs_y_nan_allowed(
         y,
         multiview=False,
         enforce_views=None,
-        num_classes=None
+        num_classes=None,
+        max_classes=None,
+        min_classes=None
         ):
-    """
-    Checks Xs and y for consistent length. Xs is set to be of dimension 3
+    r"""
+    Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
     y : nd-array, list
         Labels.
-    multiview : boolean, default (False)
-        Throws error if just 1 data matrix
-    enforce_views : int, default (not checked)
+    multiview : boolean, default=False
+        If True, throws error if just 1 data matrix given.
+    enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
-    num_classes: int, default (None)
+    num_classes : int, default=None
         Number of classes that must appear in the labels. If none, then
+        not checked.
+    max_classes : int, default=None
+        Maximum number of classes that must appear in labels. If none, then
+        not checked.
+    min_classes : int, default=None
+        Minimum number of classes that must appear in labels. If none, then
         not checked.
 
     Returns
     -------
     Xs_converted : object
-        The converted and validated X.
+        The converted and validated X (list of data arrays).
     y_converted : object
         The converted and validated y.
     """
@@ -149,5 +160,12 @@ def check_Xs_y_nan_allowed(
         if n_classes != num_classes:
             raise ValueError("Wrong number of class labels. Expected {},\
              found {}".format(num_classes, n_classes))
+    if max_classes is not None:
+        # if not exactly correct number of class labels, raise error
+        classes = list(set(y[~np.isnan(y)]))
+        n_classes = len(classes)
+        if n_classes > max_classes:
+            raise ValueError("Wrong number of class labels. Expected no\
+             more than {}, found {}".format(num_classes, n_classes))
 
     return Xs_converted, y_converted

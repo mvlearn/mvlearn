@@ -46,10 +46,10 @@ class BaseEmbed(BaseEstimator):
 
         Returns
         -------
-        self: obj
+        self: returns an instance of self.
         """
 
-        pass
+        return self
 
     @abstractmethod
     def transform(self, Xs):
@@ -58,9 +58,9 @@ class BaseEmbed(BaseEstimator):
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
 
         Returns
         -------
@@ -70,21 +70,21 @@ class BaseEmbed(BaseEstimator):
 
         pass
 
-    @abstractmethod
     def fit_transform(self, Xs, y=None):
         """
-        Fit an embeddor to the data and transform it
+        Fit an embeddor to the data and transform the data
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional
 
         Returns
         -------
-        Xs_transformed : list of array-likes, shape
-            (n_views, n_samples, n_components)
+        out : list of array-likes
+            - out length: n_views
+            - out[i] shape: (n_samples, n_components_i)
         """
-        return
+        return self.fit(Xs, y).transform(Xs)
