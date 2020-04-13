@@ -13,7 +13,13 @@ Install default
 pip3 install mvlearn
 ```
 
-Install with optional torch dependency (solely for SplitAE functionality)
+Install with optional torch dependency (for SplitAE and Deep CCA
+functionality)
 ```shell
 pip3 install mvlearn[torch]
+```
+alternatively install the default package and optional
+dependencies separately
+```shell
+pip3 install -r requirements_torch.txt
 ```
