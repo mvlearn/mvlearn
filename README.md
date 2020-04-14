@@ -25,8 +25,3 @@ functionality)
 ```shell
 pip3 install mvlearn[torch]
 ```
-alternatively install the default package and optional
-dependencies separately
-```shell
-pip3 install -r requirements_torch.txt
-```
