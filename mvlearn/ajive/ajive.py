@@ -719,7 +719,7 @@ class ViewSpecificResults(object):
         else:
             self.joint.full_ = None
 
-        self.individual = PCA.from_precomputed(
+        self.individual = pca.from_precomputed(
             n_components=individual["rank"],
             scores=individual["scores"],
             loadings=individual["loadings"],

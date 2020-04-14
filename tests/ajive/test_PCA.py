@@ -102,7 +102,7 @@ class TestPCA(unittest.TestCase):
         self.assertTrue(PCA.m_ is None)
 
         Z = np.random.normal(size=(20, self.X.shape[1]))
-        V = pca.loadings_.values
+        V = PCA.loadings_.values
         self.assertTrue(np.allclose(PCA.predict_scores(Z), np.dot(Z, V)))
 
     def test_projection(self):

@@ -46,7 +46,7 @@ class pca(object):
     def __init__(self, n_components=None, center='mean'):
         self.n_components = n_components
         self.center = center
-
+        
     def get_params(self):
         return {'n_components': self.n_components,
                 'center': self.center}
