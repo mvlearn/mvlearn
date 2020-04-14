@@ -83,3 +83,13 @@ def test_bad_inputs():
         "Enforce wrong number of classes"
         check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
                  enforce_views=2, num_classes=3)
+
+    with pytest.raises(ValueError):
+        "Enforce min number of classes"
+        check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
+                 enforce_views=2, min_classes=2)
+
+    with pytest.raises(ValueError):
+        "Enforce min number of classes"
+        check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
+                 enforce_views=2, num_classes=1, max_classes=0)

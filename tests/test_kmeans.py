@@ -1,25 +1,37 @@
 import pytest
 import numpy as np
-from mvlearn.cluster.mv_k_means import MultiviewKMeans
+from mvlearn.cluster.mv_kmeans import MultiviewKMeans
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 
 # EXCEPTION TESTING
 RANDOM_SEED = 10
 
-def test_n_clusters_not_positive_int():
+
+@pytest.fixture(scope='module')
+def data_small():
+    view1 = np.random.random((8, 8))
+    view2 = np.random.random((8, 9))
+    data = [view1, view2]
+    return data
+    
+def test_n_clusters_not_positive_int(data_small):
+    
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(n_clusters=-1)
+        kmeans.fit(data_small)
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(n_clusters=0)
+        kmeans.fit(data_small)
         
-def test_random_state_not_convertible():
+def test_random_state_not_convertible(data_small):
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(random_state='ab')
-
+        kmeans.fit(data_small)
+        
 def test_samples_not_same():
     with pytest.raises(ValueError):
         view1 = np.random.random((5, 8))
-        view2 = np.random.random((8, 9))
+        view2 = np.random.random((8, 9)) 
         kmeans = MultiviewKMeans()
         kmeans.fit([view1, view2])
 
@@ -50,27 +62,29 @@ def test_not_2_views():
         view2 = np.random.random((10,))
         view3 = np.random.random((10,))
         kmeans = MultiviewKMeans()
-        kmeans.fit([view1, view2, view3])
+        kmeans.fit([view1, view2, view3]) 
 
-def test_patience_not_nonnegative_int():
+def test_patience_not_nonnegative_int(data_small):
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(patience=-1)
-
-def test_max_iter_not_positive_int():
+        kmeans.fit(data_small)
+        
+def test_max_iter_not_positive_int(data_small):
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(max_iter=-1)
+        kmeans.fit(data_small)
     
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(max_iter=0)
-
+        kmeans.fit(data_small)
         
 def test_n_init_not_positive_int():
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(n_init=-1)
-    
+        kmeans.fit(data_small)
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(n_init=0)
-
+        kmeans.fit(data_small)
         
 def test_final_centroids_no_consensus():
     with pytest.raises(ConvergenceWarning):
@@ -129,6 +143,61 @@ def test_predict_no_centroids2():
     with pytest.raises(AttributeError):
         kmeans.predict([view1, view2])
 
+def test_not_init1(data_small):
+    with pytest.raises(ValueError):
+        kmeans = MultiviewKMeans(init='Not_Init')
+        kmeans.fit(data_small)
+
+def test_init_clusters_not_same(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((2, 8))
+        view2 = np.random.random((3, 9)) 
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+
+def test_init_samples_not_list(data_small):
+    with pytest.raises(ValueError):
+        view1 = 1
+        view2 = 3
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+        
+def test_init_samples_not_2D_1(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((2, 8, 7))
+        view2 = np.random.random((2, 9, 7))
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+
+def test_init_samples_not_2D_2(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((2,))
+        view2 = np.random.random((2,))
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+
+def test_init_not_2_views(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((2,8))
+        view2 = np.random.random((2,9))
+        view3 = np.random.random((2,9))
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+        
+def test_init_not_n_clusters(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((3, 8))
+        view2 = np.random.random((3, 9)) 
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+
+def test_init_not_feat_dimensions(data_small):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((2, 9))
+        view2 = np.random.random((2, 9)) 
+        kmeans = MultiviewKMeans(init=[view1, view2])
+        kmeans.fit(data_small)
+        
 # Function Testing
 
 @pytest.fixture(scope='module')
@@ -138,7 +207,7 @@ def data_random():
     num_test_samples = 5
     n_feats1 = 20
     n_feats2 = 18
-    n_clusters = 3
+    n_clusters = 2
     np.random.seed(RANDOM_SEED)
     fit_data = []
     fit_data.append(np.random.rand(num_fit_samples, n_feats1))
@@ -152,7 +221,7 @@ def data_random():
     return {'n_test' : num_test_samples, 'n_feats1': n_feats1, 'n_feats2': n_feats2,
             'n_clusters': n_clusters, 'kmeans' : kmeans, 'fit_data' : fit_data,
             'test_data' : test_data}
-    
+
             
 def test_fit_centroids(data_random):
     kmeans = data_random['kmeans']
@@ -210,7 +279,6 @@ def test_predict_deterministic():
         assert cluster_pred[ind] == true_clusters[ind]
 
 
-
 def test_fit_predict(data_random):
     
     kmeans = data_random['kmeans']
@@ -221,7 +289,6 @@ def test_fit_predict(data_random):
         assert(cl >= 0 and cl < data_random['n_clusters'])
     
 def test_fit_predict_patience(data_random):
-
     
     n_clusters = data_random['n_clusters']
     patience=10
@@ -256,3 +323,38 @@ def test_fit_predict_n_init(data_random):
     assert(data_random['n_test'] ==  cluster_pred.shape[0])
     for cl in cluster_pred:
         assert(cl >= 0 and cl < data_random['n_clusters'])
+
+def test_fit_predict_init_random(data_random):
+    
+    n_clusters = data_random['n_clusters']
+    init = 'random'
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, init='random')
+    cluster_pred = kmeans.fit_predict(data_random['test_data'])
+    
+    assert(data_random['n_test'] ==  cluster_pred.shape[0])
+    for cl in cluster_pred:
+        assert(cl >= 0 and cl < data_random['n_clusters'])
+        
+def test_fit_predict_n_clusters():
+
+    n_clusters = 3
+    v1_data = np.array([[0, 0],[1, 0],[0, 1]])
+    v2_data = np.array([[0, 0],[1, 0],[0, 1]])
+    data = [v1_data, v2_data]
+    kmeans = MultiviewKMeans(n_clusters=n_clusters)
+    cluster_pred = kmeans.fit_predict(data)
+    cluster_pred = list(set(cluster_pred))
+    assert(len(cluster_pred) == n_clusters)
+
+    
+def test_fit_predict_init_predefined():
+
+    n_clusters = 2
+    v1_centroid = np.array([[0, 0],[1, 1]])
+    v2_centroid = np.array([[0, 0],[1, 1]])
+    centroids = [v1_centroid, v2_centroid]
+    v1_data = np.array([[0, 0],[0.3, 0.2],[0.5, 0.5],[0.7, 0.7],[1, 1]])
+    v2_data = np.array([[0, 0],[0.2, 0.4],[0.5, 0.5],[0.4, 0.7],[1, 1]])
+    data = [v1_data, v2_data]
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, init=centroids)
+    cluster_pred = kmeans.fit_predict(data)

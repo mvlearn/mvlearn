@@ -22,9 +22,9 @@ MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 with open("requirements.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
 with open("requirements_torch.txt", "r") as f:
-    extras = f.read()
+    torch_extras = f.read()
 EXTRA_PACKAGES = {
-    'torch':extras
+    'torch':torch_extras
 }
 
 # Find mvlearn version.

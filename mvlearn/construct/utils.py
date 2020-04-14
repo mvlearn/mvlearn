@@ -1,8 +1,16 @@
-"""
-utils.py
-====================================
-General utils for view construction algorithms.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 def check_n_views(n_views):
@@ -45,6 +53,9 @@ def check_n_features(n_features, cols):
     cols: int
         Number of features in data matrix.
     """
+
+    if n_features is None:
+        raise Exception("n_features must be specified.")
 
     if n_features <= 0:
         raise Exception("n_features cannot be 0 or a negative number.")

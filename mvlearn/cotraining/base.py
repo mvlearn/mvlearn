@@ -54,7 +54,7 @@ class BaseCoTrainEstimator(BaseEstimator):
     def __init__(self,
                  estimator1=None,
                  estimator2=None,
-                 random_state=0
+                 random_state=None
                  ):
         self.estimator1 = estimator1
         self.estimator2 = estimator2

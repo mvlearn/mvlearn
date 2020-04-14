@@ -1,12 +1,20 @@
-"""
-rsm.py
-====================================
-Random subspace method for view construction.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import numpy as np
 import random
-from mvlearn.construct.utils import check_n_views, check_n_features
+from .utils import check_n_views, check_n_features
 
 
 def random_subspace_method(X, n_features=None, n_views=1):
@@ -39,8 +47,28 @@ def random_subspace_method(X, n_features=None, n_views=1):
     views : list of array-like matrices
         List of constructed views (each matrix has shape [n_rows, n_cols]).
 
+    Examples
+    --------
+    >>> from mvlearn.construct import random_subspace_method
+    >>> import random
+    >>> import numpy as np
+    >>> # Random integer data for compressed viewing
+    >>> np.random.seed(1)
+    >>> random.seed(1)
+    >>> single_view_data = np.random.randint(low=1, high=10, size=(4, 5))
+    >>> multi_view_data = random_subspace_method(single_view_data,
+    ...                                          n_features=3, n_views=2)
+    >>> print(multi_view_data[0])
+    [[6 9 0 0 1]
+     [2 8 0 0 5]
+     [6 3 0 0 5]
+     [8 8 0 0 1]]
+    >>> print(multi_view_data[1])
+    [[6 0 6 1 0]
+     [2 0 7 3 0]
+     [6 0 5 3 0]
+     [8 0 2 8 0]]
     """
-
     _, cols = X.shape
 
     check_n_views(n_views)

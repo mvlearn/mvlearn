@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------
+#
 # Implements the Partial Least Squares view construction method
 # by wrapping the PLS regression function from sklearn. View
 # construction generates a new projection of the data.
@@ -47,6 +47,11 @@ def partial_least_squares_embedding(
     OR (if return_embedding is False)
     X_weights : shape (features, n_components)
         The PLS feature weights to embed the data
+
+    Notes
+    -----
+    From an implementation perspective, this wraps PLSRegresion from
+    sklearn.cross_decomposition.
     """
     pls = PLSRegression(n_components=n_components)
     pls.fit(X, Y)

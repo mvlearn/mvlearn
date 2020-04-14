@@ -31,6 +31,11 @@ def data():
     'random_data' : random_data, 'random_labels' : random_labels,
     'random_test' : random_test, 'random_seed' : random_seed}
 
+def test_fit_one_class(data):
+    random_labels_bad = np.floor(np.random.rand(100,))
+    random_labels_bad[:-10] = np.nan
+    data['clf_test'].fit(data['random_data'], random_labels_bad)
+
 '''
 EXCEPTION TESTING
 '''
@@ -58,12 +63,6 @@ def test_fit_over_two_classes(data):
         random_labels_bad = np.floor(2*np.random.rand(100,)+2)
         random_labels_bad[:-10] = np.nan
         random_labels_bad[0] = 10
-        data['clf_test'].fit(data['random_data'], random_labels_bad)
-
-def test_fit_one_class(data):
-    with pytest.raises(ValueError):
-        random_labels_bad = np.floor(np.random.rand(100,))
-        random_labels_bad[:-10] = np.nan
         data['clf_test'].fit(data['random_data'], random_labels_bad)
 
 def test_fit_zero_classes(data):
@@ -182,7 +181,7 @@ def test_predict_check_p_n(data):
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier()
+    clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels1)
     assert clf.p_ == 2
     assert clf.n_ == 1
@@ -191,7 +190,7 @@ def test_predict_check_p_n(data):
     labels2[:5] = 6 # 5 "positive"
     labels2[5:15] = 4 # 10 "negative"
     labels2[15:] = np.nan
-    clf = CTClassifier()
+    clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels2)
     assert clf.p_ == 1
     assert clf.n_ == 2
@@ -200,7 +199,7 @@ def test_predict_check_p_n(data):
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier(p=4, n=3)
+    clf = CTClassifier(p=4, n=3, random_state=0)
     clf.fit(data['random_data'], labels1)
     assert clf.p_ == 4
     assert clf.n_ == 3
