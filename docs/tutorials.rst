@@ -49,6 +49,7 @@ Methods build on top of Matplotlib and Seaborn have been implemented for conveni
 .. toctree::
    :maxdepth: 1
 
+   tutorials/plotting/quick_visualize_tutorial
    tutorials/datasets/GaussianMixtures
    
 Test Dataset
