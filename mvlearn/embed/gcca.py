@@ -33,11 +33,6 @@ class GCCA(BaseEmbed):
 
     Parameters
     ----------
-    sv_tolerance : float, optional, default=None
-        Selects the number of SVD components to keep for each view by
-        thresholding singular values. If none, another selection
-        method is used.
-
     n_components : int (positive), optional, default=None
         If ``self.sv_tolerance=None``, selects the number of SVD
         components to keep for each view. If none, another selection
@@ -47,6 +42,11 @@ class GCCA(BaseEmbed):
         If ``self.sv_tolerance=None``, and ``self.n_components=None``,
         selects the number of SVD components to keep for each view by
         capturing enough of the variance. If none, another selection
+        method is used.
+
+    sv_tolerance : float, optional, default=None
+        Selects the number of SVD components to keep for each view by
+        thresholding singular values. If none, another selection
         method is used.
 
     n_elbows : int, optional, default: 2
@@ -108,16 +108,16 @@ class GCCA(BaseEmbed):
 
     def __init__(
             self,
+            n_components=None,
             fraction_var=None,
             sv_tolerance=None,
-            n_components=None,
             n_elbows=2,
             tall=False
             ):
 
+        self.n_components = n_components
         self.fraction_var = fraction_var
         self.sv_tolerance = sv_tolerance
-        self.n_components = n_components
         self.n_elbows = n_elbows
         self.tall = tall
         self.projection_mats_ = None
