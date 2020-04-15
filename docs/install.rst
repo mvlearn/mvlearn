@@ -38,11 +38,15 @@ top-level source directory using the Terminal::
 This will install ``mvlearn`` and the required dependencies (see below).
 Due to the size of the ``torch`` dependency, it is an optional installation.
 If you wish to use functionality associated with it (Deep CCA and SplitAE),
-you must install additional dependencies. From PyPi, simply call::
+you must install additional dependencies. From PyPi, to install simply call::
 
     $ pip3 install mvlearn[torch]
 
-or if you have the package locally, from the top level folder call::
+To upgrade the package and torch requirements::
+
+    $ pip3 install --upgrade mvlearn[torch]
+
+If you have the package locally, from the top level folder call::
 
     $ pip3 install -e .[torch]
 
@@ -67,7 +71,7 @@ with optional dependencies
 
 Hardware requirements
 ---------------------
-The `mvlearn` package requires only a standard computer with enough RAM to support the in-memory operations and free memory to install required packages. 
+The ``mvlearn`` package requires only a standard computer with enough RAM to support the in-memory operations and free memory to install required packages. 
 
 OS Requirements
 ---------------
@@ -76,6 +80,6 @@ This package is supported for *Linux* and *macOS* and can also be run on Windows
 
 Testing
 -------
-mvlearn uses the Python ``pytest`` testing package.  If you don't already have
+``mvlearn`` uses the Python ``pytest`` testing package.  If you don't already have
 that package installed, follow the directions on the `pytest homepage
 <https://docs.pytest.org/en/latest/>`_.
