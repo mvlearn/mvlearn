@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# MIT License
-
-# Original work Copyright (c) 2016 Vahid Noroozi
-# Modified work Copyright 2019 Zhanghao Wu
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
 import numpy as np
 from scipy.stats import ortho_group
 import collections
@@ -96,6 +81,19 @@ class GaussianMixture:
             A list correponding to the fraction of samples from each class and
             whose entries sum to 1. If `None`, then data is sampled from one
             class.
+
+        Examples
+        --------
+        >>> from mvlearn.datasets import GaussianMixture
+        >>> import numpy as np
+        >>> n = 100
+        >>> mu = [[0,1], [0,-1]]
+        >>> sigma = [np.eye(2), np.eye(2)]
+        >>> class_probs = [0.5, 0.5]
+        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs)
+        >>> # To create a polynomial relationship between views
+        >>> # use GM = GM.sample_views(transform='poly', n_noise=2)
+
         """
         self.mu = np.array(mu)
         self.sigma = np.array(sigma)

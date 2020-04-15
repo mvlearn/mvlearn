@@ -27,11 +27,6 @@ Omnibus Embedding
 .. autoclass:: Omnibus
     :exclude-members: transform, get_params, set_params
 
-Partial Least Squares Regression
---------------------------------
-
-.. autofunction:: partial_least_squares_embedding
-
 Multiview Multidimensional Scaling
 ----------------------------------
 
