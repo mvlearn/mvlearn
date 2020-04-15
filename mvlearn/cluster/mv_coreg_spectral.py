@@ -185,7 +185,6 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         normed_1 = np.sqrt(np.diag(U_1 @ U_1.T))
         normed_1[normed_1 == 0.0] = 1
         U_1 = np.linalg.inv(np.diag(normed_1)) @ U_1
-        print(U_1[:6])
         
         # Now iteratively solve for all U's
         n_items = Xs[0].shape[0]
@@ -206,7 +205,6 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
                     l_comp = l_comp + U_mats[vi] @ U_mats[vi].T
             l_comp = (l_comp + l_comp.T) / 2
             l_mat = L_mats[0] + self.v_lambda * l_comp
-            return l_mat
             U_mats[0], obj_vals[0, it] = self._compute_eigs(l_mat)
             #print(U_mats[0])
             #U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
