@@ -186,7 +186,6 @@ class GaussianMixture:
             np.random.shuffle(self.latent)
             np.random.seed(self.shuffle_random_state)
             np.random.shuffle(self.y)
-        self.Xs = None
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
