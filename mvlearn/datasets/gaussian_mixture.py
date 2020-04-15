@@ -125,8 +125,8 @@ class GaussianMixture:
         >>> mu = [[0,1], [0,-1]]
         >>> sigma = [np.eye(2), np.eye(2)]
         >>> class_probs = [0.5, 0.5]
-        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs, shuffle=True,
-        ...                      shuffle_random_state=42)
+        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs,
+        ...                      shuffle=True, shuffle_random_state=42)
         >>> GM = GM.sample_views(transform='poly', n_noise=2)
         >>> Xs, y = GM.get_Xy()
         >>> print(y)
@@ -152,7 +152,6 @@ class GaussianMixture:
         self.random_state = random_state
         self.shuffle = shuffle
         self.shuffle_random_state = shuffle_random_state
-
 
         if class_probs is None:
             if self.mu.ndim > 1 or self.sigma.ndim > 2:
@@ -229,8 +228,8 @@ class GaussianMixture:
 
         self.Xs = [self.latent, X]
         self.Xs = [_add_noise(X, n_noise=n_noise,
-                              random_state=self.random_state)\
-                              for X in self.Xs]
+                              random_state=self.random_state)
+                   for X in self.Xs]
 
         return self
 
