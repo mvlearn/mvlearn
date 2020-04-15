@@ -50,6 +50,7 @@ Methods build on top of Matplotlib and Seaborn have been implemented for conveni
    :maxdepth: 1
 
    tutorials/plotting/quick_visualize_tutorial
+   tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
    
 Test Dataset
@@ -59,5 +60,5 @@ In order to conviently run tools in this package on multview data, data can be s
 .. toctree::
    :maxdepth: 1
 
-   tutorials/datasets/load_UCImultifeature_data
+   tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
