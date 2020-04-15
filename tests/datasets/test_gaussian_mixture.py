@@ -59,6 +59,43 @@ def test_bad_shapes():
     with pytest.raises(ValueError):
         GaussianMixture(mu, sigma, n, class_probs=[0.3, 0.1, 0.6])
 
+def test_random_state():
+    gm_1 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42)
+    gm_1.sample_views('poly')
+    Xs_1, y_1 = gm_1.get_Xy()
+    gm_2 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42)
+    gm_2.sample_views('poly')
+    Xs_2, y_2 = gm_2.get_Xy()
+    for view1, view2 in zip(Xs_1, Xs_2):
+        assert np.allclose(view1, view2)
+    assert np.allclose(y_1, y_2)
+
+def test_shuffle():
+    gm_1 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+                           shuffle=True)
+    gm_1.sample_views('poly')
+    Xs_1, y_1 = gm_1.get_Xy()
+    gm_2 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+                           shuffle=True)
+    gm_2.sample_views('poly')
+    Xs_2, y_2 = gm_2.get_Xy()
+    for view1, view2 in zip(Xs_1, Xs_2):
+        assert not np.allclose(view1, view2)
+    assert not np.allclose(y_1, y_2)
+
+def test_shuffle_with_random_state():
+    gm_1 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+                           shuffle=True, shuffle_random_state=42)
+    gm_1.sample_views('poly')
+    Xs_1, y_1 = gm_1.get_Xy()
+    gm_2 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+                           shuffle=True, shuffle_random_state=42)
+    gm_2.sample_views('poly')
+    Xs_2, y_2 = gm_2.get_Xy()
+    for view1, view2 in zip(Xs_1, Xs_2):
+        assert np.allclose(view1, view2)
+    assert np.allclose(y_1, y_2)
+
 test_multivariate()
 test_class_probs()
 test_transforms()
@@ -67,3 +104,6 @@ test_bad_transform_function()
 test_bad_transform_string()
 test_no_sample()
 test_bad_shapes()
+test_random_state()
+test_shuffle()
+test_shuffle_with_random_state()

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from mvlearn.embed.dcca import DCCA
+from mvlearn.embed import DCCA
 from sklearn.exceptions import NotFittedError
 
 @pytest.fixture(scope='module')
