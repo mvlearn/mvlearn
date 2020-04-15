@@ -137,64 +137,17 @@ class MultiviewSpectralClustering(BaseEstimator):
 
     References
     ----------
-    .. [#1Clu] Abhishek Kumar and Hal Daume. A Co-training Approach for
+    .. [#1Clu] Abhishek Kumar and Hal Daumé. A Co-training Approach for
             Multiview Spectral Clustering. In International Conference
             on Machine Learning, 2011
     '''
-    def __init__(self, n_clusters=2, n_views=2, random_state=None,
+    def __init__(self, n_clusters=2, random_state=None,
                  info_view=None, max_iter=10, n_init=10, affinity='rbf',
                  gamma=None, n_neighbors=10):
 
         super().__init__()
 
-        if not (isinstance(n_clusters, int) and n_clusters > 0):
-            msg = 'n_clusters must be a positive integer'
-            raise ValueError(msg)
-
-        if not (isinstance(n_views, int) and n_views > 1):
-            msg = 'n_views must be a positive integer greater than 1'
-            raise ValueError(msg)
-
-        if random_state is not None:
-            msg = 'random_state must be convertible to 32 bit unsigned integer'
-            try:
-                random_state = int(random_state)
-            except ValueError:
-                raise ValueError(msg)
-            np.random.seed(random_state)
-
-        self.info_view = None
-        if info_view is not None:
-            if (isinstance(info_view, int)
-                    and (info_view >= 0 and info_view < n_views)):
-                self.info_view = info_view
-            else:
-                msg = 'info_view must be an integer between 0 and n_clusters-1'
-                raise ValueError(msg)
-
-        if not (isinstance(max_iter, int) and (max_iter > 0)):
-            msg = 'max_iter must be a positive integer'
-            raise ValueError(msg)
-
-        if not (isinstance(n_init, int) and n_init > 0):
-            msg = 'n_init must be a positive integer'
-            raise ValueError(msg)
-
-        if affinity not in AFFINITY_METRICS:
-            msg = 'affinity must be a valid affinity metric'
-            raise ValueError(msg)
-
-        if gamma is not None and not ((isinstance(gamma, float) or
-                                       isinstance(gamma, int)) and gamma > 0):
-            msg = 'gamma must be a positive float'
-            raise ValueError(msg)
-
-        if not (isinstance(n_neighbors, int) and n_neighbors > 0):
-            msg = 'n_neighbors must be a positive integer'
-            raise ValueError(msg)
-
         self.n_clusters = n_clusters
-        self.n_views = n_views
         self.random_state = random_state
         self.info_view = info_view
         self.max_iter = max_iter
@@ -275,6 +228,80 @@ class MultiviewSpectralClustering(BaseEstimator):
         la_eigs = u_mat[:, :self.n_clusters]
         return la_eigs
 
+    def _param_checks(self, Xs):
+
+        r'''
+        Performs bulk of checks and exception handling for 
+        inputted user parameters.
+
+        Parameters
+        ----------
+        
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size n_views, corresponding to the number
+            of views of data. Each view can have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+        The data in the appropriate format.
+
+        '''
+        Xs = check_Xs(Xs)
+        if len(Xs) < 2:
+            msg = 'Xs must have at least 2 views'
+            raise ValueError(msg)
+        self._n_views = len(Xs)
+
+        if not (isinstance(self.n_clusters, int) and self.n_clusters > 0):
+            msg = 'n_clusters must be a positive integer'
+            raise ValueError(msg)
+
+        if self.random_state is not None:
+            msg = 'random_state must be convertible to 32 bit unsigned integer'
+            try:
+                self.random_state = int(self.random_state)
+            except ValueError:
+                raise ValueError(msg)
+            np.random.seed(self.random_state)
+
+        if self.info_view is not None:
+            if not (isinstance(self.info_view, int)
+                    and (self. info_view >= 0 and self.info_view < self._n_views)):
+                msg = 'info_view must be an integer between 0 and n_clusters-1'
+                raise ValueError(msg)
+
+        if not (isinstance(self.max_iter, int) and (self.max_iter > 0)):
+            msg = 'max_iter must be a positive integer'
+            raise ValueError(msg)
+
+        if not (isinstance(self.n_init, int) and self.n_init > 0):
+            msg = 'n_init must be a positive integer'
+            raise ValueError(msg)
+
+        if self.affinity not in AFFINITY_METRICS:
+            msg = 'affinity must be a valid affinity metric'
+            raise ValueError(msg)
+
+        if self.gamma is not None and not ((isinstance(self.gamma, float) or
+                                isinstance(self.gamma, int)) and self.gamma > 0):
+            msg = 'gamma must be a positive float'
+            raise ValueError(msg)
+
+        if not (isinstance(self.n_neighbors, int) and self.n_neighbors > 0):
+            msg = 'n_neighbors must be a positive integer'
+            raise ValueError(msg)
+
+        return Xs
+    
     def fit_predict(self, Xs):
 
         r'''
@@ -298,11 +325,9 @@ class MultiviewSpectralClustering(BaseEstimator):
             The predicted cluster labels for each sample.
         '''
 
-        Xs = check_Xs(Xs)
-        if len(Xs) != self.n_views:
-            msg = 'Length of Xs must be the same as n_views'
-            raise ValueError(msg)
-
+        # Perform checks on the data and inputted parameters
+        Xs = self._param_checks(Xs)
+        
         # Compute the similarity matrices
         sims = [self._affinity_mat(X) for X in Xs]
 
@@ -319,7 +344,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_sum = np.sum(np.array(eig_sums), axis=0)
             new_sims = list()
 
-            for view in range(self.n_views):
+            for view in range(self._n_views):
                 # Compute new graph similarity representation
                 mat1 = sims[view] @ (U_sum - eig_sums[view])
                 mat1 = (mat1 + np.transpose(mat1)) / 2.0
@@ -329,7 +354,7 @@ class MultiviewSpectralClustering(BaseEstimator):
                           for sim in new_sims]
 
         # Row normalize
-        for view in range(self.n_views):
+        for view in range(self._n_views):
             U_norm = np.linalg.norm(U_mats[view], axis=1).reshape((-1, 1))
             U_norm[U_norm == 0] = 1
             U_mats[view] /= U_norm

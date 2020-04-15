@@ -27,6 +27,8 @@ from sklearn.exceptions import NotFittedError
 from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
 from sklearn.neighbors import NearestNeighbors
 from .mv_spectral import MultiviewSpectralClustering
+import matlab.engine
+eng = matlab.engine.start_matlab()
 
 AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']
 
@@ -133,7 +135,9 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         return u_mat, laplacian, obj_val
 
     def _compute_eigs(self, X):
-        e_vals, e_vecs = np.linalg.eig(X)
+        #e_vals, e_vecs = np.linalg.eig(X)
+        eng.eigs(X, self.n_clusters, 'LA')
+
         obj_val = np.sum(e_vals[:self.n_clusters])
         u_mat = np.real(e_vecs[:, :self.n_clusters])
         return u_mat, obj_val
@@ -206,7 +210,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
                     l_comp = l_comp + U_mats[vi] @ U_mats[vi].T
             l_comp = (l_comp + l_comp.T) / 2
             l_mat = L_mats[0] + self.v_lambda * l_comp
-            return l_mat
+            print(l_mat)
             U_mats[0], obj_vals[0, it] = self._compute_eigs(l_mat)
             #print(U_mats[0])
             #U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)

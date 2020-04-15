@@ -11,97 +11,119 @@ from sklearn.exceptions import NotFittedError
 RANDOM_STATE=10
 np.random.RandomState(RANDOM_STATE)
 
-def test_n_clusters_not_positive_int():
+
+@pytest.fixture(scope='module')
+def small_data():
+    view1 = np.random.random((5, 8))
+    view2 = np.random.random((5, 9))
+    data = [view1, view2]
+    return small_data
+    
+    
+def test_n_clusters_not_positive_int(small_data):
+    
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=-1)
+        spectral.fit_predict(small_data)
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=0)
-
-def test_n_views_not_positive_int():
-    with pytest.raises(ValueError):
-        spectral = MultiviewSpectralClustering(n_clusters=5, n_views=-1)
-    with pytest.raises(ValueError):
-        spectral = MultiviewSpectralClustering(n_clusters=5, n_views=0)
-
-def test_random_state_not_convertible():
+        spectral.fit_predict(small_data)
+        
+def test_random_state_not_convertible(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=5, random_state='ab')
+        spectral.fit_predict(small_data)
 
-
-def test_info_view_not_valid():
+def test_info_view_not_valid(small_data):
     with pytest.raises(ValueError):
-        spectral = MultiviewSpectralClustering(n_clusters=2, n_views=5, info_view=-1)
+        spectral = MultiviewSpectralClustering(n_clusters=2, info_view=-1)
+        spectral.fit_predict(small_data)
     with pytest.raises(ValueError):
-        spectral = MultiviewSpectralClustering(n_clusters=2, n_views=5, info_view=6)
+        spectral = MultiviewSpectralClustering(n_clusters=2, info_view=6)
+        spectral.fit_predict(small_data)
 
-def test_samples_not_same():
+def test_n_views_too_small1(small_data):
+    with pytest.raises(ValueError):
+        view1 = np.random.random((5, 8))
+        spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
+        spectral.fit_predict([view1])
+
+
+def test_n_views_too_small2(small_data):
+    with pytest.raises(ValueError):
+        spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
+        spectral.fit_predict([])
+    
+def test_samples_not_same(small_data):
     with pytest.raises(ValueError):
         view1 = np.random.random((5, 8))
         view2 = np.random.random((8, 9))
         spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
         spectral.fit_predict([view1, view2])
 
-def test_samples_not_list():
+def test_samples_not_list(small_data):
     with pytest.raises(ValueError):
         view1 = 1
         view2 = 3
         spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
         spectral.fit_predict([view1, view2])
 
-def test_samples_not_2D_1():
+def test_samples_not_2D_1(small_data):
     with pytest.raises(ValueError):
         view1 = np.random.random((5, 8, 7))
         view2 = np.random.random((5, 9, 7))
         spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
         spectral.fit_predict([view1, view2])
         
-def test_samples_not_2D_2():
+def test_samples_not_2D_2(small_data):
     with pytest.raises(ValueError):
         view1 = np.random.random((10,))
         view2 = np.random.random((10,))
         spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
         spectral.fit_predict([view1, view2])
-        
-def test_samples_not_n_views():
-    with pytest.raises(ValueError):
-        view1 = np.random.random((10,11))
-        view2 = np.random.random((10,10))
-        spectral = MultiviewSpectralClustering(n_views=3, random_state=RANDOM_STATE)
-        spectral.fit_predict([view1, view2])
 
-def test_max_iter_not_positive_int():
+def test_max_iter_not_positive_int(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(max_iter=-1)
+        spectral.fit_predict(small_data)
         
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(max_iter=0)
-
-def test_n_init_not_positive_int():
+        spectral.fit_predict(small_data)
+        
+def test_n_init_not_positive_int(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_init=-1)
-        
+        spectral.fit_predict(small_data)
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_init=0)
-
-def test_not_valid_affinity():
+        spectral.fit_predict(small_data)
+        
+def test_not_valid_affinity(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(affinity='What')
+        spectral.fit_predict(small_data)
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(affinity=None)
-
-def test_gamma_not_positive_float():
+        spectral.fit_predict(small_data)
+        
+def test_gamma_not_positive_float(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(gamma=-1.5)
+        spectral.fit_predict(small_data)
         
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(gamma=0)
+        spectral.fit_predict(small_data)
         
-def test_n_neighbors_not_positive_int():
+def test_n_neighbors_not_positive_int(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(affinity='nearest_neighbors', n_neighbors=-1)
+        spectral.fit_predict(small_data)
         
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(affinity='nearest_neighbors', n_neighbors=0) 
+        spectral.fit_predict(small_data)
         
 # Function Testing
 @pytest.fixture(scope='module')
@@ -112,17 +134,16 @@ def data():
     n_feats2 = 18
     n_feats3 = 30
     n_clusters = 2
-    n_views = 3
     np.random.seed(RANDOM_STATE)
     fit_data = []
     fit_data.append(np.random.rand(num_fit_samples, n_feats1))
     fit_data.append(np.random.rand(num_fit_samples, n_feats2))
     fit_data.append(np.random.rand(num_fit_samples, n_feats3))
 
-    spectral = MultiviewSpectralClustering(n_clusters, n_views=n_views, random_state=RANDOM_STATE)
+    spectral = MultiviewSpectralClustering(n_clusters, random_state=RANDOM_STATE)
     return {'n_fit' : num_fit_samples, 'n_feats1': n_feats1, 'n_feats2': n_feats2,
             'n_feats3' : n_feats3, 'n_clusters': n_clusters, 'spectral' : spectral,
-            'fit_data' : fit_data, 'n_views' : n_views}
+            'fit_data' : fit_data}
 
 def test_affinity_mat_rbf(data):
         
@@ -146,10 +167,9 @@ def test_affinity_mat_rbf(data):
 def test_affinity_mat_rbf2(data):
 
     v1_data = data['fit_data'][0]
-    n_views = data['n_views']
     gamma = 1
-    spectral = MultiviewSpectralClustering(n_views=n_views,
-                      random_state=RANDOM_STATE, gamma=gamma)
+    spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE,
+                                           gamma=gamma)
     distances = cdist(v1_data, v1_data)
     gamma = 1 / (2 * np.median(distances) ** 2)
     true_kernel = rbf_kernel(v1_data, gamma=1)
@@ -166,13 +186,12 @@ def test_affinity_mat_rbf2(data):
 def test_affinity_mat_poly(data):
 
     v1_data = data['fit_data'][0]
-    n_views = data['n_views']
 
     distances = cdist(v1_data, v1_data)
     gamma = 1 / (2 * np.median(distances) ** 2)
     true_kernel = polynomial_kernel(v1_data, gamma=gamma)
-    spectral = MultiviewSpectralClustering(n_views=n_views,
-    random_state=RANDOM_STATE, affinity='poly')
+    spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE,
+                                           affinity='poly')
     p_kernel = spectral._affinity_mat(v1_data)
 
     assert(p_kernel.shape[0] == data['n_fit'])
@@ -186,13 +205,12 @@ def test_affinity_mat_poly(data):
 def test_affinity_neighbors(data):
 
     v1_data = data['fit_data'][0]
-    n_views = data['n_views']
     n_neighbors=10
     neighbors = NearestNeighbors(n_neighbors=n_neighbors)
     neighbors.fit(v1_data)
     true_kernel = neighbors.kneighbors_graph(v1_data).toarray()
-    spectral = MultiviewSpectralClustering(n_views=n_views,
-    random_state=RANDOM_STATE, affinity='nearest_neighbors', n_neighbors=10)
+    spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE,
+                        affinity='nearest_neighbors', n_neighbors=10)
     n_kernel = spectral._affinity_mat(v1_data)
     assert(n_kernel.shape[0] == data['n_fit'])
     assert(n_kernel.shape[1] == data['n_fit'])
@@ -249,11 +267,10 @@ def test_fit_predict_max_iter(data):
 
 
     v_data = data['fit_data']
-    n_views = data['n_views']
     max_iter = 5
     n_clusts = data['n_clusters']
-    spectral = MultiviewSpectralClustering(n_clusts, n_views=n_views,
-    random_state=RANDOM_STATE, max_iter=max_iter)
+    spectral = MultiviewSpectralClustering(n_clusts,
+                random_state=RANDOM_STATE, max_iter=max_iter)
     predictions = spectral.fit_predict(v_data)
 
     assert(predictions.shape[0] == data['n_fit'])
@@ -264,11 +281,10 @@ def test_fit_predict_max_iter(data):
 def test_fit_predict_info_view(data):
 
     v_data = data['fit_data']
-    n_views = data['n_views']
-    info_view = np.random.randint(n_views)
+    info_view = np.random.randint(len(v_data))
     n_clusts = data['n_clusters']
-    spectral = MultiviewSpectralClustering(n_clusts, n_views=n_views,
-    random_state=RANDOM_STATE, info_view=info_view)
+    spectral = MultiviewSpectralClustering(n_clusts,
+                random_state=RANDOM_STATE, info_view=info_view)
     predictions = spectral.fit_predict(v_data)
 
     assert(predictions.shape[0] == data['n_fit'])

@@ -206,7 +206,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
                     l_comp = l_comp + U_mats[vi] @ U_mats[vi].T
             l_comp = (l_comp + l_comp.T) / 2
             l_mat = L_mats[0] + self.v_lambda * l_comp
-            return l_mat
+            print(l_mat)
             U_mats[0], obj_vals[0, it] = self._compute_eigs(l_mat)
             #print(U_mats[0])
             #U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat, k=self.n_clusters)
