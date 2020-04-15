@@ -93,20 +93,44 @@ class GaussianMixture:
 
         Attributes
         ----------
-
+        latent : np.ndarray
+            Latent distribution data. latent[:,i] is randomly sampled from
+            a gaussian distribution with mean mu[i] and covariance sigma[i].
+        Xs : list of array-like
+            List of views of data created by transforming the latent.
+        mu : np.ndarray
+            Means of gaussian blobs in latent distribution. mu[:,i] is
+            mean of *ith* gaussian.
+        sigma : np.ndarray
+            Covariance matrices of gaussian blobs in the latent distribution.
+            sigma[i] is the covariance matrix of the *ith* gaussian.
+        class_probs : array-like, default=None
+            A list correponding to the fraction of samples from each class and
+            whose entries sum to 1. If `None`, then data is sampled from one
+            class.
+        views : int
+            Number of views in the multi-view gaussian mixture.
+        random_state : int
+            Random state for data generation.
+        shuffle : bool
+            Whether or not to shuffle data when creating.
+        shuffle_random_state : int
+            Random state for data shuffling.
 
         Examples
         --------
         >>> from mvlearn.datasets import GaussianMixture
         >>> import numpy as np
-        >>> n = 100
+        >>> n = 10
         >>> mu = [[0,1], [0,-1]]
         >>> sigma = [np.eye(2), np.eye(2)]
         >>> class_probs = [0.5, 0.5]
-        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs)
-        >>> # To create a polynomial relationship between views with noise use
-        >>> # GM = GM.sample_views(transform='poly', n_noise=2)
-
+        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs, shuffle=True,
+        ...                      shuffle_random_state=42)
+        >>> GM = GM.sample_views(transform='poly', n_noise=2)
+        >>> Xs, y = GM.get_Xy()
+        >>> print(y)
+        [1. 0. 1. 0. 1. 0. 1. 0. 0. 1.]
         """
         self.mu = np.array(mu)
         self.sigma = np.array(sigma)
@@ -163,6 +187,7 @@ class GaussianMixture:
             np.random.shuffle(self.latent)
             np.random.seed(self.shuffle_random_state)
             np.random.shuffle(self.y)
+        self.Xs = None
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
