@@ -181,11 +181,13 @@ class GaussianMixture:
                 ]
             )
 
+        # shuffle latent samples and labels
         if self.shuffle:
             np.random.seed(self.shuffle_random_state)
-            np.random.shuffle(self.latent)
-            np.random.seed(self.shuffle_random_state)
-            np.random.shuffle(self.y)
+            indices = np.arange(self.latent.shape[0]).squeeze()
+            np.random.shuffle(indices)
+            self.latent = self.latent[indices, :]
+            self.y = self.y[indices]
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
