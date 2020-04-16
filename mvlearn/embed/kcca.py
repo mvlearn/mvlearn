@@ -105,6 +105,8 @@ class KCCA(BaseEmbed):
 
     .. math::
         \mathbf{w_x} = X'\alpha
+
+    .. math::
         \mathbf{w_y} = Y'\beta
 
     Letting :math:`K_x = XX'` and :math:`K_x = XX'` be the kernel
@@ -128,8 +130,8 @@ class KCCA(BaseEmbed):
             variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
 
 
-    Example
-    -------
+    Examples
+    --------
     >>> import numpy as np
     >>> from scipy import stats
     >>> from mvlearn.embed.kcca import KCCA
@@ -139,25 +141,21 @@ class KCCA(BaseEmbed):
     >>> latvar1 = np.random.randn(N, )
     >>> latvar2 = np.random.randn(N, )
     >>> # Define independent components for each dataset
-    >>> indep1 = np.random.randn(N, 4)
-    >>> indep2 = np.random.randn(N, 5)
-    >>> x = 0.25*indep1 + 0.75*np.vstack((latvar1, latvar2,
-    ...                                   latvar1, latvar2)).T
+    >>> indep1 = np.random.randn(N, 3)
+    >>> indep2 = np.random.randn(N, 4)
+    >>> x = 0.25*indep1 + 0.75*np.vstack((latvar1, latvar2, latvar1)).T
     >>> y = 0.25*indep2 + 0.75*np.vstack((latvar1, latvar2,
-    ...                                   latvar1, latvar2, latvar1)).T
+    ...                                   latvar1, latvar2)).T
     >>> Xs = [x, y]
-    >>> Xs_train = [Xs[0][:20], Xs[1][:20]]
-    >>> Xs_test = [Xs[0][20:], Xs[1][20:]]
-    >>> kcca_l = KCCA(ktype ="linear", n_components = 4)
+    >>> Xs_train = [Xs[0][:80], Xs[1][:80]]
+    >>> Xs_test = [Xs[0][80:], Xs[1][80:]]
+    >>> kcca_l = KCCA(ktype ="linear", n_components = 3,  reg = 0.01)
     >>> a = kcca_l.fit(Xs_train)
     >>> linearkcca = kcca_l.transform(Xs_test)
     >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
-    >>> (r2, _) = stats.pearsonr(linearkcca[0][:,1], linearkcca[1][:,1])
-    >>> (r3, _) = stats.pearsonr(linearkcca[0][:,2], linearkcca[1][:,2])
-    >>> (r4, _) = stats.pearsonr(linearkcca[0][:,3], linearkcca[1][:,3])
     >>> #Below are the canonical correlation for the four components:
-    >>> print(round(r1, 2), round(r2, 2), round(r3, 2), round(r4,2))
-    0.85 0.94 -0.25 -0.03
+    >>> print(round(r1, 2))
+    0.85
 
 
     """
