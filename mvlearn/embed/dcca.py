@@ -496,6 +496,11 @@ class DCCA(BaseEmbed):
         Whether or not ``.fit()`` has been called yet. Permits
         ``.transform()`` to be called.
 
+    Warns
+    -----
+    In order to run DCCA, pytorch and other certain optional dependencies must
+    be installed. See the installation page for details.
+
     Notes
     -----
     Deep Canonical Correlation Analysis is a method of finding highly
