@@ -67,35 +67,6 @@ class SplitAE(BaseEmbed):
     from that embedding reconstructs View1 and another view View2, as
     described in [#1Split]_.
 
-    .. figure:: /figures/splitAE.png
-        :width: 250px
-        :alt: SplitAE diagram
-        :align: center
-
-        in this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}`
-        is View2
-
-    Each encoder / decoder network is a fully connected neural net with
-    paramater count equal to:
-
-    .. math::
-        \left(\text{input_size} + \text{embed_size}\right) \cdot
-        \text{hidden_size} +
-        \sum_{1}^{\text{num_hidden_layers}-1}\text{hidden_size}^2
-
-    Where :math:`\text{input_size}` is the number of features in View1
-    or View2.
-
-    The loss that is reduced via gradient descent is:
-
-    .. math::
-        J = \left(p(f(\textbf{x})) - \textbf{x}\right)^2 +
-        \left(q(f(\textbf{x})) - \textbf{y}\right)^2
-
-    Where :math:`f` is the encoder, :math:`p` and :math:`q` are
-    the decoders, :math:`\textbf{x}` is View1,
-    and :math:`\textbf{y}` is View2.
-
     Parameters
     ----------
     hidden_size : int (default=64)
@@ -123,6 +94,42 @@ class SplitAE(BaseEmbed):
         the View1 decoding network as a PyTorch module
     view2_decoder_ : torch.nn.Module
         the View2 decoding network as a PyTorch module
+
+    Warns
+    -----
+    In order to run SplitAE, pytorch and other certain optional dependencies
+    must be installed. See the installation page for details.
+
+    Notes
+    -----
+    .. figure:: /figures/splitAE.png
+        :width: 250px
+        :alt: SplitAE diagram
+        :align: center
+
+    In this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}`
+    is View2
+
+    Each encoder / decoder network is a fully connected neural net with
+    paramater count equal to:
+
+    .. math::
+        \left(\text{input_size} + \text{embed_size}\right) \cdot
+        \text{hidden_size} +
+        \sum_{1}^{\text{num_hidden_layers}-1}\text{hidden_size}^2
+
+    Where :math:`\text{input_size}` is the number of features in View1
+    or View2.
+
+    The loss that is reduced via gradient descent is:
+
+    .. math::
+        J = \left(p(f(\textbf{x})) - \textbf{x}\right)^2 +
+        \left(q(f(\textbf{x})) - \textbf{y}\right)^2
+
+    Where :math:`f` is the encoder, :math:`p` and :math:`q` are
+    the decoders, :math:`\textbf{x}` is View1,
+    and :math:`\textbf{y}` is View2.
 
     References
     ----------
