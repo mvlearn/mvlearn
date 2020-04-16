@@ -1,5 +1,5 @@
 import pytest
-from mvlearn.datasets.gaussian_mixture import GaussianMixture
+from mvlearn.datasets import GaussianMixture
 from numpy.testing import assert_equal
 import numpy as np
 

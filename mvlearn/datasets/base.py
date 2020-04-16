@@ -1,3 +1,17 @@
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from os.path import dirname, join
 import numpy as np
 
@@ -52,22 +66,9 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
-    >>> # Load full dataset with all 10 classes
-    >>> full_data, full_labels = load_UCImultifeature()
-    >>> print(len(full_data))
-    6
-    >>> print(full_data[0].shape)
-    (2000, 76)
-    >>> print(np.unique(full_labels))
-    [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
-    >>> # Load only the examples labeled 0 or 1 (2 classes)
-    >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
-    >>> print(len(data))
-    6
-    >>> print(data[0].shape)
-    (400, 76)
-    >>> print(np.unique(labels))
-    [0. 1.]
+    >>> # Load 6-view dataset with all 10 classes
+    >>> mv_data, labels = load_UCImultifeature()
+
     """
 
     if select_labeled == "all":
