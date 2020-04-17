@@ -35,6 +35,7 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/gcca_tutorial
    tutorials/embed/gcca_simulation
    tutorials/embed/kcca_tutorial
+   tutorials/embed/dcca_tutorial
    tutorials/embed/mvmds_tutorial
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
