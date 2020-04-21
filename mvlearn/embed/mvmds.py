@@ -73,21 +73,21 @@ class MVMDS(BaseEmbed):
 
     .. math::
         \Sigma_{i} = QD_i^2Q^T
-        
-    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and 
-    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The 
+
+    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and
+    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The
     :math:`Q` matrix contains all the common principal components. The common
     principal component, :math:`q_j`, is found by solving the minimization
     problem:
-    
+
     .. math::
         \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
     .. math::
         \text{Subject to } q_j^Tq_j = 1
-        
-    where :math:`n_i` represent the degrees of freedom and :math:`S_i` 
+
+    where :math:`n_i` represent the degrees of freedom and :math:`S_i`
     represent sample covariance matrices.
-    
+
     This class does not support ``MVMDS.transform()`` due to the iterative
     nature of the algorithm and the fact that the transformation is done
     during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
