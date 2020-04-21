@@ -35,10 +35,11 @@ try:
     import torch.nn as nn
     from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
 except ModuleNotFoundError as error:
-    print(f'Error: {error}. torch dependencies required for this function. \
-    Please consult the mvlearn installation instructions at \
-    https://github.com/neurodata/mvlearn to correctly install torch \
-    dependencies.')
+    msg = f'Error: {error}. torch dependencies required for DCCA. '
+    msg += 'Please consult the mvlearn installation instructions at '
+    msg += 'https://github.com/neurodata/mvlearn to correctly install torch '
+    msg += 'dependencies.'
+    print(msg)
     sys.exit(1)
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
