@@ -14,7 +14,7 @@ try:
 
     from .dcca import DCCA, linear_cca, cca_loss, MlpNet, DeepPairedNetworks
     from .splitae import SplitAE
-except:
+except ModuleNotFoundError:
     pass
 
 __all__ = [
