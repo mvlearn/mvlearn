@@ -55,10 +55,10 @@ class MVMDS(BaseEmbed):
     :math:`X_i` for each of the :math:`k` views and double-centering 
     these matrices by:
     
-    ..math::
+    .. math::
         \Sigma_{i}=-\frac{1}{2}J_iX_iJ_i
         
-    ..math::
+    .. math::
         where J_i=I_i-{\frac {1}{n}}11_i'
     
     
@@ -71,7 +71,7 @@ class MVMDS(BaseEmbed):
     :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
     diagonalizable as:
 
-    ..math::
+    .. math::
         \Sigma_{i} = QD_i^2Q^T
         
     where Q is the common :math:`p` x :math:`p` orthogonal matrix and 
@@ -80,10 +80,10 @@ class MVMDS(BaseEmbed):
     principal component, :math:`q_j` are found by solving the minimization
     problem:
     
-    ..math::
-        Minimize \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
-    ..math::
-        Subject to q_j^Tq_j = 1
+    .. math::
+        \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
+    .. math::
+        \text{Subject to } q_j^Tq_j = 1
         
     where :math:`n_i` represent the degrees of freedom and :math:`S_i` 
     represent sample covariance matrices.
