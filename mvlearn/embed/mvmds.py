@@ -52,32 +52,32 @@ class MVMDS(BaseEmbed):
     
     Classical Multiview Multidimensional Scaling can be broken down into two
     steps. The first step involves calculating the Euclidean Distance matrices, 
-    :math:`X_i` for each of the :math:`k` views and double-centering 
-    these matrices by:
-    
+    :math:`X_i`, for each of the :math:`k` views and double-centering 
+    these matrices through the following calculations:
+
     .. math::
         \Sigma_{i}=-\frac{1}{2}J_iX_iJ_i
-        
+
     .. math::
-        where J_i=I_i-{\frac {1}{n}}11_i'
-    
-    
+        \text{where }J_i=I_i-{\frac {1}{n}}11_i'
+
+
     The second step involves finding the common principal components of the
-    :math:`\Sigma` matrices. These can be thought of as multiview 
-    generalizations of the principal components found in principal component 
+    :math:`\Sigma` matrices. These can be thought of as multiview
+    generalizations of the principal components found in principal component
     analysis (PCA) given several covariance matrices. The central hypothesis of
     the common principal component model states that given k normal populations
-    (views), their :math:`p` x :math:`p` covariance matrices 
+    (views), their :math:`p` x :math:`p` covariance matrices
     :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
     diagonalizable as:
 
     .. math::
         \Sigma_{i} = QD_i^2Q^T
         
-    where Q is the common :math:`p` x :math:`p` orthogonal matrix and 
+    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and 
     :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The 
     :math:`Q` matrix contains all the common principal components. The common
-    principal component, :math:`q_j` are found by solving the minimization
+    principal component, :math:`q_j`, is found by solving the minimization
     problem:
     
     .. math::
