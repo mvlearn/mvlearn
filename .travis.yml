@@ -3,7 +3,7 @@ language: python
 branches:
   only:
   - master
-  - 0.0.2
+  - /^\d+\.\d+\.\d+$/
 
 python:
   - '3.7'

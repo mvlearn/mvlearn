@@ -6,4 +6,4 @@ import mvlearn.datasets
 import mvlearn.utils
 import mvlearn.plotting
 
-__version__ = "0.0.2"
+__version__ = "0.1.0"
