@@ -26,13 +26,20 @@
 # all copies or substantial portions of the Software.
 
 import warnings
+import sys
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 import numpy as np
-import torch
-import torch.nn as nn
-from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
-
+try:
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
+except ModuleNotFoundError as error:
+    print(f'Error: {error}. torch dependencies required for this function. \
+    Please consult the mvlearn installation instructions at \
+    https://github.com/neurodata/mvlearn to correctly install torch \
+    dependencies.')
+    sys.exit(1)
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
