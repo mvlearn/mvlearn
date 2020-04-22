@@ -21,6 +21,8 @@ import pandas as pd
 from mvlearn.embed.base import BaseEmbed
 from mvlearn.utils.utils import check_Xs
 import warnings
+from .block_visualization import _data_block_heatmaps, \
+_ajive_full_estimate_heatmaps
 
 from .utils import svd_wrapper, centering
 from .wedin_bound import get_wedin_samples
@@ -503,9 +505,21 @@ class ajive(object):
             raise ValueError("Decomposition has not yet been computed")
 
         joint_rank = self.common.rank
-        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in self.block_names}
+        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in \
+                       self.block_names}
         return joint_rank, indiv_ranks
 
+    def data_block_heatmaps(blocks):
+        """
+        Plots a heat map of a bunch of data blocks
+        """
+        _data_block_heatmaps(blocks)
+
+    def ajive_full_estimate_heatmaps(full_block_estimates, blocks):
+        """
+        Plots the full JVIE estimates: X, J, I, E
+        """
+        _ajive_full_estimate_heatmaps(full_block_estimates, blocks)
 
 def _dict_formatting(x):
     if hasattr(x, "keys"):
