@@ -1,8 +1,16 @@
-"""
-random_gaussian_projection.py
-====================================
-Random gaussian projection for view construction.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import numpy as np
 from sklearn.random_projection import GaussianRandomProjection
@@ -21,7 +29,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Parameters
     ----------
-    X : array-like matrix, shape = [n_rows, n_cols]
+    X : array-like matrix, shape = (n_samples, n_cols)
         The input samples.
 
     n_views : int, float optional (default = 1)
@@ -41,12 +49,16 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     Returns
     -------
     views : list of array-like matrices
-        List of constructed views (each matrix has shape [n_rows, n_cols]).
+        List of constructed views.
+            - length: n_views
+            - each view has shape (n_samples, n_features)
 
     Notes
     -----
     From an implementation perspective, this wraps GaussianRandomProjection
-    from sklearn.random_projection.
+    from `sklearn.random_projection <https://scikit-learn.org/stable/modules/
+    classes.html#module-sklearn.random_projection>`_ and creates multiple
+    projections.
 
     Examples
     --------

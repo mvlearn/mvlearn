@@ -62,8 +62,8 @@ class MVMDS(BaseEmbed):
     >>> print(Xs[0].shape[0])  # number of samples in each view
     2000
     >>> mvmds = MVMDS(n_components=5)
-    >>> components = mvmds.fit_transform(Xs)
-    >>> print(components.shape)
+    >>> Xs_reduced = mvmds.fit_transform(Xs)
+    >>> print(Xs_reduced.shape)
     (2000, 5)
 
     References
