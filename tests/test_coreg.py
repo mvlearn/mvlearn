@@ -291,3 +291,12 @@ def test_fit_predict_info_view(data):
     for clust in predictions:
         assert(clust >= 0 and clust < n_clusts)
 
+
+def test_init_umat(data):
+    v_data = data['fit_data']
+    spectral = data['spectral']
+    affinity = spectral._affinity_mat(v_data[0])
+    u_mat, l_mat, o_val = spectral._init_umat(affinity)
+
+    assert(type(o_val) == np.float64)
+    assert(u_mat.shape == (v_data[0].shape[0], spectral.n_clusters))
