@@ -49,18 +49,17 @@ class MVMDS(BaseEmbed):
 
     Notes
     -----
-    
+
     Classical Multiview Multidimensional Scaling can be broken down into two
-    steps. The first step involves calculating the Euclidean Distance matrices, 
-    :math:`X_i`, for each of the :math:`k` views and double-centering 
+    steps. The first step involves calculating the Euclidean Distance matrices,
+    :math:`Z_i`, for each of the :math:`k` views and double-centering
     these matrices through the following calculations:
 
     .. math::
-        \Sigma_{i}=-\frac{1}{2}J_iX_iJ_i
+        \Sigma_{i}=-\frac{1}{2}J_iZ_iJ_i
 
     .. math::
-        \text{where }J_i=I_i-{\frac {1}{n}}11_i'
-
+        \text{where }J_i=I_i-{\frac {1}{n}}\mathbb{1}\mathbb{1}^T
 
     The second step involves finding the common principal components of the
     :math:`\Sigma` matrices. These can be thought of as multiview
