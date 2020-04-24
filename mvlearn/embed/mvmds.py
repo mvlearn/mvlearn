@@ -97,8 +97,10 @@ class MVMDS(BaseEmbed):
     >>> from mvlearn.embed import MVMDS
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> Xs, _ = load_UCImultifeature()
-    >>> print(Xs[0].shape[0])  # number of samples in each view
-    2000
+    >>> print(len(Xs)) # number of samples in each view
+    6
+    >>> print(Xs[0].shape) # number of samples in each view
+    (2000, 76)
     >>> mvmds = MVMDS(n_components=5)
     >>> Xs_reduced = mvmds.fit_transform(Xs)
     >>> print(Xs_reduced.shape)
