@@ -56,8 +56,8 @@ class BaseCoTrainEstimator(BaseEstimator):
                  estimator2=None,
                  random_state=None
                  ):
-        self.estimator1 = estimator1
-        self.estimator2 = estimator2
+        self.estimator1_ = estimator1
+        self.estimator2_ = estimator2
         self.random_state = random_state
 
     @abstractmethod
