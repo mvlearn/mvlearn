@@ -148,7 +148,7 @@ class MultiviewKMeans(BaseKMeans):
     >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
     >>> nmi = nmi_score(labels, mv_clusters)
     >>> print('{0:.3f}'.format(nmi))
-    0.559
+    0.770
 
     ""
     '''

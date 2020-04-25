@@ -1,8 +1,16 @@
-"""
-rsm.py
-====================================
-Random subspace method for view construction.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import numpy as np
 import random
@@ -11,25 +19,22 @@ from .utils import check_n_views, check_n_features
 
 def random_subspace_method(X, n_features=None, n_views=1):
     """
-    Random Subspace Method for constructing multiple views.
+    Random Subspace Method [#1RSM]_ for constructing multiple views.
     Each view is constructed by randomly selecting n_features
     (columns) from X. All unselected features are set to 0.
 
-    Original paper: https://ieeexplore.ieee.org/document/709601
-
     Parameters
     ----------
-    X : array-like matrix, shape = [n_rows, n_cols]
+    X : array-like matrix, shape = (n_samples, n_cols)
         The input samples.
 
     n_features : int, float
-        Number of features to randomly select.
+        Number (or proportion, if float) of features to randomly select.
+            - If int, then consider n_features as number of columns
+              to select.
 
-        - If int, then consider n_features as number of columns
-        to select.
-
-        - If float, then consider n_features*n_cols as number of columns
-        to select.
+            - If float, then consider n_features*n_cols as number of columns
+              to select.
 
     n_views : strictly positive int, float optional (default = 1)
         Number of views to construct.
@@ -37,7 +42,15 @@ def random_subspace_method(X, n_features=None, n_views=1):
     Returns
     -------
     views : list of array-like matrices
-        List of constructed views (each matrix has shape [n_rows, n_cols]).
+        List of constructed views.
+            - length: n_views
+            - each view has shape (n_samples, n_features)
+
+    References
+    ----------
+    .. [#1RSM] Ho, Tin Kam. "The random subspace method for constructing
+            decision forests." IEEE transactions on pattern analysis
+            and machine intelligence 20.8 (1998): 832-844.
 
     Examples
     --------

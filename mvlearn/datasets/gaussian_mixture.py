@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# MIT License
-
-# Original work Copyright (c) 2016 Vahid Noroozi
-# Modified work Copyright 2019 Zhanghao Wu
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
 import numpy as np
 from scipy.stats import ortho_group
 import collections
@@ -35,6 +20,7 @@ import collections
 def _add_noise(X, n_noise, random_state=None):
     """Appends dimensions of standard normal noise to X
     """
+    np.random.seed(random_state)
     noise = np.random.randn(X.shape[0], n_noise)
     return np.hstack((X, noise))
 
@@ -65,7 +51,8 @@ def _sin2view(X):
 
 
 class GaussianMixture:
-    def __init__(self, mu, sigma, n, class_probs=None):
+    def __init__(self, mu, sigma, n, class_probs=None, random_state=None,
+                 shuffle=False, shuffle_random_state=None):
         r"""
         Creates a GaussianMixture object and samples a latent variable from a
         multivariate Gaussian distribution according to the specified
@@ -96,6 +83,54 @@ class GaussianMixture:
             A list correponding to the fraction of samples from each class and
             whose entries sum to 1. If `None`, then data is sampled from one
             class.
+        random_state : int, default=None
+            If set, can be used to reproduce the data generated.
+        shuffle : bool, default=False
+            If ``True``, data is shuffled so the labels are not ordered.
+        shuffle_random_state : int, default=None
+            If given, then sets the random state for shuffling the samples.
+            Ignored if ``shuffle=False``.
+
+        Attributes
+        ----------
+        latent : np.ndarray
+            Latent distribution data. latent[:,i] is randomly sampled from
+            a gaussian distribution with mean mu[i] and covariance sigma[i].
+        Xs : list of array-like
+            List of views of data created by transforming the latent.
+        mu : np.ndarray
+            Means of gaussian blobs in latent distribution. mu[:,i] is
+            mean of *ith* gaussian.
+        sigma : np.ndarray
+            Covariance matrices of gaussian blobs in the latent distribution.
+            sigma[i] is the covariance matrix of the *ith* gaussian.
+        class_probs : array-like, default=None
+            A list correponding to the fraction of samples from each class and
+            whose entries sum to 1. If `None`, then data is sampled from one
+            class.
+        views : int
+            Number of views in the multi-view gaussian mixture.
+        random_state : int
+            Random state for data generation.
+        shuffle : bool
+            Whether or not to shuffle data when creating.
+        shuffle_random_state : int
+            Random state for data shuffling.
+
+        Examples
+        --------
+        >>> from mvlearn.datasets import GaussianMixture
+        >>> import numpy as np
+        >>> n = 10
+        >>> mu = [[0,1], [0,-1]]
+        >>> sigma = [np.eye(2), np.eye(2)]
+        >>> class_probs = [0.5, 0.5]
+        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs,
+        ...                      shuffle=True, shuffle_random_state=42)
+        >>> GM = GM.sample_views(transform='poly', n_noise=2)
+        >>> Xs, y = GM.get_Xy()
+        >>> print(y)
+        [1. 0. 1. 0. 1. 0. 1. 0. 0. 1.]
         """
         self.mu = np.array(mu)
         self.sigma = np.array(sigma)
@@ -114,11 +149,15 @@ class GaussianMixture:
 
         self.class_probs = class_probs
         self.views = len(mu)
+        self.random_state = random_state
+        self.shuffle = shuffle
+        self.shuffle_random_state = shuffle_random_state
 
         if class_probs is None:
             if self.mu.ndim > 1 or self.sigma.ndim > 2:
                 msg = "mu or sigma of the wrong size"
                 raise ValueError(msg)
+            np.random.seed(random_state)
             self.latent = np.random.multivariate_normal(mu, sigma, size=n)
             self.y = None
         else:
@@ -126,6 +165,7 @@ class GaussianMixture:
                     class_probs):
                 msg = "mu, sigma, and class_probs must be of equal length"
                 raise ValueError(msg)
+            np.random.seed(random_state)
             self.latent = np.concatenate(
                 [
                     np.random.multivariate_normal(
@@ -140,6 +180,14 @@ class GaussianMixture:
                     for i in range(len(class_probs))
                 ]
             )
+
+        # shuffle latent samples and labels
+        if self.shuffle:
+            np.random.seed(self.shuffle_random_state)
+            indices = np.arange(self.latent.shape[0]).squeeze()
+            np.random.shuffle(indices)
+            self.latent = self.latent[indices, :]
+            self.y = self.y[indices]
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
@@ -180,7 +228,9 @@ class GaussianMixture:
             )
 
         self.Xs = [self.latent, X]
-        self.Xs = [_add_noise(X, n_noise=n_noise) for X in self.Xs]
+        self.Xs = [_add_noise(X, n_noise=n_noise,
+                              random_state=self.random_state)
+                   for X in self.Xs]
 
         return self
 

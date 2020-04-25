@@ -49,6 +49,44 @@ class MVMDS(BaseEmbed):
 
     Notes
     -----
+
+    Classical Multiview Multidimensional Scaling can be broken down into two
+    steps. The first step involves calculating the Euclidean Distance matrices,
+    :math:`Z_i`, for each of the :math:`k` views and double-centering
+    these matrices through the following calculations:
+
+    .. math::
+        \Sigma_{i}=-\frac{1}{2}J_iZ_iJ_i
+
+    .. math::
+        \text{where }J_i=I_i-{\frac {1}{n}}\mathbb{1}\mathbb{1}^T
+
+    The second step involves finding the common principal components of the
+    :math:`\Sigma` matrices. These can be thought of as multiview
+    generalizations of the principal components found in principal component
+    analysis (PCA) given several covariance matrices. The central hypothesis of
+    the common principal component model states that given k normal populations
+    (views), their :math:`p` x :math:`p` covariance matrices
+    :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
+    diagonalizable as:
+
+    .. math::
+        \Sigma_{i} = QD_i^2Q^T
+
+    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and
+    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The
+    :math:`Q` matrix contains all the common principal components. The common
+    principal component, :math:`q_j`, is found by solving the minimization
+    problem:
+
+    .. math::
+        \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
+    .. math::
+        \text{Subject to } q_j^Tq_j = 1
+
+    where :math:`n_i` represent the degrees of freedom and :math:`S_i`
+    represent sample covariance matrices.
+
     This class does not support ``MVMDS.transform()`` due to the iterative
     nature of the algorithm and the fact that the transformation is done
     during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
@@ -59,11 +97,13 @@ class MVMDS(BaseEmbed):
     >>> from mvlearn.embed import MVMDS
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> Xs, _ = load_UCImultifeature()
-    >>> print(Xs[0].shape[0])  # number of samples in each view
-    2000
+    >>> print(len(Xs)) # number of samples in each view
+    6
+    >>> print(Xs[0].shape) # number of samples in each view
+    (2000, 76)
     >>> mvmds = MVMDS(n_components=5)
-    >>> components = mvmds.fit_transform(Xs)
-    >>> print(components.shape)
+    >>> Xs_reduced = mvmds.fit_transform(Xs)
+    >>> print(Xs_reduced.shape)
     (2000, 5)
 
     References

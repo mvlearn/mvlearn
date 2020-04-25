@@ -34,7 +34,8 @@ Inference on and visualization of multiview data often requires low-dimensional 
    
    tutorials/embed/gcca_tutorial
    tutorials/embed/gcca_simulation
-   tutorials/embed/linear_kcca_validation_tutorial
+   tutorials/embed/kcca_tutorial
+   tutorials/embed/dcca_tutorial
    tutorials/embed/mvmds_tutorial
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
@@ -49,6 +50,8 @@ Methods build on top of Matplotlib and Seaborn have been implemented for conveni
 .. toctree::
    :maxdepth: 1
 
+   tutorials/plotting/quick_visualize_tutorial
+   tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
    
 Test Dataset
@@ -58,5 +61,5 @@ In order to conviently run tools in this package on multview data, data can be s
 .. toctree::
    :maxdepth: 1
 
-   tutorials/datasets/load_UCImultifeature_data
+   tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
