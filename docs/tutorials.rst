@@ -40,8 +40,6 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
-   tutorials/embed/pls_tutorial
-   tutorials/embed/pls_simulation
 
 Plotting
 ========
@@ -51,8 +49,7 @@ Methods build on top of Matplotlib and Seaborn have been implemented for conveni
    :maxdepth: 1
 
    tutorials/plotting/quick_visualize_tutorial
-   tutorials/datasets/load_UCImultifeature
-   tutorials/datasets/GaussianMixtures
+   tutorials/plotting/crossviews_plot
    
 Test Dataset
 ============
