@@ -49,11 +49,14 @@ to provide you with good feedback:
 
 -  Please include your **operating system type and version number**, as
    well as your **Python and mvlearn versions**. This information can
-   be found by running the following code snippet::
+   be found by running the following code snippet in Python.
 
-   import platform; print(platform.platform()) import sys;
-   print("Python", sys.version) import mvlearn; print("mvlearn",
-   mvlearn.\ **version**)
+   .. code-block:: python
+
+      import platform; print(platform.platform());
+      import sys; print("Python", sys.version);
+      import mvlearn; print("mvlearn", mvlearn.version)
+
 
 -  Please ensure all **code snippets and error messages are formatted in
    appropriate code blocks**. See
