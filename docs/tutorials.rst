@@ -11,8 +11,13 @@ for multiview datasets.
    :maxdepth: 1
       
    tutorials/cluster/MVKMeans/MultiviewKMeans_Tutorial
+   tutorials/cluster/MVKMeans/MultiviewKmeansValidation_ComplexData
+   tutorials/cluster/MVKMeans/MultiviewKmeansValidation_SimulatedData
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralClustering_Tutorial
+   tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_ComplexData
+   tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_SimulatedData
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
+   tutorials/cluster/MVSphericalKMeans/MVSphericalValidation_SimulatedData
 
 Cotraining
 ==========
@@ -37,6 +42,7 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/kcca_tutorial
    tutorials/embed/dcca_tutorial
    tutorials/embed/mvmds_tutorial
+   tutorials/embed/mvmds_proof
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
