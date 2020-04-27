@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import warnings
-
 from sklearn.utils import check_X_y, check_array
 import numpy as np
 
@@ -109,7 +108,9 @@ def check_Xs_y_nan_allowed(
         y,
         multiview=False,
         enforce_views=None,
-        num_classes=None
+        num_classes=None,
+        max_classes=None,
+        min_classes=None
         ):
     r"""
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
@@ -120,13 +121,19 @@ def check_Xs_y_nan_allowed(
         Input data.
     y : nd-array, list
         Labels.
-    multiview : boolean, (default=False)
+    multiview : boolean, default=False
         If True, throws error if just 1 data matrix given.
     enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
-    num_classes: int, default (None)
+    num_classes : int, default=None
         Number of classes that must appear in the labels. If none, then
+        not checked.
+    max_classes : int, default=None
+        Maximum number of classes that must appear in labels. If none, then
+        not checked.
+    min_classes : int, default=None
+        Minimum number of classes that must appear in labels. If none, then
         not checked.
 
     Returns
@@ -153,5 +160,12 @@ def check_Xs_y_nan_allowed(
         if n_classes != num_classes:
             raise ValueError("Wrong number of class labels. Expected {},\
              found {}".format(num_classes, n_classes))
+    if max_classes is not None:
+        # if not exactly correct number of class labels, raise error
+        classes = list(set(y[~np.isnan(y)]))
+        n_classes = len(classes)
+        if n_classes > max_classes:
+            raise ValueError("Wrong number of class labels. Expected no\
+             more than {}, found {}".format(num_classes, n_classes))
 
     return Xs_converted, y_converted

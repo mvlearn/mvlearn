@@ -1,5 +1,5 @@
-mvlearn.utils
-=======
+Utility Functions
+=================
 
 .. currentmodule:: mvlearn.utils
 

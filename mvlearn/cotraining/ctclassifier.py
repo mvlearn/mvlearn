@@ -22,11 +22,17 @@ from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
 
 class CTClassifier(BaseCoTrainEstimator):
     r"""
-    This class implements the co-training classifier for semi-supervised
-    learning with the framework as described in [#1CTC]_. This should ideally
-    be used on 2 views of the input data which satisfy the 3 conditions for
-    multi-view co-training (sufficiency, compatibility, conditional
-    independence) as detailed in [#1CTC]_. Extends BaseCoTrainEstimator.
+    This class implements the co-training classifier for supervised and
+    semi-supervised learning with the framework as described in [#1CTC]_.
+    The best use case is when the 2 views of input data are sufficiently
+    distinct and independent as detailed in [#1CTC]_. However, this can
+    also be successful when a single matrix of input data is given as
+    both views and two estimators are chosen which are quite different.
+    [#2CTC]_. See the examples below.
+
+    In the semi-supervised case, performance can vary greatly, so using
+    a separate validation set or cross validation procedure is
+    recommended to ensure the classifier has fit well.
 
     Parameters
     ----------
@@ -113,6 +119,29 @@ class CTClassifier(BaseCoTrainEstimator):
         The starting random seed for fit() and class operations, passed to
         numpy.random.seed().
 
+    Examples
+    --------
+    >>> # Supervised learning of single-view data with 2 distinct estimators
+    >>> from mvlearn.cotraining import CTClassifier
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> import numpy as np
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from sklearn.naive_bayes import GaussianNB
+    >>> from sklearn.model_selection import train_test_split
+    >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
+    >>> X1 = data[0]  # Only using the first view
+    >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
+
+    >>> # Supervised learning with a single view of data and 2 estimator types
+    >>> estimator1 = GaussianNB()
+    >>> estimator2 = RandomForestClassifier()
+    >>> ctc = CTClassifier(estimator1, estimator2, random_state=1)
+    >>> # Use the same matrix for each view
+    >>> ctc = ctc.fit([X1_train, X1_train], l_train)
+    >>> preds = ctc.predict([X1_test, X1_test])
+    >>> print("Accuracy: ", sum(preds==l_test) / len(preds))
+    Accuracy:  0.97
+
     Notes
     -----
     Multi-view co-training is most helpful for tasks in semi-supervised where
@@ -161,6 +190,8 @@ class CTClassifier(BaseCoTrainEstimator):
             unlabeled_pool data with co-training. In Proceedings of the
             eleventh annual conference on Computational learning theory
             (pp. 92-100). ACM.
+    .. [#2CTC] Goldman, Sally, and Yan Zhou. "Enhancing supervised
+            learning with unlabeled data." ICML. 2000.
 
     """
 
@@ -258,7 +289,7 @@ class CTClassifier(BaseCoTrainEstimator):
                                        y,
                                        multiview=True,
                                        enforce_views=self.n_views_,
-                                       num_classes=2)
+                                       max_classes=2, min_classes=1)
 
         y = np.array(y)
         if self.random_state is not None:
@@ -267,92 +298,101 @@ class CTClassifier(BaseCoTrainEstimator):
         self.classes_ = list(set(y[~np.isnan(y)]))
         self.n_classes_ = len(self.classes_)
 
-        # if both p & n are none, set as ratio of one class to the other
-        if (self.p_ is None and self.n_ is None):
-            num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
-            num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
-            p_over_n_ratio = num_class_p // num_class_n
-            if p_over_n_ratio > 1:
-                self.p_, self.n_ = p_over_n_ratio, 1
-            else:
-                self.n_, self.p_ = num_class_n // num_class_p, 1
-
         # extract the multiple views given
         X1 = Xs[0]
         X2 = Xs[1]
 
-        # the full set of unlabeled samples
-        U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
+        # if don't have 2 classes of labeled data, then just fit and return,
+        # since can't do any iterations of cotraining
+        if self.n_classes_ > 1:
 
-        # shuffle unlabeled_pool data for easy random access
-        np.random.shuffle(U)
+            # if both p & n are none, set as ratio of one class to the other
+            if (self.p_ is None and self.n_ is None):
+                num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
+                num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
+                p_over_n_ratio = num_class_p // num_class_n
+                if p_over_n_ratio > 1:
+                    self.p_, self.n_ = p_over_n_ratio, 1
+                else:
+                    self.n_, self.p_ = num_class_n // num_class_p, 1
 
-        # the small pool of unlabled samples to draw from in training
-        unlabeled_pool = U[-min(len(U), self.unlabeled_pool_size_):]
+            # the full set of unlabeled samples
+            U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
 
-        # the labeled samples
-        L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
+            # shuffle unlabeled_pool data for easy random access
+            np.random.shuffle(U)
 
-        # remove the pool from overall unlabeled data
-        U = U[:-len(unlabeled_pool)]
+            # the small pool of unlabled samples to draw from in training
+            unlabeled_pool = U[-min(len(U), self.unlabeled_pool_size_):]
 
-        # number of rounds of co-training
-        it = 0
+            # the labeled samples
+            L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
 
-        # machine epsilon
-        eps = np.finfo(float).eps
+            # remove the pool from overall unlabeled data
+            U = U[:-len(unlabeled_pool)]
 
-        while it < self.num_iter_ and U:
-            it += 1
+            # number of rounds of co-training
+            it = 0
 
-            # fit each model to its respective view
-            self.estimator1.fit(X1[L], y[L])
-            self.estimator2.fit(X2[L], y[L])
+            # machine epsilon
+            eps = np.finfo(float).eps
 
-            # predict log probability for greater spread in confidence
+            while it < self.num_iter_ and U:
+                it += 1
 
-            y1_prob = np.log(self.estimator1.
-                             predict_proba(X1[unlabeled_pool]) + eps)
-            y2_prob = np.log(self.estimator2.
-                             predict_proba(X2[unlabeled_pool]) + eps)
+                # fit each model to its respective view
+                self.estimator1.fit(X1[L], y[L])
+                self.estimator2.fit(X2[L], y[L])
 
-            n, p = [], []
-            accurate_guesses_estimator1 = 0
-            accurate_guesses_estimator2 = 0
-            wrong_guesses_estimator1 = 0
-            wrong_guesses_estimator2 = 0
+                # predict log probability for greater spread in confidence
 
-            # take the most confident labeled examples from the
-            # unlabeled pool in each category and put them in L
-            for i in (y1_prob[:, 0].argsort())[-self.n_:]:
-                if y1_prob[i, 0] > np.log(0.5):
-                    n.append(i)
-            for i in (y1_prob[:, 1].argsort())[-self.p_:]:
-                if y1_prob[i, 1] > np.log(0.5):
-                    p.append(i)
-            for i in (y2_prob[:, 0].argsort())[-self.n_:]:
-                if y2_prob[i, 0] > np.log(0.5):
-                    n.append(i)
-            for i in (y2_prob[:, 1].argsort())[-self.p_:]:
-                if y2_prob[i, 1] > np.log(0.5):
-                    p.append(i)
+                y1_prob = np.log(self.estimator1.
+                                 predict_proba(X1[unlabeled_pool]) + eps)
+                y2_prob = np.log(self.estimator2.
+                                 predict_proba(X2[unlabeled_pool]) + eps)
 
-            # create new labels for new additions to the labeled group
-            y[[unlabeled_pool[x] for x in n]] = self.classes_[0]
-            y[[unlabeled_pool[x] for x in p]] = self.classes_[1]
-            L.extend([unlabeled_pool[x] for x in p])
-            L.extend([unlabeled_pool[x] for x in n])
+                n, p = [], []
+                accurate_guesses_estimator1 = 0
+                accurate_guesses_estimator2 = 0
+                wrong_guesses_estimator1 = 0
+                wrong_guesses_estimator2 = 0
 
-            # remove newly labeled samples from unlabeled_pool
-            unlabeled_pool = [elem for elem in unlabeled_pool
-                              if not (elem in p or elem in n)]
+                # take the most confident labeled examples from the
+                # unlabeled pool in each category and put them in L
+                for i in (y1_prob[:, 0].argsort())[-self.n_:]:
+                    if y1_prob[i, 0] > np.log(0.5):
+                        n.append(i)
+                for i in (y1_prob[:, 1].argsort())[-self.p_:]:
+                    if y1_prob[i, 1] > np.log(0.5):
+                        p.append(i)
+                for i in (y2_prob[:, 0].argsort())[-self.n_:]:
+                    if y2_prob[i, 0] > np.log(0.5):
+                        n.append(i)
+                for i in (y2_prob[:, 1].argsort())[-self.p_:]:
+                    if y2_prob[i, 1] > np.log(0.5):
+                        p.append(i)
 
-            # add new elements to unlabeled_pool
-            add_counter = 0
-            num_to_add = len(p) + len(n)
-            while add_counter != num_to_add and U:
-                add_counter += 1
-                unlabeled_pool.append(U.pop())
+                # create new labels for new additions to the labeled group
+                y[[unlabeled_pool[x] for x in n]] = self.classes_[0]
+                y[[unlabeled_pool[x] for x in p]] = self.classes_[1]
+                L.extend([unlabeled_pool[x] for x in p])
+                L.extend([unlabeled_pool[x] for x in n])
+
+                # remove newly labeled samples from unlabeled_pool
+                unlabeled_pool = [elem for elem in unlabeled_pool
+                                  if not (elem in p or elem in n)]
+
+                # add new elements to unlabeled_pool
+                add_counter = 0
+                num_to_add = len(p) + len(n)
+                while add_counter != num_to_add and U:
+                    add_counter += 1
+                    unlabeled_pool.append(U.pop())
+
+        # if only had 1 class in the labeled examples
+        else:
+            # the labeled sample indices
+            L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
 
         # fit the overall model on fully "labeled" data
         self.estimator1.fit(X1[L], y[L])
@@ -377,27 +417,6 @@ class CTClassifier(BaseCoTrainEstimator):
             The predicted class of each input example. If the two classifiers
             don't agree, pick the one with the highest predicted probability
             from predict_proba()
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from sklearn.model_selection import train_test_split
-        >>> from mvlearn.cotraining.ctclassifier import CTClassifier
-        >>> from mvlearn.datasets.base import load_UCImultifeature
-        >>> data, labels = load_UCImultifeature(select_labeled=[0,1])
-        >>> X1, X2 = data[0], data[1]  # Use the first 2 views
-        >>> X1_train, X1_test, l_train, l_test = train_test_split(X1, labels)
-        >>> X2_train, X2_test, _, _ = train_test_split(X2, labels)
-        >>> remove_idx = np.random.rand(len(l_train),) < 0.97
-        >>> l_train[remove_idx] = np.nan  # simulate semi-supervised
-        >>> label_ratio = len(np.where(remove_idx==False)) / len(l_train)
-        >>> print('%.3f' % label_ratio)  # check labeled data proportion
-        0.030
-        >>> ctc = CTClassifier()
-        >>> ctc.fit([X1_train, X2_train], l_train)
-        >>> y_pred = ctc.predict([X1_test, X2_test])
-        >>> print(y_pred[:10])  # first 10 predictions
-        [0. 0. 1. 0. 1. 1. 0. 0. 0. 0.]
         """
 
         Xs = check_Xs(Xs,

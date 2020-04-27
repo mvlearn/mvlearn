@@ -1,10 +1,20 @@
-"""
-omnibus.py
-==========
-Omnibus embedding for multiview dimensionality reduction.
-Code from the https://github.com/neurodata/graspy package,
-reproduced and shared with permission.
-"""
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Omnibus embedding for multiview dimensionality reduction.
+# Code from the https://github.com/neurodata/graspy package,
+# reproduced and shared with permission.
 
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
@@ -19,9 +29,8 @@ class Omnibus(BaseEmbed):
     """
     Omnibus computes the pairwise distances for each view. Each
     of these matrices is a n x n dissimilarity matrix where n is the number
-    of rows in each view. Omnibus embedding
-    is then performed over the dissimilarity matrices and the
-    computed embeddings are returned.
+    of rows in each view. Omnibus embedding [#1Omni]_ is then performed
+    over the dissimilarity matrices and the computed embeddings are returned.
 
     Parameters
     ----------
@@ -53,10 +62,28 @@ class Omnibus(BaseEmbed):
         per view. If fit() has not been called, embeddings_ is set to
         None.
 
+    Notes
+    -----
+    From an implementation perspective, omnibus embedding is performed
+    using the GrasPy package's implementation graspy.embed.OmnibusEmbed
+    for dissimilarity matrices.
+
     References
     ----------
-    .. [#1] https://graspy.neurodata.io/tutorials/embedding/omnibus
+    .. [#1Omni] https://graspy.neurodata.io/tutorials/embedding/omnibus
 
+    Examples
+    --------
+    >>> from mvlearn.embed import omnibus
+    >>> import numpy as np
+    >>> # Create 2 random data views with feature sizes 50 and 100
+    >>> view1 = np.random.rand(1000, 50)
+    >>> view2 = np.random.rand(1000, 100)
+    >>> embedder = omnibus.Omnibus(n_components=3)
+    >>> embeddings = embedder.fit_transform([view1, view2])
+    >>> view1_hat, view2_hat = embeddings
+    >>> print(view1_hat.shape, view2_hat.shape)
+    (1000, 3) (1000, 3)
     """
 
     def __init__(self, n_components=2, distance_metric="euclidean",

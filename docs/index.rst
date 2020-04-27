@@ -3,16 +3,16 @@
 .. _contents:
 
 Overview of mvlearn_
-===================
+====================
 
-.. _mvlearn: https://github.com/NeuroDataDesign/mvlearn
+.. _mvlearn: https://github.com/neurodata/mvlearn
 
-mvlearn is a Python module for multiview learning. 
+mvlearn is a Python module for multi-view learning. 
 
 Motivation
 ----------
 
-In many data sets, there are multiple measurement modalities of the same subject, i.e. multiple *X* matrices (views) for the same class label vector *y*. For example, a set of diseased and healthy patients in a neuroimaging study may undergo both CT and MRI scans. Traditional methods for inference and analysis are often poorly suited to account for multiple views of the same subject as they cannot account for complementing views that hold different statistical properties. While single-view methods are consolidated in well-documented packages such as scikit-learn, there is no equivalent for multi-view methods. In this package, we a provide well-documented and tested collection of utilities and algorithms designed for the processing and analysis of multiview data sets.
+In many data sets, there are multiple measurement modalities of the same subject, i.e. multiple *X* matrices (views) for the same class label vector *y*. For example, a set of diseased and healthy patients in a neuroimaging study may undergo both CT and MRI scans. Traditional methods for inference and analysis are often poorly suited to account for multiple views of the same subject as they cannot account for complementing views that hold different statistical properties. While single-view methods are consolidated in well-documented packages such as scikit-learn, there is no equivalent for multi-view methods. In this package, we provide a well-documented and tested collection of utilities and algorithms designed for the processing and analysis of multi-view data sets.
 
 Python
 ------
@@ -28,7 +28,7 @@ Free software
 
 mvlearn is free software; you can redistribute it and/or modify it under the
 terms of the :doc:`Apache-2.0 </license>`.  We welcome contributions.
-Join us on `GitHub <https://github.com/NeuroDataDesign/mvlearn>`_.
+Join us on `GitHub <https://github.com/neurodata/mvlearn>`_.
 
 History
 -------
@@ -38,7 +38,7 @@ mvlearn was developed during the end of 2019 by Richard Guo, Ronan Perry, Gavin 
 Documentation
 =============
 
-mvearn is a python package of multiview learning tools.
+mvlearn is a Python package of multi-view learning tools.
 
 .. toctree::
    :maxdepth: 1
@@ -47,16 +47,15 @@ mvearn is a python package of multiview learning tools.
    tutorials
    references/index
    contributing
-   news
    license
 
 .. toctree::
    :maxdepth: 1
    :caption: Useful Links
 
-   mvlearn @ GitHub <https://github.com/NeuroDataDesign/mvlearn>
+   mvlearn @ GitHub <https://github.com/neurodata/mvlearn>
    mvlearn @ PyPI <https://pypi.org/project/mvlearn/>
-   Issue Tracker <https://github.com/NeuroDataDesign/mvlearn/issues>
+   Issue Tracker <https://github.com/neurodata/mvlearn/issues>
 
 
 Indices and tables
