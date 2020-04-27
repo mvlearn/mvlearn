@@ -360,7 +360,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_mats[view] /= U_norm
 
         # Performing k-means clustering
-        kmeans = KMeans(n_clusters=self.n_clusters,
+        kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init, 
                         random_state=self.random_state)
         predictions = None
         if self.info_view is not None:

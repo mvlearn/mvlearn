@@ -172,6 +172,8 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
             The predicted cluster labels for each sample.
         '''
 
+        check_u_mats = list()
+
         # Perform checks on inputted parameters and data
         Xs = self._param_checks(Xs)
         if self.v_lambda <= 0:
@@ -190,6 +192,8 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
             U_mats.append(u_mat)
             L_mats.append(l_mat)
             obj_vals[ind, 0] = o_val
+
+        check_u_mats.append(U_mats[0])
 
         # Iteratively solve for all U's
         n_items = Xs[0].shape[0]
@@ -219,9 +223,10 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
             U_mats[0], d_mat, _ = sp.sparse.linalg.svds(l_mat,
                                                         k=self.n_clusters)
             obj_vals[0, it] = np.sum(d_mat)
-
+            check_u_mats.append(U_mats[0])
         self._objective = obj_vals
 
+        return check_u_mats
         # Create final spectral embedding to cluster
         V_mat = np.hstack(U_mats)
         norm_v = np.sqrt(np.diag(V_mat @ V_mat.T))
