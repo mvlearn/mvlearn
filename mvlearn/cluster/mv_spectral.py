@@ -251,12 +251,12 @@ class MultiviewSpectralClustering(BaseEstimator):
     def _param_checks(self, Xs):
 
         r'''
-        Performs bulk of checks and exception handling for 
+        Performs bulk of checks and exception handling for
         inputted user parameters.
 
         Parameters
         ----------
-        
+
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
@@ -267,7 +267,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         Returns
         -------
-        
+
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
@@ -294,8 +294,8 @@ class MultiviewSpectralClustering(BaseEstimator):
             np.random.seed(self.random_state)
 
         if self.info_view is not None:
-            if not (isinstance(self.info_view, int)
-                    and (self. info_view >= 0 and self.info_view < self._n_views)):
+            if not (isinstance(self.info_view, int) and
+                    (self. info_view >= 0 and self.info_view < self._n_views)):
                 msg = 'info_view must be an integer between 0 and n_clusters-1'
                 raise ValueError(msg)
 
@@ -311,8 +311,9 @@ class MultiviewSpectralClustering(BaseEstimator):
             msg = 'affinity must be a valid affinity metric'
             raise ValueError(msg)
 
-        if self.gamma is not None and not ((isinstance(self.gamma, float) or
-                                isinstance(self.gamma, int)) and self.gamma > 0):
+        if self.gamma is not None and not ((isinstance(
+                self.gamma, float) or isinstance(self.gamma, int))
+                                           and self.gamma > 0):
             msg = 'gamma must be a positive float'
             raise ValueError(msg)
 
@@ -321,7 +322,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             raise ValueError(msg)
 
         return Xs
-    
+
     def fit_predict(self, Xs):
 
         r'''
@@ -347,7 +348,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Perform checks on the data and inputted parameters
         Xs = self._param_checks(Xs)
-        
+
         # Compute the similarity matrices
         sims = [self._affinity_mat(X) for X in Xs]
 
@@ -380,7 +381,7 @@ class MultiviewSpectralClustering(BaseEstimator):
             U_mats[view] /= U_norm
 
         # Performing k-means clustering
-        kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init, 
+        kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init,
                         random_state=self.random_state)
         predictions = None
         if self.info_view is not None:
