@@ -226,7 +226,6 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
             check_u_mats.append(U_mats[0])
         self._objective = obj_vals
 
-        return check_u_mats
         # Create final spectral embedding to cluster
         V_mat = np.hstack(U_mats)
         norm_v = np.sqrt(np.diag(V_mat @ V_mat.T))
@@ -234,8 +233,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         self._embedding = np.linalg.inv(np.diag(norm_v)) @ V_mat
 
         # Perform kmeans clustering with embedding
-        kmeans = KMeans(n_clusters=self.n_clusters,
+        kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init,
                         random_state=self.random_state)
         predictions = kmeans.fit_predict(V_mat)
-
         return predictions
