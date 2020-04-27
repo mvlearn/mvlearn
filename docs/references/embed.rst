@@ -1,5 +1,5 @@
-mvlearn.embed
-===============
+View Embedding
+==============
 
 .. currentmodule:: mvlearn.embed
 
@@ -26,11 +26,6 @@ Omnibus Embedding
 
 .. autoclass:: Omnibus
     :exclude-members: transform, get_params, set_params
-
-Partial Least Squares Regression
---------------------------------
-
-.. autofunction:: partial_least_squares_embedding
 
 Multiview Multidimensional Scaling
 ----------------------------------
@@ -66,3 +61,8 @@ DCCA Utilities
 		register_parameter, requires_grad, train, type, eval, extra_repr,
 		double, float, half, named_buffers, zero_grad, to, state_dict,
 		requires_grad, modules, cpu, cuda, load_state_dict
+
+Dimension Selection
+--------------------------------
+
+.. autofunction:: select_dimension

@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# MIT License
-
 # Original work Copyright (c) 2016 Vahid Noroozi
 # Modified work Copyright 2019 Zhanghao Wu
 
@@ -28,13 +26,20 @@
 # all copies or substantial portions of the Software.
 
 import warnings
+import sys
 from sklearn.utils import check_X_y, check_array
 from sklearn.exceptions import NotFittedError
 import numpy as np
-import torch
-import torch.nn as nn
-from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
-
+try:
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
+except ModuleNotFoundError as error:
+    print(f'Error: {error}. torch dependencies required for this function. \
+    Please consult the mvlearn installation instructions at \
+    https://github.com/neurodata/mvlearn to correctly install torch \
+    dependencies.')
+    sys.exit(1)
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
@@ -152,7 +157,7 @@ class linear_cca():
 class cca_loss():
     """
     An implementation of the loss function of linear CCA as introduced
-    in the original paper for ``DCCA`` [#1Utils]_. Details of how this loss
+    in the original paper for ``DCCA`` [#1DCCA]_. Details of how this loss
     is computed can be found in the paper or in the documentation for
     ``DCCA``.
 
@@ -176,11 +181,6 @@ class cca_loss():
     device_ : torch.device object
         The torch device being used in DCCA.
 
-    References
-    ----------
-    .. [#1Utils] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
-                 February). Deep canonical correlation analysis. In
-                 International conference on machine learning (pp. 1247-1255).
     """
     def __init__(self, n_components, use_all_singular_values, device):
         self.n_components_ = n_components
@@ -190,7 +190,7 @@ class cca_loss():
     def loss(self, H1, H2):
         """
         Compute the loss (negative correlation) between 2 views. Details can
-        be found in [#1Utils]_ or the documentation for ``DCCA``.
+        be found in [#1DCCA]_ or the documentation for ``DCCA``.
 
         Parameters
         ----------
@@ -503,6 +503,11 @@ class DCCA(BaseEmbed):
         Whether or not ``.fit()`` has been called yet. Permits
         ``.transform()`` to be called.
 
+    Warns
+    -----
+    In order to run DCCA, pytorch and other certain optional dependencies must
+    be installed. See the installation page for details.
+
     Notes
     -----
     Deep Canonical Correlation Analysis is a method of finding highly
@@ -553,19 +558,23 @@ class DCCA(BaseEmbed):
 
     Examples
     --------
+    >>> from mvlearn.embed import DCCA
     >>> import numpy as np
-    >>> from mvlearn.embed.dcca import DCCA
-    >>> view1 = np.exp(np.random.normal(size=(1000, 100)))
-    >>> view2 = np.random.normal(loc=2, size=(1000, 75))
-    >>> input_size1, input_size2 = 100, 75
+    >>> # Exponential data as example of finding good correlation
+    >>> view1 = np.random.normal(loc=2, size=(1000, 75))
+    >>> view2 = np.exp(view1)
+    >>> view1_test = np.random.normal(loc=2, size=(200, 75))
+    >>> view2_test = np.exp(view1_test)
+    >>> input_size1, input_size2 = 75, 75
     >>> n_components = 2
     >>> layer_sizes1 = [1024, 4]
     >>> layer_sizes2 = [1024, 4]
     >>> dcca = DCCA(input_size1, input_size2, n_components, layer_sizes1,
-                    layer_sizes2)
-    >>> outputs = dcca.fit_transform([view1, view2])
+    ...             layer_sizes2)
+    >>> dcca = dcca.fit([view1, view2])
+    >>> outputs = dcca.transform([view1_test, view2_test])
     >>> print(outputs[0].shape)
-    (1000, 2)
+    (200, 2)
 
     References
     ----------

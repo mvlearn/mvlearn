@@ -20,13 +20,17 @@ from sklearn.metrics import euclidean_distances
 
 
 class MVMDS(BaseEmbed):
-
-    """"
+    r"""
     An implementation of Classical Multiview Multidimensional Scaling for
-    jointly reducing the dimensions of multiple views of data. A Euclidean
-    distance matrix is created for each view, double centered, and the k l
-    argest common eigenvectors between the matrices are returned based on
-    the stepwise estimation of common principal components.
+    jointly reducing the dimensions of multiple views of data [#1MVMDS]_.
+    A Euclidean distance matrix is created for each view, double centered,
+    and the k largest common eigenvectors between the matrices are found
+    based on the stepwise estimation of common principal components. Using
+    these common principal components, the views are jointly reduced and
+    a single view of k-dimensions is returned.
+
+    MVMDS is often a better alternative to PCA for multi-view data.
+    See the ``tutorials`` in the documentation.
 
     Parameters
     ----------
@@ -36,23 +40,79 @@ class MVMDS(BaseEmbed):
         0 and less than the number of samples within each view.
 
     num_iter: int (positive), default=15
-        Number of iterations stepwise estimation goes through. Detailed
-        in Trendafilov paper.
+        Number of iterations stepwise estimation goes through.
 
     Attributes
     ----------
-    components: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+    components: numpy.ndarray, shape(n_samples, n_components)
+        Joint transformed MVMDS components of the input views.
+
+    Notes
+    -----
+
+    Classical Multiview Multidimensional Scaling can be broken down into two
+    steps. The first step involves calculating the Euclidean Distance matrices,
+    :math:`Z_i`, for each of the :math:`k` views and double-centering
+    these matrices through the following calculations:
+
+    .. math::
+        \Sigma_{i}=-\frac{1}{2}J_iZ_iJ_i
+
+    .. math::
+        \text{where }J_i=I_i-{\frac {1}{n}}\mathbb{1}\mathbb{1}^T
+
+    The second step involves finding the common principal components of the
+    :math:`\Sigma` matrices. These can be thought of as multiview
+    generalizations of the principal components found in principal component
+    analysis (PCA) given several covariance matrices. The central hypothesis of
+    the common principal component model states that given k normal populations
+    (views), their :math:`p` x :math:`p` covariance matrices
+    :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
+    diagonalizable as:
+
+    .. math::
+        \Sigma_{i} = QD_i^2Q^T
+
+    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and
+    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The
+    :math:`Q` matrix contains all the common principal components. The common
+    principal component, :math:`q_j`, is found by solving the minimization
+    problem:
+
+    .. math::
+        \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
+    .. math::
+        \text{Subject to } q_j^Tq_j = 1
+
+    where :math:`n_i` represent the degrees of freedom and :math:`S_i`
+    represent sample covariance matrices.
+
+    This class does not support ``MVMDS.transform()`` due to the iterative
+    nature of the algorithm and the fact that the transformation is done
+    during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
+    fitting and transforming at once.
+
+    Examples
+    --------
+    >>> from mvlearn.embed import MVMDS
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> Xs, _ = load_UCImultifeature()
+    >>> print(len(Xs)) # number of samples in each view
+    6
+    >>> print(Xs[0].shape) # number of samples in each view
+    (2000, 76)
+    >>> mvmds = MVMDS(n_components=5)
+    >>> Xs_reduced = mvmds.fit_transform(Xs)
+    >>> print(Xs_reduced.shape)
+    (2000, 5)
 
     References
     ----------
-    .. [#1] Trendafilov, Nickolay T. “Stepwise Estimation of Common Principal
-            Components.” Computational Statistics &amp; Data Analysis, vol. 54,
-            no. 12, 2010, pp. 3446–3457., doi:10.1016/j.csda.2010.03.010.
-
+    .. [#1MVMDS] Trendafilov, Nickolay T. “Stepwise Estimation of Common
+            Principal Components.” Computational Statistics &amp; Data
+            Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
+            doi:10.1016/j.csda.2010.03.010.
     """
-
     def __init__(self, n_components=None, num_iter=15):
 
         super().__init__()
@@ -61,7 +121,6 @@ class MVMDS(BaseEmbed):
         self.num_iter = num_iter
 
     def _commonpcs(self, Xs):
-
         """
         Finds Stepwise Estimation of Common Principal Components as described
         by common Trendafilov implementations based on the following paper:
@@ -76,9 +135,8 @@ class MVMDS(BaseEmbed):
 
         Returns
         -------
-        components: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+        components: numpy.ndarray, shape(n_samples, n_components)
+            Joint transformed MVMDS components of the input views.
         """
         n = p = Xs.shape[1]
 
@@ -147,7 +205,6 @@ class MVMDS(BaseEmbed):
         return(components)
 
     def fit(self, Xs):
-
         """
         Calculates dimensionally reduced components by inputting the Euclidean
         distances of each view, double centering them, and using the _commonpcs
@@ -156,7 +213,6 @@ class MVMDS(BaseEmbed):
 
         Parameters
         ----------
-
         Xs: list of array-likes or numpy.ndarray
                 - Xs length: n_views
                 - Xs[i] shape: (n_samples, n_features_i)
@@ -207,9 +263,8 @@ class MVMDS(BaseEmbed):
 
         Returns
         -------
-        components: numpy.ndarray
-            - components shape: (n_samples, n_components)
-            MVMDS components of Xs
+        X_transformed: numpy.ndarray, shape(n_samples, n_components)
+            Joint transformed MVMDS components of the input views.
         """
         Xs = check_Xs(Xs)
         self.fit(Xs)

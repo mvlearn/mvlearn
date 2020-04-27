@@ -24,19 +24,15 @@ from .utils import select_dimension
 
 class GCCA(BaseEmbed):
     r"""
-    An implementation of Generalized Canonical Correalation Analysis suitable
-    for cases where the number of features exceeds the number of samples by
-    first applying single view dimensionality reduction. Computes individual
-    projections into a common subspace such that the correlations between
-    pairwise projections are minimized (ie. maximize pairwise correlation).
+    An implementation of Generalized Canonical Correalation Analysis [#1GCCA]_
+    suitable for cases where the number of features exceeds the number of
+    samples by first applying single view dimensionality reduction. Computes
+    individual projections into a common subspace such that the correlations
+    between pairwise projections are minimized (ie. maximize pairwise
+    correlation).
 
     Parameters
     ----------
-    sv_tolerance : float, optional, default=None
-        Selects the number of SVD components to keep for each view by
-        thresholding singular values. If none, another selection
-        method is used.
-
     n_components : int (positive), optional, default=None
         If ``self.sv_tolerance=None``, selects the number of SVD
         components to keep for each view. If none, another selection
@@ -46,6 +42,11 @@ class GCCA(BaseEmbed):
         If ``self.sv_tolerance=None``, and ``self.n_components=None``,
         selects the number of SVD components to keep for each view by
         capturing enough of the variance. If none, another selection
+        method is used.
+
+    sv_tolerance : float, optional, default=None
+        Selects the number of SVD components to keep for each view by
+        thresholding singular values. If none, another selection
         method is used.
 
     n_elbows : int, optional, default: 2
@@ -87,24 +88,36 @@ class GCCA(BaseEmbed):
 
     References
     ----------
-    .. [#1] B. Afshin-Pour, G.A. Hossein-Zadeh, S.C. Strother, H.
+    .. [#1GCCA] B. Afshin-Pour, G.A. Hossein-Zadeh, S.C. Strother, H.
             Soltanian-Zadeh. Enhancing reproducibility of fMRI statistical
             maps using generalized canonical correlation analysis in NPAIRS
             framework. Neuroimage, 60 (2012), pp. 1970-1981
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.embed import GCCA
+    >>> # Load full dataset, labels not needed
+    >>> Xs, _ = load_UCImultifeature()
+    >>> gcca = GCCA(fraction_var = 0.9)
+    >>> # Transform the first 5 views
+    >>> Xs_latents = gcca.fit_transform(Xs[:5])
+    >>> print([X.shape[1] for X in Xs_latents])
+    [9, 9, 9, 9, 9]
     """
 
     def __init__(
             self,
+            n_components=None,
             fraction_var=None,
             sv_tolerance=None,
-            n_components=None,
             n_elbows=2,
             tall=False
             ):
 
+        self.n_components = n_components
         self.fraction_var = fraction_var
         self.sv_tolerance = sv_tolerance
-        self.n_components = n_components
         self.n_elbows = n_elbows
         self.tall = tall
         self.projection_mats_ = None

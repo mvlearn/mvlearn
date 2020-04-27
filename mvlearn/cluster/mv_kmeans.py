@@ -27,6 +27,11 @@ class MultiviewKMeans(BaseKMeans):
     This class implements multi-view k-means using the co-EM framework
     as described in [#2Clu]_. This algorithm is most suitable for cases
     in which the different views of data are conditionally independent.
+    Additionally, this can be effective when the dataset naturally
+    contains features that are of 2 different data types, such as
+    continuous features and categorical features [#3Clu]_, and then the
+    original features are separated into two views in this way.
+
     This algorithm currently handles two views of data.
 
     Parameters
@@ -128,6 +133,24 @@ class MultiviewKMeans(BaseKMeans):
     ----------
     .. [#2Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
             of the 4th IEEE International Conference on Data Mining, pp. 19–26
+    .. [#3Clu] Chao, Guoqing, Shiliang Sun, and Jinbo Bi. "A survey on
+            multi-view clustering." arXiv preprint arXiv:1712.06246 (2017).
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.cluster import MultiviewKMeans
+    >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
+    >>> # Get 5-class data
+    >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
+    >>> mv_data = data[:2]  # first 2 views only
+    >>> mv_kmeans = MultiviewKMeans(n_clusters=5, random_state=10)
+    >>> mv_clusters = mv_kmeans.fit_predict(mv_data)
+    >>> nmi = nmi_score(labels, mv_clusters)
+    >>> print('{0:.3f}'.format(nmi))
+    0.770
+
+    ""
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',

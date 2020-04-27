@@ -1,5 +1,5 @@
-mvlearn.construct
-===================
+View Construction
+=================
 
 .. currentmodule:: mvlearn.construct
 

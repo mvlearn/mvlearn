@@ -1,7 +1,29 @@
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import datasets
-import torchvision
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+try:
+    import torch
+    from torch.utils.data import Dataset, DataLoader
+    from torchvision import datasets
+    import torchvision
+except ModuleNotFoundError as error:
+    print(f'Error: {error}. torch dependencies required for this function. \
+    Please consult the mvlearn installation instructions at \
+    https://github.com/neurodata/mvlearn to correctly install torch \
+    dependencies.')
+    sys.exit(1)
 import matplotlib.pyplot as plt
 import PIL
 import numpy as np
@@ -50,36 +72,8 @@ class _FullyConnectedNet(torch.nn.Module):
 class SplitAE(BaseEmbed):
     r"""
     Implements an autoencoder that creates an embedding of a view View1 and
-    from that embedding reconstructs View1 and another view View2.
-
-    .. figure:: /figures/splitAE.png
-        :width: 250px
-        :alt: SplitAE diagram
-        :align: center
-
-        in this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}`
-        is View2
-
-    Each encoder / decoder network is a fully connected neural net with
-    paramater count equal to:
-
-    .. math::
-        \left(\text{input_size} + \text{embed_size}\right) \cdot
-        \text{hidden_size} +
-        \sum_{1}^{\text{num_hidden_layers}-1}\text{hidden_size}^2
-
-    Where :math:`\text{input_size}` is the number of features in View1
-    or View2.
-
-    The loss that is reduced via gradient descent is:
-
-    .. math::
-        J = \left(p(f(\textbf{x})) - \textbf{x}\right)^2 +
-        \left(q(f(\textbf{x})) - \textbf{y}\right)^2
-
-    Where :math:`f` is the encoder, :math:`p` and :math:`q` are
-    the decoders, :math:`\textbf{x}` is View1,
-    and :math:`\textbf{y}` is View2.
+    from that embedding reconstructs View1 and another view View2, as
+    described in [#1Split]_.
 
     Parameters
     ----------
@@ -109,14 +103,52 @@ class SplitAE(BaseEmbed):
     view2_decoder_ : torch.nn.Module
         the View2 decoding network as a PyTorch module
 
+    Warns
+    -----
+    In order to run SplitAE, pytorch and other certain optional dependencies
+    must be installed. See the installation page for details.
+
+    Notes
+    -----
+    .. figure:: /figures/splitAE.png
+        :width: 250px
+        :alt: SplitAE diagram
+        :align: center
+
+    In this figure :math:`\textbf{x}` is View1 and :math:`\textbf{y}`
+    is View2
+
+    Each encoder / decoder network is a fully connected neural net with
+    paramater count equal to:
+
+    .. math::
+        \left(\text{input_size} + \text{embed_size}\right) \cdot
+        \text{hidden_size} +
+        \sum_{1}^{\text{num_hidden_layers}-1}\text{hidden_size}^2
+
+    Where :math:`\text{input_size}` is the number of features in View1
+    or View2.
+
+    The loss that is reduced via gradient descent is:
+
+    .. math::
+        J = \left(p(f(\textbf{x})) - \textbf{x}\right)^2 +
+        \left(q(f(\textbf{x})) - \textbf{y}\right)^2
+
+    Where :math:`f` is the encoder, :math:`p` and :math:`q` are
+    the decoders, :math:`\textbf{x}` is View1,
+    and :math:`\textbf{y}` is View2.
+
     References
     ----------
-    .. [#cca] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
+    .. [#1Split] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
         "`On Deep Multi-View Representation Learning.
         <http://proceedings.mlr.press/v37/wangb15.pdf>`_",
         ICML, 2015.
-    """
 
+    For more extensive examples, see the ``tutorials`` for SplitAE in this
+    documentation.
+    """
     def __init__(self, hidden_size=64, num_hidden_layers=2, embed_size=20,
                  training_epochs=10, batch_size=16, learning_rate=0.001,
                  print_info=False, print_graph=True):
@@ -254,11 +286,12 @@ class SplitAE(BaseEmbed):
 
     def transform(self, Xs):
         r"""
-        Transform the given view with the trained autoencoder.
+        Transform the given view with the trained autoencoder. Provide
+        a single view within a list.
 
         Parameters
         ----------
-        Xs : a list of one array-like, or an np.ndarray
+        Xs : a list of exactly one array-like, or an np.ndarray
             Represents the View1 of some data. The array must have the same
             number of columns  (features) as the View1 presented
             in the :code:`fit(...)` step.
