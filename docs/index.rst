@@ -23,6 +23,8 @@ mvlearn uses to provide more features such as numerical linear algebra. In order
 to write basic programs in Python.  Among the many guides to Python, we
 recommend the `Python documentation <https://docs.python.org/3/>`_.
 
+Currently, mvlearn is supported for Python 3.6, 3.7, and 3.8.
+
 Free software
 -------------
 
