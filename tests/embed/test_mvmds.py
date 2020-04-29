@@ -102,26 +102,26 @@ def test_fit_transform_values_neg(data):
         mvmds = MVMDS(n_components=-4)
         mvmds.fit_transform(data['samp_views'])
 
-def check_num_iter(data):
+def test_check_num_iter(data):
     with pytest.raises(ValueError):
         
         mvmds = MVMDS(n_components=-3)
         mvmds.fit_transform(data['samp_views'])
 
 
-def check_dist_wrong(data):
+def test_check_dist_wrong(data):
     with pytest.raises(ValueError):
 
         mvmds = MVMDS(n_components=-3,distance=3)
         mvmds.fit_transform(data['samp_views'])        
 
-def check_dist_true(data):
+def test_check_dist_true(data):
     with pytest.raises(ValueError):
         
         mvmds = MVMDS(n_components=-3,distance=True)
         mvmds.fit_transform(data['samp_views'])
 
-def check_dist_true_vals(data):
+def test_check_dist_true_vals(data):
     test_views = []
     for i in data['samp_views']:
         test_views.append(euclidean_distances(i))
