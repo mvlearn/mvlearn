@@ -19,6 +19,7 @@ from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
 import numpy as np
+import numpy.matlib
 from scipy import linalg
 from sklearn.metrics.pairwise import euclidean_distances
 
@@ -153,7 +154,7 @@ class KCCA(BaseEmbed):
     >>> a = kcca_l.fit(Xs_train)
     >>> linearkcca = kcca_l.transform(Xs_test)
     >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
-    >>> #Below are the canonical correlation for the four components:
+    >>> #Below are the canonical correlation for the first component:
     >>> print(round(r1, 2))
     0.85
 
@@ -170,6 +171,7 @@ class KCCA(BaseEmbed):
         reg=0.1,
         decomp='full',
         method='kettenring-like',
+        mrank=50
     ):
         self.n_components = n_components
         self.ktype = ktype
@@ -179,6 +181,7 @@ class KCCA(BaseEmbed):
         self.reg = reg
         self.decomp = decomp
         self.method = method
+        self.mrank = mrank
 
         # Error Handling
         if self.n_components < 0 or not type(self.n_components) == int:
@@ -216,18 +219,29 @@ class KCCA(BaseEmbed):
 
         """
         Xs = check_Xs(Xs, multiview=True)
-
-        self.X = _center_norm(Xs[0])
-        self.Y = _center_norm(Xs[1])
+        
+        self.X = Xs[0]
+        self.Y = Xs[1]
+        
+        #change back to below
+        #self.X = _center_norm(Xs[0])
+        #self.Y = _center_norm(Xs[1])
 
         N = len(self.X)
 
         if self.decomp == "full":
+            Nl = len(self.X)
+            Nr = len(self.Y)
+            N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
+            N0r = np.eye(Nr) - 1 / Nr * np.ones(Nr)
+            
             Kx = _make_kernel(self.X, self.X, self.ktype, self.constant,
                               self.degree, self.sigma)
             Ky = _make_kernel(self.Y, self.Y, self.ktype, self.constant,
                               self.degree, self.sigma)
-
+            Kx = N0l @ Kx @ N0r
+            Ky = N0l @ Ky @ N0r
+            
             Id = np.eye(N)
             Z = np.zeros((N, N))
 
@@ -235,21 +249,65 @@ class KCCA(BaseEmbed):
             if self.method == "kettenring-like":
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
+            
+            # Solve eigenvalue problem
+            betas, alphas = linalg.eig(R, D)
+    
+            # Top eigenvalues
+            ind = np.argsort(betas)[::-1][:self.n_components]
+    
+            # Extract relevant coordinates and normalize to unit length
+            weight1 = alphas[:N, ind]
+            weight2 = alphas[N:, ind]
+    
+            weight1 /= np.linalg.norm(weight1, axis=0)
+            weight2 /= np.linalg.norm(weight2, axis=0)
+    
+            self.weights_ = np.real([weight1, weight2])
 
-        # Solve eigenvalue problem
-        betas, alphas = linalg.eig(R, D)
+        elif self.decomp == "icd":
+            G1 = _make_icd_kernel(self.X, self.ktype,
+                                  self.sigma, self.mrank)
 
-        # Top eigenvalues
-        ind = np.argsort(betas)[::-1][:self.n_components]
+            G2 = _make_icd_kernel(self.Y, self.ktype,
+                                  self.sigma, self.mrank)
 
-        # Extract relevant coordinates and normalize to unit length
-        weight1 = alphas[:N, ind]
-        weight2 = alphas[N:, ind]
+            G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
+            G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
+            
+            minrank = min(len(G1[0]),len(G2[0]))
+            self.n_components = min(minrank,self.n_components)
+            
+            N1 = len(G1[0])
+            N2 = len(G2[0])
+            Z11 = np.zeros(N1)
+            Z22 = np.zeros(N2)
+            Z12 = np.zeros((N1, N2))
+            I11 = np.eye(N1)
+            I22 = np.eye(N2)
 
-        weight1 /= np.linalg.norm(weight1, axis=0)
-        weight2 /= np.linalg.norm(weight2, axis=0)
+            # Method: Kettenring-like generalizable formulation
+            if self.method == "kettenring-like":
+                R = 0.5*np.r_[np.c_[G1.T@G1, G1.T@G2],
+                              np.c_[G2.T@G1, G2.T@G2]]
+                D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
+                          np.c_[Z12.T, G2.T@G2+self.reg*I22]]
+            
+            # Solve eigenvalue problem
+            betas, alphas = linalg.eig(R, D)
+    
+            # Top eigenvalues
+            ind = np.argsort(betas)[::-1][:self.n_components]
+    
+            # Extract relevant coordinates and normalize to unit length
+            weight1 = alphas[:N1, ind]
+            weight2 = alphas[N1:, ind]
+    
+            weight1 /= np.linalg.norm(weight1, axis=0)
+            weight2 /= np.linalg.norm(weight2, axis=0)
+    
+            self.weights_ = np.real([weight1, weight2])
 
-        self.weights_ = np.real([weight1, weight2])
 
         return self
 
@@ -280,29 +338,44 @@ class KCCA(BaseEmbed):
             raise NameError("kCCA has not been trained.")
 
         Xs = check_Xs(Xs, multiview=True)
-
-        Kx_transform = _make_kernel(_center_norm(Xs[0]),
-                                    _center_norm(self.X),
-                                    self.ktype,
-                                    self.constant,
-                                    self.degree,
-                                    self.sigma)
-        Ky_transform = _make_kernel(_center_norm(Xs[1]),
-                                    _center_norm(self.Y),
-                                    self.ktype,
-                                    self.constant,
-                                    self.degree,
-                                    self.sigma)
-
+        
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
-
+        
         comp1 = []
         comp2 = []
-
-        for i in range(weight1.shape[1]):
-            comp1.append(Kx_transform@weight1[:, i])
-            comp2.append(Ky_transform@weight2[:, i])
+        
+        if self.decomp == "full":
+            Kx_transform = _make_kernel(_center_norm(Xs[0]),
+                                        _center_norm(self.X),
+                                        self.ktype,
+                                        self.constant,
+                                        self.degree,
+                                        self.sigma)
+            Ky_transform = _make_kernel(_center_norm(Xs[1]),
+                                        _center_norm(self.Y),
+                                        self.ktype,
+                                        self.constant,
+                                        self.degree,
+                                        self.sigma)
+    
+            for i in range(weight1.shape[1]):
+                comp1.append(Kx_transform@weight1[:, i])
+                comp2.append(Ky_transform@weight2[:, i])
+                
+        elif self.decomp == "icd":
+            Kx_t_icd = _make_icd_kernel(_center_norm(Xs[0]),
+                                        self.ktype,
+                                        self.sigma,
+                                        self.mrank)
+            Ky_t_icd = _make_icd_kernel(_center_norm(Xs[1]),
+                                        self.ktype,
+                                        self.sigma,
+                                        self.mrank)
+    
+            for i in range(weight1.shape[1]):
+                comp1.append(Kx_t_icd@weight1[:, i])
+                comp2.append(Ky_t_icd@weight2[:, i])
 
         comp1 = np.transpose(np.asarray(comp1))
         comp2 = np.transpose(np.asarray(comp2))
@@ -318,21 +391,72 @@ def _center_norm(x):
 
 
 def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
-    Nl = len(X)
-    Nr = len(Y)
-    N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
-    N0r = np.eye(Nr) - 1 / Nr * np.ones(Nr)
+
 
     # Linear kernel
     if ktype == "linear":
-        return N0l @ (X @ Y.T) @ N0r
+        return (X @ Y.T)
 
     # Polynomial kernel
     elif ktype == "poly":
-        return N0l @ (X @ Y.T + constant) ** degree @ N0r
+        return (X @ Y.T + constant) ** degree
 
     # Gaussian kernel
     elif ktype == "gaussian":
         distmat = euclidean_distances(X, Y, squared=True)
 
-        return N0l @ np.exp(-distmat / (2 * sigma ** 2)) @ N0r
+        return np.exp(-distmat / (2 * sigma ** 2))
+    
+    # Gaussian diagonal kernel
+    elif ktype == "gaussian-diag":
+        # N0l@@N0r
+        return np.exp(-np.sum(np.power((X-Y), 2),axis=1)/(2*sigma**2))
+
+def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0, mrank=50): 
+    N = len(X)
+    precision = 0.000001
+
+    perm = np.arange(N)
+    d = np.zeros(N)
+    G = np.zeros((N, mrank))
+    subset = np.zeros(mrank)
+    
+    for i in range(mrank):
+        x_new = X[perm[i:N+1], :]
+        if i == 0:
+            d[i:N+1] = _make_kernel(x_new, x_new, "gaussian-diag").T
+        else:
+            fk2 = _make_kernel(x_new, x_new, "gaussian-diag").T
+            fk = np.sum(np.power(G[i:N+1, :i], 2), axis=1).T
+            d[i:N+1] = (fk2 - fk)
+        
+        #dtrace stuff
+        dtrace = sum(d[i:N+1])
+        if dtrace <= 0:
+            print("Warning: negative diagonal entry")
+        
+        if dtrace <= precision:
+            G = G[:,  :i] 
+            subset = subset[ :i]
+            break
+        
+        
+        j = np.argmax(d[i:N+1])
+        m2 = np.max(d[i:N+1])
+        j = j+i
+        m1 = np.sqrt(m2)
+        subset[i] = j
+        
+        perm[ [i, j] ] = perm[ [j, i] ]
+        G[[i, j], :i] = G[[j, i], :i]
+        G[i, i] = m1
+        
+        z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :], "gaussian", sigma)
+        z2 =(G[i+1:N+1, :i]@(G[i, :i].T))
+        
+        G[i+1:N+1, i] = (z1 - z2)/m1
+        
+    ind = np.argsort(perm)
+    return G[ind, :]
+
+
