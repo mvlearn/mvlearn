@@ -73,7 +73,7 @@ def test_fit_transformdifferent_wrong_samples(data):
     with pytest.raises(ValueError):
        
         mvmds = MVMDS(2)
-        comp = mvmds.fit_transform(data['wrong_views'])
+        mvmds.fit_transform(data['wrong_views'])
 
 #This is about taking in views that are the same.
 
@@ -93,7 +93,7 @@ def test_fit_transform_values_0(data):
     with pytest.raises(ValueError):
        
         mvmds = MVMDS(n_components=0)
-        comp = mvmds.fit_transform(data['samp_views'])
+        mvmds.fit_transform(data['samp_views'])
 
         
 def test_fit_transform_values_neg(data):
