@@ -41,6 +41,9 @@ class MVMDS(BaseEmbed):
 
     num_iter: int (positive), default=15
         Number of iterations stepwise estimation goes through.
+        
+    distance: bool, default=False
+        Boolean about whether distance matrices are input or not.
 
     Attributes
     ----------
@@ -112,13 +115,20 @@ class MVMDS(BaseEmbed):
             Principal Components.” Computational Statistics &amp; Data
             Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
             doi:10.1016/j.csda.2010.03.010.
+            
+    .. [#2MVMDS] Samir Kanaan-Izquierdo, Andrey Ziyatdinov, 
+        Maria Araceli Burgueño, Alexandre Perera-Lluna, Multiview: a software
+        package for multiview pattern recognition methods, Bioinformatics,
+        Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
+
     """
-    def __init__(self, n_components=None, num_iter=15):
+    def __init__(self, n_components=None, num_iter=15, distance = False):
 
         super().__init__()
         self.components = None
         self.n_components = n_components
         self.num_iter = num_iter
+        self.distance = distance
 
     def _commonpcs(self, Xs):
         """
@@ -238,14 +248,32 @@ class MVMDS(BaseEmbed):
         mat = np.ones(shape=(len(Xs), len(Xs[0]), len(Xs[0])))
 
         # Double centering each view as in single-view MDS
-        for i in np.arange(len(Xs)):
-            view = euclidean_distances(Xs[i])
-            view_squared = np.power(np.array(view), 2)
 
-            J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
-            B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
-            mat[i] = B
+        if (self.distance == False):
 
+            for i in np.arange(len(Xs)):
+                view = euclidean_distances(Xs[i])
+                view_squared = np.power(np.array(view), 2)
+
+                J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
+                B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
+                mat[i] = B
+
+        # If user wants to input special distance matrix
+
+        elif (self.distance == True):
+            for i in np.arange(len(Xs)):
+                if (Xs[i].shape[0] != Xs[i].shape[1]):
+                    raise ValueError('The input distance matrix must be '
+                                     + 'a square matrix')
+                else:
+                    view = Xs[i]
+                    view_squared = np.power(np.array(view), 2)
+                    J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
+                    B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
+                    mat[i] = B
+        else:
+            raise ValueError('The parameter, distance, must be a boolean')
         self.components = self._commonpcs(mat)
 
     def fit_transform(self, Xs):

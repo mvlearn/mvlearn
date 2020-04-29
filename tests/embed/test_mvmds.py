@@ -9,6 +9,7 @@ import pytest
 import numpy as np
 from mvlearn.embed.mvmds import MVMDS
 import math
+from sklearn.metrics import euclidean_distances
 
 '''
 DATA INITIALIZATION
@@ -105,4 +106,31 @@ def check_num_iter(data):
     with pytest.raises(ValueError):
         
         mvmds = MVMDS(n_components=-3)
-        comp = mvmds.fit_transform(data['samp_views'])
+        mvmds.fit_transform(data['samp_views'])
+
+
+def check_dist_wrong(data):
+    with pytest.raises(ValueError):
+
+        mvmds = MVMDS(n_components=-3,distance=3)
+        mvmds.fit_transform(data['samp_views'])        
+
+def check_dist_true(data):
+    with pytest.raises(ValueError):
+        
+        mvmds = MVMDS(n_components=-3,distance=True)
+        mvmds.fit_transform(data['samp_views'])
+
+def check_dist_true_vals(data):
+    test_views = []
+    for i in data['samp_views']:
+        test_views.append(euclidean_distances(i))
+    mvmds1 = MVMDS(n_components=2,distance=False)
+    mvmds2 = MVMDS(n_components=2,distance=True)
+
+    fit1 = mvmds1.fit_transform(data['samp_views'])
+    fit2 = mvmds2.fit_transform(test_views)
+
+    for i in range(fit1.shape[0]):
+        for j in range(fit1.shape[1]):
+            assert fit1[i,j]-fit2[i,j] < .000001
