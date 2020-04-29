@@ -13,6 +13,7 @@ for multiview datasets.
    tutorials/cluster/MVKMeans/MultiviewKMeans_Tutorial
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralClustering_Tutorial
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
+   tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
 
 Cotraining
 ==========

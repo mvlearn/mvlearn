@@ -46,9 +46,6 @@ class MultiviewSpectralClustering(BaseEstimator):
     n_clusters : int
         The number of clusters
 
-    n_views : int, optional, default=2
-        The number of different views of data.
-
     random_state : int, optional, default=None
         Determines random number generation for k-means.
 
