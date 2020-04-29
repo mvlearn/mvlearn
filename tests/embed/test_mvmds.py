@@ -61,9 +61,9 @@ def test_component_num_greater(data):
 def test_fit_transform_values(data):
     mvmds = MVMDS(len(data['samp_views'][0]))
     comp = mvmds.fit_transform(data['samp_views'])
-    comp2 = np.array([[-0.81330129,  0.07216426,  0.57735027],
-           [ 0.34415456, -0.74042171,  0.57735027],
-           [ 0.46914673,  0.66825745,  0.57735027]])
+    comp2 = np.array([[-0.81330129,  0.07216426,  0.17407766],
+                      [0.34415456, -0.74042171,  0.69631062],
+                      [0.46914673,  0.66825745, -0.69631062]])
     
     for i in range(comp.shape[0]):
         for j in range(comp.shape[1]):
@@ -100,7 +100,7 @@ def test_fit_transform_values_neg(data):
     with pytest.raises(ValueError):
        
         mvmds = MVMDS(n_components=-4)
-        comp = mvmds.fit_transform(data['samp_views'])
+        mvmds.fit_transform(data['samp_views'])
 
 def check_num_iter(data):
     with pytest.raises(ValueError):
