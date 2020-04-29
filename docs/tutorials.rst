@@ -9,7 +9,7 @@ for multiview datasets.
 
 .. toctree::
    :maxdepth: 1
-      
+   
    tutorials/cluster/MVKMeans/MultiviewKMeans_Tutorial
    tutorials/cluster/MVKMeans/MultiviewKmeansValidation_ComplexData
    tutorials/cluster/MVKMeans/MultiviewKmeansValidation_SimulatedData
@@ -19,6 +19,7 @@ for multiview datasets.
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
    tutorials/cluster/MVSphericalKMeans/MVSphericalValidation_SimulatedData
    tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
+   tutorials/cluster/multiview_vs_singleview_clustering
 
 Cotraining
 ==========
