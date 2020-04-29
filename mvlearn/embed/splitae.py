@@ -16,8 +16,6 @@ import sys
 try:
     import torch
     from torch.utils.data import Dataset, DataLoader
-    from torchvision import datasets
-    import torchvision
 except ModuleNotFoundError as error:
     print(f'Error: {error}. torch dependencies required for this function. \
     Please consult the mvlearn installation instructions at \
@@ -25,7 +23,6 @@ except ModuleNotFoundError as error:
     dependencies.')
     sys.exit(1)
 import matplotlib.pyplot as plt
-import PIL
 import numpy as np
 import itertools
 import tqdm
