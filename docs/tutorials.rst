@@ -11,8 +11,13 @@ for multiview datasets.
    :maxdepth: 1
    
    tutorials/cluster/MVKMeans/MultiviewKMeans_Tutorial
+   tutorials/cluster/MVKMeans/MultiviewKmeansValidation_ComplexData
+   tutorials/cluster/MVKMeans/MultiviewKmeansValidation_SimulatedData
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralClustering_Tutorial
+   tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_ComplexData
+   tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_SimulatedData
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
+   tutorials/cluster/MVSphericalKMeans/MVSphericalValidation_SimulatedData
    tutorials/cluster/multiview_vs_singleview_clustering
 
 Cotraining
@@ -37,12 +42,12 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/gcca_simulation
    tutorials/embed/kcca_tutorial
    tutorials/embed/dcca_tutorial
+   tutorials/embed/cca_comparison
    tutorials/embed/mvmds_tutorial
+   tutorials/embed/mvmds_proof
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
-   tutorials/embed/pls_tutorial
-   tutorials/embed/pls_simulation
 
 Plotting
 ========
@@ -52,8 +57,7 @@ Methods build on top of Matplotlib and Seaborn have been implemented for conveni
    :maxdepth: 1
 
    tutorials/plotting/quick_visualize_tutorial
-   tutorials/datasets/load_UCImultifeature
-   tutorials/datasets/GaussianMixtures
+   tutorials/plotting/crossviews_plot
    
 Test Dataset
 ============
