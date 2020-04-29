@@ -36,19 +36,6 @@ top-level source directory using the Terminal::
     $ pip3 install -e .
 
 This will install ``mvlearn`` and the required dependencies (see below).
-Due to the size of the ``torch`` dependency, it is an optional installation.
-If you wish to use functionality associated with it (Deep CCA and SplitAE),
-you must install additional dependencies. From PyPi, to install simply call::
-
-    $ pip3 install mvlearn[torch]
-
-To upgrade the package and torch requirements::
-
-    $ pip3 install --upgrade mvlearn[torch]
-
-If you have the package locally, from the top level folder call::
-
-    $ pip3 install -e .[torch]
 
 Python package dependencies
 ---------------------------
@@ -61,9 +48,6 @@ Python package dependencies
 - scikit-learn
 - scipy
 - seaborn
-
-with optional dependencies
-
 - torch
 - torchvision
 - tqdm

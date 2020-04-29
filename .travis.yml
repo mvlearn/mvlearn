@@ -3,7 +3,8 @@ language: python
 branches:
   only:
   - master
-  - 0.0.2
+  - /^[0-9]+.[0-9]+.[0-9]+$/
+  - /^[0-9]+.[0-9]+.[0-9]+-torch$/
 
 python:
   - '3.8'
@@ -12,7 +13,6 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install -r requirements_torch.txt
   - pip install -U pytest pytest-cov codecov pycodestyle
 
 script:

@@ -16,16 +16,14 @@ import sys
 try:
     import torch
     from torch.utils.data import Dataset, DataLoader
-    from torchvision import datasets
-    import torchvision
 except ModuleNotFoundError as error:
-    print(f'Error: {error}. torch dependencies required for this function. \
-    Please consult the mvlearn installation instructions at \
-    https://github.com/neurodata/mvlearn to correctly install torch \
-    dependencies.')
+    msg = f'Error: {error}. torch dependencies required for SplitAE. '
+    msg += 'Please consult the mvlearn installation instructions at '
+    msg += 'https://github.com/neurodata/mvlearn to correctly install torch '
+    msg += 'dependencies.'
+    print(msg)
     sys.exit(1)
 import matplotlib.pyplot as plt
-import PIL
 import numpy as np
 import itertools
 import tqdm
