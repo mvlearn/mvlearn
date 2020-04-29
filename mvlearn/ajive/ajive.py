@@ -18,16 +18,13 @@ from scipy.sparse import issparse
 from copy import deepcopy
 from sklearn.externals.joblib import load, dump
 import pandas as pd
-from mvlearn.embed.base import BaseEmbed
 from mvlearn.utils.utils import check_Xs
-import warnings
 from .block_visualization import _data_block_heatmaps, \
 _ajive_full_estimate_heatmaps
 
 from .utils import svd_wrapper, centering
 from .wedin_bound import get_wedin_samples
 from .random_direction import sample_randdir
-from .diagnostic_plot import plot_joint_diagnostic
 from .pca import pca
 
 
@@ -42,44 +39,44 @@ class ajive(object):
 
     Parameters
     ----------
-    init_signal_ranks: {list, dict}
+    init_signal_ranks: list or dict
         The initial signal ranks.
 
-    joint_rank: {None, int}
+    joint_rank: int = None
         Rank of the joint variation matrix. If None, will estimate the 
         joint rank. Otherwise, will use provided joint rank.
 
-    indiv_ranks: {list, dict, None}
+    indiv_ranks: list or dict
         Ranks of individual variation matrices. If None, will estimate the 
         individual ranks. Otherwise, will use provided individual ranks.
 
-    center: {bool, None}
-        Centers matrix. If None, will not center.
+    center: bool = True
+        Boolean for centering matrices.
 
-    reconsider_joint_components: bool
+    reconsider_joint_components: bool = True
         Triggers _reconsider_joint_components function
 
-    wedin_percentile: int, default=5
+    wedin_percentile: int = 5
         Percentile used for wedin (lower) bound cutoff for squared 
         singular values used to estimate joint rank.
 
-    n_wedin_samples: int, default=1000
+    n_wedin_samples: int = 1000
         Number of wedin bound samples to draw.
 
-    precomp_wedin_samples {None, dict of array-like, list of array-like}
+    precomp_wedin_samples: Dict of array-like or list of array-like
         Wedin samples that are precomputed for each view.
 
-    randdir_percentile: int, default=95
+    randdir_percentile: int = 95
         Percentile for random direction (lower) bound cutoff for squared
         singular values used to estimate joint rank.
 
-    n_randdir_samples: int, default=1000
+    n_randdir_samples: int = 1000
         Number of random direction samples to draw.
 
-    precomp_randdir_samples {None,  array-like}
+    precomp_randdir_samples: array-like = None
         Precomputed random direction samples.
 
-    n_jobs: int, None
+    n_jobs: int = None
         Number of jobs for parallel processing wedin samples and random
         direction samples using sklearn.externals.joblib.Parallel.
         If None, will not use parallel processing.
@@ -182,14 +179,14 @@ class ajive(object):
 
         Parameters
         ----------
-        blocks: {list of array-likes or numpy.ndarray, dict}
+        blocks: dict or list of array-likes
             - blocks length: n_views
             - blocks[i] shape: (n_samples, n_features_i) 
             The different views that are input. Input as data matrices. 
             If dict, will name blocks by keys, otherwise blocks are named by 
             0, 1, ...K. 
             
-        precomp_init_svd: {list, dict, None}, optional
+        precomp_init_svd: dict or list
             Precomputed initial SVD. Must have one entry for each data block.
             The SVD should be a 3 tuple (scores, svals, loadings), see output
             of .svd_wrapper for formatting details.
@@ -537,7 +534,12 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
     criteria not met, errors are raised.
         
     """
-    blocks = _dict_formatting(blocks)
+    if  hasattr(blocks, "keys"):
+        blocks = _dict_formatting(blocks)
+    else:
+        blocks_upd = check_Xs(blocks, multiview=True)
+        blocks = _dict_formating(blocks_upd)
+    
     block_names = list(blocks.keys())
 
     # check blocks have the same number of observations
@@ -665,13 +667,13 @@ class ViewSpecificResults(object):
     noise: array-like
         The noise matrix estimate.
 
-    obs_names: None, array-like
+    obs_names: array-like = None
         Observation names.
 
-    var_names: None, array-like
+    var_names: array-like = None
         Variable names for this view.
 
-    block_name: None, int, str
+    block_name: int = None or str = None
         Name of this view.
 
     m: None, array-like
