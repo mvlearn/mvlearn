@@ -36,7 +36,7 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
     Returns
     -------
     Xs_converted : object
-        The converted and validated X (list of data arrays).
+        The converted and validated Xs (list of data arrays).
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
@@ -91,7 +91,7 @@ def check_Xs_y(Xs, y, multiview=False, enforce_views=None):
     Returns
     -------
     Xs_converted : object
-        The converted and validated X (list of data arrays).
+        The converted and validated Xs (list of data arrays).
 
     y_converted : object
         The converted and validated y.
@@ -114,6 +114,7 @@ def check_Xs_y_nan_allowed(
         ):
     r"""
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
+    The labels (y) are allowed to be np.nan.
 
     Parameters
     ----------
@@ -139,7 +140,7 @@ def check_Xs_y_nan_allowed(
     Returns
     -------
     Xs_converted : object
-        The converted and validated X (list of data arrays).
+        The converted and validated Xs (list of data arrays).
     y_converted : object
         The converted and validated y.
     """

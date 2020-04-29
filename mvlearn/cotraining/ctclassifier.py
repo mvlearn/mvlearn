@@ -79,45 +79,25 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Attributes
     ----------
-    estimator1 : classifier object
+    estimator1_ : classifier object
         The classifier used on view 1.
 
-    estimator2 : classifier object
+    estimator2_ : classifier object
         The classifier used on view 2.
 
-    class_name: string
+    class_name_: string
         The name of the class.
 
-    n_views_ : int
-        The number of views supported by the multi-view classifier
+    p_ : int, optional (default=None)
+        The number of positive classifications from the unlabeled_pool
+        training set which will be given a positive "label" each round.
+
+    n_ : int, optional (default=None)
+        The number of negative classifications from the unlabeled_pool
+        training set which will be given a negative "label" each round.
 
     classes_ : array-like of shape (n_classes,)
         Unique class labels.
-
-    n_classes_ : int
-        Number of unique classes.
-
-    p_ : int
-        Number of positive examples (second label in classes_) to pull from
-        unlabeled_pool and give "label" at each training round. When the
-        labels are 0 or 1, positive is defined as 1, and in general, positive
-        is the larger label.
-
-    n_ : int
-        Number of negative examples (second label in classes_) to pull from
-        unlabeled_pool and give "label" at each training round. when the
-        labels are 0 or 1, negative is defined as 0, and in general, negative
-        is the smaller label.
-
-    unlabeled_pool_size_ : int
-        Size of pool of unlabeled_pool examples to classify at each iteration.
-
-    num_iter_ : int
-        Maximum number of training iterations to run.
-
-    random_state : int (default=None)
-        The starting random seed for fit() and class operations, passed to
-        numpy.random.seed().
 
     Examples
     --------
@@ -210,10 +190,10 @@ class CTClassifier(BaseCoTrainEstimator):
         super().__init__(estimator1, estimator2, random_state)
 
         # if not given, set classifiers as gaussian naive bayes estimators
-        if self.estimator1 is None:
-            self.estimator1 = GaussianNB()
-        if self.estimator2 is None:
-            self.estimator2 = GaussianNB()
+        if self.estimator1_ is None:
+            self.estimator1_ = GaussianNB()
+        if self.estimator2_ is None:
+            self.estimator2_ = GaussianNB()
 
         # If only 1 of p or n is not None, set them equal
         if (p is not None and n is None):
@@ -225,10 +205,10 @@ class CTClassifier(BaseCoTrainEstimator):
         else:
             self.p_, self.n_ = p, n
 
-        self.n_views_ = 2  # only 2 view learning supported currently
-        self.class_name = "CTClassifier"
-        self.unlabeled_pool_size_ = unlabeled_pool_size
-        self.num_iter_ = num_iter
+        self.n_views = 2  # only 2 view learning supported currently
+        self.class_name_ = "CTClassifier"
+        self.unlabeled_pool_size = unlabeled_pool_size
+        self.num_iter = num_iter
 
         self._check_params()
 
@@ -244,8 +224,8 @@ class CTClassifier(BaseCoTrainEstimator):
         """
 
         # verify that estimator1 and estimator2 have predict_proba
-        if (not hasattr(self.estimator1, 'predict_proba') or
-                not hasattr(self.estimator2, 'predict_proba')):
+        if (not hasattr(self.estimator1_, 'predict_proba') or
+                not hasattr(self.estimator2_, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
@@ -254,10 +234,10 @@ class CTClassifier(BaseCoTrainEstimator):
                                                       self.n_ <= 0):
             raise ValueError("Both p and n must be positive.")
 
-        if self.unlabeled_pool_size_ <= 0:
+        if self.unlabeled_pool_size <= 0:
             raise ValueError("unlabeled_pool_size must be positive.")
 
-        if self.num_iter_ <= 0:
+        if self.num_iter <= 0:
             raise ValueError("num_iter must be positive.")
 
     def fit(
@@ -288,7 +268,7 @@ class CTClassifier(BaseCoTrainEstimator):
         Xs, y = check_Xs_y_nan_allowed(Xs,
                                        y,
                                        multiview=True,
-                                       enforce_views=self.n_views_,
+                                       enforce_views=self.n_views,
                                        max_classes=2, min_classes=1)
 
         y = np.array(y)
@@ -296,7 +276,7 @@ class CTClassifier(BaseCoTrainEstimator):
             np.random.seed(self.random_state)
 
         self.classes_ = list(set(y[~np.isnan(y)]))
-        self.n_classes_ = len(self.classes_)
+        self.n_classes = len(self.classes_)
 
         # extract the multiple views given
         X1 = Xs[0]
@@ -304,7 +284,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
         # if don't have 2 classes of labeled data, then just fit and return,
         # since can't do any iterations of cotraining
-        if self.n_classes_ > 1:
+        if self.n_classes > 1:
 
             # if both p & n are none, set as ratio of one class to the other
             if (self.p_ is None and self.n_ is None):
@@ -323,7 +303,7 @@ class CTClassifier(BaseCoTrainEstimator):
             np.random.shuffle(U)
 
             # the small pool of unlabled samples to draw from in training
-            unlabeled_pool = U[-min(len(U), self.unlabeled_pool_size_):]
+            unlabeled_pool = U[-min(len(U), self.unlabeled_pool_size):]
 
             # the labeled samples
             L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
@@ -337,18 +317,18 @@ class CTClassifier(BaseCoTrainEstimator):
             # machine epsilon
             eps = np.finfo(float).eps
 
-            while it < self.num_iter_ and U:
+            while it < self.num_iter and U:
                 it += 1
 
                 # fit each model to its respective view
-                self.estimator1.fit(X1[L], y[L])
-                self.estimator2.fit(X2[L], y[L])
+                self.estimator1_.fit(X1[L], y[L])
+                self.estimator2_.fit(X2[L], y[L])
 
                 # predict log probability for greater spread in confidence
 
-                y1_prob = np.log(self.estimator1.
+                y1_prob = np.log(self.estimator1_.
                                  predict_proba(X1[unlabeled_pool]) + eps)
-                y2_prob = np.log(self.estimator2.
+                y2_prob = np.log(self.estimator2_.
                                  predict_proba(X2[unlabeled_pool]) + eps)
 
                 n, p = [], []
@@ -395,8 +375,8 @@ class CTClassifier(BaseCoTrainEstimator):
             L = [i for i, y_i in enumerate(y) if ~np.isnan(y_i)]
 
         # fit the overall model on fully "labeled" data
-        self.estimator1.fit(X1[L], y[L])
-        self.estimator2.fit(X2[L], y[L])
+        self.estimator1_.fit(X1[L], y[L])
+        self.estimator2_.fit(X2[L], y[L])
 
         return self
 
@@ -421,14 +401,14 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Xs = check_Xs(Xs,
                       multiview=True,
-                      enforce_views=self.n_views_)
+                      enforce_views=self.n_views)
 
         X1 = Xs[0]
         X2 = Xs[1]
 
         # predict each view independently
-        y1 = self.estimator1.predict(X1)
-        y2 = self.estimator2.predict(X2)
+        y1 = self.estimator1_.predict(X1)
+        y2 = self.estimator2_.predict(X2)
 
         # initialize
         y_pred = np.zeros(X1.shape[0],)
@@ -442,8 +422,8 @@ class CTClassifier(BaseCoTrainEstimator):
                 y_pred[i] = y1_i
             # if classifiers don't agree, take the more confident
             else:
-                y1_probs = self.estimator1.predict_proba([X1[i]])[0]
-                y2_probs = self.estimator2.predict_proba([X2[i]])[0]
+                y1_probs = self.estimator1_.predict_proba([X1[i]])[0]
+                y2_probs = self.estimator2_.predict_proba([X2[i]])[0]
                 sum_y_probs = [prob1 + prob2 for (prob1, prob2) in
                                zip(y1_probs, y2_probs)]
                 max_sum_prob = max(sum_y_probs)
@@ -470,14 +450,14 @@ class CTClassifier(BaseCoTrainEstimator):
 
         Xs = check_Xs(Xs,
                       multiview=True,
-                      enforce_views=self.n_views_)
+                      enforce_views=self.n_views)
 
         X1 = Xs[0]
         X2 = Xs[1]
 
-        y_proba = np.full((X1.shape[0], self.n_classes_), -1)
+        y_proba = np.full((X1.shape[0], self.n_classes), -1)
         # predict each probability independently
-        y1_proba = self.estimator1.predict_proba(X1)
-        y2_proba = self.estimator2.predict_proba(X2)
+        y1_proba = self.estimator1_.predict_proba(X1)
+        y2_proba = self.estimator2_.predict_proba(X2)
         # return the average probability for the sample
         return (y1_proba + y2_proba) * .5
