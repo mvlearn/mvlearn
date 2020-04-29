@@ -87,12 +87,10 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
     altered to encourage the pairwise similarities of examples under the new
     representation to be similar across all views.
 
-    *** Put the pairwise spectral clustering objective here. ***
-
     The modified spectral clustering objective for the case of two views is
-    shown above. In this example, the hyperparameter lambda trades-off the
-    spectral clustering objectives (the first two terms) and the disagreement
-    term (the third term).
+    shown and derived in [#3Clu]. In the clustering objective, the
+    hyperparameter lambda trades-off the spectral clustering objectives and
+    the disagreement term.
 
     For a fixed lambda and n, the objective function is bounded from above and
     non-decreasing. As such, the algorithm is guaranteed to converge.
