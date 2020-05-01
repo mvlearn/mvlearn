@@ -3,8 +3,10 @@ language: python
 branches:
   only:
   - master
+  - 0.0.2
 
 python:
+  - '3.8'
   - '3.7'
   - '3.6'
 

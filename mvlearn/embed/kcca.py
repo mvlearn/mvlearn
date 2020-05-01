@@ -57,6 +57,11 @@ class KCCA(BaseEmbed):
     mrank : int, default = 50
             The rank of the kernel matrix
 
+    Attributes
+    ----------
+    weights_ : list of array-likes
+                Canonical weights for each view.
+
     Notes
     -----
     This class implements kernel canonical correlation analysis
@@ -219,6 +224,9 @@ class KCCA(BaseEmbed):
             The data for kcca to fit to.
             Each sample will receive its own embedding.
 
+        y : ignored
+            Included for API compliance.
+
         Returns
         -------
         self : returns an instance of self
@@ -322,9 +330,6 @@ class KCCA(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
             The data for kcca to fit to.
             Each sample will receive its own embedding.
-
-        weights_ : list of array-likes
-                   Canonical weights
 
         Returns
         -------
