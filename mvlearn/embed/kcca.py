@@ -50,10 +50,12 @@ class KCCA(BaseEmbed):
           Regularization parameter
     decomp : string, default = 'full'
              Decomposition type
-        - value can be only be 'full'
+        - value can be 'full' or 'icd'
     method : string, default = 'kettenring-like'
              Decomposition method
         - value can be only be 'kettenring-like'
+    mrank : int, default = 50
+            The rank of the kernel matrix
 
     Notes
     -----
@@ -171,7 +173,8 @@ class KCCA(BaseEmbed):
         reg=0.1,
         decomp='full',
         method='kettenring-like',
-        mrank=50
+        mrank=50,
+        precision=0.000001
     ):
         self.n_components = n_components
         self.ktype = ktype
@@ -182,6 +185,7 @@ class KCCA(BaseEmbed):
         self.decomp = decomp
         self.method = method
         self.mrank = mrank
+        self.precision = precision
 
         # Error Handling
         if self.n_components < 0 or not type(self.n_components) == int:
@@ -199,6 +203,8 @@ class KCCA(BaseEmbed):
         if self.constant < 0 or not (type(self.constant) == float
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
+        
+        #add errors for mrank and precision
 
     def fit(self, Xs, y=None):
         r"""
@@ -219,13 +225,9 @@ class KCCA(BaseEmbed):
 
         """
         Xs = check_Xs(Xs, multiview=True)
-        
-        self.X = Xs[0]
-        self.Y = Xs[1]
-        
-        #change back to below
-        #self.X = _center_norm(Xs[0])
-        #self.Y = _center_norm(Xs[1])
+
+        self.X = _center_norm(Xs[0])
+        self.Y = _center_norm(Xs[1])
 
         N = len(self.X)
 
@@ -274,17 +276,15 @@ class KCCA(BaseEmbed):
 
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
             G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
-            
-            minrank = min(len(G1[0]),len(G2[0]))
-            self.n_components = min(minrank,self.n_components)
-            
+
             N1 = len(G1[0])
             N2 = len(G2[0])
-            Z11 = np.zeros(N1)
-            Z22 = np.zeros(N2)
             Z12 = np.zeros((N1, N2))
             I11 = np.eye(N1)
             I22 = np.eye(N2)
+
+            minrank = min(N1,N2)
+            self.n_components = min(minrank,self.n_components)
 
             # Method: Kettenring-like generalizable formulation
             if self.method == "kettenring-like":
@@ -292,22 +292,21 @@ class KCCA(BaseEmbed):
                               np.c_[G2.T@G1, G2.T@G2]]
                 D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
                           np.c_[Z12.T, G2.T@G2+self.reg*I22]]
-            
+
             # Solve eigenvalue problem
             betas, alphas = linalg.eig(R, D)
-    
+
             # Top eigenvalues
             ind = np.argsort(betas)[::-1][:self.n_components]
-    
+
             # Extract relevant coordinates and normalize to unit length
             weight1 = alphas[:N1, ind]
             weight2 = alphas[N1:, ind]
-    
+
             weight1 /= np.linalg.norm(weight1, axis=0)
             weight2 /= np.linalg.norm(weight2, axis=0)
-    
-            self.weights_ = np.real([weight1, weight2])
 
+            self.weights_ = np.real([weight1, weight2])
 
         return self
 
@@ -367,12 +366,14 @@ class KCCA(BaseEmbed):
             Kx_t_icd = _make_icd_kernel(_center_norm(Xs[0]),
                                         self.ktype,
                                         self.sigma,
-                                        self.mrank)
+                                        self.mrank,
+                                        self.precision)
             Ky_t_icd = _make_icd_kernel(_center_norm(Xs[1]),
                                         self.ktype,
                                         self.sigma,
-                                        self.mrank)
-    
+                                        self.mrank,
+                                        self.precision)
+
             for i in range(weight1.shape[1]):
                 comp1.append(Kx_t_icd@weight1[:, i])
                 comp2.append(Ky_t_icd@weight2[:, i])
@@ -391,8 +392,6 @@ def _center_norm(x):
 
 
 def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
-
-
     # Linear kernel
     if ktype == "linear":
         return (X @ Y.T)
@@ -409,18 +408,18 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
     
     # Gaussian diagonal kernel
     elif ktype == "gaussian-diag":
-        # N0l@@N0r
-        return np.exp(-np.sum(np.power((X-Y), 2),axis=1)/(2*sigma**2))
+        return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
 
-def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0, mrank=50): 
+
+def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0,
+                     mrank=50, precision = 0.000001): 
     N = len(X)
-    precision = 0.000001
 
     perm = np.arange(N)
     d = np.zeros(N)
     G = np.zeros((N, mrank))
     subset = np.zeros(mrank)
-    
+
     for i in range(mrank):
         x_new = X[perm[i:N+1], :]
         if i == 0:
@@ -429,34 +428,28 @@ def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0, mrank=50):
             fk2 = _make_kernel(x_new, x_new, "gaussian-diag").T
             fk = np.sum(np.power(G[i:N+1, :i], 2), axis=1).T
             d[i:N+1] = (fk2 - fk)
-        
-        #dtrace stuff
+
         dtrace = sum(d[i:N+1])
         if dtrace <= 0:
             print("Warning: negative diagonal entry")
-        
+
         if dtrace <= precision:
             G = G[:,  :i] 
             subset = subset[ :i]
             break
-        
         
         j = np.argmax(d[i:N+1])
         m2 = np.max(d[i:N+1])
         j = j+i
         m1 = np.sqrt(m2)
         subset[i] = j
-        
+
         perm[ [i, j] ] = perm[ [j, i] ]
         G[[i, j], :i] = G[[j, i], :i]
         G[i, i] = m1
-        
+
         z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :], "gaussian", sigma)
         z2 =(G[i+1:N+1, :i]@(G[i, :i].T))
-        
+
         G[i+1:N+1, i] = (z1 - z2)/m1
-        
-    ind = np.argsort(perm)
-    return G[ind, :]
-
-
+    return G[np.argsort(perm), :]
