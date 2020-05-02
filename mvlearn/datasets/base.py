@@ -69,6 +69,12 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> # Load 6-view dataset with all 10 classes
     >>> mv_data, labels = load_UCImultifeature()
+    >>> print(len(mv_data))
+    6
+    >>> print([mv_data[i].shape for i in range(6)])
+    [(2000, 76), (2000, 216), (2000, 64), (2000, 240), (2000, 47), (2000, 6)]
+    >>> print(labels.shape)
+    (2000,)
 
     """
 
