@@ -3,6 +3,7 @@ from mvlearn.datasets import GaussianMixture
 from numpy.testing import assert_equal
 import numpy as np
 
+
 n = 100
 gm_uni = GaussianMixture([0,1], np.eye(2), n)
 mu = [[-1,0], [1,0]]
