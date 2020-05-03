@@ -79,13 +79,9 @@ release into it (with torch dependencies included). For more information
 about using conda-forge feedstocks, see the `about page <https://conda-forge.org/>`_,
 or the `mvlearn feedstock <https://github.com/conda-forge/mvlearn-feedstock>`_.
 
-First, add conda-forge to your channels within conda::
+To install ``mvlearn`` with conda, run::
 
-	$ conda config --add channels conda-forge
-
-Then, with this channel enabled, install ``mvlearn`` with::
-
-	$ conda install mvlearn
+	$ conda install -c conda-forge mvlearn
 
 To list all versions of ``mvlearn`` available on your platform, use::
 
