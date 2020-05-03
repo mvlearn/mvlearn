@@ -1,8 +1,5 @@
 # mvlearn
 
-[![Python](https://img.shields.io/badge/python-3.6-blue.svg)]()
-[![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
-[![Python](https://img.shields.io/badge/python-3.8-blue.svg)]()
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/neurodata/mvlearn.svg?branch=master)](https://travis-ci.com/neurodata/mvlearn)
 [![Documentation Status](https://readthedocs.org/projects/mvlearn/badge/?version=latest)](https://mvlearn.readthedocs.io/en/latest/?badge=latest)
