@@ -49,7 +49,6 @@ mvlearn is a Python package of multi-view learning tools.
    tutorials
    references/index
    contributing
-   changelog
    license
 
 .. toctree::
