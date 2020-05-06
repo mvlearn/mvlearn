@@ -54,10 +54,10 @@ class KCCA(BaseEmbed):
     method : string, default = 'kettenring-like'
              Decomposition method
         - value can be only be 'kettenring-like'
-    mrank : int, default = 50
+    mrank : int, default = 2
             The rank of the kernel matrix
     precision: float, default = 0.000001
-               Precision of computing the ICD matrix
+               Precision of computing the ICD kernel matrix
 
     Attributes
     ----------
@@ -180,7 +180,7 @@ class KCCA(BaseEmbed):
         reg=0.1,
         decomp='full',
         method='kettenring-like',
-        mrank=50,
+        mrank=2,
         precision=0.000001
     ):
         self.n_components = n_components
@@ -211,12 +211,11 @@ class KCCA(BaseEmbed):
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
         if self.mrank < 0 or self.mrank > self.n_components or not \
-        (type(self.constant) == int):
+            (type(self.constant) == int):
             raise ValueError("mrank must be a positive integer no greater \
                              than the number of components")
         if self.precision < 0 or not type(self.precision) == float:
             raise ValueError("constant must be a positive float")
-
 
     def fit(self, Xs, y=None):
         r"""
@@ -259,7 +258,7 @@ class KCCA(BaseEmbed):
                               self.degree, self.sigma)
             Kx = N0l @ Kx @ N0r
             Ky = N0l @ Ky @ N0r
-            
+
             Id = np.eye(N)
             Z = np.zeros((N, N))
 
@@ -267,20 +266,20 @@ class KCCA(BaseEmbed):
             if self.method == "kettenring-like":
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
-            
+
             # Solve eigenvalue problem
             betas, alphas = linalg.eig(R, D)
-    
+
             # Top eigenvalues
             ind = np.argsort(betas)[::-1][:self.n_components]
-    
+
             # Extract relevant coordinates and normalize to unit length
             weight1 = alphas[:N, ind]
             weight2 = alphas[N:, ind]
-    
+
             weight1 /= np.linalg.norm(weight1, axis=0)
             weight2 /= np.linalg.norm(weight2, axis=0)
-    
+
             self.weights_ = np.real([weight1, weight2])
 
         elif self.decomp == "icd":
@@ -291,7 +290,7 @@ class KCCA(BaseEmbed):
 
             G2 = _make_icd_kernel(self.Y, self.ktype,
                                   self.sigma, self.mrank)
-            
+
             # Remove mean
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
             G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
@@ -303,8 +302,8 @@ class KCCA(BaseEmbed):
             I11 = np.eye(N1)
             I22 = np.eye(N2)
 
-            minrank = min(N1,N2)
-            self.n_components = min(minrank,self.n_components)
+            minrank = min(N1, N2)
+            self.n_components = min(minrank, self.n_components)
 
             # Method: Kettenring-like generalizable formulation
             if self.method == "kettenring-like":
@@ -354,13 +353,13 @@ class KCCA(BaseEmbed):
             raise NameError("kCCA has not been trained.")
 
         Xs = check_Xs(Xs, multiview=True)
-        
+
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
-        
+
         comp1 = []
         comp2 = []
-        
+
         if self.decomp == "full":
             Kx_transform = _make_kernel(_center_norm(Xs[0]),
                                         _center_norm(self.X),
@@ -374,11 +373,11 @@ class KCCA(BaseEmbed):
                                         self.constant,
                                         self.degree,
                                         self.sigma)
-    
+
             for i in range(weight1.shape[1]):
                 comp1.append(Kx_transform@weight1[:, i])
                 comp2.append(Ky_transform@weight2[:, i])
-                
+
         elif self.decomp == "icd":
             Kx_t_icd = _make_icd_kernel(_center_norm(Xs[0]),
                                         self.ktype,
@@ -422,18 +421,18 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
         distmat = euclidean_distances(X, Y, squared=True)
 
         return np.exp(-distmat / (2 * sigma ** 2))
-    
+
     # Gaussian diagonal kernel
     elif ktype == "gaussian-diag":
         return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
 
 
-def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0,
-                     mrank=50, precision = 0.000001): 
+def _make_icd_kernel(X, ktype="gaussian-diag", sigma=1.0,
+                     mrank=50, precision=0.000001):
     N = len(X)
 
-    perm = np.arange(N) # Permutation vector
-    d = np.zeros(N) # Diagonal of the residual kernel matrix
+    perm = np.arange(N)  # Permutation vector
+    d = np.zeros(N)  # Diagonal of the residual kernel matrix
     G = np.zeros((N, mrank))
     subset = np.zeros(mrank)
 
@@ -452,24 +451,24 @@ def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0,
             print("Warning: negative diagonal entry")
 
         if dtrace <= precision:
-            G = G[:,  :i] 
-            subset = subset[ :i]
+            G = G[:, :i]
+            subset = subset[:i]
             break
-        
+
         # Find new best element
         j = np.argmax(d[i:N+1])
         m2 = np.max(d[i:N+1])
-        j = j+i # Take into account the offset i
+        j = j+i  # Take into account the offset i
         m1 = np.sqrt(m2)
         subset[i] = j
 
-        perm[[i, j]] = perm[[j, i]] # Permute elements i and j
-        G[[i, j], :i] = G[[j, i], :i] # Permute rows i and j
-        G[i, i] = m1 # New diagonal elemtn
-        
+        perm[[i, j]] = perm[[j, i]]  # Permute elements i and j
+        G[[i, j], :i] = G[[j, i], :i]  # Permute rows i and j
+        G[i, i] = m1  # New diagonal elemtn
+
         # Calculate the ith columnn- introduces some numerical error
         z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :],
                           "gaussian", sigma)
-        z2 =(G[i+1:N+1, :i]@(G[i, :i].T))
+        z2 = (G[i+1:N+1, :i]@(G[i, :i].T))
         G[i+1:N+1, i] = (z1 - z2)/m1
     return G[np.argsort(perm), :]
