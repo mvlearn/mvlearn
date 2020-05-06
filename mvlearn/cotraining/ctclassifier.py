@@ -124,22 +124,23 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Notes
     -----
-    Multi-view co-training is most helpful for tasks in semi-supervised where
-    each view offers unique information not seen in the other. As is shown in
-    the example notebooks for using this algorithm, multi-view co-training
-    can provide good classification results even when number of unlabeled
-    samples far exceeds the number of labeled samples. This classifier uses 2
-    classifiers which work individually on each view but which share
-    information and thus result in improved performance over looking at the
-    views completely separately or even when concatenating the views to get
-    more features in a single-view setting. The classifier can be initialized
-    with or without the classifiers desired for each view being specified, but
-    if the classifier for a certain view is specified, then it must support a
+    Multi-view co-training is most helpful for tasks in semi-supervised
+    learning where each view offers unique information not seen in the
+    other. As is shown in the example notebooks for using this algorithm,
+    multi-view co-training can provide good classification results even
+    when number of unlabeled samples far exceeds the number of labeled
+    samples. This classifier uses 2 classifiers which work individually
+    on each view but which share information and thus result in improved
+    performance over looking at the views completely separately or even
+    when concatenating the views to get more features in a single-view
+    setting. The classifier can be initialized with or without the
+    classifiers desired for each view being specified, but if the
+    classifier for a certain view is specified, then it must support a
     predict_proba() method in order to give a sense of the most likely labels
     for different examples. This is because the algorithm must be able to
     determine which of the training samples it is most confident about during
-    training epochs. The algorithm, as first proposed by Blum and Mitchell, is
-    described in detail below.
+    training epochs. The algorithm, as first proposed by Blum and Mitchell,
+    is described in detail below.
 
     *Algorithm*
 
