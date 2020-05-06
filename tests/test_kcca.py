@@ -159,5 +159,5 @@ def test_icd_mrank():
 
 # Test make_icd_kernel
 def test_make_icd_kernel(): 
-    g_icd_kernel = _make_icd_kernel(x, sigma=1.0, degree=2, mrank = 50)
+    g_icd_kernel = _make_icd_kernel(x, mrank = 50)
     assert (len(g_icd_kernel) == 50)
