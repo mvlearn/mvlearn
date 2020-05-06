@@ -56,6 +56,8 @@ class KCCA(BaseEmbed):
         - value can be only be 'kettenring-like'
     mrank : int, default = 50
             The rank of the kernel matrix
+    precision: float, default = 0.000001
+               Precision of computing the ICD matrix
 
     Attributes
     ----------
@@ -249,7 +251,8 @@ class KCCA(BaseEmbed):
             Nr = len(self.Y)
             N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
             N0r = np.eye(Nr) - 1 / Nr * np.ones(Nr)
-            
+
+            # Compute kernel matrices
             Kx = _make_kernel(self.X, self.X, self.ktype, self.constant,
                               self.degree, self.sigma)
             Ky = _make_kernel(self.Y, self.Y, self.ktype, self.constant,
@@ -281,15 +284,19 @@ class KCCA(BaseEmbed):
             self.weights_ = np.real([weight1, weight2])
 
         elif self.decomp == "icd":
+
+            # Compute the ICD kernel matrices
             G1 = _make_icd_kernel(self.X, self.ktype,
                                   self.sigma, self.mrank)
 
             G2 = _make_icd_kernel(self.Y, self.ktype,
                                   self.sigma, self.mrank)
-
+            
+            # Remove mean
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
             G2 = G2 - numpy.matlib.repmat(np.mean(G2, axis=0), N, 1)
 
+            # Ones and Zeros
             N1 = len(G1[0])
             N2 = len(G2[0])
             Z12 = np.zeros((N1, N2))
@@ -425,19 +432,20 @@ def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0,
                      mrank=50, precision = 0.000001): 
     N = len(X)
 
-    perm = np.arange(N)
-    d = np.zeros(N)
+    perm = np.arange(N) # Permutation vector
+    d = np.zeros(N) # Diagonal of the residual kernel matrix
     G = np.zeros((N, mrank))
     subset = np.zeros(mrank)
 
     for i in range(mrank):
         x_new = X[perm[i:N+1], :]
         if i == 0:
+            # Diagonal of kernel matrix
             d[i:N+1] = _make_kernel(x_new, x_new, "gaussian-diag").T
         else:
-            fk2 = _make_kernel(x_new, x_new, "gaussian-diag").T
-            fk = np.sum(np.power(G[i:N+1, :i], 2), axis=1).T
-            d[i:N+1] = (fk2 - fk)
+            # Update diagonal of residual kernel matrix
+            d[i:N+1] = (_make_kernel(x_new, x_new, "gaussian-diag").T -
+                        np.sum(np.power(G[i:N+1, :i], 2), axis=1).T)
 
         dtrace = sum(d[i:N+1])
         if dtrace <= 0:
@@ -448,18 +456,20 @@ def _make_icd_kernel(X, ktype = "gaussian-diag", sigma=1.0,
             subset = subset[ :i]
             break
         
+        # Find new best element
         j = np.argmax(d[i:N+1])
         m2 = np.max(d[i:N+1])
-        j = j+i
+        j = j+i # Take into account the offset i
         m1 = np.sqrt(m2)
         subset[i] = j
 
-        perm[ [i, j] ] = perm[ [j, i] ]
-        G[[i, j], :i] = G[[j, i], :i]
-        G[i, i] = m1
-
-        z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :], "gaussian", sigma)
+        perm[[i, j]] = perm[[j, i]] # Permute elements i and j
+        G[[i, j], :i] = G[[j, i], :i] # Permute rows i and j
+        G[i, i] = m1 # New diagonal elemtn
+        
+        # Calculate the ith columnn- introduces some numerical error
+        z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :],
+                          "gaussian", sigma)
         z2 =(G[i+1:N+1, :i]@(G[i, :i].T))
-
         G[i+1:N+1, i] = (z1 - z2)/m1
     return G[np.argsort(perm), :]
