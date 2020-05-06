@@ -208,8 +208,13 @@ class KCCA(BaseEmbed):
         if self.constant < 0 or not (type(self.constant) == float
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
-        
-        #add errors for mrank and precision
+        if self.mrank < 0 or self.mrank > self.n_components or not \
+        (type(self.constant) == int):
+            raise ValueError("mrank must be a positive integer no greater \
+                             than the number of components")
+        if self.precision < 0 or not type(self.precision) == float:
+            raise ValueError("constant must be a positive float")
+
 
     def fit(self, Xs, y=None):
         r"""
