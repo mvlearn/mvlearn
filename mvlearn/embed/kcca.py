@@ -211,8 +211,7 @@ class KCCA(BaseEmbed):
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
         if self.decomp == "icd":
-            if self.mrank < 0 or self.mrank > self.n_components or not \
-                          (type(self.constant) == int):
+            if self.mrank < 0 or not (type(self.mrank) == int):
                 raise ValueError("mrank must be a positive integer no greater \
                                  than the number of components")
             if self.precision < 0 or not type(self.precision) == float:
