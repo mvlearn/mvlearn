@@ -141,8 +141,8 @@ class KCCA(BaseEmbed):
     such that :math:`A $\approx$ $\tilde{L}$$\tilde{L}$'`. The algorithm skips
     a column if its diagonal element is small. The diagonal elements to the
     right of the column being updated are also updated. To select a column to
-    update, we find the largest diagonal element and pivot the element to
-    the current diagonal by exchaning the corresponding rows and columns. The
+    update, it finds the largest diagonal element and pivots the element to
+    the current diagonal by exchanging the corresponding rows and columns. The
     algorithm ends when all diagonal elemnts are below a specified accuracy.
 
     ICD with rank :math:`m` yields storage requirements of :math:`O(mn)`
@@ -158,7 +158,7 @@ class KCCA(BaseEmbed):
     .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of
             variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
     .. [#3KCCA] M. I. Jordan, "Regularizing KCCA, Cholesky Decomposition",
-            Lecture 9 Notes: CS281B/Stat241B, University of California, 
+            Lecture 9 Notes: CS281B/Stat241B, University of California,
             Berkeley.
 
 
