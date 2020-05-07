@@ -76,6 +76,15 @@ class MultiviewSpectralClustering(BaseEstimator):
         Only used if nearest neighbors is selected for affinity. The
         number of neighbors to use for the nearest neighbors kernel.
 
+    Attributes
+    ----------
+    labels_ : array-like, shape (n_samples)
+        Cluster labels for each point.
+
+    embedding_ : array-like, shape (n_samples, n_clusters)
+        The final spectral representation of the data to be used as input
+        for the KMeans clustering step.
+
     Notes
     -----
     Multi-view spectral clustering adapts the spectral clustering algorithm
@@ -135,7 +144,6 @@ class MultiviewSpectralClustering(BaseEstimator):
         #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
            is assigned to cluster c by the k-means algorithm.
 
-
     References
     ----------
     .. [#1Clu] Abhishek Kumar and Hal Daumé. A Co-training Approach for
@@ -172,6 +180,8 @@ class MultiviewSpectralClustering(BaseEstimator):
         self.affinity = affinity
         self.gamma = gamma
         self.n_neighbors = n_neighbors
+        self.labels_ = None
+        self.embedding_ = None
 
     def _affinity_mat(self, X):
 
@@ -320,11 +330,10 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         return Xs
 
-    def fit_predict(self, Xs):
+    def fit(self, Xs):
 
         r'''
-        Performs clustering on the multiple views of data and returns
-        the cluster labels.
+        Performs clustering on the multiple views of data.
 
         Parameters
         ----------
@@ -339,8 +348,7 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
-            The predicted cluster labels for each sample.
+        self : returns an instance of self.
         '''
 
         # Perform checks on the data and inputted parameters
@@ -380,14 +388,40 @@ class MultiviewSpectralClustering(BaseEstimator):
         # Performing k-means clustering
         kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init,
                         random_state=self.random_state)
-        predictions = None
+
         if self.info_view is not None:
             # Use a single view if one was previously designated
-            predictions = kmeans.fit_predict(U_mats[self.info_view])
+            self.embedding_ = U_mats[self.info_view]
+            self.labels_ = kmeans.fit_predict(self.embedding_)
         else:
             # Otherwise, perform columwise concatenation across views
             # and use result for clustering
-            V_mat = np.hstack(U_mats)
-            predictions = kmeans.fit_predict(V_mat)
+            self.embedding_ = np.hstack(U_mats)
+            self.labels_ = kmeans.fit_predict(self.embedding_)
 
-        return predictions
+    def fit_predict(self, Xs):
+
+        r'''
+        Performs clustering on the multiple views of data and returns
+        the cluster labels.
+
+        Parameters
+        ----------
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size n_views, corresponding to the number
+            of views of data. Each view can have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        labels : array-like, shape (n_samples,)
+        The predicted cluster labels for each sample.
+        '''
+
+        self.fit(Xs)
+        labels = self.labels_
+        return labels

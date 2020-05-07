@@ -43,6 +43,11 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
     n_clusters : int
         The number of clusters
 
+    v_lambda : float, optional, default=2
+        The regularization parameter. This parameter trades-off the spectral
+        clustering objectives with the degree of agreement between each pair
+        of views in the new representation. Must be a positive value.
+
     random_state : int, optional, default=None
         Determines random number generation for k-means.
 
@@ -73,10 +78,18 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         Only used if nearest neighbors is selected for affinity. The
         number of neighbors to use for the nearest neighbors kernel.
 
-    v_lambda : float, optional, default=2
-        The regularization parameter. This parameter trades-off the spectral
-        clustering objectives with the degree of agreement between each pair
-        of views in the new representation. Must be a positive value.
+    Attributes
+    ----------
+    labels_ : array-like, shape (n_samples)
+        Cluster labels for each point.
+
+    embedding_ : array-like, shape (n_samples, n_clusters)
+        The final spectral representation of the data to be used as input
+        for the KMeans clustering step.
+
+    objective_ : array-like, shape (n_views, n_iterations)
+        The value of the spectral clustering objective for each view at
+        the end of each iteration.
 
     Notes
     -----
@@ -100,7 +113,23 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
     .. [#3Clu] Kumar A, Rai P, Daumé H (2011) Co-regularized multi-view
             spectral clustering. Adv Neural Inform Process Syst 24:1413–1421
 
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.cluster import MultiviewCoRegSpectralClustering
+    >>> from sklearn.metrics import normalized_mutual_info_score as nmi_score
+    >>> # Get 5-class data
+    >>> data, labels = load_UCImultifeature(select_labeled = list(range(5)))
+    >>> mv_data = data[:2]  # first 2 views only
+    >>> mv_spectral = MultiviewCoRegSpectralClustering(n_clusters=5,
+    ...     random_state=10, n_init=100)
+    >>> mv_clusters = mv_spectral.fit_predict(mv_data)
+    >>> nmi = nmi_score(labels, mv_clusters, average_method='arithmetic')
+    >>> print('{0:.3f}'.format(nmi))
+    0.663
     '''
+
     def __init__(self, n_clusters=2, v_lambda=2, random_state=None,
                  info_view=None, max_iter=10, n_init=10, affinity='rbf',
                  gamma=None, n_neighbors=10):
@@ -111,8 +140,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
                          n_neighbors=n_neighbors)
 
         self.v_lambda = v_lambda
-        self._objective = None
-        self._embedding = None
+        self.objective_ = None
 
     def _init_umat(self, X):
 
@@ -147,11 +175,10 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
         return u_mat, laplacian, obj_val
 
-    def fit_predict(self, Xs):
+    def fit(self, Xs):
 
         r'''
-        Performs clustering on the multiple views of data and returns
-        the cluster labels.
+        Performs clustering on the multiple views of data.
 
         Parameters
         ----------
@@ -166,8 +193,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
-            The predicted cluster labels for each sample.
+        self : returns an instance of self.
         '''
 
         check_u_mats = list()
@@ -222,16 +248,43 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
                                                         k=self.n_clusters)
             obj_vals[0, it] = np.sum(d_mat)
             check_u_mats.append(U_mats[0])
-        self._objective = obj_vals
+        self.objective_ = obj_vals
 
         # Create final spectral embedding to cluster
         V_mat = np.hstack(U_mats)
         norm_v = np.sqrt(np.diag(V_mat @ V_mat.T))
         norm_v[norm_v == 0] = 1
-        self._embedding = np.linalg.inv(np.diag(norm_v)) @ V_mat
+        self.embedding_ = np.linalg.inv(np.diag(norm_v)) @ V_mat
 
         # Perform kmeans clustering with embedding
         kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init,
                         random_state=self.random_state)
-        predictions = kmeans.fit_predict(V_mat)
-        return predictions
+        self.labels_ = kmeans.fit_predict(self.embedding_)
+        return self
+
+    def fit_predict(self, Xs):
+
+        r'''
+        Performs clustering on the multiple views of data and returns
+        the cluster labels.
+
+        Parameters
+        ----------
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size n_views, corresponding to the number
+            of views of data. Each view can have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        labels : array-like, shape (n_samples,)
+            The predicted cluster labels for each sample.
+        '''
+
+        self.fit(Xs)
+        labels = self.labels_
+        return labels
