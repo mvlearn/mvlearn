@@ -419,15 +419,22 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
     # Gaussian kernel
     elif ktype == "gaussian":
         distmat = euclidean_distances(X, Y, squared=True)
-
         return np.exp(-distmat / (2 * sigma ** 2))
+
+    # Linear diagonal kernel
+    elif ktype == "linear-diag":
+        return (X @ Y.T).diagonal()
+
+    # Polynomial diagonal kernel
+    elif ktype == "poly-diag":
+        return ((X @ Y.T + constant) ** degree).diagonal()
 
     # Gaussian diagonal kernel
     elif ktype == "gaussian-diag":
         return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
 
 
-def _make_icd_kernel(X, ktype="gaussian-diag", sigma=1.0,
+def _make_icd_kernel(X, ktype="gaussian", sigma=1.0,
                      mrank=50, precision=0.000001):
     N = len(X)
 
@@ -440,10 +447,10 @@ def _make_icd_kernel(X, ktype="gaussian-diag", sigma=1.0,
         x_new = X[perm[i:N+1], :]
         if i == 0:
             # Diagonal of kernel matrix
-            d[i:N+1] = _make_kernel(x_new, x_new, "gaussian-diag").T
+            d[i:N+1] = _make_kernel(x_new, x_new, ktype + "-diag").T
         else:
             # Update diagonal of residual kernel matrix
-            d[i:N+1] = (_make_kernel(x_new, x_new, "gaussian-diag").T -
+            d[i:N+1] = (_make_kernel(x_new, x_new, ktype + "-diag").T -
                         np.sum(np.power(G[i:N+1, :i], 2), axis=1).T)
 
         dtrace = sum(d[i:N+1])
@@ -468,7 +475,7 @@ def _make_icd_kernel(X, ktype="gaussian-diag", sigma=1.0,
 
         # Calculate the ith columnn- introduces some numerical error
         z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :],
-                          "gaussian", sigma)
+                          ktype, sigma)
         z2 = (G[i+1:N+1, :i]@(G[i, :i].T))
         G[i+1:N+1, i] = (z1 - z2)/m1
     return G[np.argsort(perm), :]
