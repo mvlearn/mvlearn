@@ -49,7 +49,8 @@ class KCCA(BaseEmbed):
     reg : float, default = 0.1
           Regularization parameter
     decomp : string, default = 'full'
-             Decomposition type. ICD can reduce computation times.
+             Decomposition type. Incomplete Cholesky Decomposition (ICD)
+             can reduce computation times and storage
         - value can be 'full' or 'icd'
     method : string, default = 'kettenring-like'
              Decomposition method
@@ -129,6 +130,24 @@ class KCCA(BaseEmbed):
         {\sqrt{(\alpha'K_x^2\alpha+\kappa\alpha'K_x\alpha)
         \cdot (\beta'K_y^2\beta + \kappa\beta'K_y\beta)}}
 
+    Kernel matrices grow exponentially with the size of data. They not only
+    have to store :math:`n^2` elements, but also face the complexity of matrix
+    eigenvalue problems. In a Cholesky decomposition a positive definite
+    matrix A is decomposed to a lower triangular matrix :math:`L` :
+    :math:`A = LL'`.
+
+    The Incomplete Cholesky Decomposition (ICD) looks for a low rank
+    approximation of :math:`L` to reduce the cost of operations of the matrix
+    such that :math:`A $\approx$ $\tilde{L}$$\tilde{L}$'`. The algorithm skips
+    a column if its diagonal element is small. The diagonal elements to the
+    right of the column being updated are also updated. To select a column to
+    update, we find the largest diagonal element and pivot the element to
+    the current diagonal by exchaning the corresponding rows and columns. The
+    algorithm ends when all diagonal elemnts are below a specified accuracy.
+
+    ICD with rank :math:`m` yields storage requirements of :math:`O(mn)`
+    instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead of
+    :math:`O(n^3)`[#3KCCA]_.
 
     References
     ----------
@@ -138,6 +157,9 @@ class KCCA(BaseEmbed):
             Volume 16 (12), Pages 2639--2664, 2004.
     .. [#2KCCA] J. R. Kettenring, “Canonical analysis of several sets of
             variables,”Biometrika, vol.58, no.3, pp.433–451,1971.
+    .. [#3KCCA] M. I. Jordan, "Regularizing KCCA, Cholesky Decomposition",
+            Lecture 9 Notes: CS281B/Stat241B, University of California, 
+            Berkeley.
 
 
     Examples

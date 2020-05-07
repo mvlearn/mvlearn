@@ -163,7 +163,7 @@ def test_precision():
 
 # Test that _zscore works
 def test_icd_mrank():
-    kcca_g_icd = KCCA(ktype ="gaussian", sigma = 1.0, n_components = 2, reg = 0.01, decomp = 'icd', mrank = 50)
+    kcca_g_icd = KCCA(ktype ="gaussian", sigma = 1.0, n_components = 2, reg = 0.01, decomp = 'icd', mrank = 2)
     icd = kcca_g_icd.fit_transform([x, y])
     assert (len(icd) == 2)
 
