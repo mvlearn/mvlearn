@@ -191,7 +191,8 @@ class GaussianMixture:
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
-        Transforms one latent view by specified transformation and adds noise.
+        Transforms one latent view by specified transformation and
+        additional dimensions of independent noise.
 
         Parameters
         ----------
