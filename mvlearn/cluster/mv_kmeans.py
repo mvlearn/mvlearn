@@ -454,7 +454,6 @@ class MultiviewKMeans(BaseKMeans):
  
         '''
 
-        
         # Initialize centroids for clustering
         centroids = self._init_centroids(Xs)
 
@@ -466,6 +465,9 @@ class MultiviewKMeans(BaseKMeans):
         o_funct = [None, None]
         iter_stall = [0, 0]
         iter_num = 0
+        max_iter = np.inf
+        if self.max_iter is not None:
+            max_iter = self.max_iter
 
         # While objective is still decreasing and iterations < max_iter
         while(max(iter_stall) < self.patience and iter_num < max_iter):
@@ -531,12 +533,10 @@ class MultiviewKMeans(BaseKMeans):
             raise ValueError(msg)
 
         # Type and value checking for max_iter parameter
-        max_iter = np.inf
         if self.max_iter is not None:
             if not (isinstance(self.max_iter, int) and (self.max_iter > 0)):
                 msg = 'max_iter must be a positive integer'
                 raise ValueError(msg)
-            max_iter = self.max_iter
 
         # Type and value checking for n_init parameter
         if not (isinstance(self.n_init, int) and (self.n_init > 0)):
@@ -554,18 +554,15 @@ class MultiviewKMeans(BaseKMeans):
             n_init = 1
 
         # Run multi-view kmeans for n_init different centroid initializations
-        min_inertia = np.inf
-        best_centroids = None
-
-
         run_results = Parallel(n_jobs=self.n_jobs)(
             delayed(self._one_init)(Xs) for _ in range(n_init))
 
         # Zip results and find which has max inertia
-
+        intertias, centroids = zip(*run_results)
+        max_ind = np.argmax(intertias)
         
         # Compute final cluster centroids
-        self._final_centroids(Xs, best_centroids)
+        self._final_centroids(Xs, centroids[max_ind])
 
         return self
 
@@ -586,7 +583,7 @@ class MultiviewKMeans(BaseKMeans):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
+        labels : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
 
         '''
@@ -605,6 +602,6 @@ class MultiviewKMeans(BaseKMeans):
         dist1 = self._compute_dist(Xs[0], self.centroids_[0])
         dist2 = self._compute_dist(Xs[1], self.centroids_[1])
         dist_metric = dist1 + dist2
-        predictions = np.argmin(dist_metric, axis=1).flatten()
+        labels = np.argmin(dist_metric, axis=1).flatten()
 
-        return predictions
+        return labels
