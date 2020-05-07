@@ -145,7 +145,17 @@ def test_no_weights():
 def test_mrank_neg():
     with pytest.raises(ValueError):
         kcca_z = KCCA(ktype ="poly", decomp = "icd", reg = 0.001, mrank = -1)
-        
+
+# Test mrank error
+def test_mrank_large():
+    with pytest.raises(ValueError):
+        kcca_y = KCCA(ktype ="poly", decomp = "icd", reg = 0.001, mrank = 200)
+
+# Test method error
+def test_method():
+    with pytest.raises(ValueError):
+        kcca_v = KCCA(ktype ="poly", method = "test", reg = 0.001, mrank = 5)
+
 # Test precision error
 def test_precision():
     with pytest.raises(ValueError):

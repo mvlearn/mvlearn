@@ -49,7 +49,7 @@ class KCCA(BaseEmbed):
     reg : float, default = 0.1
           Regularization parameter
     decomp : string, default = 'full'
-             Decomposition type
+             Decomposition type. ICD can reduce computation times.
         - value can be 'full' or 'icd'
     method : string, default = 'kettenring-like'
              Decomposition method
@@ -211,11 +211,14 @@ class KCCA(BaseEmbed):
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
         if self.decomp == "icd":
-            if self.mrank < 0 or not (type(self.mrank) == int):
+            if self.mrank < 0 or self.mrank > self.n_components \
+                          or not (type(self.mrank) == int):
                 raise ValueError("mrank must be a positive integer no greater \
                                  than the number of components")
             if self.precision < 0 or not type(self.precision) == float:
                 raise ValueError("precision must be a positive float")
+        if not self.method == "kettenring-like":
+            raise ValueError("method must be 'kettenring-like'")
 
     def fit(self, Xs, y=None):
         r"""
