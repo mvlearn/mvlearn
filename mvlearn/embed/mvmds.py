@@ -44,7 +44,7 @@ class MVMDS(BaseEmbed):
 
     Attributes
     ----------
-    components: numpy.ndarray, shape(n_samples, n_components)
+    components_: numpy.ndarray, shape(n_samples, n_components)
         Joint transformed MVMDS components of the input views.
 
     Notes
@@ -116,7 +116,7 @@ class MVMDS(BaseEmbed):
     def __init__(self, n_components=None, num_iter=15):
 
         super().__init__()
-        self.components = None
+        self.components_ = None
         self.n_components = n_components
         self.num_iter = num_iter
 
@@ -246,7 +246,7 @@ class MVMDS(BaseEmbed):
             B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
             mat[i] = B
 
-        self.components = self._commonpcs(mat)
+        self.components_ = self._commonpcs(mat)
 
     def fit_transform(self, Xs):
 
@@ -269,4 +269,4 @@ class MVMDS(BaseEmbed):
         Xs = check_Xs(Xs)
         self.fit(Xs)
 
-        return self.components
+        return self.components_

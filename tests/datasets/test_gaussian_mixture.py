@@ -3,6 +3,7 @@ from mvlearn.datasets import GaussianMixture
 from numpy.testing import assert_equal
 import numpy as np
 
+
 n = 100
 gm_uni = GaussianMixture([0,1], np.eye(2), n)
 mu = [[-1,0], [1,0]]
@@ -71,12 +72,14 @@ def test_random_state():
     assert np.allclose(y_1, y_2)
 
 def test_shuffle():
-    gm_1 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
-                           shuffle=True)
+    np.random.seed(42)
+    gm_1 = GaussianMixture(mu, sigma, 20, class_probs, random_state=42,
+                           shuffle=True, shuffle_random_state=42)
     gm_1.sample_views('poly')
     Xs_1, y_1 = gm_1.get_Xy()
-    gm_2 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
-                           shuffle=True)
+    np.random.seed(30)
+    gm_2 = GaussianMixture(mu, sigma, 20, class_probs, random_state=42,
+                           shuffle=True, shuffle_random_state=10)
     gm_2.sample_views('poly')
     Xs_2, y_2 = gm_2.get_Xy()
     for view1, view2 in zip(Xs_1, Xs_2):
@@ -84,11 +87,11 @@ def test_shuffle():
     assert not np.allclose(y_1, y_2)
 
 def test_shuffle_with_random_state():
-    gm_1 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+    gm_1 = GaussianMixture(mu, sigma, 20, class_probs, random_state=42,
                            shuffle=True, shuffle_random_state=42)
     gm_1.sample_views('poly')
     Xs_1, y_1 = gm_1.get_Xy()
-    gm_2 = GaussianMixture(mu, sigma, 10, class_probs, random_state=42,
+    gm_2 = GaussianMixture(mu, sigma, 20, class_probs, random_state=42,
                            shuffle=True, shuffle_random_state=42)
     gm_2.sample_views('poly')
     Xs_2, y_2 = gm_2.get_Xy()
