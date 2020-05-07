@@ -424,7 +424,6 @@ class MultiviewKMeans(BaseKMeans):
         Xs_new = check_Xs(Xs, enforce_views=2)
         return Xs_new
 
-    
     def _one_init(self, Xs):
         r'''
         Run the algorithm for one random initialization.
@@ -451,7 +450,7 @@ class MultiviewKMeans(BaseKMeans):
             The cluster centroids for each of the two views. centroids[0]
             corresponds to the centroids of view 1 and centroids[1] corresponds
             to the centroids of view 2.
- 
+
         '''
 
         # Initialize centroids for clustering
@@ -490,7 +489,7 @@ class MultiviewKMeans(BaseKMeans):
         intertia = np.sum(objective)
 
         return intertia, centroids
-        
+
     def fit(self, Xs):
 
         r'''
@@ -560,7 +559,7 @@ class MultiviewKMeans(BaseKMeans):
         # Zip results and find which has max inertia
         intertias, centroids = zip(*run_results)
         max_ind = np.argmax(intertias)
-        
+
         # Compute final cluster centroids
         self._final_centroids(Xs, centroids[max_ind])
 
