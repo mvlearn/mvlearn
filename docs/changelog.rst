@@ -5,11 +5,13 @@ Version 0.2.0
 -------------
 Updates in this release:
 
-- Some attribute names slightly changed for more intuitive use in ``DCCA``, ``KCCA``, ``MVMDS``, ``CTClassifier``
 - ``MVMDS`` can not also accept distance matrices as input, rather than only views of data with samples and features
 - A new clustering algorithm, ``CoRegMultiviewSpectralClustering`` - co-regularized multi-view spectral clustering functionality
+- Some attribute names slightly changed for more intuitive use in ``DCCA``, ``KCCA``, ``MVMDS``, ``CTClassifier``
 - Option to use an Incomplete Cholesky Decomposition method for ``KCCA`` to reduce up computation times
 - A new module, ``ajive``, containing the ``AJIVE`` algorithm - angle-based joint and individual variance explained
+- Fixed issue where signal dimensions of noise were dependent in the GaussianMixtures class
+- Added a dependecy to ``joblib`` to enable parallel clustering implementation
 - Removed the requirements for ``torchvision`` and ``pillow``, since they are only used in tutorials
 
 
