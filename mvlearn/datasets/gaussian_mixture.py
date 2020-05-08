@@ -228,10 +228,10 @@ class GaussianMixture:
             )
 
         self.Xs = [self.latent, X]
-        
+
         # if random_state is not None, make sure both views are independent
         # but reproducible
-        if self.random_state == None:
+        if self.random_state is None:
             self.Xs = [_add_noise(X, n_noise=n_noise,
                                   random_state=self.random_state)
                        for X in self.Xs]
