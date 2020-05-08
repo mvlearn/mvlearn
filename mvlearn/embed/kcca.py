@@ -40,12 +40,12 @@ class KCCA(BaseEmbed):
     ktype : string, default = 'linear'
             Type of kernel
         - value can be 'linear', 'gaussian' or 'poly'
-    degree : float, default = 2.0
-             Degree of Polynomial kernel
     constant : float, default = 1.0
              Balances impact of lower-degree terms in Polynomial kernel
     sigma : float, default = 1.0
             Standard deviation of Gaussian kernel
+    degree : float, default = 2.0
+             Degree of Polynomial kernel
     reg : float, default = 0.1
           Regularization parameter
     decomp : string, default = 'full'
