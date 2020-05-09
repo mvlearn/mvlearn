@@ -5,7 +5,7 @@ import seaborn as sns
 
 def _data_block_heatmaps(blocks):
     """
-    Plots a heat map of a bunch of data blocks
+    Plots a heat map of all views
     """
     num_blocks = len(blocks)
     if hasattr(blocks, "keys"):

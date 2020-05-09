@@ -5,7 +5,7 @@ from scipy.linalg import svd as full_svd
 from scipy.sparse.linalg import aslinearoperator as scipyaslinearoperator
 
 
-from .interface import LinearOperator
+#from .interface import LinearOperator
 from .convert2scipy import convert2scipy
 
 
@@ -41,11 +41,12 @@ def svd_wrapper(X, rank=None):
     if rank is None or rank == min(X.shape):
         full = True
     # checks linear operator
-    if isinstance(X, LinearOperator):
-        scipy_svds = svds(scipyaslinearoperator(X), rank) 
-        U, D, V = fix_scipy_svds(scipy_svds)
 
-    elif issparse(X) or not full:
+#    if isinstance(X, LinearOperator):
+#        scipy_svds = svds(scipyaslinearoperator(X), rank) 
+#        U, D, V = fix_scipy_svds(scipy_svds)
+
+    if issparse(X) or not full:
         assert rank <= min(X.shape) - 1  # svds cannot compute the full svd
         scipy_svds = svds(X, rank)
         U, D, V = fix_scipy_svds(scipy_svds)
@@ -66,6 +67,7 @@ def fix_scipy_svds(scipy_svds):
     """
     scipy.sparse.linalg.svds orders the singular values in increasing order.
     This function flips this order.
+    
     Parameters
     ----------
     scipy_svds: scipy.sparse.linalg.svds

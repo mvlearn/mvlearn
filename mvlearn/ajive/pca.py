@@ -15,32 +15,37 @@ class pca(object):
 
     Parameters
     ----------
-    n_components: None, int
+    n_components: int, default = None
         rank of the decomposition. If None, will compute full PCA.
 
-    center: str, None
+    center: str, default = None
         How to center the columns of X. If None, will not center the
         columns (i.e. just computes the SVD).
 
 
     Attributes
     ----------
-    scores_: pd.DataFrame, shape (n_samples, n_components)
+    scores_: pd.DataFrame 
+        - scores_ shape: (n_samples, n_components)
         The orthonormal matrix of (normalized) scores.
 
-    loadings_: pd.DataFrame, shape (n_features, n_components)
+    loadings_: pd.DataFrame
+        - loadings_ shape: (n_features, n_components)
         The orthonormal matrix of loadings.
 
-    svals_: pd.Series, shape (n_components, )
+    svals_: pd.Series 
+        - svals_ shape: (n_components, )
         The singular values.
 
-    m_: np.array, shape (n_features, )
+    m_: np.array 
+        - m_ shape: (n_features, )
         The vector used to center the data.
 
     frob_norm_: float
         The Frobenius norm of the training data matrix X.
 
-    shape_: tuple length 2
+    shape_: tuple 
+        - shape_ length: 2
         The shape of the original data matrix.
     """
     def __init__(self, n_components=None, center='mean'):
@@ -55,7 +60,8 @@ class pca(object):
         if not hasattr(self, 'scores_'):
             return 'pca object, nothing has been computed yet'
         else:
-            return 'Rank {} pca of a {} matrix'.format(self.n_components, self.shape_)
+            return 'Rank {} pca of a {} matrix'.format(self.n_components,\
+                         self.shape_)
 
     def fit(self, X):
         """
@@ -63,11 +69,8 @@ class pca(object):
 
         Parameters
         ----------
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-            Fit PCA with data matrix X. If X is a pd.DataFrame, the observation
-            and feature names will be extracted from its index/columns.
-            Note X can be either dense or sparse.
-
+        X: array-like or sparse matrix 
+            - X.shape = (n_samples, n_features)
         """
         self.shape_, obs_names, var_names, self.n_components, \
             = _arg_checker(X, self.n_components)
@@ -103,6 +106,11 @@ class pca(object):
 
         """
         Loads the pca object from a precomputed PCA decomposition.
+        
+        Returns
+        ------
+
+        X: pca object
         """
 
         x = cls()
@@ -178,34 +186,57 @@ class pca(object):
 
         Parameters
         ----------
-        fpath: (str)
+        fpath: str
             Path to saved file.
 
-        Output
+        Returns
         ------
         ajive.pca.pca
         """
         return load(fpath)
 
     @property
-    def rank(self):  # synonym of n_components
+    def rank(self):
+        """
+        Returns the observation names.
+        
+        Returns
+        ------
+        rank: int
+        
+        """
+
         return self.n_components
 
     def obs_names(self):
         """
         Returns the observation names.
+        
+        Returns
+        ------
+        obs_names: np.array
+       
         """
         return np.array(self.scores_.index)
 
     def comp_names(self):
         """
         Returns the component names.
+
+        Returns
+        ------
+        component_names: np.array
+
         """
         return np.array(self.scores_.columns)
 
     def var_names(self):
         """
         Returns the variable names.
+        
+        Returns
+        ------
+        var_names: np.array
         """
         return np.array(self.loadings_.index)
 
@@ -225,12 +256,13 @@ class pca(object):
 
         Parameters
         ----------
-        norm: bool
+        norm: bool, default = True
             If true, returns normalized scores. Otherwise, returns unnormalized
             scores.
 
-        np: bool
-            If true, returns scores as a numpy array. Otherwise, returns pandas.
+        np: bool, default = False
+            If true, returns scores as a numpy array. Otherwise, returns \
+            pandas.
 
         """
         if norm:  # normalized scores
@@ -249,12 +281,28 @@ class pca(object):
                                     columns=self.scores_.columns)
 
     def loadings(self, np=False):
+        """
+        Returns the loadings.
+        
+        Returns
+        ------
+        loadings: np.array
+        """
+
         if np:
             return self.loadings_.values
         else:
             return self.loadings_
 
     def svals(self, np=False):
+        """
+        Returns the singular values.
+        
+        Returns
+        ------
+        svals: np.array
+        """
+
         if np:
             return self.svals_.values
         else:
@@ -264,18 +312,20 @@ class pca(object):
         """
         Returns the Singular Value Decomposition of (possibly centered) X.
 
-        Output
+        Returns
         ------
-        U, D, V
 
-        U: np.array (n_samples, n_components)
-            scores (left singular values)
+        U: np.array
+            - U shape: (n_samples, n_components)
+            Scores (left singular values)
 
-        D: np.array (n_components, )
-            singular values
+        D: np.array
+            - D shape: (n_components, )
+            Singular values
 
-        V: np.array (n_features, n_components)
-            loadings matrix (right singular values)
+        V: np.array
+            - V shape: (n_features, n_components)
+            Loadings matrix (right singular values)
         """
         return self.scores_.values, self.svals_.values, self.loadings_.values
 
@@ -286,7 +336,8 @@ class pca(object):
 
         Parameters
         ----------
-        Y: array-like, shape (n_new_samples, n_features)
+        Y: array-like
+            - Y shape: (n_new_samples, n_features)
         """
         s = np.dot(Y, self.loadings_)
         if self.m_ is not None:
@@ -295,14 +346,15 @@ class pca(object):
 
     def predict_reconstruction(self, Y=None):
         """
-        Reconstructs the data in the original spaces (R^n_features). I.e projects
-        each data point onto the rank n_components PCA affine subspace
+        Reconstructs the data in the original spaces (R^n_features). I.e\
+        projects each data point onto the rank n_components PCA affine subspace
         which sits in the original n_features dimensional space.
 
 
         Parameters
         ----------
-        Y: None, array-like shape(n_new_samples, n_features)
+        Y: array-like, default = None
+            - Y shape: (n_new_samples, n_features)
             Projects data onto PCA subspace which live in the original
             space (R^n_features). If None, will use return the reconstruction
             of the training ddata.
@@ -315,15 +367,6 @@ class pca(object):
 
         return pca_reconstruct(U=scores, D=self.svals_, V=self.loadings_,
                                m=self.m_)
-
-
-    def scores_corr_vs(self, y):
-        """
-        Computes the correlation between each PCA component and a continuous
-        variable.
-        """
-        return np.array([np.corrcoef(self.scores(norm=norm).iloc[:, i], y)[0, 1]
-                        for i in range(self.n_components)])
 
 def _arg_checker(X, n_components):
 

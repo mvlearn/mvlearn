@@ -61,7 +61,8 @@ class TestFig2Runs(unittest.TestCase):
         X = pd.DataFrame(X, index=obs_names, columns=var_names['x'])
         Y = pd.DataFrame(Y, index=obs_names, columns=var_names['y'])
 
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(blocks={'x': X, 'y': Y})
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(blocks={'x': X,\
+                    'y': Y})
 
         self.ajive = jive
         self.X = X
@@ -337,14 +338,14 @@ def test_joint_indiv_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(blocks = dat)
-    blocks = jive.get_full_block_estimates()
+    blocks = jive.predict()
     assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
 
 def test_joint_noise_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(blocks = dat)
-    blocks = jive.get_full_block_estimates()
+    blocks = jive.predict()
     assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
 
           
@@ -352,7 +353,7 @@ def test_joint(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(blocks = dat)
-    blocks = jive.get_full_block_estimates()
+    blocks = jive.predict()
     for i in np.arange(100):
         j = np.sum(blocks[0]['joint'][i] == blocks[1]['joint'][i])
         assert j == 20
@@ -361,7 +362,7 @@ def test_indiv(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(blocks = dat)
-    blocks = jive.get_full_block_estimates()
+    blocks = jive.predict()
     for i in np.arange(100):
         j = np.sum(blocks[0]['individual'][i] == blocks[1]['individual'][i])
         assert j == 20
@@ -377,30 +378,30 @@ def test_wrong_sig(data):
         j = 1
     assert j == 1
 
-def check_sparse(data):
+def test_check_sparse(data):
     dat = data['sparse_views']
     spar_mat = dat[0]
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(blocks = dat)
-    blocks = jive.get_full_block_estimates()
+    blocks = jive.predict()
     assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
     np.sum(np.sum(blocks[0]['individual'] != 0)) 
 
 #Check valueerror for general linear operators
-def check_gen_lin_op_scipy(data):
-    with pytest.raises(ValueError):
+def test_check_gen_lin_op_scipy(data):
+    with pytest.raises(TypeError):
         dat = data['bad_views']
         jive = ajive(init_signal_ranks= [2,2])
         jive.fit(blocks = dat)
 
-def check_joint_rank_large(data):
+def test_check_joint_rank_large(data):
     with pytest.raises(ValueError):
         dat = data['same_views']
         jive = ajive(init_signal_ranks= [2,2], joint_rank=5)
         jive.fit(blocks = dat)
 
-def decomp_not_computed_ranks():
+def test_decomp_not_computed_ranks():
     with pytest.raises(ValueError):
         jive = ajive(init_signal_ranks=[2,2])
         jive.get_ranks()
@@ -432,3 +433,20 @@ def test_n_jobs():
 def test_n_wedin():
     jive = ajive(init_signal_ranks = [2,2], n_wedin_samples = 6)
     assert jive.n_wedin_samples == 6
+
+#Plotting
+
+def test_plot_diag(data):
+    x = data['same_views']
+    ajive.data_block_heatmaps(x)
+    p = 1
+    assert p == 1
+
+def test_ajive_plot(data):
+    x = data['same_views']
+    ajive.ajive_full_estimate_heatmaps(blocks=x)
+    p = 1
+    assert p == 1
+    
+
+    

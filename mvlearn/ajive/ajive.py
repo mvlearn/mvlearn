@@ -42,7 +42,7 @@ class ajive(object):
     init_signal_ranks: list or dict
         The initial signal ranks.
 
-    joint_rank: int = None
+    joint_rank: int, default = None
         Rank of the joint variation matrix. If None, will estimate the 
         joint rank. Otherwise, will use provided joint rank.
 
@@ -50,33 +50,33 @@ class ajive(object):
         Ranks of individual variation matrices. If None, will estimate the 
         individual ranks. Otherwise, will use provided individual ranks.
 
-    center: bool = True
+    center: bool, default = True
         Boolean for centering matrices.
 
-    reconsider_joint_components: bool = True
+    reconsider_joint_components: bool, default = True
         Triggers _reconsider_joint_components function
 
-    wedin_percentile: int = 5
+    wedin_percentile: int, default = 5
         Percentile used for wedin (lower) bound cutoff for squared 
         singular values used to estimate joint rank.
 
-    n_wedin_samples: int = 1000
+    n_wedin_samples: int, default = 1000
         Number of wedin bound samples to draw.
 
     precomp_wedin_samples: Dict of array-like or list of array-like
         Wedin samples that are precomputed for each view.
 
-    randdir_percentile: int = 95
+    randdir_percentile: int, default = 95
         Percentile for random direction (lower) bound cutoff for squared
         singular values used to estimate joint rank.
 
-    n_randdir_samples: int = 1000
+    n_randdir_samples: int, default = 1000
         Number of random direction samples to draw.
 
-    precomp_randdir_samples: array-like = None
+    precomp_randdir_samples: array-like, default = None
         Precomputed random direction samples.
 
-    n_jobs: int = None
+    n_jobs: int, default = None
         Number of jobs for parallel processing wedin samples and random
         direction samples using sklearn.externals.joblib.Parallel.
         If None, will not use parallel processing.
@@ -442,13 +442,14 @@ class ajive(object):
     def load(cls, fpath):
         return load(fpath)
 
-    def get_full_block_estimates(self):
+    def predict(self):
         """
 
-        Output
+        Returns
         ------
+        
         full: dict of dict of np.arrays
-        The joint, individual, and noise full estimates for each block.
+            The joint, individual, and noise full estimates for each block.
 
         """
         full = {}
@@ -461,7 +462,27 @@ class ajive(object):
 
     def results_dict(self):
         """
-        Returns all estimates as a dicts.
+        
+        Returns
+        ------
+        
+        results: dict of dict of dict of np.arrays
+            Returns n+1 dicts where n is the number of input views. First dict
+            is a named 'common' and contains the common scores, loadings and 
+            rank of the views. The next n dicts represent each view. They each
+            have the following keys:
+                - 'joint'
+                - 'individual'
+                - 'noise'
+                The 'joint' and 'individual' keys are dict with the following
+                keys referencing their respective estimates:
+                    - 'scores'
+                    - 'svals'
+                    - 'loadings'
+                    - 'rank'
+                    - 'full'
+            
+            The 'noise' key is the full noise matrix estimate of the view.
 
         """
         results = {}
@@ -492,11 +513,13 @@ class ajive(object):
 
     def get_ranks(self):
         """
-        Output
+        Returns
         ------
-        joint_rank (int): the joint rank
+        joint_rank: int
+            The joint rank
 
-        indiv_ranks (dict): the individual ranks.
+        indiv_ranks: dict 
+            The individual ranks.
         """
         if not self.is_fit:
             raise ValueError("Decomposition has not yet been computed")
@@ -508,13 +531,20 @@ class ajive(object):
 
     def data_block_heatmaps(blocks):
         """
-        Plots a heat map of a bunch of data blocks
+        Returns
+        -------
+        fig : figure object
+            Figure returned contains the heatmaps of all views
         """
         _data_block_heatmaps(blocks)
 
     def ajive_full_estimate_heatmaps(full_block_estimates, blocks):
         """
-        Plots the full JVIE estimates: X, J, I, E
+        Returns
+        -------
+        fig : figure object
+            Figure returned contains the full AJIVE estimates: X, J, I, E for
+            all views.
         """
         _ajive_full_estimate_heatmaps(full_block_estimates, blocks)
 
@@ -538,7 +568,7 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
         blocks = _dict_formatting(blocks)
     else:
         blocks_upd = check_Xs(blocks, multiview=True)
-        blocks = _dict_formating(blocks_upd)
+        blocks = _dict_formatting(blocks_upd)
     
     block_names = list(blocks.keys())
 
@@ -585,7 +615,7 @@ def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
     init_signal_ranks = _dict_formatting(init_signal_ranks)
     assert set(init_signal_ranks.keys()) == set(block_names)
 
-    # initial signal rank must be at least one lower than the shape of the block
+    # signal rank must be at least one lower than the shape of the block
     for bn in block_names:
         assert 1 <= init_signal_ranks[bn]
         assert init_signal_ranks[bn] <= min(blocks[bn].shape) - 1
@@ -667,16 +697,16 @@ class ViewSpecificResults(object):
     noise: array-like
         The noise matrix estimate.
 
-    obs_names: array-like = None
+    obs_names: array-like, default = None
         Observation names.
 
-    var_names: array-like = None
+    var_names: array-like, default = None
         Variable names for this view.
 
-    block_name: int = None or str = None
+    block_name: str, default = None
         Name of this view.
 
-    m: None, array-like
+    m: array-like, default = None
         The vector used to column mean center this view.
 
 
@@ -688,7 +718,7 @@ class ViewSpecificResults(object):
         joint estimate.
 
     individual: mvlearn.ajive.pca.pca
-        view specific individual PCA.
+        View specific individual PCA.
         Has an extra attribute individual.full_ which contains the full view
         joint estimate.
 
