@@ -23,7 +23,7 @@ def _data_block_heatmaps(blocks):
 
 def _ajive_full_estimate_heatmaps(full_block_estimates, blocks):
     """
-    Plots the full JVIE estimates: X, J, I, E
+    Plots the full AJIVE estimates: X, J, I, E
     """
     num_blocks = len(full_block_estimates)
 
