@@ -56,7 +56,7 @@ class KCCA(BaseEmbed):
              Decomposition method
         - value can be only be 'kettenring-like'
     mrank : int, default = 2
-            The rank of the kernel matrix
+            The rank of the ICD approximated kernel matrix
     precision: float, default = 0.000001
                Precision of computing the ICD kernel matrix
 
