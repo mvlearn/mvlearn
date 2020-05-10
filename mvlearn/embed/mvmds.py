@@ -41,7 +41,7 @@ class MVMDS(BaseEmbed):
 
     num_iter: int (positive), default=15
         Number of iterations stepwise estimation goes through.
-        
+
     dissimilarity : {'euclidean', 'precomputed'}, default='euclidean'
         Dissimilarity measure to use:
 
@@ -49,7 +49,7 @@ class MVMDS(BaseEmbed):
         Pairwise Euclidean distances between points in the dataset.
 
         'precomputed':
-        Pre-computed dissimilarities are passed directly to fit and fit_transform.
+        Xs is treated as pre-computed dissimilarity matrices.
 
     Attributes
     ----------
@@ -121,8 +121,8 @@ class MVMDS(BaseEmbed):
             Principal Components.” Computational Statistics &amp; Data
             Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
             doi:10.1016/j.csda.2010.03.010.
-            
-    .. [#2MVMDS] Samir Kanaan-Izquierdo, Andrey Ziyatdinov, 
+
+    .. [#2MVMDS] Samir Kanaan-Izquierdo, Andrey Ziyatdinov,
         Maria Araceli Burgueño, Alexandre Perera-Lluna, Multiview: a software
         package for multiview pattern recognition methods, Bioinformatics,
         Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
@@ -143,8 +143,9 @@ class MVMDS(BaseEmbed):
             raise ValueError('The number of components must be greater than 0 '
                              + 'and less than the number of features')
 
-        if not self.dissimilarity in ['euclidean', 'precomputed']:
-            raise ValueError('The parameter `dissimilarity` must be one of {`euclidean`, `precomputed`}')
+        if self.dissimilarity not in ['euclidean', 'precomputed']:
+            raise ValueError('The parameter `dissimilarity` must be one of \
+                {`euclidean`, `precomputed`}')
 
     def _commonpcs(self, Xs):
         """
@@ -282,7 +283,8 @@ class MVMDS(BaseEmbed):
                     B = -(1/2) * J @ view_squared @ J
                     mat[i] = B
         else:
-            raise ValueError('The parameter `dissimilarity` must be one of {`euclidean`, `precomputed`}')
+            raise ValueError('The parameter `dissimilarity` must be one of \
+                {`euclidean`, `precomputed`}')
 
         self.components_ = self._commonpcs(mat)
 

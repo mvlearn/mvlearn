@@ -65,7 +65,7 @@ def test_fit_transform_values(data):
                       [0.34415456, -0.74042171,  0.5773503],
                       [0.46914673,  0.66825745, 0.5773503]])
     
-    np.testing.assert_almost_equal(comp, comp2)
+    np.testing.assert_almost_equal(np.abs(comp), np.abs(comp2))
             
 def test_fit_transformdifferent_wrong_samples(data):
     with pytest.raises(ValueError):
@@ -117,5 +117,4 @@ def test_dissimilarity_precomputed_euclidean(data):
     fit1 = mvmds1.fit_transform(data['samp_views'])
     fit2 = mvmds2.fit_transform(test_views)
 
-    np.testing.assert_almost_equal(fit2, fit1)
-
+    np.testing.assert_almost_equal(np.abs(fit2), np.abs(fit1))
