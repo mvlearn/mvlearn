@@ -34,7 +34,7 @@ class MVMDS(BaseEmbed):
 
     Parameters
     ----------
-    n_components : int (positive), default=None
+    n_components : int (positive), default=2
         Represents the number of components that the user would like to
         be returned from the algorithm. This value must be greater than
         0 and less than the number of samples within each view.
@@ -128,13 +128,23 @@ class MVMDS(BaseEmbed):
         Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
 
     """
-    def __init__(self, n_components=None, num_iter=15, dissimilarity=''):
+    def __init__(self, n_components=2, num_iter=15, dissimilarity='euclidean'):
 
         super().__init__()
         self.components_ = None
-        self.n_components_ = n_components
+        self.n_components = n_components
         self.num_iter = num_iter
         self.dissimilarity = dissimilarity
+
+        if (self.num_iter) <= 0:
+            raise ValueError('The number of iterations must be greater than 0')
+
+        if (self.n_components) <= 0:
+            raise ValueError('The number of components must be greater than 0 '
+                             + 'and less than the number of features')
+
+        if not self.dissimilarity in ['euclidean', 'precomputed']:
+            raise ValueError('The parameter `dissimilarity` must be one of {`euclidean`, `precomputed`}')
 
     def _commonpcs(self, Xs):
         """
@@ -242,13 +252,6 @@ class MVMDS(BaseEmbed):
                           + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
-        if (self.num_iter) <= 0:
-            raise ValueError('The number of iterations must be greater than 0')
-
-        if (self.n_components) <= 0:
-            raise ValueError('The number of components must be greater than 0 '
-                             + 'and less than the number of features')
-
         Xs = check_Xs(Xs, multiview=True)
 
         mat = np.ones(shape=(len(Xs), len(Xs[0]), len(Xs[0])))
@@ -280,7 +283,10 @@ class MVMDS(BaseEmbed):
                     mat[i] = B
         else:
             raise ValueError('The parameter `dissimilarity` must be one of {`euclidean`, `precomputed`}')
+
         self.components_ = self._commonpcs(mat)
+
+        return self
 
     def fit_transform(self, Xs):
 
