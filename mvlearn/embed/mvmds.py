@@ -42,8 +42,14 @@ class MVMDS(BaseEmbed):
     num_iter: int (positive), default=15
         Number of iterations stepwise estimation goes through.
         
-    distance: bool, default=False
-        Boolean about whether distance matrices are input or not.
+    dissimilarity : {'euclidean', 'precomputed'}, default='euclidean'
+        Dissimilarity measure to use:
+
+        'euclidean':
+        Pairwise Euclidean distances between points in the dataset.
+
+        'precomputed':
+        Pre-computed dissimilarities are passed directly to fit and fit_transform.
 
     Attributes
     ----------
@@ -122,13 +128,13 @@ class MVMDS(BaseEmbed):
         Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
 
     """
-    def __init__(self, n_components=None, num_iter=15, distance = False):
+    def __init__(self, n_components=None, num_iter=15, dissimilarity=''):
 
         super().__init__()
-        self.components = None
-        self.n_components = n_components
+        self.components_ = None
+        self.n_components_ = n_components
         self.num_iter = num_iter
-        self.distance = distance
+        self.dissimilarity = dissimilarity
 
     def _commonpcs(self, Xs):
         """
@@ -164,7 +170,7 @@ class MVMDS(BaseEmbed):
         for i in np.arange(views):
             s = s + (n_num[i] * Xs[i])
 
-        e1, e2 = np.linalg.eigh(s)
+        _, e2 = np.linalg.eigh(s)
 
         # Orders the eigenvalues
         q0 = e2[:, ::-1]
@@ -249,19 +255,19 @@ class MVMDS(BaseEmbed):
 
         # Double centering each view as in single-view MDS
 
-        if (self.distance == False):
+        if (self.dissimilarity == 'euclidean'):
 
             for i in np.arange(len(Xs)):
                 view = euclidean_distances(Xs[i])
                 view_squared = np.power(np.array(view), 2)
 
                 J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
-                B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
+                B = -(1/2) * J @ view_squared @ J
                 mat[i] = B
 
         # If user wants to input special distance matrix
 
-        elif (self.distance == True):
+        elif (self.dissimilarity == 'precomputed'):
             for i in np.arange(len(Xs)):
                 if (Xs[i].shape[0] != Xs[i].shape[1]):
                     raise ValueError('The input distance matrix must be '
@@ -270,11 +276,11 @@ class MVMDS(BaseEmbed):
                     view = Xs[i]
                     view_squared = np.power(np.array(view), 2)
                     J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
-                    B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
+                    B = -(1/2) * J @ view_squared @ J
                     mat[i] = B
         else:
-            raise ValueError('The parameter, distance, must be a boolean')
-        self.components = self._commonpcs(mat)
+            raise ValueError('The parameter `dissimilarity` must be one of {`euclidean`, `precomputed`}')
+        self.components_ = self._commonpcs(mat)
 
     def fit_transform(self, Xs):
 
@@ -297,4 +303,4 @@ class MVMDS(BaseEmbed):
         Xs = check_Xs(Xs)
         self.fit(Xs)
 
-        return self.components
+        return self.components_
