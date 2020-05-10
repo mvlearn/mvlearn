@@ -460,12 +460,12 @@ def _make_icd_kernel(X, ktype="linear", constant=0.1, degree=2.0, sigma=1.0,
         if i == 0:
             # Diagonal of kernel matrix
             d[i:N] = _make_kernel(x_new, x_new, ktype + "-diag",
-                                    constant, degree).T
+                                  constant, degree).T
         else:
             # Update diagonal of residual kernel matrix
             d[i:N] = (_make_kernel(x_new, x_new, ktype + "-diag",
-                                     constant, degree).T -
-                        np.sum(np.power(G[i:N, :i], 2), axis=1).T)
+                                   constant, degree).T -
+                      np.sum(np.power(G[i:N, :i], 2), axis=1).T)
 
         dtrace = sum(d[i:N])
         if dtrace <= 0:

@@ -169,8 +169,8 @@ def test_icd_mrank():
 
 # Test make_icd_kernel
 def test_make_icd_kernelg(): 
-    g_icd_kernel = _make_icd_kernel(x, kernel="gaussian", mrank = 50)
-    l_icd_kernel = _make_icd_kernel(x, kernel="linear", constant=1, mrank = 50)
-    p_icd_kernel = _make_icd_kernel(x, kernel="poly", degree = 3, mrank = 50)
-    assert g_icd_kernel.shape==l_icd_kernel.shape==p_icd_kernel.shape == (100,50)
+    g_icd_kernel = _make_icd_kernel(x, ktype="gaussian", mrank = 2)
+    l_icd_kernel = _make_icd_kernel(x, ktype="linear", constant=1, mrank = 2)
+    p_icd_kernel = _make_icd_kernel(x, ktype="poly", degree = 3, mrank = 2)
+    assert g_icd_kernel.shape==l_icd_kernel.shape==p_icd_kernel.shape == (100,2)
 
