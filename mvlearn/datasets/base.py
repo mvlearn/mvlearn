@@ -19,8 +19,9 @@ import numpy as np
 def load_UCImultifeature(select_labeled="all", shuffle=False,
                          random_state=None):
     r"""
-    Load the UCI multiple features dataset [#1Data]_, taken from
-    https://archive.ics.uci.edu/ml/datasets/Multiple+Features This data set
+    Load the UCI multiple features dataset [#1Data]_, taken from the UCI
+    Machine Learning Repository at
+    https://archive.ics.uci.edu/ml/datasets/Multiple+Features. This data set
     consists of 6 views of handwritten digit images, with classes 0-9. The
     6 views are the following:
 
@@ -68,6 +69,12 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> # Load 6-view dataset with all 10 classes
     >>> mv_data, labels = load_UCImultifeature()
+    >>> print(len(mv_data))
+    6
+    >>> print([mv_data[i].shape for i in range(6)])
+    [(2000, 76), (2000, 216), (2000, 64), (2000, 240), (2000, 47), (2000, 6)]
+    >>> print(labels.shape)
+    (2000,)
 
     """
 

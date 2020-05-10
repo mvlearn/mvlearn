@@ -29,7 +29,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Parameters
     ----------
-    X : array-like matrix, shape = [n_rows, n_cols]
+    X : array-like matrix, shape = (n_samples, n_cols)
         The input samples.
 
     n_views : int, float optional (default = 1)
@@ -49,12 +49,16 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     Returns
     -------
     views : list of array-like matrices
-        List of constructed views (each matrix has shape [n_rows, n_cols]).
+        List of constructed views.
+            - length: n_views
+            - each view has shape (n_samples, n_features)
 
     Notes
     -----
     From an implementation perspective, this wraps GaussianRandomProjection
-    from sklearn.random_projection.
+    from `sklearn.random_projection <https://scikit-learn.org/stable/modules/
+    classes.html#module-sklearn.random_projection>`_ and creates multiple
+    projections.
 
     Examples
     --------
