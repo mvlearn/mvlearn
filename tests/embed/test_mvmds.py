@@ -68,8 +68,8 @@ def test_fit_transform_values(data):
     
     # Last component calculation varies across Python implementations.
     np.testing.assert_almost_equal(
-        np.abs(comp[:,n_components-1]),
-        np.abs(comp2[:,n_components-1])
+        np.abs(comp[:,:n_components-1]),
+        np.abs(comp2[:,:n_components-1])
     )
             
 def test_fit_transformdifferent_wrong_samples(data):
