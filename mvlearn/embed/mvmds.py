@@ -53,7 +53,7 @@ class MVMDS(BaseEmbed):
 
     Attributes
     ----------
-    components: numpy.ndarray, shape(n_samples, n_components)
+    components_: numpy.ndarray, shape(n_samples, n_components)
         Joint transformed MVMDS components of the input views.
 
     Notes
