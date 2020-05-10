@@ -147,7 +147,8 @@ class KCCA(BaseEmbed):
 
     ICD with rank :math:`m` yields storage requirements of :math:`O(mn)`
     instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead of
-    :math:`O(n^3)`[#3KCCA]_.
+    :math:`O(n^3)`[#3KCCA]_. Unlike full decomposition, ICD cannot be
+    performed out of sample i.e you must fit and transform on the same data.
 
     References
     ----------
@@ -185,7 +186,7 @@ class KCCA(BaseEmbed):
     >>> a = kcca_l.fit(Xs_train)
     >>> linearkcca = kcca_l.transform(Xs_test)
     >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
-    >>> #Below are the canonical correlation for the first component:
+    >>> #Below is the canonical correlation for the first component:
     >>> print(round(r1, 2))
     0.85
 
@@ -271,6 +272,7 @@ class KCCA(BaseEmbed):
         N = len(self.X)
 
         if self.decomp == "full":
+            N1 = N
             Nl = len(self.X)
             Nr = len(self.Y)
             N0l = np.eye(Nl) - 1 / Nl * np.ones(Nl)
@@ -292,29 +294,14 @@ class KCCA(BaseEmbed):
                 R = 0.5*np.r_[np.c_[Kx, Ky], np.c_[Kx, Ky]]
                 D = np.r_[np.c_[Kx+self.reg*Id, Z], np.c_[Z, Ky+self.reg*Id]]
 
-            # Solve eigenvalue problem
-            betas, alphas = linalg.eig(R, D)
-
-            # Top eigenvalues
-            ind = np.argsort(betas)[::-1][:self.n_components]
-
-            # Extract relevant coordinates and normalize to unit length
-            weight1 = alphas[:N, ind]
-            weight2 = alphas[N:, ind]
-
-            weight1 /= np.linalg.norm(weight1, axis=0)
-            weight2 /= np.linalg.norm(weight2, axis=0)
-
-            self.weights_ = np.real([weight1, weight2])
-
         elif self.decomp == "icd":
 
             # Compute the ICD kernel matrices
-            G1 = _make_icd_kernel(self.X, self.ktype,
-                                  self.sigma, self.mrank)
+            G1 = _make_icd_kernel(self.X, self.ktype, self.constant,
+                                  self.degree, self.sigma, self.mrank)
 
-            G2 = _make_icd_kernel(self.Y, self.ktype,
-                                  self.sigma, self.mrank)
+            G2 = _make_icd_kernel(self.Y, self.ktype, self.constant,
+                                  self.degree, self.sigma, self.mrank)
 
             # Remove mean
             G1 = G1 - numpy.matlib.repmat(np.mean(G1, axis=0), N, 1)
@@ -337,20 +324,20 @@ class KCCA(BaseEmbed):
                 D = np.r_[np.c_[G1.T@G1+self.reg*I11, Z12],
                           np.c_[Z12.T, G2.T@G2+self.reg*I22]]
 
-            # Solve eigenvalue problem
-            betas, alphas = linalg.eig(R, D)
+        # Solve eigenvalue problem
+        betas, alphas = linalg.eig(R, D)
 
-            # Top eigenvalues
-            ind = np.argsort(betas)[::-1][:self.n_components]
+        # Top eigenvalues
+        ind = np.argsort(betas)[::-1][:self.n_components]
 
-            # Extract relevant coordinates and normalize to unit length
-            weight1 = alphas[:N1, ind]
-            weight2 = alphas[N1:, ind]
+        # Extract relevant coordinates and normalize to unit length
+        weight1 = alphas[:N1, ind]
+        weight2 = alphas[N1:, ind]
 
-            weight1 /= np.linalg.norm(weight1, axis=0)
-            weight2 /= np.linalg.norm(weight2, axis=0)
+        weight1 /= np.linalg.norm(weight1, axis=0)
+        weight2 /= np.linalg.norm(weight2, axis=0)
 
-            self.weights_ = np.real([weight1, weight2])
+        self.weights_ = np.real([weight1, weight2])
 
         return self
 
@@ -459,8 +446,8 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
         return np.exp(-np.sum(np.power((X-Y), 2), axis=1)/(2*sigma**2))
 
 
-def _make_icd_kernel(X, ktype="gaussian", sigma=1.0,
-                     mrank=50, precision=0.000001):
+def _make_icd_kernel(X, ktype="linear", constant=0.1, degree=2.0, sigma=1.0,
+                     mrank=2, precision=0.000001):
     N = len(X)
 
     perm = np.arange(N)  # Permutation vector
@@ -469,16 +456,18 @@ def _make_icd_kernel(X, ktype="gaussian", sigma=1.0,
     subset = np.zeros(mrank)
 
     for i in range(mrank):
-        x_new = X[perm[i:N+1], :]
+        x_new = X[perm[i:N], :]
         if i == 0:
             # Diagonal of kernel matrix
-            d[i:N+1] = _make_kernel(x_new, x_new, ktype + "-diag").T
+            d[i:N] = _make_kernel(x_new, x_new, ktype + "-diag",
+                                    constant, degree).T
         else:
             # Update diagonal of residual kernel matrix
-            d[i:N+1] = (_make_kernel(x_new, x_new, ktype + "-diag").T -
-                        np.sum(np.power(G[i:N+1, :i], 2), axis=1).T)
+            d[i:N] = (_make_kernel(x_new, x_new, ktype + "-diag",
+                                     constant, degree).T -
+                        np.sum(np.power(G[i:N, :i], 2), axis=1).T)
 
-        dtrace = sum(d[i:N+1])
+        dtrace = sum(d[i:N])
         if dtrace <= 0:
             print("Warning: negative diagonal entry")
 
@@ -488,8 +477,8 @@ def _make_icd_kernel(X, ktype="gaussian", sigma=1.0,
             break
 
         # Find new best element
-        j = np.argmax(d[i:N+1])
-        m2 = np.max(d[i:N+1])
+        j = np.argmax(d[i:N])
+        m2 = np.max(d[i:N])
         j = j+i  # Take into account the offset i
         m1 = np.sqrt(m2)
         subset[i] = j
@@ -499,8 +488,8 @@ def _make_icd_kernel(X, ktype="gaussian", sigma=1.0,
         G[i, i] = m1  # New diagonal elemtn
 
         # Calculate the ith columnn- introduces some numerical error
-        z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N+1], :],
+        z1 = _make_kernel([X[perm[i], :]], X[perm[i+1:N], :],
                           ktype, sigma)
-        z2 = (G[i+1:N+1, :i]@(G[i, :i].T))
-        G[i+1:N+1, i] = (z1 - z2)/m1
+        z2 = (G[i+1:N, :i]@(G[i, :i].T))
+        G[i+1:N, i] = (z1 - z2)/m1
     return G[np.argsort(perm), :]
