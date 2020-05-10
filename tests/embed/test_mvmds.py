@@ -65,7 +65,8 @@ def test_fit_transform_values(data):
                       [0.34415456, -0.74042171,  0.5773503],
                       [0.46914673,  0.66825745, 0.5773503]])
     
-    np.testing.assert_almost_equal(np.abs(comp), np.abs(comp2))
+    # Decimal setting due to differences across Python versions
+    np.testing.assert_almost_equal(np.abs(comp), np.abs(comp2), decimal=4)
             
 def test_fit_transformdifferent_wrong_samples(data):
     with pytest.raises(ValueError):
