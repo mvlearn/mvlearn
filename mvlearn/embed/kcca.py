@@ -234,10 +234,8 @@ class KCCA(BaseEmbed):
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
         if self.decomp == "icd":
-            if self.mrank < 0 or self.mrank > self.n_components \
-                          or not (type(self.mrank) == int):
-                raise ValueError("mrank must be a positive integer no greater \
-                                 than the number of components")
+            if self.mrank < 0  or not (type(self.mrank) == int):
+                raise ValueError("mrank must be a positive integer")
             if self.precision < 0 or not type(self.precision) == float:
                 raise ValueError("precision must be a positive float")
         if not self.method == "kettenring-like":
@@ -339,6 +337,7 @@ class KCCA(BaseEmbed):
 
         self.weights_ = np.real([weight1, weight2])
 
+
         return self
 
     def transform(self, Xs):
@@ -393,11 +392,15 @@ class KCCA(BaseEmbed):
         elif self.decomp == "icd":
             Kx_t_icd = _make_icd_kernel(_center_norm(Xs[0]),
                                         self.ktype,
+                                        self.constant,
+                                        self.degree,
                                         self.sigma,
                                         self.mrank,
                                         self.precision)
             Ky_t_icd = _make_icd_kernel(_center_norm(Xs[1]),
                                         self.ktype,
+                                        self.constant,
+                                        self.degree,
                                         self.sigma,
                                         self.mrank,
                                         self.precision)
