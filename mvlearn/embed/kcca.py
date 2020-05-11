@@ -234,7 +234,7 @@ class KCCA(BaseEmbed):
                                      or type(self.constant) == int):
             raise ValueError("constant must be a positive integer")
         if self.decomp == "icd":
-            if self.mrank < 0  or not (type(self.mrank) == int):
+            if self.mrank < 0 or not (type(self.mrank) == int):
                 raise ValueError("mrank must be a positive integer")
             if self.precision < 0 or not type(self.precision) == float:
                 raise ValueError("precision must be a positive float")
@@ -336,7 +336,6 @@ class KCCA(BaseEmbed):
         weight2 /= np.linalg.norm(weight2, axis=0)
 
         self.weights_ = np.real([weight1, weight2])
-
 
         return self
 
@@ -452,6 +451,7 @@ def _make_kernel(X, Y, ktype, constant=0.1, degree=2.0, sigma=1.0):
 def _make_icd_kernel(X, ktype="linear", constant=0.1, degree=2.0, sigma=1.0,
                      mrank=2, precision=0.000001):
     N = len(X)
+    mrank = min(mrank, N)
 
     perm = np.arange(N)  # Permutation vector
     d = np.zeros(N)  # Diagonal of the residual kernel matrix
