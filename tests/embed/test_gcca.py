@@ -37,7 +37,7 @@ def test_output():
 
         return out
 
-    def use_fit_transform():
+    def test_fit_transform():
         n = 2
         Xs = _get_Xs(n)
 
@@ -47,7 +47,7 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit_view_idx():
+    def test_fit_view_idx():
         n = 2
         Xs = _get_Xs(n)
 
@@ -59,7 +59,7 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit_tall():
+    def test_fit_tall():
         n = 2
         Xs = _get_Xs(n)
 
@@ -69,7 +69,7 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit_n_components():
+    def test_fit_n_components():
         n = 2
         Xs = _get_Xs(n)
 
@@ -79,7 +79,7 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit_sv_tolerance():
+    def test_fit_sv_tolerance():
         n = 2
         Xs = _get_Xs(n)
 
@@ -89,22 +89,31 @@ def test_output():
         # Checks up to 7 decimal points
         assert_almost_equal(np.zeros((n, n)), dists)
 
-    def use_fit_elbows():
-        n = 2
+    def test_fit_elbows():
         X, _ = generate_data(10, 3)
         Xs = [X, X]
 
         gcca = GCCA(n_elbows=2)
+        _ = gcca.fit_transform(Xs)
+
+        assert_equal(gcca.ranks_[0], 4)
+    
+    def test_max_ranks():
+        X, _ = generate_data(10, 3)
+        Xs = [X, X]
+
+        gcca = GCCA(n_elbows=2, max_rank=True)
         projs = gcca.fit_transform(Xs)
 
         assert_equal(gcca.ranks_[0], 4)
 
-    use_fit_transform()
-    use_fit_tall()
-    use_fit_n_components()
-    use_fit_sv_tolerance()
-    use_fit_view_idx()
-    use_fit_elbows()
+    test_fit_transform()
+    test_fit_tall()
+    test_fit_n_components()
+    test_fit_sv_tolerance()
+    test_fit_view_idx()
+    test_fit_elbows()
+    test_max_ranks()
 
 
 test_mat = np.array([[1, 2], [3, 4]])

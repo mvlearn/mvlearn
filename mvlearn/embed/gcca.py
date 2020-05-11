@@ -58,6 +58,10 @@ class GCCA(BaseEmbed):
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD
 
+    max_ranks : boolean, default=False
+        If true, sets the rank of the common latent space as the maximum rank
+        of the individual spaces. If false, uses the minimum individual rank.
+
     Attributes
     ----------
     projection_mats_ : list of arrays
@@ -112,7 +116,8 @@ class GCCA(BaseEmbed):
             fraction_var=None,
             sv_tolerance=None,
             n_elbows=2,
-            tall=False
+            tall=False,
+            max_rank=False,
             ):
 
         self.n_components = n_components
@@ -122,6 +127,7 @@ class GCCA(BaseEmbed):
         self.tall = tall
         self.projection_mats_ = None
         self.ranks_ = None
+        self.max_rank = max_rank
 
     def center(self, X):
         r"""
@@ -232,6 +238,7 @@ class GCCA(BaseEmbed):
                 s2 = np.square(s)
                 rank = sum(np.cumsum(s2 / sum(s2)) < self.fraction_var) + 1
             else:
+                # Sweep over only first log2, else too large elbos
                 s = s[: int(np.ceil(np.log2(np.min(x.shape))))]
                 elbows, _ = select_dimension(
                     s, n_elbows=self.n_elbows, threshold=None
@@ -243,7 +250,10 @@ class GCCA(BaseEmbed):
             u = ut.T[:, :rank]
             Uall.append(u)
 
-        d = min(ranks)
+        if self.max_rank:
+            d = max(ranks)
+        else:
+            d = min(ranks)
 
         # Create a concatenated view of Us
         Uall_c = np.concatenate(Uall, axis=1)
@@ -254,7 +264,6 @@ class GCCA(BaseEmbed):
 
         # SVDS the concatenated Us
         idx_end = 0
-        projXs = []
         projection_mats = []
         for i in range(len(data)):
             idx_start = idx_end
@@ -264,7 +273,7 @@ class GCCA(BaseEmbed):
             # Compute the canonical projections
             A = np.sqrt(n - 1) * Vall[i][:, : ranks[i]]
             A = A @ (linalg.solve(np.diag(Sall[i][: ranks[i]]), VVi))
-            projXs.append(data[i] @ A)
+
             projection_mats.append(A)
 
         self.projection_mats_ = projection_mats
