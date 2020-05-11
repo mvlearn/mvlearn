@@ -111,7 +111,7 @@ class KCCA(BaseEmbed):
 
     The directions :math:`\mathbf{w_x}` and :math:`\mathbf{w_y}`
     (of length N) can be rewritten as the projection of the data
-    onto the direction :math:`\alpha` and :math:`\alpha`
+    onto the direction :math:`\alpha` and :math:`\beta`
     (of length m):
 
     .. math::
