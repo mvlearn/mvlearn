@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import numpy as np
-import warnings
 from scipy.sparse import issparse
 from copy import deepcopy
 from sklearn.externals.joblib import load, dump
 import pandas as pd
-from mvlearn.utils.utils import check_Xs
+from ..utils.utils import check_Xs
 from .block_visualization import _data_block_heatmaps, \
 _ajive_full_estimate_heatmaps
 
@@ -32,7 +31,7 @@ class ajive(object):
     """
     An implementation of Angle-based Joint and Individual Variation Explained.
     This algorithm takes multiple input views with the same number of samples
-    and decomposes them into 3 distinct matrices representing:
+    and decomposes them into 3 distinct matrices representing [#1ajive ]_:
         - Individual variation of each particular view
         - Joint variation shared by all views
         - Noise
@@ -43,21 +42,22 @@ class ajive(object):
         The initial signal ranks.
 
     joint_rank: int, default = None
-        Rank of the joint variation matrix. If None, will estimate the 
+        Rank of the joint variation matrix. If None, will estimate the
         joint rank. Otherwise, will use provided joint rank.
 
     indiv_ranks: list or dict
-        Ranks of individual variation matrices. If None, will estimate the 
+        Ranks of individual variation matrices. If None, will estimate the
         individual ranks. Otherwise, will use provided individual ranks.
 
     center: bool, default = True
         Boolean for centering matrices.
 
     reconsider_joint_components: bool, default = True
-        Triggers _reconsider_joint_components function
+        Triggers _reconsider_joint_components function to run and removes
+        columns of joint scores according to identifiability constraint.
 
     wedin_percentile: int, default = 5
-        Percentile used for wedin (lower) bound cutoff for squared 
+        Percentile used for wedin (lower) bound cutoff for squared
         singular values used to estimate joint rank.
 
     n_wedin_samples: int, default = 1000
@@ -123,6 +123,72 @@ class ajive(object):
 
     indiv_ranks: dict of ints
         Ranks of the individual matrices for each view.
+        
+    Notes
+    -----
+
+    Classical Multiview Multidimensional Scaling can be broken down into two
+    steps. The first step involves calculating the Euclidean Distance matrices,
+    :math:`Z_i`, for each of the :math:`k` views and double-centering
+    these matrices through the following calculations:
+
+    .. math::
+        \Sigma_{i}=-\frac{1}{2}J_iZ_iJ_i
+
+    .. math::
+        \text{where }J_i=I_i-{\frac {1}{n}}\mathbb{1}\mathbb{1}^T
+
+    The second step involves finding the common principal components of the
+    :math:`\Sigma` matrices. These can be thought of as multiview
+    generalizations of the principal components found in principal component
+    analysis (PCA) given several covariance matrices. The central hypothesis of
+    the common principal component model states that given k normal populations
+    (views), their :math:`p` x :math:`p` covariance matrices
+    :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
+    diagonalizable as:
+
+    .. math::
+        \Sigma_{i} = QD_i^2Q^T
+
+    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and
+    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The
+    :math:`Q` matrix contains all the common principal components. The common
+    principal component, :math:`q_j`, is found by solving the minimization
+    problem:
+
+    .. math::
+        \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
+    .. math::
+        \text{Subject to } q_j^Tq_j = 1
+
+    where :math:`n_i` represent the degrees of freedom and :math:`S_i`
+    represent sample covariance matrices.
+
+    This class does not support ``MVMDS.transform()`` due to the iterative
+    nature of the algorithm and the fact that the transformation is done
+    during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
+    fitting and transforming at once.
+
+    Examples
+    --------
+    >>> from mvlearn.embed import MVMDS
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> Xs, _ = load_UCImultifeature()
+    >>> print(len(Xs)) # number of samples in each view
+    6
+    >>> print(Xs[0].shape) # number of samples in each view
+    (2000, 76)
+    >>> mvmds = MVMDS(n_components=5)
+    >>> Xs_reduced = mvmds.fit_transform(Xs)
+    >>> print(Xs_reduced.shape)
+    (2000, 5)
+
+
+    References
+    ----------
+    .. [#1ajive] Feng, Qing, et al. “Angle-Based Joint and Individual
+            Variation Explained.” Journal of Multivariate Analysis,
+            vol. 166, 2018, pp. 241–265., doi:10.1016/j.jmva.2018.03.008.
 
     """
 
@@ -430,6 +496,14 @@ class ajive(object):
 
     @property
     def block_names(self):
+        """
+        Returns
+        ------
+        
+        block_names: list
+            The names of the views.
+
+        """    
         if self.is_fit:
             return list(self.blocks.keys())
         else:
@@ -444,10 +518,9 @@ class ajive(object):
 
     def predict(self):
         """
-
         Returns
         ------
-        
+
         full: dict of dict of np.arrays
             The joint, individual, and noise full estimates for each block.
 
