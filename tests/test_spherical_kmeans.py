@@ -197,6 +197,12 @@ def test_init_not_feat_dimensions(data_small):
         view2 = np.random.random((2, 9)) 
         kmeans = MultiviewSphericalKMeans(init=[view1, view2])
         kmeans.fit(data_small)
+
+def test_tol_not_nonnegative_float(data_small):
+    with pytest.raises(ValueError):
+        kmeans = MultiviewSphericalKMeans(tol=-1)
+        kmeans.fit(data_small)
+
         
 # Function Testing
 
@@ -338,3 +344,13 @@ def test_preprocess_data(data_random):
         mat = np.linalg.norm(mat, axis=1)
         ones = np.ones(mat.shape)
         assert(np.allclose(mat, ones))    
+
+def test_fit_predict_n_jobs_all(data_random):
+    
+    n_clusters = data_random['n_clusters']
+    kmeans = MultiviewSphericalKMeans(n_clusters=n_clusters, n_jobs=-1)
+    cluster_pred = kmeans.fit_predict(data_random['test_data'])
+    
+    assert(data_random['n_test'] ==  cluster_pred.shape[0])
+    for cl in cluster_pred:
+        assert(cl >= 0 and cl < data_random['n_clusters'])

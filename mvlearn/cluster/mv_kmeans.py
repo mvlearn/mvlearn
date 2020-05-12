@@ -15,6 +15,7 @@
 # Implements multi-view kmeans clustering algorithm for data with 2-views.
 
 import numpy as np
+from joblib import Parallel, delayed
 from .base_kmeans import BaseKMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
@@ -43,19 +44,6 @@ class MultiviewKMeans(BaseKMeans):
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
-    patience : int, optional, default=5
-        The number of EM iterations with no decrease in the objective
-        function after which the algorithm will terminate.
-
-    max_iter : int, optional, default=None
-        The maximum number of EM iterations to run before
-        termination.
-
-    n_init : int, optional, default=5
-        Number of times the k-means algorithm will run on different
-        centroid seeds. The final result will be the best output of
-        n_init runs with respect to total inertia across all views.
-
     init : {'k-means++', 'random'} or list of array-likes, default='k-means++'
         Method of initializing centroids.
 
@@ -70,6 +58,27 @@ class MultiviewKMeans(BaseKMeans):
         the shape (n_clusters, n_features_i) for the ith view, where
         n_features_i is the number of features in the ith view of the input
         data.
+
+    patience : int, optional, default=5
+        The number of EM iterations with no decrease in the objective
+        function after which the algorithm will terminate.
+
+    max_iter : int, optional, default=300
+        The maximum number of EM iterations to run before
+        termination.
+
+    n_init : int, optional, default=5
+        Number of times the k-means algorithm will run on different
+        centroid seeds. The final result will be the best output of
+        n_init runs with respect to total inertia across all views.
+
+    tol : float, default=1e-4
+        Relative tolerance with regards to inertia to declare convergence.
+
+    n_jobs : int, default=None
+        The number of jobs to use for computation. This works by computing
+        each of the n_init runs in parallel.
+        None means 1. -1 means using all processors.
 
     Attributes
     ----------
@@ -154,7 +163,8 @@ class MultiviewKMeans(BaseKMeans):
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
-                 patience=5, max_iter=None, n_init=5):
+                 patience=5, max_iter=300, n_init=5, tol=0.0001,
+                 n_jobs=None):
 
         super().__init__()
 
@@ -164,6 +174,8 @@ class MultiviewKMeans(BaseKMeans):
         self.n_init = n_init
         self.init = init
         self.max_iter = max_iter
+        self.tol = tol
+        self.n_jobs = n_jobs
         self.centroids_ = None
 
     def _compute_dist(self, X, Y):
@@ -411,6 +423,72 @@ class MultiviewKMeans(BaseKMeans):
         Xs_new = check_Xs(Xs, enforce_views=2)
         return Xs_new
 
+    def _one_init(self, Xs):
+        r'''
+        Run the algorithm for one random initialization.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size 2, corresponding to the two views of
+            the data. The two views can each have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        intertia: int
+            The final intertia for this run.
+
+        centroids : list of array-likes
+            - centroids length: n_views
+            - centroids[i] shape: (n_clusters, n_features_i)
+
+            The cluster centroids for each of the two views. centroids[0]
+            corresponds to the centroids of view 1 and centroids[1] corresponds
+            to the centroids of view 2.
+
+        '''
+
+        # Initialize centroids for clustering
+        centroids = self._init_centroids(Xs)
+
+        # Initializing partitions, objective value, and loop vars
+        distances = self._compute_dist(Xs[1], centroids[1])
+        parts = np.argmin(distances, axis=1).flatten()
+        partitions = [None, parts]
+        objective = [np.inf, np.inf]
+        o_funct = [None, None]
+        iter_stall = [0, 0]
+        iter_num = 0
+        max_iter = np.inf
+        if self.max_iter is not None:
+            max_iter = self.max_iter
+
+        # While objective is still decreasing and iterations < max_iter
+        while(max(iter_stall) < self.patience and iter_num < max_iter):
+
+            for vi in range(2):
+                pre_view = (iter_num + 1) % 2
+                # Switch partitions and compute maximization
+                partitions[vi], centroids[vi], o_funct[vi] = self._em_step(
+                    Xs[vi], partitions[pre_view], centroids[vi])
+            iter_num += 1
+            # Track the number of iterations without improvement
+            for view in range(2):
+                if(objective[view] - o_funct[view] > self.tol * np.abs(
+                        objective[view])):
+                    objective[view] = o_funct[view]
+                    iter_stall[view] = 0
+                else:
+                    iter_stall[view] += 1
+
+        intertia = np.sum(objective)
+
+        return intertia, centroids
+
     def fit(self, Xs):
 
         r'''
@@ -453,66 +531,36 @@ class MultiviewKMeans(BaseKMeans):
             raise ValueError(msg)
 
         # Type and value checking for max_iter parameter
-        max_iter = np.inf
         if self.max_iter is not None:
             if not (isinstance(self.max_iter, int) and (self.max_iter > 0)):
                 msg = 'max_iter must be a positive integer'
                 raise ValueError(msg)
-            max_iter = self.max_iter
 
         # Type and value checking for n_init parameter
         if not (isinstance(self.n_init, int) and (self.n_init > 0)):
             msg = 'n_init must be a nonnegative integer'
             raise ValueError(msg)
 
+        # Type and value checking for tol parameter
+        if not (isinstance(self.tol, float) and (self.tol >= 0)):
+            msg = 'tol must be a nonnegative float'
+            raise ValueError(msg)
+
         # If initial centroids passed in, then n_init should be 1
         n_init = self.n_init
-        if not isinstance(self.n_init, str):
+        if not isinstance(self.init, str):
             n_init = 1
 
         # Run multi-view kmeans for n_init different centroid initializations
-        min_inertia = np.inf
-        best_centroids = None
+        run_results = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._one_init)(Xs) for _ in range(n_init))
 
-        for _ in range(n_init):
-
-            # Initialize centroids for clustering
-            centroids = self._init_centroids(Xs)
-
-            # Initializing partitions, objective value, and loop vars
-            distances = self._compute_dist(Xs[1], centroids[1])
-            parts = np.argmin(distances, axis=1).flatten()
-            partitions = [None, parts]
-            objective = [np.inf, np.inf]
-            o_funct = [None, None]
-            iter_stall = [0, 0]
-            iter_num = 0
-
-            # While objective is still decreasing and iterations < max_iter
-            while(max(iter_stall) < self.patience and iter_num < max_iter):
-
-                for vi in range(2):
-                    pre_view = (iter_num + 1) % 2
-                    # Switch partitions and compute maximization
-                    partitions[vi], centroids[vi], o_funct[vi] = self._em_step(
-                        Xs[vi], partitions[pre_view], centroids[vi])
-                iter_num += 1
-                # Track the number of iterations without improvement
-                for view in range(2):
-                    if(o_funct[view] < objective[view]):
-                        objective[view] = o_funct[view]
-                        iter_stall[view] = 0
-                    else:
-                        iter_stall[view] += 1
-
-            # Update min_intertia and best centroids if lower intertia
-            total_inertia = np.sum(objective)
-            if(total_inertia < min_inertia or best_centroids is None):
-                min_inertia = total_inertia
-                best_centroids = centroids
+        # Zip results and find which has max inertia
+        intertias, centroids = zip(*run_results)
+        max_ind = np.argmax(intertias)
 
         # Compute final cluster centroids
-        self._final_centroids(Xs, best_centroids)
+        self._final_centroids(Xs, centroids[max_ind])
 
         return self
 
@@ -533,7 +581,7 @@ class MultiviewKMeans(BaseKMeans):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
+        labels : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
 
         '''
@@ -552,6 +600,6 @@ class MultiviewKMeans(BaseKMeans):
         dist1 = self._compute_dist(Xs[0], self.centroids_[0])
         dist2 = self._compute_dist(Xs[1], self.centroids_[1])
         dist_metric = dist1 + dist2
-        predictions = np.argmin(dist_metric, axis=1).flatten()
+        labels = np.argmin(dist_metric, axis=1).flatten()
 
-        return predictions
+        return labels

@@ -198,6 +198,11 @@ def test_init_not_feat_dimensions(data_small):
         kmeans = MultiviewKMeans(init=[view1, view2])
         kmeans.fit(data_small)
         
+def test_tol_not_nonnegative_float(data_small):
+    with pytest.raises(ValueError):
+        kmeans = MultiviewKMeans(tol=-0.05)
+        kmeans.fit(data_small)
+
 # Function Testing
 
 @pytest.fixture(scope='module')
@@ -221,8 +226,7 @@ def data_random():
     return {'n_test' : num_test_samples, 'n_feats1': n_feats1, 'n_feats2': n_feats2,
             'n_clusters': n_clusters, 'kmeans' : kmeans, 'fit_data' : fit_data,
             'test_data' : test_data}
-
-            
+    
 def test_fit_centroids(data_random):
     kmeans = data_random['kmeans']
     kmeans.fit(data_random['fit_data'])
@@ -311,7 +315,6 @@ def test_fit_predict_max_iter(data_random):
     for cl in cluster_pred:
         assert(cl >= 0 and cl < data_random['n_clusters'])
 
-
 def test_fit_predict_n_init(data_random):
 
     
@@ -358,3 +361,13 @@ def test_fit_predict_init_predefined():
     data = [v1_data, v2_data]
     kmeans = MultiviewKMeans(n_clusters=n_clusters, init=centroids)
     cluster_pred = kmeans.fit_predict(data)
+
+def test_fit_predict_n_jobs_all(data_random):
+    
+    n_clusters = data_random['n_clusters']
+    kmeans = MultiviewKMeans(n_clusters=n_clusters, n_jobs=-1)
+    cluster_pred = kmeans.fit_predict(data_random['test_data'])
+    
+    assert(data_random['n_test'] ==  cluster_pred.shape[0])
+    for cl in cluster_pred:
+        assert(cl >= 0 and cl < data_random['n_clusters'])
