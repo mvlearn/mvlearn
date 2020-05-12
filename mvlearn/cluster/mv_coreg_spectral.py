@@ -36,7 +36,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
     An implementation of co-regularized multi-view spectral clustering based on
     an unsupervied version of the co-training framework.
     This algorithm uses the pairwise co-regularization scheme as described
-    in [#3Clu]_. This algorithm can handle 2 or more views of data.
+    in [#4Clu]_. This algorithm can handle 2 or more views of data.
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
     representation to be similar across all views.
 
     The modified spectral clustering objective for the case of two views is
-    shown and derived in [#3Clu]. In the clustering objective, the
+    shown and derived in [#4Clu]. In the clustering objective, the
     hyperparameter lambda trades-off the spectral clustering objectives and
     the disagreement term.
 
@@ -110,9 +110,8 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
     References
     ----------
-    .. [#3Clu] Kumar A, Rai P, Daumé H (2011) Co-regularized multi-view
+    .. [#4Clu] Kumar A, Rai P, Daumé H (2011) Co-regularized multi-view
             spectral clustering. Adv Neural Inform Process Syst 24:1413–1421
-
 
     Examples
     --------
@@ -156,9 +155,17 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
         Returns
         -------
-        la_eigs : array-like, shape(n_samples, n_clusters)
+         u_mat : array-like, shape(n_samples, n_clusters)
             The top n_cluster eigenvectors of the normalized graph
             laplacian.
+
+        laplacian : array-like, shape(n_samples, n_samples)
+            The normalized graph laplacian for the similarity matrix.
+
+        obj_val : float
+            The updated value for the objective function for the given
+            view.
+
         '''
 
         # Compute the normalized laplacian
@@ -222,20 +229,23 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         # Iteratively solve for all U's
         n_items = Xs[0].shape[0]
         for it in range(1, self.max_iter):
+
             # Performing alternating maximization by cycling through all
             # pairs of views and updating all except view 1
             for v1 in range(1, self._n_views):
+
                 # Computing the regularization term for view v1
                 l_comp = np.zeros((n_items, n_items))
                 for v2 in range(self._n_views):
                     if v1 != v2:
                         l_comp = l_comp + U_mats[v2] @ U_mats[v2].T
                 l_comp = (l_comp + l_comp.T) / 2
+
                 # Adding the symmetrized graph laplacian for view v1
                 l_mat = L_mats[v1] + self.v_lambda * l_comp
                 U_mats[v1], d_mat, _ = sp.sparse.linalg.svds(l_mat,
                                                              k=self.n_clusters)
-                obj_vals[0, it] = np.sum(d_mat)
+                obj_vals[v1, it] = np.sum(d_mat)
 
             # Update U and the objective function value for view 1
             l_comp = np.zeros((n_items, n_items))
