@@ -398,8 +398,7 @@ class ajive(object):
         # check identifiability constraint
 
         if self.reconsider_joint_components:
-            joint_scores, joint_svals,
-            joint_loadings, self.joint_rank = \
+            joint_scores, joint_svals, joint_loadings, self.joint_rank = \
                 _reconsider_joint_components(blocks,
                                              self.sv_threshold_,
                                              joint_scores,
