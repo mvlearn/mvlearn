@@ -299,11 +299,11 @@ class ajive(object):
         blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
                             _arg_checker(blocks,
-                            self.init_signal_ranks,
-                            self.joint_rank,
-                            self.indiv_ranks,
-                            precomp_init_svd,
-                            self.center)
+                                         self.init_signal_ranks,
+                                         self.joint_rank,
+                                         self.indiv_ranks,
+                                         precomp_init_svd,
+                                         self.center)
 
         block_names = list(blocks.keys())
         num_obs = list(blocks.values())[0].shape[0]  # number of views
@@ -359,10 +359,10 @@ class ajive(object):
 
             # Calculating sv samples if not provided
             if self.random_sv_samples_ is None:
+                init_rank_list = list(self.init_signal_ranks.values())
                 self.random_sv_samples_ = \
                     sample_randdir(num_obs,
-                                   signal_ranks=
-                                   list(self.init_signal_ranks.values()),
+                                   signal_ranks= init_rank_list,
                                    R=self.n_randdir_samples,
                                    n_jobs=self.n_jobs)
 
@@ -411,11 +411,10 @@ class ajive(object):
         jsv = joint_svals[0:self.joint_rank]
 
         self.common = \
-        pca.from_precomputed(scores=joint_scores[:,
-                                                 0:self.joint_rank],
-                                                 svals=jsv,
-                                                 loadings=jl,
-                                                 obs_names=obs_names)
+            pca.from_precomputed(scores=joint_scores[:,0:self.joint_rank],
+                                 svals=jsv,
+                                 loadings=jl,
+                                 obs_names=obs_names)
 
         self.common.set_comp_names(['common_comp_{}'.format(i)
                                     for i in range(self.common.rank)])
@@ -424,7 +423,7 @@ class ajive(object):
         block_specific = {bn: {} for bn in block_names}
         for bn in block_names:
             X = blocks[bn]  # individual matrix
-            
+
             # View specific joint space creation
             # projecting X onto the joint space then compute SVD
             if self.joint_rank != 0:
@@ -454,7 +453,7 @@ class ajive(object):
 
             # Here we are creating the individual representations for
             # each view.
-    
+
             # Finding the orthogonal complement to the joint matrix
             if self.joint_rank == 0:
                 X_orthog = X
