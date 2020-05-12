@@ -34,13 +34,22 @@ class MVMDS(BaseEmbed):
 
     Parameters
     ----------
-    n_components : int (positive), default=None
+    n_components : int (positive), default=2
         Represents the number of components that the user would like to
         be returned from the algorithm. This value must be greater than
         0 and less than the number of samples within each view.
 
     num_iter: int (positive), default=15
         Number of iterations stepwise estimation goes through.
+
+    dissimilarity : {'euclidean', 'precomputed'}, default='euclidean'
+        Dissimilarity measure to use:
+
+        'euclidean':
+        Pairwise Euclidean distances between points in the dataset.
+
+        'precomputed':
+        Xs is treated as pre-computed dissimilarity matrices.
 
     Attributes
     ----------
@@ -112,13 +121,31 @@ class MVMDS(BaseEmbed):
             Principal Components.” Computational Statistics &amp; Data
             Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
             doi:10.1016/j.csda.2010.03.010.
+
+    .. [#2MVMDS] Samir Kanaan-Izquierdo, Andrey Ziyatdinov,
+        Maria Araceli Burgueño, Alexandre Perera-Lluna, Multiview: a software
+        package for multiview pattern recognition methods, Bioinformatics,
+        Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
+
     """
-    def __init__(self, n_components=None, num_iter=15):
+    def __init__(self, n_components=2, num_iter=15, dissimilarity='euclidean'):
 
         super().__init__()
         self.components_ = None
         self.n_components = n_components
         self.num_iter = num_iter
+        self.dissimilarity = dissimilarity
+
+        if (self.num_iter) <= 0:
+            raise ValueError('The number of iterations must be greater than 0')
+
+        if (self.n_components) <= 0:
+            raise ValueError('The number of components must be greater than 0 '
+                             + 'and less than the number of features')
+
+        if self.dissimilarity not in ['euclidean', 'precomputed']:
+            raise ValueError('The parameter `dissimilarity` must be one of \
+                {`euclidean`, `precomputed`}')
 
     def _commonpcs(self, Xs):
         """
@@ -154,7 +181,7 @@ class MVMDS(BaseEmbed):
         for i in np.arange(views):
             s = s + (n_num[i] * Xs[i])
 
-        e1, e2 = np.linalg.eigh(s)
+        _, e2 = np.linalg.eigh(s)
 
         # Orders the eigenvalues
         q0 = e2[:, ::-1]
@@ -226,27 +253,42 @@ class MVMDS(BaseEmbed):
                           + 'dataset. ' + str(self.n_components)
                           + ' components were computed instead.')
 
-        if (self.num_iter) <= 0:
-            raise ValueError('The number of iterations must be greater than 0')
-
-        if (self.n_components) <= 0:
-            raise ValueError('The number of components must be greater than 0 '
-                             + 'and less than the number of features')
-
         Xs = check_Xs(Xs, multiview=True)
 
         mat = np.ones(shape=(len(Xs), len(Xs[0]), len(Xs[0])))
 
         # Double centering each view as in single-view MDS
-        for i in np.arange(len(Xs)):
-            view = euclidean_distances(Xs[i])
-            view_squared = np.power(np.array(view), 2)
 
-            J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
-            B = -(1/2) * np.matmul(np.matmul(J, view_squared), J)
-            mat[i] = B
+        if (self.dissimilarity == 'euclidean'):
+
+            for i in np.arange(len(Xs)):
+                view = euclidean_distances(Xs[i])
+                view_squared = np.power(np.array(view), 2)
+
+                J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
+                B = -(1/2) * J @ view_squared @ J
+                mat[i] = B
+
+        # If user wants to input special distance matrix
+
+        elif (self.dissimilarity == 'precomputed'):
+            for i in np.arange(len(Xs)):
+                if (Xs[i].shape[0] != Xs[i].shape[1]):
+                    raise ValueError('The input distance matrix must be '
+                                     + 'a square matrix')
+                else:
+                    view = Xs[i]
+                    view_squared = np.power(np.array(view), 2)
+                    J = np.eye(len(view)) - (1/len(view))*np.ones(view.shape)
+                    B = -(1/2) * J @ view_squared @ J
+                    mat[i] = B
+        else:
+            raise ValueError('The parameter `dissimilarity` must be one of \
+                {`euclidean`, `precomputed`}')
 
         self.components_ = self._commonpcs(mat)
+
+        return self
 
     def fit_transform(self, Xs):
 
