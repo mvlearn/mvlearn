@@ -29,7 +29,8 @@ class GCCA(BaseEmbed):
     samples by first applying single view dimensionality reduction. Computes
     individual projections into a common subspace such that the correlations
     between pairwise projections are minimized (ie. maximize pairwise
-    correlation).
+    correlation). An important note, this is applicable to any number of
+    views, not just two.
 
     Parameters
     ----------
@@ -87,8 +88,14 @@ class GCCA(BaseEmbed):
     the view 1, view 2, and between view covariance matrix estimates. GCCA
     maximizes the sum of these correlations across all pairwise views and
     computes a set of linearly independent components. This specific algorithm
-    first applies priciple component analysis and then aligns the most
-    informative projections.
+    first applies priciple component analysis (PCA) independently to each view
+    and then aligns the most informative projections to find correlated and
+    informative subspaces. Parameters that control the embedding dimension
+    apply to the PCA step. The dimension of each aligned subspace is the
+    maximum or minimum of the individual dimensions, per the `max_ranks`
+    parameter. Using the maximum will capture the most information from all
+    views but also noise from some views. Using the minimum will better remove
+    noise dimensions but at the cost of information from some views.
 
     References
     ----------
@@ -238,7 +245,7 @@ class GCCA(BaseEmbed):
                 s2 = np.square(s)
                 rank = sum(np.cumsum(s2 / sum(s2)) < self.fraction_var) + 1
             else:
-                # Sweep over only first log2, else too large elbos
+                # Sweep over only first log2, else too large elbows
                 s = s[: int(np.ceil(np.log2(np.min(x.shape))))]
                 elbows, _ = select_dimension(
                     s, n_elbows=self.n_elbows, threshold=None
