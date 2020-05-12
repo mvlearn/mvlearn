@@ -32,7 +32,7 @@ def _ajive_full_estimate_heatmaps(full_block_estimates, blocks):
         # grab data
         X = blocks[bn]
         J = full_block_estimates[bn]["joint"]
-        I = full_block_estimates[bn]["individual"]
+        I_mat = full_block_estimates[bn]["individual"]
         E = full_block_estimates[bn]["noise"]
 
         # observed data
@@ -47,7 +47,7 @@ def _ajive_full_estimate_heatmaps(full_block_estimates, blocks):
 
         # full individual estimate
         plt.subplot(4, num_blocks, k + 2 * num_blocks + 1)
-        sns.heatmap(I, xticklabels=False, yticklabels=False, cmap="RdBu")
+        sns.heatmap(I_mat, xticklabels=False, yticklabels=False, cmap="RdBu")
         plt.title("View: {} individual".format(bn))
 
         # full noise estimate

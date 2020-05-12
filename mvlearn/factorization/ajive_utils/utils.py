@@ -3,6 +3,7 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
 
+
 def svd_wrapper(X, rank=None):
     """
     Computes the full or partial SVD of a matrix. Handles the case where
@@ -10,7 +11,7 @@ def svd_wrapper(X, rank=None):
 
     Parameters
     ----------
-    X: array-like  
+    X: array-like
         - X shape: shape(N, D)
 
     rank: int
@@ -34,7 +35,7 @@ def svd_wrapper(X, rank=None):
     full = False
     if rank is None or rank == min(X.shape):
         full = True
-        
+
     if issparse(X) or not full:
         assert rank <= min(X.shape) - 1  # svds cannot compute the full svd
         scipy_svds = svds(X, rank)
@@ -56,7 +57,7 @@ def fix_scipy_svds(scipy_svds):
     """
     scipy.sparse.linalg.svds orders the singular values in increasing order.
     This function flips this order.
-    
+
     Parameters
     ----------
     scipy_svds: scipy.sparse.linalg.svds

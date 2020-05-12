@@ -19,7 +19,7 @@ from sklearn.externals.joblib import load, dump
 import pandas as pd
 from ..utils.utils import check_Xs
 from .ajive_utils.block_visualization import _data_block_heatmaps, \
-_ajive_full_estimate_heatmaps
+    _ajive_full_estimate_heatmaps
 
 from .ajive_utils.utils import svd_wrapper, centering
 from .ajive_utils.wedin_bound import get_wedin_samples
@@ -123,7 +123,7 @@ class ajive(object):
 
     indiv_ranks: dict of ints
         Ranks of the individual matrices for each view.
-        
+
     is_fit: bool, default = False
         Returns whether data has been fit yet
 
@@ -138,15 +138,15 @@ class ajive(object):
     individual variation of each view. Each of these individual bases is
     orthonormal to the joint basis. These bases are then used to create the
     following :math:`k` statements:
-        
+
         .. math::
             X^{(i)}= J^{(i)} + I^{(i)} + E^{(i)}
 
     where :math:`X^{(i)}` represents the i-th view of data and :math:`J^{(i)}`,
     :math:`I^{(i)}`, and :math:`E^{(i)}` represent its joint, individual, and
-    noise signal estimates respectively. 
+    noise signal estimates respectively.
 
-    The AJIVE algorithm calculations can be split into three seperate steps:  
+    The AJIVE algorithm calculations can be split into three seperate steps:
         - Signal Space Initial Extraction
         - Score Space Segmentation
         - Final Decomposition and Outputs
@@ -162,7 +162,7 @@ class ajive(object):
     After this, the **Score Space Segmentation** step concatenates the
     *k* :math:`\widetilde{U}^{(i)}` matrices found in the first step as
     follows:
-   
+
         .. math::
             M = [\widetilde{U}^{(1)}, \dots, \widetilde{U}^{(k)}]
 
@@ -175,14 +175,14 @@ class ajive(object):
     basis, :math:`U_{joint}`. The :math:`J^{(i)}` matrix
     (joint signal estimate) can be found by projecting :math:`X^{(i)}` onto
     :math:`U_{joint}`.
-  
+
     In the *Final Decomposition and Outputs* step, we project each
     :math:`X^{i}` matrix onto the orthogonal complement of :math:`U_{joint}`:
-        
+
         .. math::
             X^{(i), orthog} = (I - U_{joint}U_{joint}^T)X^{(i)}
 
-            
+
     :math:`I` in the above equation represents the identity matrix.
     From here, the :math:`I^{(i)}` matrix (individual signal estimate) can be
     found by performing the rank :math:`r_{individual}^{(i)}` singular value
@@ -194,12 +194,12 @@ class ajive(object):
 
         .. math::
             E^{(i)}= X^{(i)} - (J^{(i)} + I^{(i)})
-            
+
     Much of this implementation has been adapted from **Iain Carmichael**
     Ph.D.'s pip-installable package, *jive*, the code for which is
-    `linked here <https://github.com/idc9/py_jive>`_.        
-    
- 
+    `linked here <https://github.com/idc9/py_jive>`_.
+
+
     Examples
     --------
     >>> from mvlearn.factorization.ajive import ajive
@@ -284,11 +284,11 @@ class ajive(object):
         ----------
         blocks: dict or list of array-likes
             - blocks length: n_views
-            - blocks[i] shape: (n_samples, n_features_i) 
-            The different views that are input. Input as data matrices. 
-            If dict, will name blocks by keys, otherwise blocks are named by 
-            0, 1, ...K. 
-            
+            - blocks[i] shape: (n_samples, n_features_i)
+            The different views that are input. Input as data matrices.
+            If dict, will name blocks by keys, otherwise blocks are named by
+            0, 1, ...K.
+
         precomp_init_svd: dict or list
             Precomputed initial SVD. Must have one entry for each data block.
             The SVD should be a 3 tuple (scores, svals, loadings), see output
@@ -298,7 +298,7 @@ class ajive(object):
 
         blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
-                _arg_checker(blocks,
+                            _arg_checker(blocks,
                             self.init_signal_ranks,
                             self.joint_rank,
                             self.indiv_ranks,
@@ -306,7 +306,7 @@ class ajive(object):
                             self.center)
 
         block_names = list(blocks.keys())
-        num_obs = list(blocks.values())[0].shape[0] #number of views
+        num_obs = list(blocks.values())[0].shape[0]  # number of views
 
         # centering views
         self.centers_ = {}
@@ -323,7 +323,7 @@ class ajive(object):
             # compute SVD with rank init_signal_ranks[bn] + 1 for view
             if precomp_init_svd[bn] is None:
                 # signal rank + 1 to get individual rank sv threshold
-                U, D, V = svd_wrapper(blocks[bn], \
+                U, D, V = svd_wrapper(blocks[bn],
                                       self.init_signal_ranks[bn] + 1)
             # If precomputed return values already found
             else:
@@ -333,24 +333,23 @@ class ajive(object):
 
             # The SV threshold is halfway between the init_signal_ranks[bn]th
             # and init_signal_ranks[bn] + 1 st singular value.
-            self.sv_threshold_[bn] = (D[self.init_signal_ranks[bn] - 1] \
+            self.sv_threshold_[bn] = (D[self.init_signal_ranks[bn] - 1]
                                       + D[self.init_signal_ranks[bn]])/2
 
-            init_signal_svd[bn] = {'scores': \
-                           U[:, 0:self.init_signal_ranks[bn]],
-                                   'svals': \
+            init_signal_svd[bn] = {'scores':
+                                   U[:, 0:self.init_signal_ranks[bn]],
+                                   'svals':
                                    D[0:self.init_signal_ranks[bn]],
-                                   'loadings': \
+                                   'loadings':
                                    V[:, 0:self.init_signal_ranks[bn]]}
-
 
         # SVD of joint signal matrix. Here we are trying to estimate joint
         # rank and find an apt joint basis.
 
         joint_scores_matrix = \
-        np.bmat([init_signal_svd[bn]['scores'] for bn in block_names])
+            np.bmat([init_signal_svd[bn]['scores'] for bn in block_names])
         joint_scores, joint_svals, joint_loadings = \
-        svd_wrapper(joint_scores_matrix)
+            svd_wrapper(joint_scores_matrix)
         self.all_joint_svals_ = deepcopy(joint_svals)
 
         # estimate joint rank using wedin bound and random direction if a
@@ -362,7 +361,7 @@ class ajive(object):
             if self.random_sv_samples_ is None:
                 self.random_sv_samples_ = \
                     sample_randdir(num_obs,
-                                   signal_ranks=\
+                                   signal_ranks=
                                    list(self.init_signal_ranks.values()),
                                    R=self.n_randdir_samples,
                                    n_jobs=self.n_jobs)
@@ -381,7 +380,7 @@ class ajive(object):
                                           n_jobs=self.n_jobs)
 
             self.wedin_sv_samples_ = len(blocks) - \
-                np.array([sum(self.wedin_samples_[bn][i] ** \
+                np.array([sum(self.wedin_samples_[bn][i] **
                               2 for bn in block_names)
                           for i in range(self.n_wedin_samples)])
 
@@ -392,47 +391,49 @@ class ajive(object):
             self.rand_cutoff_ = np.percentile(self.random_sv_samples_,
                                               self.randdir_percentile)
             self.svalsq_cutoff_ = max(self.wedin_cutoff_, self.rand_cutoff_)
-            self.joint_rank_wedin_est_ = sum(joint_svals ** 2 > \
+            self.joint_rank_wedin_est_ = sum(joint_svals ** 2 >
                                              self.svalsq_cutoff_)
             self.joint_rank = deepcopy(self.joint_rank_wedin_est_)
 
         # check identifiability constraint
 
         if self.reconsider_joint_components:
-            joint_scores, joint_svals, joint_loadings, self.joint_rank = \
-                _reconsider_joint_components(blocks, self.sv_threshold_,
-                                            joint_scores, 
-                                            joint_svals, joint_loadings,
-                                            self.joint_rank)
+            joint_scores, joint_svals,
+            joint_loadings, self.joint_rank = \
+                _reconsider_joint_components(blocks,
+                                             self.sv_threshold_,
+                                             joint_scores,
+                                             joint_svals, joint_loadings,
+                                             self.joint_rank)
 
         # Using rank and joint SVD, calls pca class to get joint basis
+        jl = joint_loadings[:, 0:self.joint_rank]
+        jsv = joint_svals[0:self.joint_rank]
+
         self.common = \
-        pca.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
-                                           svals=\
-                                           joint_svals[0:self.joint_rank], 
-                                           loadings=joint_loadings\
-                                           [:, 0:self.joint_rank],
-                                           obs_names=obs_names)
+        pca.from_precomputed(scores=joint_scores[:,
+                                                 0:self.joint_rank],
+                                                 svals=jsv,
+                                                 loadings=jl,
+                                                 obs_names=obs_names)
 
         self.common.set_comp_names(['common_comp_{}'.format(i)
                                     for i in range(self.common.rank)])
 
-
         # view estimates
-        
         block_specific = {bn: {} for bn in block_names}
         for bn in block_names:
-            X = blocks[bn] #individual matrix
+            X = blocks[bn]  # individual matrix
             
             # View specific joint space creation
             # projecting X onto the joint space then compute SVD
             if self.joint_rank != 0:
                 if issparse(X):  # Implement sparse JIVE later
-                    raise ValueError('An input matrix is sparse. This ' 
-                                     'functionality '+
-                                     ' is not available yet')                    
+                    raise ValueError('An input matrix is sparse. This '
+                                     'functionality ' +
+                                     ' is not available yet')
                 else:
-                    J = np.array(np.dot(joint_scores, \
+                    J = np.array(np.dot(joint_scores,
                                         np.dot(joint_scores.T, X)))
                     U, D, V = svd_wrapper(J, self.joint_rank)
                     if not self.store_full:
@@ -444,16 +445,16 @@ class ajive(object):
                     J = np.zeros(shape=blocks[bn].shape)
                 else:
                     J = None
-            #special zeros scenario
+            # special zeros scenario
             block_specific[bn]['joint'] = {'full': J,
                                            'scores': U,
                                            'svals': D,
                                            'loadings': V,
                                            'rank': self.joint_rank}
 
-            # Here we are creating the individual representations for 
-            # each view. 
-            
+            # Here we are creating the individual representations for
+            # each view.
+    
             # Finding the orthogonal complement to the joint matrix
             if self.joint_rank == 0:
                 X_orthog = X
@@ -482,26 +483,26 @@ class ajive(object):
                     U, D, V = None, None, None
                 else:
                     U, D, V = svd_wrapper(X_orthog, rank)
-            
+
             # projecting X columns onto orthogonal complement of joint_scores
 
             if self.store_full:
                 if rank == 0:
-                    I = np.zeros(shape=blocks[bn].shape)
+                    I_mat = np.zeros(shape=blocks[bn].shape)
                 else:
-                    I = np.array(np.dot(U, np.dot(np.diag(D), V.T)))
+                    I_mat = np.array(np.dot(U, np.dot(np.diag(D), V.T)))
             else:
-                I = None  # Kill I matrix to save memory
+                I_mat = None  # Kill I matrix to save memory
 
-            block_specific[bn]['individual'] = {'full': I,
-                                            'scores': U,
-                                            'svals': D,
-                                            'loadings': V,
-                                            'rank': rank}
+            block_specific[bn]['individual'] = {'full': I_mat,
+                                                'scores': U,
+                                                'svals': D,
+                                                'loadings': V,
+                                                'rank': rank}
 
             # Getting the noise matrix, E
             if self.store_full and not issparse(X):
-                E = X - (J + I)
+                E = X - (J + I_mat)
             else:
                 E = None
             block_specific[bn]['noise'] = E
@@ -510,18 +511,18 @@ class ajive(object):
         self.blocks = {}
 
         # Stores info for easy information checking
+
         for bn in block_specific.keys():
+            bs_dict = block_specific[bn]
             self.blocks[bn] = \
-            ViewSpecificResults(joint=block_specific[bn]['joint'],
-                                                   individual=block_specific\
-                                                   [bn]['individual'],
-                                                   noise=block_specific[bn]\
-                                                   ['noise'],
-                                                   block_name=bn,
-                                                   obs_names=obs_names,
-                                                   var_names=var_names[bn],
-                                                   m=self.centers_[bn],
-                                                   shape=blocks[bn].shape)
+                ViewSpecificResults(joint=bs_dict['joint'],
+                                    individual=bs_dict['individual'],
+                                    noise=bs_dict['noise'],
+                                    block_name=bn,
+                                    obs_names=obs_names,
+                                    var_names=var_names[bn],
+                                    m=self.centers_[bn],
+                                    shape=blocks[bn].shape)
 
         return self
 
@@ -537,11 +538,11 @@ class ajive(object):
         r"""
         Returns
         -------
-        
+
         block_names: list
             The names of the views.
 
-        """    
+        """
         if self.is_fit:
             return list(self.blocks.keys())
         else:
@@ -573,13 +574,13 @@ class ajive(object):
 
     def results_dict(self):
         r"""
-        
+
         Returns
         -------
-        
+
         results: dict of dict of dict of np.arrays
             Returns n+1 dicts where n is the number of input views. First dict
-            is a named 'common' and contains the common scores, loadings and 
+            is a named 'common' and contains the common scores, loadings and
             rank of the views. The next n dicts represent each view. They each
             have the following keys:
                 - 'joint'
@@ -592,7 +593,7 @@ class ajive(object):
                     - 'loadings'
                     - 'rank'
                     - 'full'
-            
+
             The 'noise' key is the full noise matrix estimate of the view.
 
         """
@@ -629,14 +630,14 @@ class ajive(object):
         joint_rank: int
             The joint rank
 
-        indiv_ranks: dict 
+        indiv_ranks: dict
             The individual ranks.
         """
         if not self.is_fit:
             raise ValueError("Decomposition has not yet been computed")
 
         joint_rank = self.common.rank
-        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in \
+        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in
                        self.block_names}
         return joint_rank, indiv_ranks
 
@@ -646,8 +647,8 @@ class ajive(object):
         ----------
         blocks: dict or list of array-likes
             - blocks length: n_views
-            - blocks[i] shape: (n_samples, n_features_i) 
-            The different views that are input. Input as data matrices. 
+            - blocks[i] shape: (n_samples, n_features_i)
+            The different views that are input. Input as data matrices.
 
         Returns
         -------
@@ -664,7 +665,7 @@ class ajive(object):
             - blocks length: n_views
             - blocks[i] shape: (n_samples, n_features_i)
             The different views that are input. Input as data matrices.
-            
+
         full_block_estimates: dict
         Dict that is returned from the ajive.predict() function
 
@@ -676,6 +677,7 @@ class ajive(object):
         """
         _ajive_full_estimate_heatmaps(full_block_estimates, blocks)
 
+
 def _dict_formatting(x):
     if hasattr(x, "keys"):
         names = list(x.keys())
@@ -685,19 +687,23 @@ def _dict_formatting(x):
     return {n: x[n] for n in names}
 
 
-def _arg_checker(blocks, init_signal_ranks, joint_rank, indiv_ranks,
-                precomp_init_svd, center):
+def _arg_checker(blocks,
+                 init_signal_ranks,
+                 joint_rank,
+                 indiv_ranks,
+                 precomp_init_svd,
+                 center):
     """
-    Checks the argument inputs at different points in the code. If various 
+    Checks the argument inputs at different points in the code. If various
     criteria not met, errors are raised.
-        
+
     """
-    if  hasattr(blocks, "keys"):
+    if hasattr(blocks, "keys"):
         blocks = _dict_formatting(blocks)
     else:
         blocks_upd = check_Xs(blocks, multiview=True)
         blocks = _dict_formatting(blocks_upd)
-    
+
     block_names = list(blocks.keys())
 
     # check blocks have the same number of observations

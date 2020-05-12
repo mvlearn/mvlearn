@@ -24,7 +24,7 @@ class pca(object):
 
     Attributes
     ----------
-    scores_: pd.DataFrame 
+    scores_: pd.DataFrame
         - scores_ shape: (n_samples, n_components)
         The orthonormal matrix of (normalized) scores.
 
@@ -32,25 +32,25 @@ class pca(object):
         - loadings_ shape: (n_features, n_components)
         The orthonormal matrix of loadings.
 
-    svals_: pd.Series 
+    svals_: pd.Series
         - svals_ shape: (n_components, )
         The singular values.
 
-    m_: np.array 
+    m_: np.array
         - m_ shape: (n_features, )
         The vector used to center the data.
 
     frob_norm_: float
         The Frobenius norm of the training data matrix X.
 
-    shape_: tuple 
+    shape_: tuple
         - shape_ length: 2
         The shape of the original data matrix.
     """
     def __init__(self, n_components=None, center='mean'):
         self.n_components = n_components
         self.center = center
-        
+
     def get_params(self):
         return {'n_components': self.n_components,
                 'center': self.center}
@@ -59,8 +59,8 @@ class pca(object):
         if not hasattr(self, 'scores_'):
             return 'pca object, nothing has been computed yet'
         else:
-            return 'Rank {} pca of a {} matrix'.format(self.n_components,\
-                         self.shape_)
+            return 'Rank {} pca of a {} matrix'.format(self.n_components,
+                                                       self.shape_)
 
     def fit(self, X):
         """
@@ -68,7 +68,7 @@ class pca(object):
 
         Parameters
         ----------
-        X: array-like or sparse matrix 
+        X: array-like or sparse matrix
             - X.shape = (n_samples, n_features)
         """
         self.shape_, obs_names, var_names, self.n_components, \
@@ -105,7 +105,7 @@ class pca(object):
 
         """
         Loads the pca object from a precomputed PCA decomposition.
-        
+
         Returns
         ------
 
@@ -198,11 +198,11 @@ class pca(object):
     def rank(self):
         """
         Returns the observation names.
-        
+
         Returns
         ------
         rank: int
-        
+
         """
 
         return self.n_components
@@ -210,11 +210,11 @@ class pca(object):
     def obs_names(self):
         """
         Returns the observation names.
-        
+
         Returns
         ------
         obs_names: np.array
-       
+
         """
         return np.array(self.scores_.index)
 
@@ -232,7 +232,7 @@ class pca(object):
     def var_names(self):
         """
         Returns the variable names.
-        
+
         Returns
         ------
         var_names: np.array
@@ -282,7 +282,7 @@ class pca(object):
     def loadings(self, np=False):
         """
         Returns the loadings.
-        
+
         Returns
         ------
         loadings: np.array
@@ -296,7 +296,7 @@ class pca(object):
     def svals(self, np=False):
         """
         Returns the singular values.
-        
+
         Returns
         ------
         svals: np.array
@@ -366,6 +366,7 @@ class pca(object):
 
         return pca_reconstruct(U=scores, D=self.svals_, V=self.loadings_,
                                m=self.m_)
+
 
 def _arg_checker(X, n_components):
 

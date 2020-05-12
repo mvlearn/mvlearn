@@ -9,7 +9,7 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
 
     Parameters
     ----------
-    X: array-like 
+    X: array-like
         - X shape =  (n_samples, n_features)
         The data block.
 
@@ -55,11 +55,11 @@ def norms_sample_project(X, basis, R=1000, n_jobs=None):
 
     Parameters
     ---------
-    X: array-like  
+    X: array-like 
         - X shape: shape(N, D)
         The observed data
 
-    B: array-like  
+    B: array-like 
         The basis for the signal col/rows space (e.g. the left/right singular\
         vectors)
 
