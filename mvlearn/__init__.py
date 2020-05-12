@@ -4,7 +4,7 @@ import mvlearn.construct
 import mvlearn.cotraining
 import mvlearn.datasets
 import mvlearn.utils
-import mvlearn.ajive
+import mvlearn.factorization
 import mvlearn.plotting
 
 __version__ = "0.1.0"

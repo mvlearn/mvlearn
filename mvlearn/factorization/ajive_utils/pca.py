@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.externals.joblib import load, dump
-import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from scipy.sparse import issparse
 

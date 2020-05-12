@@ -18,20 +18,20 @@ from copy import deepcopy
 from sklearn.externals.joblib import load, dump
 import pandas as pd
 from ..utils.utils import check_Xs
-from .block_visualization import _data_block_heatmaps, \
+from .ajive_utils.block_visualization import _data_block_heatmaps, \
 _ajive_full_estimate_heatmaps
 
-from .utils import svd_wrapper, centering
-from .wedin_bound import get_wedin_samples
-from .random_direction import sample_randdir
-from .pca import pca
+from .ajive_utils.utils import svd_wrapper, centering
+from .ajive_utils.wedin_bound import get_wedin_samples
+from .ajive_utils.random_direction import sample_randdir
+from .ajive_utils.pca import pca
 
 
 class ajive(object):
-    """
+    r"""
     An implementation of Angle-based Joint and Individual Variation Explained.
     This algorithm takes multiple input views with the same number of samples
-    and decomposes them into 3 distinct matrices representing [#1ajive ]_:
+    and decomposes them into 3 distinct matrices representing [#1ajive]_:
         - Individual variation of each particular view
         - Joint variation shared by all views
         - Noise
@@ -84,7 +84,7 @@ class ajive(object):
     Attributes
     ----------
 
-    common: mvlearn.ajive.pca.pca
+    common: mvlearn.factorization.pca.pca
         The common joint space found using pca class in same directory
 
     blocks: dict
@@ -124,65 +124,102 @@ class ajive(object):
     indiv_ranks: dict of ints
         Ranks of the individual matrices for each view.
         
+    is_fit: bool, default = False
+        Returns whether data has been fit yet
+
     Notes
     -----
 
-    Classical Multiview Multidimensional Scaling can be broken down into two
-    steps. The first step involves calculating the Euclidean Distance matrices,
-    :math:`Z_i`, for each of the :math:`k` views and double-centering
-    these matrices through the following calculations:
+    Angle-Based Joint and Individual Variation Explained (AJIVE) is a specfic
+    variation of the Joint and Individual Variation Explained (JIVE) algorithm.
+    This algorithm takes :math:`k` different views with :math:`n` observations
+    and :math:`d` variables and finds a basis that represents the joint
+    variation and :math:`k` bases with their own ranks representing the
+    individual variation of each view. Each of these individual bases is
+    orthonormal to the joint basis. These bases are then used to create the
+    following :math:`k` statements:
+        
+        .. math::
+            X^{(i)}= J^{(i)} + I^{(i)} + E^{(i)}
 
-    .. math::
-        \Sigma_{i}=-\frac{1}{2}J_iZ_iJ_i
+    where :math:`X^{(i)}` represents the i-th view of data and :math:`J^{(i)}`,
+    :math:`I^{(i)}`, and :math:`E^{(i)}` represent its joint, individual, and
+    noise signal estimates respectively. 
 
-    .. math::
-        \text{where }J_i=I_i-{\frac {1}{n}}\mathbb{1}\mathbb{1}^T
+    The AJIVE algorithm calculations can be split into three seperate steps:  
+        - Signal Space Initial Extraction
+        - Score Space Segmentation
+        - Final Decomposition and Outputs
 
-    The second step involves finding the common principal components of the
-    :math:`\Sigma` matrices. These can be thought of as multiview
-    generalizations of the principal components found in principal component
-    analysis (PCA) given several covariance matrices. The central hypothesis of
-    the common principal component model states that given k normal populations
-    (views), their :math:`p` x :math:`p` covariance matrices
-    :math:`\Sigma_{i}`, for :math:`i = 1,2,...,k` are simultaneously
-    diagonalizable as:
+    In the **Signal Space Initial Extraction** step we compute a rank
+    :math:`r_{initial}^{(i)}` singular value decomposition for each
+    :math:`X^{(i)}`, the value of :math:`r_{initial}^{(i)}` can be found by
+    looking at the scree plots of each view or thresholding based on singular
+    value. From each singular value decomposition, the first
+    :math:`r_{initial}^{(i)}` columns of of the scores matrix
+    (:math:`U^{(i)}`) are taken to form :math:`\widetilde{U}^{(i)}`.
 
-    .. math::
-        \Sigma_{i} = QD_i^2Q^T
+    After this, the **Score Space Segmentation** step concatenates the
+    *k* :math:`\widetilde{U}^{(i)}` matrices found in the first step as
+    follows:
+   
+        .. math::
+            M = [\widetilde{U}^{(1)}, \dots, \widetilde{U}^{(k)}]
 
-    where :math:`Q` is the common :math:`p` x :math:`p` orthogonal matrix and
-    :math:`D_i^2` are positive :math:`p` x :math:`p` diagonal matrices. The
-    :math:`Q` matrix contains all the common principal components. The common
-    principal component, :math:`q_j`, is found by solving the minimization
-    problem:
+    From here, the :math:`r_{joint}` singular value decomposition is taken.
+    :math:`r_{joint}` is estimated individually or using the wedin bound which
+    quantifies how the theoretical singular subspaces are affected by noise as
+    thereby quantifying the distance between rank of the original input and the
+    estimation. For the scores of the singular value decomposition of
+    :math:`M`, the first :math:`r_{joint}` columns are taken to obtain the
+    basis, :math:`U_{joint}`. The :math:`J^{(i)}` matrix
+    (joint signal estimate) can be found by projecting :math:`X^{(i)}` onto
+    :math:`U_{joint}`.
+  
+    In the *Final Decomposition and Outputs* step, we project each
+    :math:`X^{i}` matrix onto the orthogonal complement of :math:`U_{joint}`:
+        
+        .. math::
+            X^{(i), orthog} = (I - U_{joint}U_{joint}^T)X^{(i)}
 
-    .. math::
-        \text{Minimize} \sum_{i=1}^{k}n_ilog(q_j^TS_iq_j)
-    .. math::
-        \text{Subject to } q_j^Tq_j = 1
+            
+    :math:`I` in the above equation represents the identity matrix.
+    From here, the :math:`I^{(i)}` matrix (individual signal estimate) can be
+    found by performing the rank :math:`r_{individual}^{(i)}` singular value
+    decomposition of :math:`X^{(k), orthog}`. :math:`r_{individual}^{(i)}` can
+    be found by using the aforementioned singular value thresholding method.
 
-    where :math:`n_i` represent the degrees of freedom and :math:`S_i`
-    represent sample covariance matrices.
+    Finally, we can solve for the noise estimates, :math:`E^{(i)}` by using
+    the equation:
 
-    This class does not support ``MVMDS.transform()`` due to the iterative
-    nature of the algorithm and the fact that the transformation is done
-    during iterative fitting. Use ``MVMDS.fit_transform()`` to do both
-    fitting and transforming at once.
-
+        .. math::
+            E^{(i)}= X^{(i)} - (J^{(i)} + I^{(i)})
+            
+    Much of this implementation has been adapted from **Iain Carmichael**
+    Ph.D.'s pip-installable package, *jive*, the code for which is
+    `linked here <https://github.com/idc9/py_jive>`_.        
+    
+ 
     Examples
     --------
-    >>> from mvlearn.embed import MVMDS
+    >>> from mvlearn.factorization.ajive import ajive
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> Xs, _ = load_UCImultifeature()
     >>> print(len(Xs)) # number of samples in each view
     6
-    >>> print(Xs[0].shape) # number of samples in each view
-    (2000, 76)
-    >>> mvmds = MVMDS(n_components=5)
-    >>> Xs_reduced = mvmds.fit_transform(Xs)
-    >>> print(Xs_reduced.shape)
-    (2000, 5)
-
+    >>> print(Xs[0].shape, Xs[1].shape) # number of samples in each view
+    (2000, 76) (2000, 216)
+    >>> Ajive = ajive(init_signal_ranks=[2,2])
+    >>> Ajive.fit(Xs)
+    >>> b = Ajive.predict()
+    >>> print(len(b.keys()))
+    6
+    >>> print(b[0]['joint'].shape,b[1]['joint'].shape)
+    (2000, 76) (2000, 216)
+    >>> print(b[0]['individual'].shape,b[1]['individual'].shape)
+    (2000, 76) (2000, 216)
+    >>> print(b[0]['noise'].shape,b[1]['noise'].shape)
+    (2000, 76) (2000, 216)
 
     References
     ----------
@@ -240,7 +277,7 @@ class ajive(object):
             return "No data has been fitted yet"
 
     def fit(self, blocks, precomp_init_svd=None):
-        """
+        r"""
         Fits the AJIVE decomposition.
 
         Parameters
@@ -258,6 +295,7 @@ class ajive(object):
             of .svd_wrapper for formatting details.
 
         """
+
         blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
                 _arg_checker(blocks,
@@ -496,9 +534,9 @@ class ajive(object):
 
     @property
     def block_names(self):
-        """
+        r"""
         Returns
-        ------
+        -------
         
         block_names: list
             The names of the views.
@@ -517,9 +555,9 @@ class ajive(object):
         return load(fpath)
 
     def predict(self):
-        """
+        r"""
         Returns
-        ------
+        -------
 
         full: dict of dict of np.arrays
             The joint, individual, and noise full estimates for each block.
@@ -534,10 +572,10 @@ class ajive(object):
         return full
 
     def results_dict(self):
-        """
+        r"""
         
         Returns
-        ------
+        -------
         
         results: dict of dict of dict of np.arrays
             Returns n+1 dicts where n is the number of input views. First dict
@@ -585,9 +623,9 @@ class ajive(object):
         return results
 
     def get_ranks(self):
-        """
+        r"""
         Returns
-        ------
+        -------
         joint_rank: int
             The joint rank
 
@@ -603,7 +641,14 @@ class ajive(object):
         return joint_rank, indiv_ranks
 
     def data_block_heatmaps(blocks):
-        """
+        r"""
+        Parameters
+        ----------
+        blocks: dict or list of array-likes
+            - blocks length: n_views
+            - blocks[i] shape: (n_samples, n_features_i) 
+            The different views that are input. Input as data matrices. 
+
         Returns
         -------
         fig : figure object
@@ -612,7 +657,17 @@ class ajive(object):
         _data_block_heatmaps(blocks)
 
     def ajive_full_estimate_heatmaps(full_block_estimates, blocks):
-        """
+        r"""
+        Parameters
+        ----------
+        blocks: dict or list of array-likes
+            - blocks length: n_views
+            - blocks[i] shape: (n_samples, n_features_i)
+            The different views that are input. Input as data matrices.
+            
+        full_block_estimates: dict
+        Dict that is returned from the ajive.predict() function
+
         Returns
         -------
         fig : figure object
@@ -876,4 +931,3 @@ class ViewSpecificResults(object):
         return "Block: {}, individual rank: {}, joint rank: {}".format(
             self.block_name, self.individual.rank, self.joint.rank
         )
-

@@ -9,7 +9,8 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
 
     Parameters
     ----------
-    X: array-like, shape (n_samples, n_features)
+    X: array-like 
+        - X shape =  (n_samples, n_features)
         The data block.
 
     U, D, V:
@@ -21,7 +22,7 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
     R: int
         Number of samples for resampling procedure
 
-    n_jobs: int, None
+    n_jobs: int, default = None
         Number of jobs for parallel processing using
         sklearn.externals.joblib.Parallel. If None, will not use parallel
         processing.

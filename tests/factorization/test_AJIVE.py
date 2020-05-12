@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import pytest
-from mvlearn.ajive.ajive import ajive
+from mvlearn.factorization.ajive import ajive
 from scipy.sparse import csr_matrix
 
 class TestFig2Runs(unittest.TestCase):
@@ -444,7 +444,10 @@ def test_plot_diag(data):
 
 def test_ajive_plot(data):
     x = data['same_views']
-    ajive.ajive_full_estimate_heatmaps(blocks=x)
+    jive = ajive(init_signal_ranks=[2,2])
+    jive.fit(blocks=x)
+    blocks = jive.predict()
+    ajive.ajive_full_estimate_heatmaps(blocks, x)
     p = 1
     assert p == 1
     

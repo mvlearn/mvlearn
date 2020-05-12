@@ -1,9 +1,9 @@
-AJIVE Algorithm
-=================
+Factorization
+=============
 
-.. currentmodule:: mvlearn.ajive
+.. currentmodule:: mvlearn.factorization
 
-Ajive
+AJIVE
 --------------------------
 
 .. autoclass:: ajive

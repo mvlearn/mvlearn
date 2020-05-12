@@ -2,8 +2,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from mvlearn.ajive.pca import pca
-from sklearn.decomposition import PCA
+from mvlearn.factorization.ajive_utils.pca import pca
 
 class TestPCA(unittest.TestCase):
 
@@ -71,7 +70,7 @@ class TestPCA(unittest.TestCase):
         rank = self.n_components
         X = self.X
         svals = self.pca.svals_
-        checks = svd_checker(X, svals, U, D, V, n, d, rank)
+        checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
 
     def test_reconstruction(self):
@@ -127,7 +126,7 @@ class TestPCA(unittest.TestCase):
         
         
     
-def svd_checker(X, svals, U, D, V, n, d, rank):
+def svd_checker(U, D, V, n, d, rank):
     checks = {}
 
     # scores shape
@@ -138,20 +137,6 @@ def svd_checker(X, svals, U, D, V, n, d, rank):
 
     # singular values shape
     checks['svals_shape'] = D.shape == (rank, )
-    
-    # check singular values against sklearn
-    sklearn_pca = PCA(n_components=rank).fit(X)
-    sklearn_svals = sklearn_pca.singular_values_
-    
-    lis_p = list(svals)
-    lis_sk = list(sklearn_svals)
-    sval_check = []
-
-    for i in np.arange(len(lis_p)):
-        sval_check.append(lis_p[i] != lis_sk[i])
-    
-    checks['sval_val'] = np.sum(sval_check) == 0
-
     # singular values are in non-increasing order
     svals_nonincreasing = True
     for i in range(len(D) - 1):

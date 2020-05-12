@@ -25,7 +25,7 @@ def sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
         processing.
 
     Returns
-    ------
+    -------
     random_sv_samples: np.array
         - random_sv_samples shape = (R, )
         The samples

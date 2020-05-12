@@ -69,3 +69,12 @@ In order to conviently run tools in this package on multview data, data can be s
    tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
    tutorials/cluster/multiview_vs_singleview_clustering
+
+Factorization
+=============
+The following tutorials show how to use multi-view factorization algorithms
+
+.. toctree::
+   :maxdepth: 1
+
+    tutorial/factorization/ajive_tutorial

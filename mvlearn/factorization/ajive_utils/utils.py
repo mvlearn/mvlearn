@@ -2,12 +2,6 @@ import numpy as np
 from scipy.sparse import issparse
 from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
-from scipy.sparse.linalg import aslinearoperator as scipyaslinearoperator
-
-
-#from .interface import LinearOperator
-from .convert2scipy import convert2scipy
-
 
 def svd_wrapper(X, rank=None):
     """
@@ -40,12 +34,7 @@ def svd_wrapper(X, rank=None):
     full = False
     if rank is None or rank == min(X.shape):
         full = True
-    # checks linear operator
-
-#    if isinstance(X, LinearOperator):
-#        scipy_svds = svds(scipyaslinearoperator(X), rank) 
-#        U, D, V = fix_scipy_svds(scipy_svds)
-
+        
     if issparse(X) or not full:
         assert rank <= min(X.shape) - 1  # svds cannot compute the full svd
         scipy_svds = svds(X, rank)
