@@ -68,8 +68,6 @@ class TestPCA(unittest.TestCase):
         U, D, V = self.pca.get_UDV()
         n, d = self.X.shape
         rank = self.n_components
-        X = self.X
-        svals = self.pca.svals_
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
 
@@ -123,9 +121,33 @@ class TestPCA(unittest.TestCase):
         B = self.pca.predict_scores(Z)
         
         self.assertTrue(np.allclose(A, B))
-        
-        
     
+    def test_functs(self):
+        """
+        Make sure other functions work
+        """
+        c = []
+        c.append(not isinstance(self.pca.svals(np=False), np.ndarray))
+        c.append(isinstance(self.pca.svals(np=True), np.ndarray))
+        
+        c.append(isinstance(self.pca.scores(norm=True, np=True), np.ndarray))
+        c.append(not isinstance(self.pca.scores(norm=True, np=False),
+                                np.ndarray))
+        
+        c.append(isinstance(self.pca.loadings(np=True),np.ndarray))
+        c.append(not isinstance(self.pca.loadings(np=False),np.ndarray))
+        
+        c.append(isinstance(self.pca.comp_names(),np.ndarray))
+        
+        j = self.pca
+        j.set_comp_names(self.pca.comp_names())
+        
+        c.append(isinstance(self.pca.obs_names(),np.ndarray))
+
+        
+        self.assertTrue(all(c))
+
+        
 def svd_checker(U, D, V, n, d, rank):
     checks = {}
 

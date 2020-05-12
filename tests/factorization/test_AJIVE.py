@@ -386,7 +386,7 @@ def test_check_sparse(data):
     jive.fit(blocks = dat)
     blocks = jive.predict()
     assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
-    np.sum(np.sum(blocks[0]['individual'] != 0)) 
+    np.sum(np.sum(blocks[0]['individual'] != 0))
 
 #Check valueerror for general linear operators
 def test_check_gen_lin_op_scipy(data):
@@ -394,6 +394,12 @@ def test_check_gen_lin_op_scipy(data):
         dat = data['bad_views']
         jive = ajive(init_signal_ranks= [2,2])
         jive.fit(blocks = dat)
+
+def test_get_ranks(data):
+    with pytest.raises(ValueError):
+        jive = ajive(init_signal_ranks= [2,2])
+        jive.get_ranks()
+
 
 def test_check_joint_rank_large(data):
     with pytest.raises(ValueError):
