@@ -92,11 +92,11 @@ class BaseKMeans(BaseEstimator):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
+        labels : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
 
         '''
 
         self.fit(Xs)
-        predictions = self.predict(Xs)
-        return predictions
+        labels = self.predict(Xs)
+        return labels
