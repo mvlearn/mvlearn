@@ -44,22 +44,6 @@ class MultiviewKMeans(BaseKMeans):
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
-    patience : int, optional, default=5
-        The number of EM iterations with no decrease in the objective
-        function after which the algorithm will terminate.
-
-    max_iter : int, optional, default=300
-        The maximum number of EM iterations to run before
-        termination.
-
-    tol : float, default = 1e-4
-        Relative tolerance with regards to inertia to declare convergence.
-
-    n_init : int, optional, default=5
-        Number of times the k-means algorithm will run on different
-        centroid seeds. The final result will be the best output of
-        n_init runs with respect to total inertia across all views.
-
     init : {'k-means++', 'random'} or list of array-likes, default='k-means++'
         Method of initializing centroids.
 
@@ -75,10 +59,25 @@ class MultiviewKMeans(BaseKMeans):
         n_features_i is the number of features in the ith view of the input
         data.
 
+    patience : int, optional, default=5
+        The number of EM iterations with no decrease in the objective
+        function after which the algorithm will terminate.
+
+    max_iter : int, optional, default=300
+        The maximum number of EM iterations to run before
+        termination.
+
+    n_init : int, optional, default=5
+        Number of times the k-means algorithm will run on different
+        centroid seeds. The final result will be the best output of
+        n_init runs with respect to total inertia across all views.
+
+    tol : float, default=1e-4
+        Relative tolerance with regards to inertia to declare convergence.
+
     n_jobs : int, default=None
         The number of jobs to use for computation. This works by computing
         each of the n_init runs in parallel.
-
         None means 1. -1 means using all processors.
 
     Attributes
@@ -544,7 +543,7 @@ class MultiviewKMeans(BaseKMeans):
 
         # Type and value checking for tol parameter
         if not (isinstance(self.tol, float) and (self.tol >= 0)):
-            msg = 'n_init must be a nonnegative integer'
+            msg = 'tol must be a nonnegative float'
             raise ValueError(msg)
 
         # If initial centroids passed in, then n_init should be 1
