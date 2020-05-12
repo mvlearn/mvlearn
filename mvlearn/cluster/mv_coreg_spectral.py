@@ -80,7 +80,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
     Attributes
     ----------
-    labels_ : array-like, shape (n_samples)
+    labels_ : array-like, shape (n_samples,)
         Cluster labels for each point.
 
     embedding_ : array-like, shape (n_samples, n_clusters)
