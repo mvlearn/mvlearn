@@ -1,6 +1,6 @@
 # KCCA Unit Tests
 
-from mvlearn.embed.kcca import KCCA, _center_norm, _make_kernel
+from mvlearn.embed.kcca import KCCA, _center_norm, _make_kernel, _make_icd_kernel
 import numpy as np
 import pytest
 
@@ -36,6 +36,21 @@ kcca_ft = kcca_l.fit_transform([train1, train2])
 kcca_f = kcca_l.fit([train1, train2])
 kcca_t = kcca_l.transform([train1, train2])
 
+#gaussian related data
+N = 100
+t = np.random.uniform(-np.pi, np.pi, N)
+e1 = np.random.normal(0, 0.05, (N,2))
+e2 = np.random.normal(0, 0.05, (N,2))
+
+x = np.zeros((N,2))
+x[:,0] = t
+x[:,1] = np.sin(3*t)
+x += e1
+
+y = np.zeros((N,2))
+y[:,0] = np.exp(t/4)*np.cos(2*t)
+y[:,1] = np.exp(t/4)*np.sin(2*t)
+y += e2
 
 # Test that number of components is equal to n_components
 def test_numCC_components_():
@@ -126,4 +141,31 @@ def test_no_weights():
         kcca_b = KCCA(ktype ="linear", reg = 0.001, n_components = 1)
         kcca_b.transform([train1, train2])
         
-    
+# Test mrank error
+def test_mrank_neg():
+    with pytest.raises(ValueError):
+        kcca_z = KCCA(ktype ="poly", decomp = "icd", reg = 0.001, mrank = -1)
+
+# Test method error
+def test_method():
+    with pytest.raises(ValueError):
+        kcca_v = KCCA(ktype ="poly", method = "test", reg = 0.001, mrank = 5)
+
+# Test precision error
+def test_precision():
+    with pytest.raises(ValueError):
+        kcca_x = KCCA(ktype ="poly", decomp = "icd", reg = 0.001, precision = -1)
+
+# Test that _zscore works
+def test_icd_mrank():
+    kcca_g_icd = KCCA(ktype ="gaussian", sigma = 1.0, n_components = 2, reg = 0.01, decomp = 'icd', mrank = 2)
+    icd = kcca_g_icd.fit_transform([x, y])
+    assert (len(icd) == 2)
+
+# Test make_icd_kernel
+def test_make_icd_kernelg(): 
+    g_icd_kernel = _make_icd_kernel(x, ktype="gaussian", mrank = 2)
+    l_icd_kernel = _make_icd_kernel(x, ktype="linear", constant=1, mrank = 2)
+    p_icd_kernel = _make_icd_kernel(x, ktype="poly", degree = 3, mrank = 2)
+    assert g_icd_kernel.shape==l_icd_kernel.shape==p_icd_kernel.shape == (100,2)
+
