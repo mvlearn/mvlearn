@@ -724,7 +724,7 @@ def _names_checker(x, names):
     if names is None:
         return names
 
-    if isinstance(names,(list, pd.core.series.Series, np.ndarray)):
+    if isinstance(names, (list, pd.core.series.Series, np.ndarray)):
         if len(x) == len(names):
             return list(names)
         else:
