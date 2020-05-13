@@ -206,13 +206,13 @@ class ajive(object):
     >>> Ajive = ajive(init_signal_ranks=[2,2])
     >>> Ajive.fit(Xs)
     >>> b = Ajive.predict()
-    >>> print(len(b.keys()))
+    >>> print(b)
     6
-    >>> print(b[0]['joint'].shape,b[1]['joint'].shape)
+    >>> print(b[0][0].shape,b[1][0].shape)  # (V1 joint mat, V2 joint mat)
     (2000, 76) (2000, 216)
-    >>> print(b[0]['individual'].shape,b[1]['individual'].shape)
+    >>> print(b[0][1].shape,b[1][1].shape)  # (V1 indiv mat, V2 indiv mat)
     (2000, 76) (2000, 216)
-    >>> print(b[0]['noise'].shape,b[1]['noise'].shape)
+    >>> print(b[0][2].shape,b[1][2].shape)  # (V1 noise mat, V2 noise mat)
     (2000, 76) (2000, 216)
 
     References
@@ -671,7 +671,7 @@ class ajive(object):
         """
         _data_block_heatmaps(Xs)
 
-    def ajive_full_estimate_heatmaps(full_block_estimates, Xs):
+    def ajive_full_estimate_heatmaps(full_block_estimates, Xs, names=None):
         r"""
         Plots four heatmaps for each of the views:
             - Full initial signal
@@ -688,7 +688,10 @@ class ajive(object):
             The different views that are input. Input as data matrices.
 
         full_block_estimates: dict
-        Dict that is returned from the ajive.predict() function
+            Dict that is returned from the ajive.predict() function
+
+        names: list
+            The names of the views.
 
         Returns
         -------
@@ -696,7 +699,7 @@ class ajive(object):
             Figure returned contains the full AJIVE estimates: X, J, I, E for
             all views.
         """
-        _ajive_full_estimate_heatmaps(full_block_estimates, Xs)
+        _ajive_full_estimate_heatmaps(full_block_estimates, Xs, names)
 
 
 def _dict_formatting_first(x, view_names):

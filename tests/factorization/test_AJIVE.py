@@ -434,6 +434,15 @@ def test_ajive_plot(data):
     p = 1
     assert p == 1
 
+def test_ajive_plot_list(data):
+    x = data['same_views']
+    jive = ajive(init_signal_ranks=[2,2])
+    jive.fit(Xs=x)
+    blocks = jive.predict(return_dict=False)
+    ajive.ajive_full_estimate_heatmaps(blocks, x, names=['x1','x2'])
+    p = 1
+    assert p == 1
+
 def test_name_values(data):
     with pytest.raises(ValueError):
         x = data['same_views']
