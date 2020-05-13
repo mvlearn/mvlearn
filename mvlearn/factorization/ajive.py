@@ -402,7 +402,7 @@ class ajive(object):
         jsv = joint_svals[0:self.joint_rank]
 
         self.common_ = \
-            pca.from_precomputed(scores=joint_scores[:,0:self.joint_rank], 
+            pca.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
                                  svals=jsv,
                                  loadings=jl,
                                  obs_names=obs_names)
@@ -540,10 +540,10 @@ class ajive(object):
 
     def predict(self, return_dict=False):
         r"""
-        
+
         Parameters
         ----------
-        
+
         return_dict: bool, default = False
             If True, return is in dictionary format, if False, return is in
             list format.
@@ -565,15 +565,15 @@ class ajive(object):
         """
         full_dict = {}
         full_list = []
-        
-        if return_dict == True:
+
+        if return_dict is True:
             for bn in self.block_names:
+                indivi_tot_dict = self.blocks[bn].individual.full_
                 full_dict[bn] = {'joint': self.blocks[bn].joint.full_,
-                                 'individual': self.blocks[bn].\
-                                     individual.full_,
-                                 'noise': self.blocks[bn].noise_}    
+                                 'individual': indivi_tot_dict,
+                                 'noise': self.blocks[bn].noise_}
             return full_dict
-        
+
         else:
             for bn in self.block_names:
                 full_list.append([self.blocks[bn].joint.full_,
@@ -700,12 +700,13 @@ class ajive(object):
 
 
 def _dict_formatting_first(x, view_names):
-    if view_names != None:
+    if view_names is not None:
         assert len(set(view_names)) == len(view_names)
         return {view_names[i]: x[i] for i in np.arange(len(view_names))}
     else:
         view_names = list(range(len(x)))
         return {n: x[n] for n in view_names}
+
 
 def _dict_formatting(x, names):
     if hasattr(x, 'keys'):
@@ -715,11 +716,12 @@ def _dict_formatting(x, names):
     else:
         return {names[i]: x[i] for i in np.arange(len(names))}
 
+
 def _names_checker(x, names):
-    if names == None:
+    if names is None:
         return names
 
-    if isinstance(names,(list,pd.core.series.Series,np.ndarray)):
+    if isinstance(names,(list, pd.core.series.Series, np.ndarray)):
         if len(x) == len(names):
             return list(names)
         else:
@@ -729,6 +731,7 @@ def _names_checker(x, names):
                              )
     else:
         raise ValueError('view_names must be an array-like input')
+
 
 def _arg_checker(Xs, view_names,
                  init_signal_ranks,
