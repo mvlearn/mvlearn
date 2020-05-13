@@ -43,19 +43,6 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         Determines random number generation for initializing centroids.
         Can seed the random number generator with an int.
 
-    patience : int, optional, default=5
-        The number of EM iterations with no decrease in the objective
-        function after which the algorithm will terminate.
-
-    max_iter : int, optional, default=None
-        The maximum number of EM iterations to run before
-        termination.
-
-    n_init : int, optional, default=5
-        Number of times the k-means algorithm will run on different
-        centroid seeds. The final result will be the best output of
-        n_init runs with respect to total inertia across all views.
-
     init : {'k-means++', 'random'} or list of array-likes, default='k-means++'
         Method of initializing centroids.
 
@@ -70,6 +57,27 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         the shape (n_clusters, n_features_i) for the ith view, where
         n_features_i is the number of features in the ith view of the input
         data.
+
+    patience : int, optional, default=5
+        The number of EM iterations with no decrease in the objective
+        function after which the algorithm will terminate.
+
+    max_iter : int, optional, default=None
+        The maximum number of EM iterations to run before
+        termination.
+
+    n_init : int, optional, default=5
+        Number of times the k-means algorithm will run on different
+        centroid seeds. The final result will be the best output of
+        n_init runs with respect to total inertia across all views.
+
+    tol : float, default=1e-4
+        Relative tolerance with regards to inertia to declare convergence.
+
+    n_jobs : int, default=None
+        The number of jobs to use for computation. This works by computing
+        each of the n_init runs in parallel.
+        None means 1. -1 means using all processors.
 
     Attributes
     ----------
@@ -119,11 +127,12 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
     '''
 
     def __init__(self, n_clusters=2, random_state=None, init='k-means++',
-                 patience=5, max_iter=None, n_init=5):
+                 patience=5, max_iter=None, n_init=5, tol=0.0001,
+                 n_jobs=None):
 
         super().__init__(n_clusters=n_clusters, random_state=random_state,
                          init=init, patience=patience, max_iter=max_iter,
-                         n_init=n_init)
+                         n_init=n_init, tol=tol, n_jobs=n_jobs)
 
     def _compute_dist(self, X, Y):
 
