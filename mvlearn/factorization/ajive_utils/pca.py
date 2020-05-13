@@ -458,6 +458,7 @@ def _safe_frob_norm(X):
     else:
         return norm(np.array(X), ord='fro')
 
+
 class ViewSpecificResults(object):
     """
     Contains the view specific results.
@@ -579,4 +580,3 @@ class ViewSpecificResults(object):
         return "Block: {}, individual rank: {}, joint rank: {}".format(
             self.block_name, self.individual.rank, self.joint.rank
         )
-

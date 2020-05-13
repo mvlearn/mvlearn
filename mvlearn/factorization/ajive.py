@@ -44,7 +44,7 @@ class ajive(object):
         Rank of the joint variation matrix. If None, will estimate the
         joint rank. Otherwise, will use provided joint rank.
 
-    indiv_ranks: list or dict
+    indiv_ranks: list
         Ranks of individual variation matrices. If None, will estimate the
         individual ranks. Otherwise, will use provided individual ranks.
 
@@ -268,18 +268,16 @@ class ajive(object):
         else:
             return "No data has been fitted yet"
 
-    def fit(self, Xs, precomp_init_svd=None):
+    def fit(self, Xs, view_names=None, precomp_init_svd=None):
         r"""
         Fits the AJIVE decomposition.
 
         Parameters
         ----------
-        Xs: dict or list of array-likes
+        Xs: list of array-likes
             - blocks length: n_views
             - blocks[i] shape: (n_samples, n_features_i)
             The different views that are input. Input as data matrices.
-            If dict, will name blocks by keys, otherwise blocks are named by
-            0, 1, ...K.
 
         precomp_init_svd: dict or list
             Precomputed initial SVD. Must have one entry for each data block.
@@ -287,16 +285,19 @@ class ajive(object):
             loadings), see output of .ajive_utils/utils/svd_wrapper for
             formatting details.
 
+        view_names: array-like, default = None
+            Optional. The names of the views. If no input, the views will be
+            names 1,2,...n_views.
         """
 
         Xs, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
-                _arg_checker(Xs,
-                             self.init_signal_ranks,
-                             self.joint_rank,
-                             self.indiv_ranks,
-                             precomp_init_svd,
-                             self.center)
+            _arg_checker(Xs, view_names,
+                         self.init_signal_ranks,
+                         self.joint_rank,
+                         self.indiv_ranks,
+                         precomp_init_svd,
+                         self.center)
 
         block_names = list(Xs.keys())
         num_obs = list(Xs.values())[0].shape[0]  # number of views
@@ -305,7 +306,7 @@ class ajive(object):
         self.centers_ = {}
         for bn in block_names:
             Xs[bn], self.centers_[bn] = centering(Xs[bn],
-                                                      method=self.center[bn])
+                                                  method=self.center[bn])
 
         # SVD to extract signal on each view
 
@@ -401,7 +402,7 @@ class ajive(object):
         jsv = joint_svals[0:self.joint_rank]
 
         self.common_ = \
-            pca.from_precomputed(scores=joint_scores[:,0:self.joint_rank],
+            pca.from_precomputed(scores=joint_scores[:,0:self.joint_rank], 
                                  svals=jsv,
                                  loadings=jl,
                                  obs_names=obs_names)
@@ -537,22 +538,48 @@ class ajive(object):
         else:
             return None
 
-    def predict(self):
+    def predict(self, return_dict=False):
         r"""
+        
+        Parameters
+        ----------
+        
+        return_dict: bool, default = False
+            If True, return is in dictionary format, if False, return is in
+            list format.
+
         Returns
         -------
 
-        full: dict of dict of np.arrays
+        full: list of list of np.arrays or dict of dict of np.arrays
             The joint, individual, and noise full estimates for each block.
+            In list format the inital indices represent each view. Within these
+            views, the first index represents the view's full joint estimate,
+            the second index represents the view's full individual estimate,
+            and the third index represents the view's noise matrix. The
+            dictionary format returns the same matrices as dictionaries with
+            the top-level dictionary keys representing views and each view
+            dictionary keys representing the type of matrix ('join',
+            'individual', 'noise')
 
         """
-        full = {}
-        for bn in self.block_names:
-            full[bn] = {'joint': self.blocks[bn].joint.full_,
-                        'individual': self.blocks[bn].individual.full_,
-                        'noise': self.blocks[bn].noise_}
-
-        return full
+        full_dict = {}
+        full_list = []
+        
+        if return_dict == True:
+            for bn in self.block_names:
+                full_dict[bn] = {'joint': self.blocks[bn].joint.full_,
+                                 'individual': self.blocks[bn].\
+                                     individual.full_,
+                                 'noise': self.blocks[bn].noise_}    
+            return full_dict
+        
+        else:
+            for bn in self.block_names:
+                full_list.append([self.blocks[bn].joint.full_,
+                                  self.blocks[bn].individual.full_,
+                                  self.blocks[bn].noise_])
+            return full_list
 
     def results_dict(self):
         r"""
@@ -629,7 +656,7 @@ class ajive(object):
         r"""
         Plots n_views heatmaps in a singular row. It is reccomended to set
         a figure size as is shown in the tutorial
-        
+
         Parameters
         ----------
         blocks: dict or list of array-likes
@@ -652,7 +679,7 @@ class ajive(object):
             - Full individual signal estimate
             - Full noise signal estimate
         It is reccomended to set a figure size as shown in the tutorial.
-        
+
         Parameters
         ----------
         blocks: dict or list of array-likes
@@ -672,16 +699,38 @@ class ajive(object):
         _ajive_full_estimate_heatmaps(full_block_estimates, Xs)
 
 
-def _dict_formatting(x):
-    if hasattr(x, "keys"):
-        names = list(x.keys())
-        assert len(set(names)) == len(names)
+def _dict_formatting_first(x, view_names):
+    if view_names != None:
+        assert len(set(view_names)) == len(view_names)
+        return {view_names[i]: x[i] for i in np.arange(len(view_names))}
     else:
-        names = list(range(len(x)))
-    return {n: x[n] for n in names}
+        view_names = list(range(len(x)))
+        return {n: x[n] for n in view_names}
 
+def _dict_formatting(x, names):
+    if hasattr(x, 'keys'):
+        vals = list(x.values())
+        assert len(set(names)) == len(names)
+        return {names[i]: vals[i] for i in np.arange(len(names))}
+    else:
+        return {names[i]: x[i] for i in np.arange(len(names))}
 
-def _arg_checker(blocks,
+def _names_checker(x, names):
+    if names == None:
+        return names
+
+    if isinstance(names,(list,pd.core.series.Series,np.ndarray)):
+        if len(x) == len(names):
+            return list(names)
+        else:
+            raise ValueError(
+                    "The number of view inputs must match the number of name \
+                    inputs"
+                             )
+    else:
+        raise ValueError('view_names must be an array-like input')
+
+def _arg_checker(Xs, view_names,
                  init_signal_ranks,
                  joint_rank,
                  indiv_ranks,
@@ -692,41 +741,39 @@ def _arg_checker(blocks,
     criteria not met, errors are raised.
 
     """
-    if hasattr(blocks, "keys"):
-        blocks = _dict_formatting(blocks)
-    else:
-        blocks_upd = check_Xs(blocks, multiview=True)
-        blocks = _dict_formatting(blocks_upd)
+    names = _names_checker(Xs, view_names)
+    blocks_upd = check_Xs(Xs, multiview=True)
+    Xs = _dict_formatting_first(blocks_upd, names)
 
-    block_names = list(blocks.keys())
+    block_names = list(Xs.keys())
 
     # check blocks have the same number of observations
-    assert len(set(blocks[bn].shape[0] for bn in block_names)) == 1
+    assert len(set(Xs[bn].shape[0] for bn in block_names)) == 1
 
     # get obs and variable names
-    obs_names = list(range(list(blocks.values())[0].shape[0]))
+    obs_names = list(range(list(Xs.values())[0].shape[0]))
     var_names = {}
     for bn in block_names:
-        if type(blocks[bn]) == pd.DataFrame:
-            obs_names = list(blocks[bn].index)
-            var_names[bn] = list(blocks[bn].columns)
+        if type(Xs[bn]) == pd.DataFrame:
+            obs_names = list(Xs[bn].index)
+            var_names[bn] = list(Xs[bn].columns)
         else:
-            var_names[bn] = list(range(blocks[bn].shape[1]))
+            var_names[bn] = list(range(Xs[bn].shape[1]))
 
     # format blocks
     # make sure blocks are either csr or np.array
     for bn in block_names:
-        if issparse(blocks[bn]):  # TODO: allow for general linear operators
+        if issparse(Xs[bn]):  # TODO: allow for general linear operators
             raise ValueError('Cannot currently allow general linear operators')
         else:
-            blocks[bn] = np.array(blocks[bn])
+            Xs[bn] = np.array(Xs[bn])
 
-    shapes = {bn: blocks[bn].shape for bn in block_names}
+    shapes = {bn: Xs[bn].shape for bn in block_names}
 
     # Checking precomputed SVD
     if precomp_init_svd is None:
         precomp_init_svd = {bn: None for bn in block_names}
-    precomp_init_svd = _dict_formatting(precomp_init_svd)
+    precomp_init_svd = _dict_formatting(precomp_init_svd, block_names)
     assert set(precomp_init_svd.keys()) == set(block_names)
     for bn in block_names:
         udv = precomp_init_svd[bn]
@@ -740,13 +787,13 @@ def _arg_checker(blocks,
     # Check initial signal ranks
     if precomp_init_svd is None:
         precomp_init_svd = {bn: None for bn in block_names}
-    init_signal_ranks = _dict_formatting(init_signal_ranks)
+    init_signal_ranks = _dict_formatting(init_signal_ranks, block_names)
     assert set(init_signal_ranks.keys()) == set(block_names)
 
     # signal rank must be at least one lower than the shape of the block
     for bn in block_names:
         assert 1 <= init_signal_ranks[bn]
-        assert init_signal_ranks[bn] <= min(blocks[bn].shape) - 1
+        assert init_signal_ranks[bn] <= min(Xs[bn].shape) - 1
 
     # Check the joint ranks
     if joint_rank is not None and joint_rank > sum(init_signal_ranks.values()):
@@ -758,7 +805,7 @@ def _arg_checker(blocks,
     # Check individual ranks
     if indiv_ranks is None:
         indiv_ranks = {bn: None for bn in block_names}
-    indiv_ranks = _dict_formatting(indiv_ranks)
+    indiv_ranks = _dict_formatting(indiv_ranks, block_names)
     assert set(indiv_ranks.keys()) == set(block_names)
 
     for k in indiv_ranks.keys():
@@ -767,10 +814,10 @@ def _arg_checker(blocks,
     # Check centering
     if type(center) == bool:
         center = {bn: center for bn in block_names}
-    center = _dict_formatting(center)
+    center = _dict_formatting(center, block_names)
 
     return (
-        blocks,
+        Xs,
         init_signal_ranks,
         indiv_ranks,
         precomp_init_svd,

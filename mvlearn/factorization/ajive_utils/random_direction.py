@@ -31,6 +31,7 @@ def sample_randdir(num_obs, signal_ranks, R=1000):
 
     return np.array(random_sv_samples)
 
+
 def _get_sample(num_obs, signal_ranks):
     M = [None for _ in range(len(signal_ranks))]
     for k in range(len(signal_ranks)):

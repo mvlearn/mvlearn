@@ -62,8 +62,8 @@ class TestFig2Runs(unittest.TestCase):
         X = pd.DataFrame(X, index=obs_names, columns=var_names['x'])
         Y = pd.DataFrame(Y, index=obs_names, columns=var_names['y'])
 
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(Xs={'x': X,\
-                    'y': Y})
+        jive = ajive(init_signal_ranks=[2, 3]).fit(Xs=[X, Y],
+                    view_names=['x','y'])
 
         self.ajive = jive
         self.X = X
@@ -95,14 +95,14 @@ class TestFig2Runs(unittest.TestCase):
         check X_centered = I + J + E
         """
         X_cent = self.X - self.X.mean(axis=0)
-        Rx = X_cent - (self.ajive.blocks['x'].joint.full_ +
+        Rx = np.array(X_cent) - (self.ajive.blocks['x'].joint.full_ +
                        self.ajive.blocks['x'].individual.full_ +
                        self.ajive.blocks['x'].noise_)
 
         self.assertTrue(np.allclose(Rx, 0))
 
         Y_cent = self.Y - self.Y.mean(axis=0)
-        Ry = Y_cent - (self.ajive.blocks['y'].joint.full_ +
+        Ry = np.array(Y_cent) - (self.ajive.blocks['y'].joint.full_ +
                        self.ajive.blocks['y'].individual.full_ +
                        self.ajive.blocks['y'].noise_)
 
@@ -140,35 +140,6 @@ class TestFig2Runs(unittest.TestCase):
         n, d = self.Y.shape
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
-
-    def test_names(self):
-        self.assertEqual(set(self.ajive.common_.obs_names()),
-                         set(self.obs_names))
-        self.assertEqual(set(self.ajive.common_.scores_.index),
-                         set(self.obs_names))
-
-        self.assertEqual(set(self.ajive.blocks['x'].joint.obs_names()),
-                         set(self.obs_names))
-
-        self.assertEqual(set(self.ajive.blocks['x'].joint.scores_.index),
-                         set(self.obs_names))
-
-        self.assertEqual(set(self.ajive.blocks['x'].joint.var_names()),
-                         set(self.var_names['x']))
-
-        self.assertEqual(set(self.ajive.blocks['x'].individual.obs_names()),
-                         set(self.obs_names))
-
-        self.assertEqual(set(self.ajive.blocks['x'].individual.var_names()),
-                         set(self.var_names['x']))
-
-    def test_parallel_runs(self):
-        """
-        Check wedin/random samples works with parallel processing.
-        """
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3})
-        jive.fit(Xs={'x': self.X, 'y': self.Y})
-        self.assertTrue(hasattr(jive, 'blocks'))
 
     def test_list_input(self):
         """
@@ -220,15 +191,14 @@ class TestFig2Runs(unittest.TestCase):
                                     ymean))
 
         # no centering
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center=False)
-        jive = jive.fit(Xs={'x': self.X, 'y': self.Y})
+        jive = ajive(init_signal_ranks=[2,3], center=False)
+        jive = jive.fit(Xs=[self.X, self.Y], view_names=['x','y'])
         self.assertTrue(jive.centers_['x'] is None)
         self.assertTrue(jive.centers_['y'] is None)
 
         # only center x
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, \
-                      'y': False})
-        jive = jive.fit(Xs={'x': self.X, 'y': self.Y})
+        jive = ajive(init_signal_ranks=[2,3], center=[True, False])
+        jive = jive.fit(Xs=[self.X, self.Y], view_names=['x','y'])
         self.assertTrue(np.allclose(jive.centers_['x'], xmean))
         self.assertTrue(jive.centers_['y'] is None)
         
@@ -339,14 +309,14 @@ def test_joint_indiv_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(Xs = dat)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
 
 def test_joint_noise_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(Xs = dat)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
 
           
@@ -354,7 +324,7 @@ def test_joint(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(Xs = dat)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     for i in np.arange(100):
         j = np.sum(blocks[0]['joint'][i] == blocks[1]['joint'][i])
         assert j == 20
@@ -363,7 +333,7 @@ def test_indiv(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(Xs = dat)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     for i in np.arange(100):
         j = np.sum(blocks[0]['individual'][i] == blocks[1]['individual'][i])
         assert j == 20
@@ -385,7 +355,7 @@ def test_check_sparse(data):
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
     jive = ajive(init_signal_ranks= [2,2])
     jive.fit(Xs = dat)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
     np.sum(np.sum(blocks[0]['individual'] != 0))
 
@@ -459,10 +429,27 @@ def test_ajive_plot(data):
     x = data['same_views']
     jive = ajive(init_signal_ranks=[2,2])
     jive.fit(Xs=x)
-    blocks = jive.predict()
+    blocks = jive.predict(return_dict=True)
     ajive.ajive_full_estimate_heatmaps(blocks, x)
     p = 1
     assert p == 1
-    
+
+def test_name_values(data):
+    with pytest.raises(ValueError):
+        x = data['same_views']
+        jive = ajive(init_signal_ranks=[2,2])
+        jive.fit(Xs=x, view_names = ['1','2','3'])
+
+def test_name_values_type(data):
+    with pytest.raises(ValueError):
+        x = data['same_views']
+        jive = ajive(init_signal_ranks=[2,2])
+        jive.fit(Xs=x, view_names = {'jon':'first','rich':'second'})
+
+def test_traditional_output(data):
+    x = data['same_views']
+    jive = ajive(init_signal_ranks=[2,2])
+    jive.fit(Xs=x, view_names = ['x','y'])
+    jive.predict(return_dict=False)
 
     
