@@ -457,3 +457,126 @@ def _safe_frob_norm(X):
         return np.sqrt(sum(X.data ** 2))
     else:
         return norm(np.array(X), ord='fro')
+
+class ViewSpecificResults(object):
+    """
+    Contains the view specific results.
+
+    Parameters
+    ----------
+    joint: dict
+        The view specific joint PCA.
+
+    individual: dict
+        The view specific individual PCA.
+
+    noise: array-like
+        The noise matrix estimate.
+
+    obs_names: array-like, default = None
+        Observation names.
+
+    var_names: array-like, default = None
+        Variable names for this view.
+
+    block_name: str, default = None
+        Name of this view.
+
+    m: array-like, default = None
+        The vector used to column mean center this view.
+
+
+    Attributes
+    ----------
+    joint: mvlearn.ajive.pca.pca
+        View specific joint PCA.
+        Has an extra attribute joint.full_ which contains the full view
+        joint estimate.
+
+    individual: mvlearn.ajive.pca.pca
+        View specific individual PCA.
+        Has an extra attribute individual.full_ which contains the full view
+        joint estimate.
+
+    noise: array-like
+        The full noise view estimate.
+
+    block_name:
+        Name of this view.
+
+    """
+
+    def __init__(
+        self,
+        joint,
+        individual,
+        noise,
+        obs_names=None,
+        var_names=None,
+        block_name=None,
+        m=None,
+        shape=None,
+    ):
+
+        self.joint = pca.from_precomputed(
+            n_components=joint["rank"],
+            scores=joint["scores"],
+            loadings=joint["loadings"],
+            svals=joint["svals"],
+            obs_names=obs_names,
+            var_names=var_names,
+            m=m,
+            shape=shape,
+        )
+
+        if joint["rank"] != 0:
+            self.joint.set_comp_names(
+                ["joint_comp_{}".format(i) for i in range(self.joint.rank)]
+            )
+
+        if joint["full"] is not None:
+            self.joint.full_ = pd.DataFrame(
+                joint["full"], index=obs_names, columns=var_names
+            )
+        else:
+            self.joint.full_ = None
+
+        self.individual = pca.from_precomputed(
+            n_components=individual["rank"],
+            scores=individual["scores"],
+            loadings=individual["loadings"],
+            svals=individual["svals"],
+            obs_names=obs_names,
+            var_names=var_names,
+            m=m,
+            shape=shape,
+        )
+        if individual["rank"] != 0:
+            self.individual.set_comp_names(
+                [
+                    "indiv_comp_{}".format(i)
+                    for i in range(self.individual.rank)
+                ]
+            )
+
+        if individual["full"] is not None:
+            self.individual.full_ = pd.DataFrame(
+                individual["full"], index=obs_names, columns=var_names
+            )
+        else:
+            self.individual.full_ = None
+
+        if noise is not None:
+            self.noise_ = pd.DataFrame(
+                noise, index=obs_names, columns=var_names
+            )
+        else:
+            self.noise_ = None
+
+        self.block_name = block_name
+
+    def __repr__(self):
+        return "Block: {}, individual rank: {}, joint rank: {}".format(
+            self.block_name, self.individual.rank, self.joint.rank
+        )
+

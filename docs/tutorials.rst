@@ -73,7 +73,7 @@ In order to conviently run tools in this package on multview data, data can be s
 
 Factorization
 =============
-The following tutorials show how to use multi-view factorization algorithms
+The following tutorials show how to use multi-view factorization algorithms.
 
 .. toctree::
    :maxdepth: 1

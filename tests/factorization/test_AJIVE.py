@@ -62,7 +62,7 @@ class TestFig2Runs(unittest.TestCase):
         X = pd.DataFrame(X, index=obs_names, columns=var_names['x'])
         Y = pd.DataFrame(Y, index=obs_names, columns=var_names['y'])
 
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(blocks={'x': X,\
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}).fit(Xs={'x': X,\
                     'y': Y})
 
         self.ajive = jive
@@ -76,7 +76,7 @@ class TestFig2Runs(unittest.TestCase):
         Check AJIVE has important attributes
         """
         self.assertTrue(hasattr(self.ajive, 'blocks'))
-        self.assertTrue(hasattr(self.ajive, 'common'))
+        self.assertTrue(hasattr(self.ajive, 'common_'))
         self.assertTrue(hasattr(self.ajive.blocks['x'], 'joint'))
         self.assertTrue(hasattr(self.ajive.blocks['x'], 'individual'))
         self.assertTrue(hasattr(self.ajive.blocks['y'], 'joint'))
@@ -86,7 +86,7 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check AJIVE found correct rank estimates
         """
-        self.assertEqual(self.ajive.common.rank, 1)
+        self.assertEqual(self.ajive.common_.rank, 1)
         self.assertEqual(self.ajive.blocks['x'].individual.rank, 1)
         self.assertEqual(self.ajive.blocks['y'].individual.rank, 3)
 
@@ -112,8 +112,8 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check common SVD
         """
-        U, D, V = self.ajive.common.get_UDV()
-        rank = self.ajive.common.rank
+        U, D, V = self.ajive.common_.get_UDV()
+        rank = self.ajive.common_.rank
         n = self.X.shape[0]
         d = sum(self.ajive.init_signal_ranks.values())
         checks = svd_checker(U, D, V, n, d, rank)
@@ -142,9 +142,9 @@ class TestFig2Runs(unittest.TestCase):
         self.assertTrue(all(checks.values()))
 
     def test_names(self):
-        self.assertEqual(set(self.ajive.common.obs_names()),
+        self.assertEqual(set(self.ajive.common_.obs_names()),
                          set(self.obs_names))
-        self.assertEqual(set(self.ajive.common.scores_.index),
+        self.assertEqual(set(self.ajive.common_.scores_.index),
                          set(self.obs_names))
 
         self.assertEqual(set(self.ajive.blocks['x'].joint.obs_names()),
@@ -167,7 +167,7 @@ class TestFig2Runs(unittest.TestCase):
         Check wedin/random samples works with parallel processing.
         """
         jive = ajive(init_signal_ranks={'x': 2, 'y': 3})
-        jive.fit(blocks={'x': self.X, 'y': self.Y})
+        jive.fit(Xs={'x': self.X, 'y': self.Y})
         self.assertTrue(hasattr(jive, 'blocks'))
 
     def test_list_input(self):
@@ -175,7 +175,7 @@ class TestFig2Runs(unittest.TestCase):
         Check AJIVE can take a list input.
         """
         jive = ajive(init_signal_ranks=[2, 3])
-        jive.fit(blocks=[self.X, self.Y])
+        jive.fit(Xs=[self.X, self.Y])
         self.assertTrue(set(jive.block_names) == set([0, 1]))
 
     def test_dont_store_full(self):
@@ -183,7 +183,7 @@ class TestFig2Runs(unittest.TestCase):
         Make sure setting store_full = False works
         """
         jive = ajive(init_signal_ranks=[2, 3], store_full=False)
-        jive.fit(blocks=[self.X, self.Y])
+        jive.fit(Xs=[self.X, self.Y])
 
         self.assertTrue(jive.blocks[0].joint.full_ is None)
         self.assertTrue(jive.blocks[0].individual.full_ is None)
@@ -195,13 +195,13 @@ class TestFig2Runs(unittest.TestCase):
         Check setting joint/individual rank to zero works
         """
         jive = ajive(init_signal_ranks=[2, 3], joint_rank=0)
-        jive.fit(blocks=[self.X, self.Y])
-        self.assertTrue(jive.common.rank == 0)
+        jive.fit(Xs=[self.X, self.Y])
+        self.assertTrue(jive.common_.rank == 0)
         self.assertTrue(jive.blocks[0].joint.rank == 0)
         self.assertTrue(jive.blocks[0].joint.scores_ is None)
 
         jive = ajive(init_signal_ranks=[2, 3], indiv_ranks=[0, 1])
-        jive.fit(blocks=[self.X, self.Y])
+        jive.fit(Xs=[self.X, self.Y])
         self.assertTrue(jive.blocks[0].individual.rank == 0)
         self.assertTrue(jive.blocks[0].individual.scores_ is None)
 
@@ -221,14 +221,14 @@ class TestFig2Runs(unittest.TestCase):
 
         # no centering
         jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center=False)
-        jive = jive.fit(blocks={'x': self.X, 'y': self.Y})
+        jive = jive.fit(Xs={'x': self.X, 'y': self.Y})
         self.assertTrue(jive.centers_['x'] is None)
         self.assertTrue(jive.centers_['y'] is None)
 
         # only center x
         jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, center={'x': True, \
                       'y': False})
-        jive = jive.fit(blocks={'x': self.X, 'y': self.Y})
+        jive = jive.fit(Xs={'x': self.X, 'y': self.Y})
         self.assertTrue(np.allclose(jive.centers_['x'], xmean))
         self.assertTrue(jive.centers_['y'] is None)
         
@@ -338,14 +338,14 @@ TESTS
 def test_joint_indiv_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     blocks = jive.predict()
     assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
 
 def test_joint_noise_length(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     blocks = jive.predict()
     assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
 
@@ -353,7 +353,7 @@ def test_joint_noise_length(data):
 def test_joint(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     blocks = jive.predict()
     for i in np.arange(100):
         j = np.sum(blocks[0]['joint'][i] == blocks[1]['joint'][i])
@@ -362,7 +362,7 @@ def test_joint(data):
 def test_indiv(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     blocks = jive.predict()
     for i in np.arange(100):
         j = np.sum(blocks[0]['individual'][i] == blocks[1]['individual'][i])
@@ -373,7 +373,7 @@ def test_wrong_sig(data):
     dat = data['diff_views']
     jive = ajive(init_signal_ranks= [-1,-4])
     try:
-        jive.fit(blocks=dat)
+        jive.fit(Xs=dat)
         j = 0
     except:
         j = 1
@@ -384,7 +384,7 @@ def test_check_sparse(data):
     spar_mat = dat[0]
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
     jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     blocks = jive.predict()
     assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
     np.sum(np.sum(blocks[0]['individual'] != 0))
@@ -394,7 +394,7 @@ def test_check_gen_lin_op_scipy(data):
     with pytest.raises(TypeError):
         dat = data['bad_views']
         jive = ajive(init_signal_ranks= [2,2])
-        jive.fit(blocks = dat)
+        jive.fit(Xs = dat)
 
 def test_get_ranks(data):
     with pytest.raises(ValueError):
@@ -406,7 +406,7 @@ def test_check_joint_rank_large(data):
     with pytest.raises(ValueError):
         dat = data['same_views']
         jive = ajive(init_signal_ranks= [2,2], joint_rank=5)
-        jive.fit(blocks = dat)
+        jive.fit(Xs = dat)
 
 def test_decomp_not_computed_ranks():
     with pytest.raises(ValueError):
@@ -416,13 +416,13 @@ def test_decomp_not_computed_ranks():
 def test_indiv_rank(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2], indiv_ranks=[2,1])
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     assert jive.indiv_ranks[0] == 2
 
 def test_joint_rank(data):
     dat = data['same_views']
     jive = ajive(init_signal_ranks= [2,2], joint_rank=2)
-    jive.fit(blocks = dat)
+    jive.fit(Xs = dat)
     assert jive.joint_rank == 2
 
 def test_is_fit():
@@ -458,7 +458,7 @@ def test_plot_diag(data):
 def test_ajive_plot(data):
     x = data['same_views']
     jive = ajive(init_signal_ranks=[2,2])
-    jive.fit(blocks=x)
+    jive.fit(Xs=x)
     blocks = jive.predict()
     ajive.ajive_full_estimate_heatmaps(blocks, x)
     p = 1
