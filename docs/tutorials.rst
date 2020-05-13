@@ -18,6 +18,7 @@ for multiview datasets.
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_SimulatedData
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
    tutorials/cluster/MVSphericalKMeans/MVSphericalValidation_SimulatedData
+   tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
    tutorials/cluster/multiview_vs_singleview_clustering
 
 Cotraining
@@ -69,4 +70,3 @@ In order to conviently run tools in this package on multview data, data can be s
 
    tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
-   tutorials/cluster/multiview_vs_singleview_clustering
