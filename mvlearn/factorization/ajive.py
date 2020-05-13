@@ -15,7 +15,6 @@
 import numpy as np
 from scipy.sparse import issparse
 from copy import deepcopy
-from sklearn.externals.joblib import load, dump
 import pandas as pd
 from ..utils.utils import check_Xs
 from .ajive_utils.block_visualization import _data_block_heatmaps, \
@@ -75,11 +74,6 @@ class ajive(object):
 
     precomp_randdir_samples: array-like, default = None
         Precomputed random direction samples.
-
-    n_jobs: int, default = None
-        Number of jobs for parallel processing wedin samples and random
-        direction samples using sklearn.externals.joblib.Parallel.
-        If None, will not use parallel processing.
 
     Attributes
     ----------
@@ -238,7 +232,7 @@ class ajive(object):
                  precomp_wedin_samples=None,
                  randdir_percentile=95, n_randdir_samples=1000,
                  precomp_randdir_samples=None,
-                 store_full=True, n_jobs=None):
+                 store_full=True):
 
         self.init_signal_ranks = init_signal_ranks
         self.joint_rank = joint_rank
@@ -261,8 +255,6 @@ class ajive(object):
         self.reconsider_joint_components = reconsider_joint_components
 
         self.store_full = store_full
-
-        self.n_jobs = n_jobs
 
     def __repr__(self):
 
@@ -291,19 +283,20 @@ class ajive(object):
 
         precomp_init_svd: dict or list
             Precomputed initial SVD. Must have one entry for each data block.
-            The SVD should be a 3 tuple (scores, svals, loadings), see output
-            of .svd_wrapper for formatting details.
+            The SVD should be an ordered list of 3 matrices (scores, svals,
+            loadings), see output of .ajive_utils/utils/svd_wrapper for
+            formatting details.
 
         """
 
         blocks, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
             self.center, obs_names, var_names, self.shapes_ = \
-                            _arg_checker(blocks,
-                                         self.init_signal_ranks,
-                                         self.joint_rank,
-                                         self.indiv_ranks,
-                                         precomp_init_svd,
-                                         self.center)
+                _arg_checker(blocks,
+                             self.init_signal_ranks,
+                             self.joint_rank,
+                             self.indiv_ranks,
+                             precomp_init_svd,
+                             self.center)
 
         block_names = list(blocks.keys())
         num_obs = list(blocks.values())[0].shape[0]  # number of views
@@ -362,9 +355,8 @@ class ajive(object):
                 init_rank_list = list(self.init_signal_ranks.values())
                 self.random_sv_samples_ = \
                     sample_randdir(num_obs,
-                                   signal_ranks= init_rank_list,
-                                   R=self.n_randdir_samples,
-                                   n_jobs=self.n_jobs)
+                                   signal_ranks=init_rank_list,
+                                   R=self.n_randdir_samples)
 
             # if the wedin samples are not already provided compute them
             if self.wedin_samples_ is None:
@@ -376,8 +368,7 @@ class ajive(object):
                                           D=init_signal_svd[bn]['svals'],
                                           V=init_signal_svd[bn]['loadings'],
                                           rank=self.init_signal_ranks[bn],
-                                          R=self.n_wedin_samples,
-                                          n_jobs=self.n_jobs)
+                                          R=self.n_wedin_samples)
 
             self.wedin_sv_samples_ = len(blocks) - \
                 np.array([sum(self.wedin_samples_[bn][i] **
@@ -545,13 +536,6 @@ class ajive(object):
             return list(self.blocks.keys())
         else:
             return None
-
-    def save(self, fpath, compress=9):
-        dump(self, fpath, compress=compress)
-
-    @classmethod
-    def load(cls, fpath):
-        return load(fpath)
 
     def predict(self):
         r"""

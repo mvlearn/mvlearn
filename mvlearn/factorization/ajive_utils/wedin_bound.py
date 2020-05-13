@@ -1,9 +1,8 @@
 import numpy as np
-from sklearn.externals.joblib import Parallel, delayed
 
 
-def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
-    """
+def get_wedin_samples(X, U, D, V, rank, R=1000):
+    r"""
     Computes the wedin bound using the sample-project procedure. This method
     does not require the full SVD.
 
@@ -22,20 +21,15 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
     R: int
         Number of samples for resampling procedure
 
-    n_jobs: int, default = None
-        Number of jobs for parallel processing using
-        sklearn.externals.joblib.Parallel. If None, will not use parallel
-        processing.
-
     """
 
     # resample for U and V
     U_norm_samples = norms_sample_project(
-        X=X.T, basis=U[:, 0:rank], R=R, n_jobs=n_jobs
+        X=X.T, basis=U[:, 0:rank], R=R
     )
 
     V_norm_samples = norms_sample_project(
-        X=X, basis=V[:, 0:rank], R=R, n_jobs=n_jobs
+        X=X, basis=V[:, 0:rank], R=R
     )
 
     sigma_min = D[rank - 1]  # TODO: double check -1
@@ -47,8 +41,8 @@ def get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
     return wedin_bound_samples
 
 
-def norms_sample_project(X, basis, R=1000, n_jobs=None):
-    """
+def norms_sample_project(X, basis, R=1000):
+    r"""
     Samples vectors from space orthogonal to signal space as follows
     - sample random vector from isotropic distribution
     - project onto orthogonal complement of signal space and normalize
@@ -69,23 +63,11 @@ def norms_sample_project(X, basis, R=1000, n_jobs=None):
     R: int
         Number of samples
 
-
-    n_jobs: int, None
-        Number of jobs for parallel processing using
-        sklearn.externals.joblib.Parallel. If None, will not use parallel
-        processing.
-
-    Output
-    ------
+    Returns
+    -------
     Array of the resampled norms
     """
-
-    if n_jobs is not None:
-        samples = Parallel(n_jobs=n_jobs)(
-            delayed(_get_sample)(X, basis) for i in range(R)
-        )
-    else:
-        samples = [_get_sample(X, basis) for r in range(R)]
+    samples = [_get_sample(X, basis) for r in range(R)]
 
     return np.array(samples)
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from mvlearn.factorization.ajive import ajive
+from mvlearn.factorization.ajive_utils.utils import svd_wrapper
 from scipy.sparse import csr_matrix
 
 class TestFig2Runs(unittest.TestCase):
@@ -165,7 +166,7 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check wedin/random samples works with parallel processing.
         """
-        jive = ajive(init_signal_ranks={'x': 2, 'y': 3}, n_jobs=-1)
+        jive = ajive(init_signal_ranks={'x': 2, 'y': 3})
         jive.fit(blocks={'x': self.X, 'y': self.Y})
         self.assertTrue(hasattr(jive, 'blocks'))
 
@@ -432,13 +433,19 @@ def test_n_randdir():
     jive = ajive(init_signal_ranks = [2,2],n_randdir_samples=5)
     assert jive.n_randdir_samples == 5
 
-def test_n_jobs():
-    jive = ajive(init_signal_ranks = [2,2], n_jobs=4)
-    assert jive.n_jobs == 4
-
 def test_n_wedin():
     jive = ajive(init_signal_ranks = [2,2], n_wedin_samples = 6)
     assert jive.n_wedin_samples == 6
+    
+def test_precomp_init_svd(data):
+    dat = data['same_views']
+    precomp = []
+    for i in dat:
+        precomp.append(svd_wrapper(i))
+    jive = ajive(init_signal_ranks=[2,2], joint_rank=1)
+    jive.fit(dat, precomp_init_svd=precomp)
+    p = 3
+    assert p == 3 
 
 #Plotting
 

@@ -5,7 +5,7 @@ from scipy.linalg import svd as full_svd
 
 
 def svd_wrapper(X, rank=None):
-    """
+    r"""
     Computes the full or partial SVD of a matrix. Handles the case where
     X is either dense or sparse.
 
@@ -17,8 +17,8 @@ def svd_wrapper(X, rank=None):
     rank: int
         rank of the desired SVD
 
-    Output
-    ------
+    Returns
+    -------
     U: array-like
         - U shape: shape(N, rank)
         Orthonormal matrix of left singular vectors.
@@ -54,7 +54,7 @@ def svd_wrapper(X, rank=None):
 
 
 def fix_scipy_svds(scipy_svds):
-    """
+    r"""
     scipy.sparse.linalg.svds orders the singular values in increasing order.
     This function flips this order.
 
@@ -62,8 +62,8 @@ def fix_scipy_svds(scipy_svds):
     ----------
     scipy_svds: scipy.sparse.linalg.svds
 
-    Output
-    ------
+    Returns
+    -------
     U, D, V
     ordered in decreasing singular values
     """
@@ -79,7 +79,7 @@ def fix_scipy_svds(scipy_svds):
 
 
 def centering(X, method="mean"):
-    """
+    r"""
     Mean centers columns of a matrix.
 
     Parameters
@@ -91,8 +91,8 @@ def centering(X, method="mean"):
     method: str, None
         How to center.
 
-    Output
-    ------
+    Returns
+    -------
     X_centered: array-like
         - X_centered shape: (n_samples, n_features)
         The centered version of X whose columns have mean zero.

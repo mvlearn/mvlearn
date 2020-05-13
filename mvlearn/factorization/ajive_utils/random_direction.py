@@ -1,10 +1,9 @@
 import numpy as np
 from .utils import svd_wrapper
-from sklearn.externals.joblib import Parallel, delayed
 
 
-def sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
-    """
+def sample_randdir(num_obs, signal_ranks, R=1000):
+    r"""
     Draws samples for the random direction bound.
 
     Parameters
@@ -19,11 +18,6 @@ def sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
     R: int
         Number of samples to draw.
 
-    n_jobs: int, default = None
-        Number of jobs for parallel processing using
-        sklearn.externals.joblib.Parallel. If None, will not use parallel
-        processing.
-
     Returns
     -------
     random_sv_samples: np.array
@@ -31,18 +25,11 @@ def sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
         The samples
     """
 
-    if n_jobs is not None:
-        random_sv_samples = Parallel(n_jobs=n_jobs)(
-            delayed(_get_sample)(num_obs, signal_ranks) for i in range(R)
-        )
-
-    else:
-        random_sv_samples = [
-            _get_sample(num_obs, signal_ranks) for r in range(R)
+    random_sv_samples = [
+        _get_sample(num_obs, signal_ranks) for r in range(R)
         ]
 
     return np.array(random_sv_samples)
-
 
 def _get_sample(num_obs, signal_ranks):
     M = [None for _ in range(len(signal_ranks))]

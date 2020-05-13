@@ -1,9 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn.externals.joblib import load, dump
 from numpy.linalg import norm
 from scipy.sparse import issparse
-
 from .utils import svd_wrapper, centering
 
 
@@ -162,37 +160,6 @@ class pca(object):
             x.var_expl_cum_ = None
 
         return x
-
-    def save(self, fpath, compress=9):
-        """
-        Saves the pca object to disk using sklearn.externals.joblib
-
-        Parameters
-        ----------
-        fpath: str
-            Path to saved file.
-
-        compress: int
-            Level of compression. See documentation of
-            sklearn.externals.joblib.dump
-        """
-        dump(self, fpath, compress=compress)
-
-    @classmethod
-    def load(cls, fpath):
-        """
-        Loads a pca object from disk.
-
-        Parameters
-        ----------
-        fpath: str
-            Path to saved file.
-
-        Returns
-        ------
-        ajive.pca.pca
-        """
-        return load(fpath)
 
     @property
     def rank(self):
