@@ -53,7 +53,7 @@ class GCCA(BaseEmbed):
     n_elbows : int, optional, default: 2
         If ``self.fraction_var=None``, ``self.sv_tolerance=None``, and
         ``self.n_components=None``, then compute the optimal embedding
-        dimension using :func:`mvlearn.embed.utils.select_dimension`.
+        dimension using :func:`.utils.select_dimension`.
         Otherwise, ignored.
 
     tall : boolean, default=False
