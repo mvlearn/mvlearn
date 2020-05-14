@@ -56,7 +56,6 @@ setup(
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     install_requires=REQUIRED_PACKAGES,
-    extras_require=EXTRA_PACKAGES,
     url=URL,
     license="Apache License 2.0",
     classifiers=[
