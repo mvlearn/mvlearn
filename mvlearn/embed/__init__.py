@@ -9,7 +9,6 @@ try:
     from torch.utils.data import Dataset, DataLoader
     import torch.nn as nn
     from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
-
     from .dcca import DCCA, linear_cca, cca_loss, MlpNet, DeepPairedNetworks
     from .splitae import SplitAE
 except ModuleNotFoundError:

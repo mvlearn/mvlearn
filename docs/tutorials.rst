@@ -18,6 +18,7 @@ for multiview datasets.
    tutorials/cluster/MVSpectralClustering/MultiviewSpectralValidation_SimulatedData
    tutorials/cluster/MVSphericalKMeans/MVSphericalKMeans_Tutorial
    tutorials/cluster/MVSphericalKMeans/MVSphericalValidation_SimulatedData
+   tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
    tutorials/cluster/multiview_vs_singleview_clustering
 
 Cotraining
@@ -49,6 +50,15 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/Omnibus Embedding for Multiview Data
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
+
+Factorization
+=============
+The following tutorials show how to use multi-view factorization algorithms.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/factorization/ajive_tutorial
 
 Plotting
 ========
