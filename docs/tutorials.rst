@@ -58,7 +58,7 @@ The following tutorials show how to use multi-view factorization algorithms.
 .. toctree::
    :maxdepth: 1
 
-    tutorial/factorization/ajive_tutorial
+   tutorials/factorization/ajive_tutorial
 
 Plotting
 ========

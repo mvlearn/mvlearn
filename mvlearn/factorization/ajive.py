@@ -51,7 +51,7 @@ class AJIVE(object):
 
     n_elbows : int, optional, default: 2
         If ``init_signal_ranks=None``, then computes the initial signal rank
-        guess using :func:`~mvlearn.embed.gcca.select_dimension` with
+        guess using :func:`mvlearn.embed.utils.select_dimension` with
         n_elbows for each view.
 
     center : bool, default = True

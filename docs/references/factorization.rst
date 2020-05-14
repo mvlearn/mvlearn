@@ -3,8 +3,12 @@ Factorization
 
 .. currentmodule:: mvlearn.factorization
 
-Angle-Based Joint and Individual Variation Explained
-----------------------------------------------------
+Angle-Based Joint and Individual Variation Explained (AJIVE)
+------------------------------------------------------------
 
-.. autoclass:: ajive
+.. autoclass:: AJIVE
     :exclude-members: is_fit
+
+.. autofunction:: data_block_heatmaps
+
+.. autofunction:: ajive_full_estimate_heatmaps
