@@ -99,13 +99,14 @@ Python package dependencies
 - scikit-learn >=0.19.1
 - scipy >=1.1.0
 - seaborn >=0.9.0
+- joblib >=0.11
 
 with optional dependencies
 
 - torch >=1.1.0
 - tqdm
 
-Currently, mvlearn is supported for Python 3.6, 3.7, and 3.8.
+Currently, ``mvlearn`` is supported for Python 3.6, 3.7, and 3.8.
 
 Hardware requirements
 ---------------------
