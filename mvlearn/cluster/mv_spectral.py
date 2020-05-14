@@ -46,9 +46,6 @@ class MultiviewSpectralClustering(BaseEstimator):
     n_clusters : int
         The number of clusters
 
-    n_views : int, optional, default=2
-        The number of different views of data.
-
     random_state : int, optional, default=None
         Determines random number generation for k-means.
 
@@ -78,6 +75,15 @@ class MultiviewSpectralClustering(BaseEstimator):
     n_neighbors : int, optional, default=10
         Only used if nearest neighbors is selected for affinity. The
         number of neighbors to use for the nearest neighbors kernel.
+
+    Attributes
+    ----------
+    labels_ : array-like, shape (n_samples)
+        Cluster labels for each point.
+
+    embedding_ : array-like, shape (n_samples, n_clusters)
+        The final spectral representation of the data to be used as input
+        for the KMeans clustering step.
 
     Notes
     -----
@@ -138,10 +144,9 @@ class MultiviewSpectralClustering(BaseEstimator):
         #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
            is assigned to cluster c by the k-means algorithm.
 
-
     References
     ----------
-    .. [#1Clu] Abhishek Kumar and Hal Daume. A Co-training Approach for
+    .. [#1Clu] Abhishek Kumar and Hal Daumé. A Co-training Approach for
             Multiview Spectral Clustering. In International Conference
             on Machine Learning, 2011
 
@@ -161,60 +166,13 @@ class MultiviewSpectralClustering(BaseEstimator):
     0.872
 
     '''
-    def __init__(self, n_clusters=2, n_views=2, random_state=None,
+    def __init__(self, n_clusters=2, random_state=None,
                  info_view=None, max_iter=10, n_init=10, affinity='rbf',
                  gamma=None, n_neighbors=10):
 
         super().__init__()
 
-        if not (isinstance(n_clusters, int) and n_clusters > 0):
-            msg = 'n_clusters must be a positive integer'
-            raise ValueError(msg)
-
-        if not (isinstance(n_views, int) and n_views > 1):
-            msg = 'n_views must be a positive integer greater than 1'
-            raise ValueError(msg)
-
-        if random_state is not None:
-            msg = 'random_state must be convertible to 32 bit unsigned integer'
-            try:
-                random_state = int(random_state)
-            except ValueError:
-                raise ValueError(msg)
-            np.random.seed(random_state)
-
-        self.info_view = None
-        if info_view is not None:
-            if (isinstance(info_view, int)
-                    and (info_view >= 0 and info_view < n_views)):
-                self.info_view = info_view
-            else:
-                msg = 'info_view must be an integer between 0 and n_clusters-1'
-                raise ValueError(msg)
-
-        if not (isinstance(max_iter, int) and (max_iter > 0)):
-            msg = 'max_iter must be a positive integer'
-            raise ValueError(msg)
-
-        if not (isinstance(n_init, int) and n_init > 0):
-            msg = 'n_init must be a positive integer'
-            raise ValueError(msg)
-
-        if affinity not in AFFINITY_METRICS:
-            msg = 'affinity must be a valid affinity metric'
-            raise ValueError(msg)
-
-        if gamma is not None and not ((isinstance(gamma, float) or
-                                       isinstance(gamma, int)) and gamma > 0):
-            msg = 'gamma must be a positive float'
-            raise ValueError(msg)
-
-        if not (isinstance(n_neighbors, int) and n_neighbors > 0):
-            msg = 'n_neighbors must be a positive integer'
-            raise ValueError(msg)
-
         self.n_clusters = n_clusters
-        self.n_views = n_views
         self.random_state = random_state
         self.info_view = info_view
         self.max_iter = max_iter
@@ -222,6 +180,8 @@ class MultiviewSpectralClustering(BaseEstimator):
         self.affinity = affinity
         self.gamma = gamma
         self.n_neighbors = n_neighbors
+        self.labels_ = None
+        self.embedding_ = None
 
     def _affinity_mat(self, X):
 
@@ -282,6 +242,8 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         # Compute the normalized laplacian
         d_mat = np.diag(np.sum(X, axis=1))
+
+        # Double check why we take absolute value of d_mat
         d_alt = np.sqrt(np.linalg.inv(np.abs(d_mat)))
         laplacian = d_alt @ X @ d_alt
 
@@ -292,6 +254,150 @@ class MultiviewSpectralClustering(BaseEstimator):
         u_mat, _, _ = sp.sparse.linalg.svds(laplacian, k=self.n_clusters)
         la_eigs = u_mat[:, :self.n_clusters]
         return la_eigs
+
+    def _param_checks(self, Xs):
+
+        r'''
+        Performs bulk of checks and exception handling for
+        inputted user parameters.
+
+        Parameters
+        ----------
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size n_views, corresponding to the number
+            of views of data. Each view can have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+        The data in the appropriate format.
+
+        '''
+        Xs = check_Xs(Xs)
+        if len(Xs) < 2:
+            msg = 'Xs must have at least 2 views'
+            raise ValueError(msg)
+        self._n_views = len(Xs)
+
+        if not (isinstance(self.n_clusters, int) and self.n_clusters > 0):
+            msg = 'n_clusters must be a positive integer'
+            raise ValueError(msg)
+
+        if self.random_state is not None:
+            msg = 'random_state must be convertible to 32 bit unsigned integer'
+            try:
+                self.random_state = int(self.random_state)
+            except ValueError:
+                raise ValueError(msg)
+            np.random.seed(self.random_state)
+
+        if self.info_view is not None:
+            if not (isinstance(self.info_view, int) and
+                    (self. info_view >= 0 and self.info_view < self._n_views)):
+                msg = 'info_view must be an integer between 0 and n_clusters-1'
+                raise ValueError(msg)
+
+        if not (isinstance(self.max_iter, int) and (self.max_iter > 0)):
+            msg = 'max_iter must be a positive integer'
+            raise ValueError(msg)
+
+        if not (isinstance(self.n_init, int) and self.n_init > 0):
+            msg = 'n_init must be a positive integer'
+            raise ValueError(msg)
+
+        if self.affinity not in AFFINITY_METRICS:
+            msg = 'affinity must be a valid affinity metric'
+            raise ValueError(msg)
+
+        if self.gamma is not None and not ((isinstance(
+                self.gamma, float) or isinstance(self.gamma, int))
+                                           and self.gamma > 0):
+            msg = 'gamma must be a positive float'
+            raise ValueError(msg)
+
+        if not (isinstance(self.n_neighbors, int) and self.n_neighbors > 0):
+            msg = 'n_neighbors must be a positive integer'
+            raise ValueError(msg)
+
+        return Xs
+
+    def fit(self, Xs):
+
+        r'''
+        Performs clustering on the multiple views of data.
+
+        Parameters
+        ----------
+
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+
+            This list must be of size n_views, corresponding to the number
+            of views of data. Each view can have a different number of
+            features, but they must have the same number of samples.
+
+        Returns
+        -------
+        self : returns an instance of self.
+        '''
+
+        # Perform checks on the data and inputted parameters
+        Xs = self._param_checks(Xs)
+
+        # Compute the similarity matrices
+        sims = [self._affinity_mat(X) for X in Xs]
+
+        # Initialize matrices of eigenvectors
+        U_mats = [self._compute_eigs(sim) for sim in sims]
+
+        # Iteratively compute new graph similarities, laplacians,
+        # and eigenvectors
+        for iter in range(self.max_iter):
+
+            # Compute the sums of the products of the spectral embeddings
+            # and their transposes
+            eig_sums = [u_mat @ np.transpose(u_mat) for u_mat in U_mats]
+            U_sum = np.sum(np.array(eig_sums), axis=0)
+            new_sims = list()
+
+            for view in range(self._n_views):
+                # Compute new graph similarity representation
+                mat1 = sims[view] @ (U_sum - eig_sums[view])
+                mat1 = (mat1 + np.transpose(mat1)) / 2.0
+                new_sims.append(mat1)
+                # Recompute eigenvectors
+                U_mats = [self._compute_eigs(sim)
+                          for sim in new_sims]
+
+        # Row normalize
+        for view in range(self._n_views):
+            U_norm = np.linalg.norm(U_mats[view], axis=1).reshape((-1, 1))
+            U_norm[U_norm == 0] = 1
+            U_mats[view] /= U_norm
+
+        # Performing k-means clustering
+        kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init,
+                        random_state=self.random_state)
+
+        if self.info_view is not None:
+            # Use a single view if one was previously designated
+            self.embedding_ = U_mats[self.info_view]
+            self.labels_ = kmeans.fit_predict(self.embedding_)
+        else:
+            # Otherwise, perform columwise concatenation across views
+            # and use result for clustering
+            self.embedding_ = np.hstack(U_mats)
+            self.labels_ = kmeans.fit_predict(self.embedding_)
 
     def fit_predict(self, Xs):
 
@@ -312,57 +418,10 @@ class MultiviewSpectralClustering(BaseEstimator):
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
-            The predicted cluster labels for each sample.
+        labels : array-like, shape (n_samples,)
+        The predicted cluster labels for each sample.
         '''
 
-        Xs = check_Xs(Xs)
-        if len(Xs) != self.n_views:
-            msg = 'Length of Xs must be the same as n_views'
-            raise ValueError(msg)
-
-        # Compute the similarity matrices
-        sims = [self._affinity_mat(X) for X in Xs]
-
-        # Initialize matrices of eigenvectors
-        U_mats = [self._compute_eigs(sim) for sim in sims]
-
-        # Iteratively compute new graph similarities, laplacians,
-        # and eigenvectors
-        for iter in range(self.max_iter):
-
-            # Compute the sums of the products of the spectral embeddings
-            # and their transposes
-            eig_sums = [u_mat @ np.transpose(u_mat) for u_mat in U_mats]
-            U_sum = np.sum(np.array(eig_sums), axis=0)
-            new_sims = list()
-
-            for view in range(self.n_views):
-                # Compute new graph similarity representation
-                mat1 = sims[view] @ (U_sum - eig_sums[view])
-                mat1 = (mat1 + np.transpose(mat1)) / 2.0
-                new_sims.append(mat1)
-                # Recompute eigenvectors
-                U_mats = [self._compute_eigs(sim)
-                          for sim in new_sims]
-
-        # Row normalize
-        for view in range(self.n_views):
-            U_norm = np.linalg.norm(U_mats[view], axis=1).reshape((-1, 1))
-            U_norm[U_norm == 0] = 1
-            U_mats[view] /= U_norm
-
-        # Performing k-means clustering
-        kmeans = KMeans(n_clusters=self.n_clusters,
-                        random_state=self.random_state)
-        predictions = None
-        if self.info_view is not None:
-            # Use a single view if one was previously designated
-            predictions = kmeans.fit_predict(U_mats[self.info_view])
-        else:
-            # Otherwise, perform columwise concatenation across views
-            # and use result for clustering
-            V_mat = np.hstack(U_mats)
-            predictions = kmeans.fit_predict(V_mat)
-
-        return predictions
+        self.fit(Xs)
+        labels = self.labels_
+        return labels
