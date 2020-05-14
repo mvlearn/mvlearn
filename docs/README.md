@@ -4,7 +4,7 @@ We currently use Sphinx
 
 If you only want to get the documentation, note that pre-build versions can be found at
 
-[https://mvlearn.netlify.com/](https://https://mvlearn.netlify.com/)
+[mvlearn.neurodata.io](https://mvlearn.neurodata.io/)
 
 ## Instructions
 
