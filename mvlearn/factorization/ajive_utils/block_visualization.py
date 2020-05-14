@@ -21,7 +21,7 @@ def _data_block_heatmaps(blocks):
         plt.title("View: {}".format(bn))
 
 
-def _ajive_full_estimate_heatmaps(full_block_estimates, blocks, names=None):
+def _ajive_full_estimate_heatmaps(blocks, full_block_estimates, names=None):
     """
     Plots the full AJIVE estimates: X, J, I, E
 

@@ -1,71 +1,80 @@
 import unittest
-
 import numpy as np
 import pandas as pd
 import pytest
-from mvlearn.factorization.ajive import ajive
+from mvlearn.factorization.ajive import (
+    AJIVE,
+    ajive_full_estimate_heatmaps,
+    data_block_heatmaps,
+)
 from mvlearn.factorization.ajive_utils.utils import svd_wrapper
 from scipy.sparse import csr_matrix
 
-class TestFig2Runs(unittest.TestCase):
 
+class TestFig2Runs(unittest.TestCase):
     @classmethod
     def setUp(self):
-        
+
         np.random.seed(12)
 
         # First View
-        V1_joint = np.bmat([[-1 * np.ones((10, 20))],
-                               [np.ones((10, 20))]])
-        
+        V1_joint = np.bmat([[-1 * np.ones((10, 20))], [np.ones((10, 20))]])
+
         V1_joint = np.bmat([np.zeros((20, 80)), V1_joint])
-        
-        V1_indiv_t = np.bmat([[np.ones((4, 50))],
-                                [-1 * np.ones((4, 50))],
-                                [np.zeros((4, 50))],
-                                [np.ones((4, 50))],
-                                [-1 * np.ones((4, 50))]])
-        
-        V1_indiv_b = np.bmat([[np.ones((5, 50))],
-                                [-1 * np.ones((10, 50))],
-                                [np.ones((5, 50))]])
-        
+
+        V1_indiv_t = np.bmat(
+            [
+                [np.ones((4, 50))],
+                [-1 * np.ones((4, 50))],
+                [np.zeros((4, 50))],
+                [np.ones((4, 50))],
+                [-1 * np.ones((4, 50))],
+            ]
+        )
+
+        V1_indiv_b = np.bmat(
+            [[np.ones((5, 50))], [-1 * np.ones((10, 50))], [np.ones((5, 50))]]
+        )
+
         V1_indiv_tot = np.bmat([V1_indiv_t, V1_indiv_b])
-        
+
         V1_noise = np.random.normal(loc=0, scale=1, size=(20, 100))
-        
-        
+
         # Second View
-        V2_joint = np.bmat([[np.ones((10, 10))],
-                              [-1*np.ones((10, 10))]])
-        
+        V2_joint = np.bmat([[np.ones((10, 10))], [-1 * np.ones((10, 10))]])
+
         V2_joint = 5000 * np.bmat([V2_joint, np.zeros((20, 10))])
-        
-        V2_indiv = 5000 * np.bmat([[-1 * np.ones((5, 20))],
-                                      [np.ones((5, 20))],
-                                      [-1 * np.ones((5, 20))],
-                                      [np.ones((5, 20))]])
-        
+
+        V2_indiv = 5000 * np.bmat(
+            [
+                [-1 * np.ones((5, 20))],
+                [np.ones((5, 20))],
+                [-1 * np.ones((5, 20))],
+                [np.ones((5, 20))],
+            ]
+        )
+
         V2_noise = 5000 * np.random.normal(loc=0, scale=1, size=(20, 20))
-      
+
         # View Construction
-        
+
         X = V1_indiv_tot + V1_joint + V1_noise
-        
+
         Y = V2_indiv + V2_joint + V2_noise
 
-        
-        obs_names = ['sample_{}'.format(i) for i in range(X.shape[0])]
-        var_names = {'x': ['x_var_{}'.format(i) for i in range(X.shape[1])],
-                     'y': ['y_var_{}'.format(i) for i in range(Y.shape[1])]}
+        obs_names = ["sample_{}".format(i) for i in range(X.shape[0])]
+        var_names = {
+            "x": ["x_var_{}".format(i) for i in range(X.shape[1])],
+            "y": ["y_var_{}".format(i) for i in range(Y.shape[1])],
+        }
 
-        X = pd.DataFrame(X, index=obs_names, columns=var_names['x'])
-        Y = pd.DataFrame(Y, index=obs_names, columns=var_names['y'])
+        X = pd.DataFrame(X, index=obs_names, columns=var_names["x"])
+        Y = pd.DataFrame(Y, index=obs_names, columns=var_names["y"])
 
-        jive = ajive(init_signal_ranks=[2, 3]).fit(Xs=[X, Y],
-                    view_names=['x','y'])
+        self.ajive = AJIVE(init_signal_ranks=[2, 3]).fit(
+            Xs=[X, Y], view_names=["x", "y"]
+        )
 
-        self.ajive = jive
         self.X = X
         self.Y = Y
         self.obs_names = obs_names
@@ -75,36 +84,40 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check AJIVE has important attributes
         """
-        self.assertTrue(hasattr(self.ajive, 'blocks'))
-        self.assertTrue(hasattr(self.ajive, 'common_'))
-        self.assertTrue(hasattr(self.ajive.blocks['x'], 'joint'))
-        self.assertTrue(hasattr(self.ajive.blocks['x'], 'individual'))
-        self.assertTrue(hasattr(self.ajive.blocks['y'], 'joint'))
-        self.assertTrue(hasattr(self.ajive.blocks['y'], 'individual'))
+        self.assertTrue(hasattr(self.ajive, "blocks_"))
+        self.assertTrue(hasattr(self.ajive, "common_"))
+        self.assertTrue(hasattr(self.ajive.blocks_["x"], "joint"))
+        self.assertTrue(hasattr(self.ajive.blocks_["x"], "individual"))
+        self.assertTrue(hasattr(self.ajive.blocks_["y"], "joint"))
+        self.assertTrue(hasattr(self.ajive.blocks_["y"], "individual"))
 
     def test_correct_estimates(self):
         """
         Check AJIVE found correct rank estimates
         """
         self.assertEqual(self.ajive.common_.rank, 1)
-        self.assertEqual(self.ajive.blocks['x'].individual.rank, 1)
-        self.assertEqual(self.ajive.blocks['y'].individual.rank, 3)
+        self.assertEqual(self.ajive.blocks_["x"].individual.rank, 1)
+        self.assertEqual(self.ajive.blocks_["y"].individual.rank, 3)
 
     def test_matrix_decomposition(self):
         """
         check X_centered = I + J + E
         """
         X_cent = self.X - self.X.mean(axis=0)
-        Rx = np.array(X_cent) - (self.ajive.blocks['x'].joint.full_ +
-                       self.ajive.blocks['x'].individual.full_ +
-                       self.ajive.blocks['x'].noise_)
+        Rx = np.array(X_cent) - (
+            self.ajive.blocks_["x"].joint.full_
+            + self.ajive.blocks_["x"].individual.full_
+            + self.ajive.blocks_["x"].noise_
+        )
 
         self.assertTrue(np.allclose(Rx, 0))
 
         Y_cent = self.Y - self.Y.mean(axis=0)
-        Ry = np.array(Y_cent) - (self.ajive.blocks['y'].joint.full_ +
-                       self.ajive.blocks['y'].individual.full_ +
-                       self.ajive.blocks['y'].noise_)
+        Ry = np.array(Y_cent) - (
+            self.ajive.blocks_["y"].joint.full_
+            + self.ajive.blocks_["y"].individual.full_
+            + self.ajive.blocks_["y"].noise_
+        )
 
         self.assertTrue(np.allclose(Ry, 0))
 
@@ -115,7 +128,7 @@ class TestFig2Runs(unittest.TestCase):
         U, D, V = self.ajive.common_.get_UDV()
         rank = self.ajive.common_.rank
         n = self.X.shape[0]
-        d = sum(self.ajive.init_signal_ranks.values())
+        d = sum(self.ajive.init_signal_ranks_.values())
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
 
@@ -123,19 +136,19 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check each block specific SVD
         """
-        U, D, V = self.ajive.blocks['x'].joint.get_UDV()
+        U, D, V = self.ajive.blocks_["x"].joint.get_UDV()
         rank = 1
         n, d = self.X.shape
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
 
-        U, D, V = self.ajive.blocks['x'].individual.get_UDV()
+        U, D, V = self.ajive.blocks_["x"].individual.get_UDV()
         rank = 1
         n, d = self.X.shape
         checks = svd_checker(U, D, V, n, d, rank)
         self.assertTrue(all(checks.values()))
 
-        U, D, V = self.ajive.blocks['y'].joint.get_UDV()
+        U, D, V = self.ajive.blocks_["y"].joint.get_UDV()
         rank = 1
         n, d = self.Y.shape
         checks = svd_checker(U, D, V, n, d, rank)
@@ -145,64 +158,67 @@ class TestFig2Runs(unittest.TestCase):
         """
         Check AJIVE can take a list input.
         """
-        jive = ajive(init_signal_ranks=[2, 3])
-        jive.fit(Xs=[self.X, self.Y])
-        self.assertTrue(set(jive.block_names) == set([0, 1]))
+        ajive = AJIVE(init_signal_ranks=[2, 3])
+        ajive.fit(Xs=[self.X, self.Y])
+        self.assertTrue(set(ajive.block_names) == set([0, 1]))
 
     def test_dont_store_full(self):
         """
         Make sure setting store_full = False works
         """
-        jive = ajive(init_signal_ranks=[2, 3], store_full=False)
-        jive.fit(Xs=[self.X, self.Y])
+        ajive = AJIVE(init_signal_ranks=[2, 3], store_full=False)
+        ajive.fit(Xs=[self.X, self.Y])
 
-        self.assertTrue(jive.blocks[0].joint.full_ is None)
-        self.assertTrue(jive.blocks[0].individual.full_ is None)
-        self.assertTrue(jive.blocks[1].joint.full_ is None)
-        self.assertTrue(jive.blocks[1].individual.full_ is None)
+        self.assertTrue(ajive.blocks_[0].joint.full_ is None)
+        self.assertTrue(ajive.blocks_[0].individual.full_ is None)
+        self.assertTrue(ajive.blocks_[1].joint.full_ is None)
+        self.assertTrue(ajive.blocks_[1].individual.full_ is None)
 
     def test_rank0(self):
         """
         Check setting joint/individual rank to zero works
         """
-        jive = ajive(init_signal_ranks=[2, 3], joint_rank=0)
-        jive.fit(Xs=[self.X, self.Y])
-        self.assertTrue(jive.common_.rank == 0)
-        self.assertTrue(jive.blocks[0].joint.rank == 0)
-        self.assertTrue(jive.blocks[0].joint.scores_ is None)
+        ajive = AJIVE(init_signal_ranks=[2, 3], joint_rank=0)
+        ajive.fit(Xs=[self.X, self.Y])
+        self.assertTrue(ajive.common_.rank == 0)
+        self.assertTrue(ajive.blocks_[0].joint.rank == 0)
+        self.assertTrue(ajive.blocks_[0].joint.scores_ is None)
 
-        jive = ajive(init_signal_ranks=[2, 3], indiv_ranks=[0, 1])
-        jive.fit(Xs=[self.X, self.Y])
-        self.assertTrue(jive.blocks[0].individual.rank == 0)
-        self.assertTrue(jive.blocks[0].individual.scores_ is None)
+        ajive = AJIVE(init_signal_ranks=[2, 3], indiv_ranks=[0, 1])
+        ajive.fit(Xs=[self.X, self.Y])
+        self.assertTrue(ajive.blocks_[0].individual.rank == 0)
+        self.assertTrue(ajive.blocks_[0].individual.scores_ is None)
 
     def test_centering(self):
         xmean = self.X.mean(axis=0)
         ymean = self.Y.mean(axis=0)
 
-        self.assertTrue(np.allclose(self.ajive.centers_['x'], xmean))
-        self.assertTrue(np.allclose(self.ajive.blocks['x'].joint.m_, xmean))
-        self.assertTrue(np.allclose(self.ajive.blocks['x'].individual.m_, \
-                                    xmean))
+        self.assertTrue(np.allclose(self.ajive.centers_["x"], xmean))
+        self.assertTrue(np.allclose(self.ajive.blocks_["x"].joint.m_, xmean))
+        self.assertTrue(
+            np.allclose(self.ajive.blocks_["x"].individual.m_, xmean)
+        )
 
-        self.assertTrue(np.allclose(self.ajive.centers_['y'], ymean))
-        self.assertTrue(np.allclose(self.ajive.blocks['y'].joint.m_, ymean))
-        self.assertTrue(np.allclose(self.ajive.blocks['y'].individual.m_, \
-                                    ymean))
+        self.assertTrue(np.allclose(self.ajive.centers_["y"], ymean))
+        self.assertTrue(np.allclose(self.ajive.blocks_["y"].joint.m_, ymean))
+        self.assertTrue(
+            np.allclose(self.ajive.blocks_["y"].individual.m_, ymean)
+        )
 
         # no centering
-        jive = ajive(init_signal_ranks=[2,3], center=False)
-        jive = jive.fit(Xs=[self.X, self.Y], view_names=['x','y'])
-        self.assertTrue(jive.centers_['x'] is None)
-        self.assertTrue(jive.centers_['y'] is None)
+        ajive = AJIVE(init_signal_ranks=[2, 3], center=False)
+        ajive = ajive.fit(Xs=[self.X, self.Y], view_names=["x", "y"])
+        self.assertTrue(ajive.centers_["x"] is None)
+        self.assertTrue(ajive.centers_["y"] is None)
 
         # only center x
-        jive = ajive(init_signal_ranks=[2,3], center=[True, False])
-        jive = jive.fit(Xs=[self.X, self.Y], view_names=['x','y'])
-        self.assertTrue(np.allclose(jive.centers_['x'], xmean))
-        self.assertTrue(jive.centers_['y'] is None)
-        
-if __name__ == '__main__':
+        ajive = AJIVE(init_signal_ranks=[2, 3], center=[True, False])
+        ajive = ajive.fit(Xs=[self.X, self.Y], view_names=["x", "y"])
+        self.assertTrue(np.allclose(ajive.centers_["x"], xmean))
+        self.assertTrue(ajive.centers_["y"] is None)
+
+
+if __name__ == "__main__":
     unittest.main()
 
 
@@ -210,255 +226,285 @@ def svd_checker(U, D, V, n, d, rank):
     checks = {}
 
     # scores shape
-    checks['scores_shape'] = U.shape == (n, rank)
+    checks["scores_shape"] = U.shape == (n, rank)
 
     # scores have orthonormal columns
-    checks['scores_ortho'] = np.allclose(np.dot(U.T, U), np.eye(rank))
+    checks["scores_ortho"] = np.allclose(np.dot(U.T, U), np.eye(rank))
 
     # singular values shape
-    checks['svals_shape'] = D.shape == (rank, )
+    checks["svals_shape"] = D.shape == (rank,)
 
     # singular values are in non-increasing order
     svals_nonincreasing = True
     for i in range(len(D) - 1):
-        if D[i] < D[i+1]:
+        if D[i] < D[i + 1]:
             svals_nonincreasing = False
-    checks['svals_nonincreasing'] = svals_nonincreasing
+    checks["svals_nonincreasing"] = svals_nonincreasing
 
     # loadings shape
-    checks['loading_shape'] = V.shape == (d, rank)
+    checks["loading_shape"] = V.shape == (d, rank)
 
     # loadings have orthonormal columns
-    checks['loadings_ortho'] = np.allclose(np.dot(V.T, V), np.eye(rank))
-    
+    checks["loadings_ortho"] = np.allclose(np.dot(V.T, V), np.eye(rank))
+
     return checks
 
 
-'''
+"""
 DATA INITIALIZATION
-'''
+"""
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def data():
-    
+
     np.random.seed(12)
 
     # First View
-    V1_joint = np.bmat([[-1 * np.ones((10, 20))],
-                           [np.ones((10, 20))]])
-    
+    V1_joint = np.bmat([[-1 * np.ones((10, 20))], [np.ones((10, 20))]])
+
     V1_joint = np.bmat([np.zeros((20, 80)), V1_joint])
-    
-    V1_indiv_t = np.bmat([[np.ones((4, 50))],
-                            [-1 * np.ones((4, 50))],
-                            [np.zeros((4, 50))],
-                            [np.ones((4, 50))],
-                            [-1 * np.ones((4, 50))]])
-    
-    V1_indiv_b = np.bmat([[np.ones((5, 50))],
-                            [-1 * np.ones((10, 50))],
-                            [np.ones((5, 50))]])
-    
+
+    V1_indiv_t = np.bmat(
+        [
+            [np.ones((4, 50))],
+            [-1 * np.ones((4, 50))],
+            [np.zeros((4, 50))],
+            [np.ones((4, 50))],
+            [-1 * np.ones((4, 50))],
+        ]
+    )
+
+    V1_indiv_b = np.bmat(
+        [[np.ones((5, 50))], [-1 * np.ones((10, 50))], [np.ones((5, 50))]]
+    )
+
     V1_indiv_tot = np.bmat([V1_indiv_t, V1_indiv_b])
-    
+
     V1_noise = np.random.normal(loc=0, scale=1, size=(20, 100))
-    
-    
+
     # Second View
-    V2_joint = np.bmat([[np.ones((10, 10))],
-                          [-1*np.ones((10, 10))]])
-    
+    V2_joint = np.bmat([[np.ones((10, 10))], [-1 * np.ones((10, 10))]])
+
     V2_joint = 5000 * np.bmat([V2_joint, np.zeros((20, 10))])
-    
-    V2_indiv = 5000 * np.bmat([[-1 * np.ones((5, 20))],
-                                  [np.ones((5, 20))],
-                                  [-1 * np.ones((5, 20))],
-                                  [np.ones((5, 20))]])
-    
+
+    V2_indiv = 5000 * np.bmat(
+        [
+            [-1 * np.ones((5, 20))],
+            [np.ones((5, 20))],
+            [-1 * np.ones((5, 20))],
+            [np.ones((5, 20))],
+        ]
+    )
+
     V2_noise = 5000 * np.random.normal(loc=0, scale=1, size=(20, 20))
-  
+
     # View Construction
-    
+
     V1 = V1_indiv_tot + V1_joint + V1_noise
-    
+
     V2 = V2_indiv + V2_joint + V2_noise
 
     # Creating Sparse views
     V1_sparse = np.array(np.zeros_like(V1))
     V2_sparse = np.array(np.zeros_like(V2))
-    V1_sparse[0,0] = 1
-    V2_sparse[0,0] = 3
+    V1_sparse[0, 0] = 1
+    V2_sparse[0, 0] = 3
     V1_Bad = csr_matrix([[1, 2, 0], [0, 0, 3], [4, 0, 5]])
     V2_Bad = csr_matrix([[1, 2, 3], [7, 0, 3], [1, 2, 2]])
-   
+
     Views_Same = [V1, V1]
     Views_Different = [V1, V2]
     Views_Sparse = [V1_sparse, V2_sparse]
     Views_Bad = [V1_Bad, V2_Bad]
 
-    
-    return {'same_views' : Views_Same, 'diff_views' : Views_Different,
-            'sparse_views' : Views_Sparse, 'bad_views': Views_Bad}
+    return {
+        "same_views": Views_Same,
+        "diff_views": Views_Different,
+        "sparse_views": Views_Sparse,
+        "bad_views": Views_Bad,
+    }
 
-'''
+
+"""
 TESTS
-'''
+"""
 
 
 def test_joint_indiv_length(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(Xs = dat)
-    blocks = jive.predict(return_dict=True)
-    assert blocks[0]['joint'].shape == blocks[0]['individual'].shape        
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
+    assert blocks[0]["joint"].shape == blocks[0]["individual"].shape
+
 
 def test_joint_noise_length(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(Xs = dat)
-    blocks = jive.predict(return_dict=True)
-    assert blocks[0]['joint'].shape == blocks[0]['noise'].shape        
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
+    assert blocks[0]["joint"].shape == blocks[0]["noise"].shape
 
-          
+
 def test_joint(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(Xs = dat)
-    blocks = jive.predict(return_dict=True)
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
     for i in np.arange(100):
-        j = np.sum(blocks[0]['joint'][i] == blocks[1]['joint'][i])
+        j = np.sum(blocks[0]["joint"][i] == blocks[1]["joint"][i])
         assert j == 20
+
 
 def test_indiv(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(Xs = dat)
-    blocks = jive.predict(return_dict=True)
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
     for i in np.arange(100):
-        j = np.sum(blocks[0]['individual'][i] == blocks[1]['individual'][i])
+        j = np.sum(blocks[0]["individual"][i] == blocks[1]["individual"][i])
         assert j == 20
 
-#Sees whether incorrect signals will work
+
+# Sees whether incorrect signals will work
 def test_wrong_sig(data):
-    dat = data['diff_views']
-    jive = ajive(init_signal_ranks= [-1,-4])
+    dat = data["diff_views"]
+    ajive = AJIVE(init_signal_ranks=[-1, -4])
     try:
-        jive.fit(Xs=dat)
+        ajive.fit(Xs=dat)
         j = 0
     except:
         j = 1
     assert j == 1
 
+
 def test_check_sparse(data):
-    dat = data['sparse_views']
+    dat = data["sparse_views"]
     spar_mat = dat[0]
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
-    jive = ajive(init_signal_ranks= [2,2])
-    jive.fit(Xs = dat)
-    blocks = jive.predict(return_dict=True)
-    assert np.sum(np.sum(blocks[0]['individual'] == 0)) > \
-    np.sum(np.sum(blocks[0]['individual'] != 0))
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
+    assert np.sum(np.sum(blocks[0]["individual"] == 0)) > np.sum(
+        np.sum(blocks[0]["individual"] != 0)
+    )
 
-#Check valueerror for general linear operators
+
+# Check valueerror for general linear operators
 def test_check_gen_lin_op_scipy(data):
     with pytest.raises(TypeError):
-        dat = data['bad_views']
-        jive = ajive(init_signal_ranks= [2,2])
-        jive.fit(Xs = dat)
+        dat = data["bad_views"]
+        ajive = AJIVE(init_signal_ranks=[2, 2])
+        ajive.fit(Xs=dat)
+
 
 def test_get_ranks(data):
     with pytest.raises(ValueError):
-        jive = ajive(init_signal_ranks= [2,2])
-        jive.get_ranks()
+        ajive = AJIVE(init_signal_ranks=[2, 2])
+        ajive.get_ranks()
 
 
 def test_check_joint_rank_large(data):
     with pytest.raises(ValueError):
-        dat = data['same_views']
-        jive = ajive(init_signal_ranks= [2,2], joint_rank=5)
-        jive.fit(Xs = dat)
+        dat = data["same_views"]
+        ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=5)
+        ajive.fit(Xs=dat)
+
 
 def test_decomp_not_computed_ranks():
     with pytest.raises(ValueError):
-        jive = ajive(init_signal_ranks=[2,2])
-        jive.get_ranks()
+        ajive = AJIVE(init_signal_ranks=[2, 2])
+        ajive.get_ranks()
+
 
 def test_indiv_rank(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2], indiv_ranks=[2,1])
-    jive.fit(Xs = dat)
-    assert jive.indiv_ranks[0] == 2
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2], indiv_ranks=[2, 1])
+    ajive.fit(Xs=dat)
+    assert ajive.indiv_ranks[0] == 2
+
 
 def test_joint_rank(data):
-    dat = data['same_views']
-    jive = ajive(init_signal_ranks= [2,2], joint_rank=2)
-    jive.fit(Xs = dat)
-    assert jive.joint_rank == 2
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=2)
+    ajive.fit(Xs=dat)
+    assert ajive.joint_rank == 2
+
 
 def test_is_fit():
-    jive = ajive(init_signal_ranks = [2,2],joint_rank=2)
-    assert jive.is_fit == False
+    ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=2)
+    assert ajive.is_fit_ == False
+
 
 def test_n_randdir():
-    jive = ajive(init_signal_ranks = [2,2],n_randdir_samples=5)
-    assert jive.n_randdir_samples == 5
+    ajive = AJIVE(init_signal_ranks=[2, 2], n_randdir_samples=5)
+    assert ajive.n_randdir_samples == 5
+
 
 def test_n_wedin():
-    jive = ajive(init_signal_ranks = [2,2], n_wedin_samples = 6)
-    assert jive.n_wedin_samples == 6
-    
+    ajive = AJIVE(init_signal_ranks=[2, 2], n_wedin_samples=6)
+    assert ajive.n_wedin_samples == 6
+
+
 def test_precomp_init_svd(data):
-    dat = data['same_views']
+    dat = data["same_views"]
     precomp = []
     for i in dat:
         precomp.append(svd_wrapper(i))
-    jive = ajive(init_signal_ranks=[2,2], joint_rank=1)
-    jive.fit(dat, precomp_init_svd=precomp)
+    ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
+    ajive.fit(dat, precomp_init_svd=precomp)
     p = 3
-    assert p == 3 
+    assert p == 3
 
-#Plotting
+
+# Plotting
+
 
 def test_plot_diag(data):
-    x = data['same_views']
-    ajive.data_block_heatmaps(x)
+    x = data["same_views"]
+    data_block_heatmaps(x)
     p = 1
     assert p == 1
+
 
 def test_ajive_plot(data):
-    x = data['same_views']
-    jive = ajive(init_signal_ranks=[2,2])
-    jive.fit(Xs=x)
-    blocks = jive.predict(return_dict=True)
-    ajive.ajive_full_estimate_heatmaps(blocks, x)
+    x = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=x)
+    blocks = ajive.predict(return_dict=True)
+    ajive_full_estimate_heatmaps(x, blocks)
     p = 1
     assert p == 1
 
+
 def test_ajive_plot_list(data):
-    x = data['same_views']
-    jive = ajive(init_signal_ranks=[2,2])
-    jive.fit(Xs=x)
-    blocks = jive.predict(return_dict=False)
-    ajive.ajive_full_estimate_heatmaps(blocks, x, names=['x1','x2'])
+    x = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=x)
+    blocks = ajive.predict(return_dict=False)
+    ajive_full_estimate_heatmaps(x, blocks, names=["x1", "x2"])
     p = 1
     assert p == 1
+
 
 def test_name_values(data):
     with pytest.raises(ValueError):
-        x = data['same_views']
-        jive = ajive(init_signal_ranks=[2,2])
-        jive.fit(Xs=x, view_names = ['1','2','3'])
+        x = data["same_views"]
+        ajive = AJIVE(init_signal_ranks=[2, 2])
+        ajive.fit(Xs=x, view_names=["1", "2", "3"])
+
 
 def test_name_values_type(data):
     with pytest.raises(ValueError):
-        x = data['same_views']
-        jive = ajive(init_signal_ranks=[2,2])
-        jive.fit(Xs=x, view_names = {'jon':'first','rich':'second'})
+        x = data["same_views"]
+        ajive = AJIVE(init_signal_ranks=[2, 2])
+        ajive.fit(Xs=x, view_names={"jon": "first", "rich": "second"})
+
 
 def test_traditional_output(data):
-    x = data['same_views']
-    jive = ajive(init_signal_ranks=[2,2])
-    jive.fit(Xs=x, view_names = ['x','y'])
-    jive.predict(return_dict=False)
+    x = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+    ajive.fit(Xs=x, view_names=["x", "y"])
+    ajive.predict(return_dict=False)
 
-    

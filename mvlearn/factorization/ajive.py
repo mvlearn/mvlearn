@@ -25,7 +25,7 @@ from .ajive_utils.random_direction import sample_randdir
 from .ajive_utils.pca import pca, ViewSpecificResults
 
 
-class ajive(object):
+class AJIVE(object):
     r"""
     An implementation of Angle-based Joint and Individual Variation Explained
     [#1ajive]_. This algorithm takes multiple views and decomposes them into 3
@@ -37,88 +37,94 @@ class ajive(object):
 
     Parameters
     ----------
-    init_signal_ranks: list or dict
-        The initial signal ranks.
+    init_signal_ranks : list
+        Initial guesses as to the rank of each view's signal.
 
-    joint_rank: int, default = None
+    joint_rank : int, default = None
         Rank of the joint variation matrix. If None, will estimate the
         joint rank. Otherwise, will use provided joint rank.
 
-    indiv_ranks: list
+    indiv_ranks : list, default = None
         Ranks of individual variation matrices. If None, will estimate the
         individual ranks. Otherwise, will use provided individual ranks.
 
-    center: bool, default = True
+    center : bool, default = True
         Boolean for centering matrices.
 
-    reconsider_joint_components: bool, default = True
+    reconsider_joint_components : bool, default = True
         Triggers _reconsider_joint_components function to run and removes
         columns of joint scores according to identifiability constraint.
 
-    wedin_percentile: int, default = 5
+    wedin_percentile : int, default = 5
         Percentile used for wedin (lower) bound cutoff for squared
         singular values used to estimate joint rank.
 
-    n_wedin_samples: int, default = 1000
+    n_wedin_samples : int, default = 1000
         Number of wedin bound samples to draw.
 
-    precomp_wedin_samples: Dict of array-like or list of array-like
+    precomp_wedin_samples : list of array-like
         Wedin samples that are precomputed for each view.
 
-    randdir_percentile: int, default = 95
+    randdir_percentile : int, default = 95
         Percentile for random direction (lower) bound cutoff for squared
         singular values used to estimate joint rank.
 
-    n_randdir_samples: int, default = 1000
+    n_randdir_samples : int, default = 1000
         Number of random direction samples to draw.
 
-    precomp_randdir_samples: array-like, default = None
+    precomp_randdir_samples : array-like, default = None
         Precomputed random direction samples.
 
     Attributes
     ----------
 
-    common_: The class mvlearn.factorization.ajive_utils.pca.pca
+    common_ : The class mvlearn.factorization.ajive_utils.pca.pca
         The common joint space found using pca class in same directory
 
-    blocks: dict
+    blocks_ : dict
         The block-specific results.
 
-    centers_: dict
+    centers_ : dict
         The the centering vectors computed for each matrix.
 
-    sv_threshold_: dict
+    sv_threshold_ : dict
         The singular value thresholds computed for each block based on
         initial SVD. Eventually used to estimate the individual ranks.
 
-    all_joint_svals_: list
+    all_joint_svals_ : list
         All singular values from the concatenated joint matrix.
 
-    random_sv_samples_: list
+    random_sv_samples_ : list
         Random singular value samples from random direction bound.
 
-    rand_cutoff_: float
+    rand_cutoff_ : float
         Singular value squared cutoff for the random direction bound.
 
-    wedin_samples_: dict
+    wedin_samples_ : dict
         The wedin samples for each view.
 
-    wedin_cutoff_: float
+    wedin_cutoff_ : float
         Singular value squared cutoff for the wedin bound.
 
-    svalsq_cutoff_: float
+    svalsq_cutoff_ : float
         max(rand_cutoff_, wedin_cutoff_)
 
-    joint_rank_wedin_est_: int
+    joint_rank_wedin_est_ : int
         The joint rank estimated using the wedin/random direction bound.
 
-    joint_rank: int
+    init_signal_rank_ : dict
+        init_signal_rank in a dictionary of items for each view.
+
+    joint_rank_ : int
         The rank of the joint matrix
 
-    indiv_ranks: dict of ints
+    indiv_ranks_ : dict of ints
         Ranks of the individual matrices for each view.
 
-    is_fit: bool, default = False
+    center_ : dict
+        Center in a dict of items for each view.
+
+    is_fit_ : bool, default = False
         Returns whether data has been fit yet
 
     Notes
@@ -180,7 +186,7 @@ class ajive(object):
     :math:`I` in the above equation represents the identity matrix.
     From here, the :math:`I^{(i)}` matrix (individual signal estimate) can be
     found by performing the rank :math:`r_{individual}^{(i)}` singular value
-    decomposition of :math:`X^{(k), orthog}`. :math:`r_{individual}^{(i)}` can
+    decomposition of :math:`X^{(i), orthog}`. :math:`r_{individual}^{(i)}` can
     be found by using the aforementioned singular value thresholding method.
 
     Finally, we can solve for the noise estimates, :math:`E^{(i)}` by using
@@ -196,16 +202,15 @@ class ajive(object):
 
     Examples
     --------
-    >>> from mvlearn.factorization.ajive import ajive
+    >>> from mvlearn.factorization.ajive import AJIVE
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> Xs, _ = load_UCImultifeature()
     >>> print(len(Xs)) # number of samples in each view
     6
     >>> print(Xs[0].shape, Xs[1].shape) # number of samples in each view
     (2000, 76) (2000, 216)
-    >>> Ajive = ajive(init_signal_ranks=[2,2])
-    >>> Ajive.fit(Xs)
-    >>> b = Ajive.predict()
+    >>> ajive = AJIVE(init_signal_ranks=[2,2])
+    >>> b = ajive.fit(Xs).predict()
     >>> print(b)
     6
     >>> print(b[0][0].shape,b[1][0].shape)  # (V1 joint mat, V2 joint mat)
@@ -238,13 +243,13 @@ class ajive(object):
         self.joint_rank = joint_rank
         self.indiv_ranks = indiv_ranks
 
-        self.center = center
+        self.center_ = center
 
         self.wedin_percentile = wedin_percentile
         self.n_wedin_samples = n_wedin_samples
         self.wedin_samples_ = precomp_wedin_samples
         if precomp_wedin_samples is not None:
-            self.n_wedin_samples = len(list(precomp_wedin_samples.values())[0])
+            self.n_wedin_samples = len(precomp_wedin_samples[0])
 
         self.randdir_percentile = randdir_percentile
         self.n_randdir_samples = n_randdir_samples
@@ -258,10 +263,10 @@ class ajive(object):
 
     def __repr__(self):
 
-        if self.is_fit:
+        if self.is_fit_:
             r = "joint rank: {}".format(self.common_.rank)
             for bn in self.block_names:
-                indiv_rank = self.blocks[bn].individual.rank
+                indiv_rank = self.blocks_[bn].individual.rank
                 r += ", block {} indiv rank: {}".format(bn, indiv_rank)
             return r
 
@@ -270,13 +275,13 @@ class ajive(object):
 
     def fit(self, Xs, view_names=None, precomp_init_svd=None):
         r"""
-        Fits the AJIVE decomposition.
+        Learns the AJIVE decomposition from Xs.
 
         Parameters
         ----------
         Xs: list of array-likes
-            - blocks length: n_views
-            - blocks[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The different views that are input. Input as data matrices.
 
         precomp_init_svd: dict or list
@@ -288,16 +293,21 @@ class ajive(object):
         view_names: array-like, default = None
             Optional. The names of the views. If no input, the views will be
             names 1,2,...n_views.
+
+        Returns
+        -------
+        self : returns an instance of self.
         """
 
-        Xs, self.init_signal_ranks, self.indiv_ranks, precomp_init_svd,\
-            self.center, obs_names, var_names, self.shapes_ = \
+        Xs, self.init_signal_ranks_, self.indiv_ranks_, precomp_init_svd,\
+            self.center_, obs_names, var_names, self.shapes_ =\
             _arg_checker(Xs, view_names,
                          self.init_signal_ranks,
                          self.joint_rank,
                          self.indiv_ranks,
                          precomp_init_svd,
-                         self.center)
+                         self.center_,
+                         )
 
         block_names = list(Xs.keys())
         num_obs = list(Xs.values())[0].shape[0]  # number of views
@@ -306,7 +316,7 @@ class ajive(object):
         self.centers_ = {}
         for bn in block_names:
             Xs[bn], self.centers_[bn] = centering(Xs[bn],
-                                                  method=self.center[bn])
+                                                  method=self.center_[bn])
 
         # SVD to extract signal on each view
 
@@ -318,7 +328,7 @@ class ajive(object):
             if precomp_init_svd[bn] is None:
                 # signal rank + 1 to get individual rank sv threshold
                 U, D, V = svd_wrapper(Xs[bn],
-                                      self.init_signal_ranks[bn] + 1)
+                                      self.init_signal_ranks_[bn] + 1)
             # If precomputed return values already found
             else:
                 U = precomp_init_svd[bn]["scores"]
@@ -327,15 +337,15 @@ class ajive(object):
 
             # The SV threshold is halfway between the init_signal_ranks[bn]th
             # and init_signal_ranks[bn] + 1 st singular value.
-            self.sv_threshold_[bn] = (D[self.init_signal_ranks[bn] - 1]
-                                      + D[self.init_signal_ranks[bn]])/2
+            self.sv_threshold_[bn] = (D[self.init_signal_ranks_[bn] - 1]
+                                      + D[self.init_signal_ranks_[bn]])/2
 
             init_signal_svd[bn] = {'scores':
-                                   U[:, 0:self.init_signal_ranks[bn]],
+                                   U[:, 0:self.init_signal_ranks_[bn]],
                                    'svals':
-                                   D[0:self.init_signal_ranks[bn]],
+                                   D[0:self.init_signal_ranks_[bn]],
                                    'loadings':
-                                   V[:, 0:self.init_signal_ranks[bn]]}
+                                   V[:, 0:self.init_signal_ranks_[bn]]}
 
         # SVD of joint signal matrix. Here we are trying to estimate joint
         # rank and find an apt joint basis.
@@ -353,7 +363,7 @@ class ajive(object):
 
             # Calculating sv samples if not provided
             if self.random_sv_samples_ is None:
-                init_rank_list = list(self.init_signal_ranks.values())
+                init_rank_list = list(self.init_signal_ranks_.values())
                 self.random_sv_samples_ = \
                     sample_randdir(num_obs,
                                    signal_ranks=init_rank_list,
@@ -368,8 +378,12 @@ class ajive(object):
                                           U=init_signal_svd[bn]['scores'],
                                           D=init_signal_svd[bn]['svals'],
                                           V=init_signal_svd[bn]['loadings'],
-                                          rank=self.init_signal_ranks[bn],
+                                          rank=self.init_signal_ranks_[bn],
                                           R=self.n_wedin_samples)
+            else:
+                self.wedin_samples_ = {
+                    bn:wc for bn,wc in zip(self.wedin_samples_, block_names)
+                    }
 
             self.wedin_sv_samples_ = len(Xs) - \
                 np.array([sum(self.wedin_samples_[bn][i] **
@@ -385,24 +399,26 @@ class ajive(object):
             self.svalsq_cutoff_ = max(self.wedin_cutoff_, self.rand_cutoff_)
             self.joint_rank_wedin_est_ = sum(joint_svals ** 2 >
                                              self.svalsq_cutoff_)
-            self.joint_rank = deepcopy(self.joint_rank_wedin_est_)
+            self.joint_rank_ = deepcopy(self.joint_rank_wedin_est_)
+        else:
+            self.joint_rank_ = deepcopy(self.joint_rank)
 
         # check identifiability constraint
 
         if self.reconsider_joint_components:
-            joint_scores, joint_svals, joint_loadings, self.joint_rank = \
+            joint_scores, joint_svals, joint_loadings, self.joint_rank_ = \
                 _reconsider_joint_components(Xs,
                                              self.sv_threshold_,
                                              joint_scores,
                                              joint_svals, joint_loadings,
-                                             self.joint_rank)
+                                             self.joint_rank_)
 
         # Using rank and joint SVD, calls pca class to get joint basis
-        jl = joint_loadings[:, 0:self.joint_rank]
-        jsv = joint_svals[0:self.joint_rank]
+        jl = joint_loadings[:, 0:self.joint_rank_]
+        jsv = joint_svals[0:self.joint_rank_]
 
         self.common_ = \
-            pca.from_precomputed(scores=joint_scores[:, 0:self.joint_rank],
+            pca.from_precomputed(scores=joint_scores[:, 0:self.joint_rank_],
                                  svals=jsv,
                                  loadings=jl,
                                  obs_names=obs_names)
@@ -417,7 +433,7 @@ class ajive(object):
 
             # View specific joint space creation
             # projecting X onto the joint space then compute SVD
-            if self.joint_rank != 0:
+            if self.joint_rank_ != 0:
                 if issparse(X):  # Implement sparse JIVE later
                     raise ValueError('An input matrix is sparse. This '
                                      'functionality ' +
@@ -425,7 +441,7 @@ class ajive(object):
                 else:
                     J = np.array(np.dot(joint_scores,
                                         np.dot(joint_scores.T, X)))
-                    U, D, V = svd_wrapper(J, self.joint_rank)
+                    U, D, V = svd_wrapper(J, self.joint_rank_)
                     if not self.store_full:
                         J = None  # kill J matrix to save memory
 
@@ -440,20 +456,20 @@ class ajive(object):
                                            'scores': U,
                                            'svals': D,
                                            'loadings': V,
-                                           'rank': self.joint_rank}
+                                           'rank': self.joint_rank_}
 
             # Here we are creating the individual representations for
             # each view.
 
             # Finding the orthogonal complement to the joint matrix
-            if self.joint_rank == 0:
+            if self.joint_rank_ == 0:
                 X_orthog = X
             else:
                 X_orthog = X - np.dot(joint_scores, np.dot(joint_scores.T, X))
 
             # estimate individual rank using sv threshold, then compute SVD
-            if self.indiv_ranks[bn] is None:
-                max_rank = min(X.shape) - self.joint_rank  # saves computation
+            if self.indiv_ranks_[bn] is None:
+                max_rank = min(X.shape) - self.joint_rank_  # saves computation
                 U, D, V = svd_wrapper(X_orthog, max_rank)
                 rank = sum(D > self.sv_threshold_[bn])
 
@@ -464,11 +480,11 @@ class ajive(object):
                     D = D[0:rank]
                     V = V[:, 0:rank]
 
-                self.indiv_ranks[bn] = rank
+                self.indiv_ranks_[bn] = rank
 
             # SVD on the orthogonal complement
             else:  # if user inputs rank list for individual matrices
-                rank = self.indiv_ranks[bn]
+                rank = self.indiv_ranks_[bn]
                 if rank == 0:
                     U, D, V = None, None, None
                 else:
@@ -498,13 +514,13 @@ class ajive(object):
             block_specific[bn]['noise'] = E
 
         # save view specific estimates
-        self.blocks = {}
+        self.blocks_ = {}
 
         # Stores info for easy information checking
 
         for bn in block_specific.keys():
             bs_dict = block_specific[bn]
-            self.blocks[bn] = \
+            self.blocks_[bn] = \
                 ViewSpecificResults(joint=bs_dict['joint'],
                                     individual=bs_dict['individual'],
                                     noise=bs_dict['noise'],
@@ -517,8 +533,8 @@ class ajive(object):
         return self
 
     @property
-    def is_fit(self):
-        if hasattr(self, "blocks"):
+    def is_fit_(self):
+        if hasattr(self, "blocks_"):
             return True
         else:
             return False
@@ -533,13 +549,16 @@ class ajive(object):
             The names of the views.
 
         """
-        if self.is_fit:
-            return list(self.blocks.keys())
+        if self.is_fit_:
+            return list(self.blocks_.keys())
         else:
             return None
 
     def predict(self, return_dict=False):
         r"""
+
+        Returns the joint, individual, and noise components of each view from
+        the fitted decomposition. Only works on the data inputted in `fit`.
 
         Parameters
         ----------
@@ -551,15 +570,15 @@ class ajive(object):
         Returns
         -------
 
-        full: list of list of np.arrays or dict of dict of np.arrays
-            The joint, individual, and noise full estimates for each block.
+        full: list of lists of np.arrays or dict of dicts of np.arrays holding
+            the joint, individual, and noise full estimates for each block.
             In list format the inital indices represent each view. Within these
             views, the first index represents the view's full joint estimate,
             the second index represents the view's full individual estimate,
             and the third index represents the view's noise matrix. The
             dictionary format returns the same matrices as dictionaries with
             the top-level dictionary keys representing views and each view
-            dictionary keys representing the type of matrix ('join',
+            dictionary keys representing the type of matrix ('joint',
             'individual', 'noise')
 
         """
@@ -568,21 +587,23 @@ class ajive(object):
 
         if return_dict is True:
             for bn in self.block_names:
-                indivi_tot_dict = self.blocks[bn].individual.full_
-                full_dict[bn] = {'joint': self.blocks[bn].joint.full_,
+                indivi_tot_dict = self.blocks_[bn].individual.full_
+                full_dict[bn] = {'joint': self.blocks_[bn].joint.full_,
                                  'individual': indivi_tot_dict,
-                                 'noise': self.blocks[bn].noise_}
+                                 'noise': self.blocks_[bn].noise_}
             return full_dict
 
         else:
             for bn in self.block_names:
-                full_list.append([self.blocks[bn].joint.full_,
-                                  self.blocks[bn].individual.full_,
-                                  self.blocks[bn].noise_])
+                full_list.append([self.blocks_[bn].joint.full_,
+                                  self.blocks_[bn].individual.full_,
+                                  self.blocks_[bn].noise_])
             return full_list
 
     def results_dict(self):
         r"""
+
+        Returns a summary of the fitted results in a dictionary.
 
         Returns
         -------
@@ -613,8 +634,8 @@ class ajive(object):
                              'rank': self.common_.rank}
 
         for bn in self.block_names:
-            joint = self.blocks[bn].joint
-            indiv = self.blocks[bn].individual
+            joint = self.blocks_[bn].joint
+            indiv = self.blocks_[bn].individual
 
             results[bn] = {'joint': {'scores': joint.scores_,
                                      'svals': joint.svals_,
@@ -628,7 +649,7 @@ class ajive(object):
                                           'rank': indiv.rank,
                                           'full': indiv.full_},
 
-                           'noise': self.blocks[bn].noise_}
+                           'noise': self.blocks_[bn].noise_}
 
         return results
 
@@ -644,62 +665,51 @@ class ajive(object):
         indiv_ranks: dict
             The individual ranks.
         """
-        if not self.is_fit:
+        if not self.is_fit_:
             raise ValueError("Decomposition has not yet been computed")
 
         joint_rank = self.common_.rank
-        indiv_ranks = {bn: self.blocks[bn].individual.rank for bn in
+        indiv_ranks = {bn: self.blocks_[bn].individual.rank for bn in
                        self.block_names}
         return joint_rank, indiv_ranks
 
-    def data_block_heatmaps(Xs):
-        r"""
-        Plots n_views heatmaps in a singular row. It is reccomended to set
-        a figure size as is shown in the tutorial
+def data_block_heatmaps(Xs):
+    r"""
+    Plots n_views heatmaps in a singular row. It is recommended to set
+    a figure size as is shown in the tutorial.
 
-        Parameters
-        ----------
-        blocks: dict or list of array-likes
-            - blocks length: n_views
-            - blocks[i] shape: (n_samples, n_features_i)
-            The different views that are input. Input as data matrices.
+    Parameters
+    ----------
+    Xs : dict or list of array-likes
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_features_i)
+        The different views to plot.
+    """
+    _data_block_heatmaps(Xs)
 
-        Returns
-        -------
-        fig : figure object
-            Figure returned contains the heatmaps of all views
-        """
-        _data_block_heatmaps(Xs)
+def ajive_full_estimate_heatmaps(Xs, full_block_estimates, names=None):
+    r"""
+    Plots four heatmaps for each of the views:
+        - Full initial data
+        - Full joint signal estimate
+        - Full individual signal estimate
+        - Full noise estimate
+    It is recommended to set a figure size as shown in the tutorial.
 
-    def ajive_full_estimate_heatmaps(full_block_estimates, Xs, names=None):
-        r"""
-        Plots four heatmaps for each of the views:
-            - Full initial signal
-            - Full joint signal estimate
-            - Full individual signal estimate
-            - Full noise signal estimate
-        It is reccomended to set a figure size as shown in the tutorial.
+    Parameters
+    ----------
+    Xs: list of array-likes
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_features_i)
+        The different views that are input. Input as data matrices.
 
-        Parameters
-        ----------
-        blocks: dict or list of array-likes
-            - blocks length: n_views
-            - blocks[i] shape: (n_samples, n_features_i)
-            The different views that are input. Input as data matrices.
+    full_block_estimates: dict
+        Dict that is returned from the `ajive.predict()` function
 
-        full_block_estimates: dict
-            Dict that is returned from the ajive.predict() function
-
-        names: list
-            The names of the views.
-
-        Returns
-        -------
-        fig : figure object
-            Figure returned contains the full AJIVE estimates: X, J, I, E for
-            all views.
-        """
-        _ajive_full_estimate_heatmaps(full_block_estimates, Xs, names)
+    names: list
+        The names of the views.
+    """
+    _ajive_full_estimate_heatmaps(Xs, full_block_estimates, names)
 
 
 def _dict_formatting_first(x, view_names):

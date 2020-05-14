@@ -1,3 +1,3 @@
-from .ajive import ajive
+from .ajive import AJIVE
 
-__all__ = ["ajive"]
+__all__ = ["AJIVE"]
