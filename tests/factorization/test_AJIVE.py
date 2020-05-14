@@ -9,6 +9,7 @@ from mvlearn.factorization.ajive import (
 )
 from mvlearn.factorization.ajive_utils.utils import svd_wrapper
 from scipy.sparse import csr_matrix
+from scipy.linalg import orth
 
 
 class TestFig2Runs(unittest.TestCase):
@@ -508,3 +509,19 @@ def test_traditional_output(data):
     ajive.fit(Xs=x, view_names=["x", "y"])
     ajive.predict(return_dict=False)
 
+def test_fit_elbows():
+    n=10; elbows=3
+    np.random.seed(1)
+    x = np.random.binomial(1, 0.6, (n ** 2)).reshape(n, n)
+    xorth = orth(x)
+    d = np.zeros(xorth.shape[0])
+    for i in range(0, len(d), int(len(d) / (elbows + 1))):
+        d[:i] += 10
+    X = xorth.T.dot(np.diag(d)).dot(xorth)
+
+    Xs = [X, X]
+
+    ajive = AJIVE(n_elbows=2)
+    ajive = ajive.fit(Xs)
+
+    np.testing.assert_equal(list(ajive.init_signal_ranks_.values())[0], 4)

@@ -17,6 +17,7 @@ from scipy.sparse import issparse
 from copy import deepcopy
 import pandas as pd
 from ..utils.utils import check_Xs
+from ..embed.utils import select_dimension
 from .ajive_utils.block_visualization import _data_block_heatmaps, \
     _ajive_full_estimate_heatmaps
 from .ajive_utils.utils import svd_wrapper, centering
@@ -37,7 +38,7 @@ class AJIVE(object):
 
     Parameters
     ----------
-    init_signal_ranks : list
+    init_signal_ranks : list, default = None
         Initial guesses as to the rank of each view's signal.
 
     joint_rank : int, default = None
@@ -47,6 +48,11 @@ class AJIVE(object):
     indiv_ranks : list, default = None
         Ranks of individual variation matrices. If None, will estimate the
         individual ranks. Otherwise, will use provided individual ranks.
+
+    n_elbows : int, optional, default: 2
+        If ``init_signal_ranks=None``, then computes the initial signal rank
+        guess using :func:`~mvlearn.embed.gcca.select_dimension` with
+        n_elbows for each view.
 
     center : bool, default = True
         Boolean for centering matrices.
@@ -229,19 +235,25 @@ class AJIVE(object):
     """
 
     def __init__(self,
-                 init_signal_ranks,
-                 joint_rank=None, indiv_ranks=None,
+                 init_signal_ranks=None,
+                 joint_rank=None,
+                 indiv_ranks=None,
+                 n_elbows=None,
                  center=True,
                  reconsider_joint_components=True,
-                 wedin_percentile=5, n_wedin_samples=1000,
+                 wedin_percentile=5,
+                 n_wedin_samples=1000,
                  precomp_wedin_samples=None,
-                 randdir_percentile=95, n_randdir_samples=1000,
+                 randdir_percentile=95,
+                 n_randdir_samples=1000,
                  precomp_randdir_samples=None,
-                 store_full=True):
+                 store_full=True
+                 ):
 
         self.init_signal_ranks = init_signal_ranks
         self.joint_rank = joint_rank
         self.indiv_ranks = indiv_ranks
+        self.n_elbows = n_elbows
 
         self.center_ = center
 
@@ -298,11 +310,18 @@ class AJIVE(object):
         -------
         self : returns an instance of self.
         """
+        Xs = check_Xs(Xs, multiview=True)
+        self.init_signal_ranks_ = self.init_signal_ranks
+        if self.init_signal_ranks_ is None:
+            self.init_signal_ranks_ = []
+            for X in Xs:
+                elbows, _ = select_dimension(X, n_elbows=self.n_elbows)
+                self.init_signal_ranks_.append(elbows[-1])
 
         Xs, self.init_signal_ranks_, self.indiv_ranks_, precomp_init_svd,\
             self.center_, obs_names, var_names, self.shapes_ =\
             _arg_checker(Xs, view_names,
-                         self.init_signal_ranks,
+                         self.init_signal_ranks_,
                          self.joint_rank,
                          self.indiv_ranks,
                          precomp_init_svd,
@@ -382,7 +401,7 @@ class AJIVE(object):
                                           R=self.n_wedin_samples)
             else:
                 self.wedin_samples_ = {
-                    bn:wc for bn,wc in zip(self.wedin_samples_, block_names)
+                    bn: wc for bn, wc in zip(self.wedin_samples_, block_names)
                     }
 
             self.wedin_sv_samples_ = len(Xs) - \
@@ -673,6 +692,7 @@ class AJIVE(object):
                        self.block_names}
         return joint_rank, indiv_ranks
 
+
 def data_block_heatmaps(Xs):
     r"""
     Plots n_views heatmaps in a singular row. It is recommended to set
@@ -686,6 +706,7 @@ def data_block_heatmaps(Xs):
         The different views to plot.
     """
     _data_block_heatmaps(Xs)
+
 
 def ajive_full_estimate_heatmaps(Xs, full_block_estimates, names=None):
     r"""
@@ -746,20 +767,21 @@ def _names_checker(x, names):
         raise ValueError('view_names must be an array-like input')
 
 
-def _arg_checker(Xs, view_names,
+def _arg_checker(Xs,
+                 view_names,
                  init_signal_ranks,
                  joint_rank,
                  indiv_ranks,
                  precomp_init_svd,
-                 center):
+                 center
+                 ):
     """
     Checks the argument inputs at different points in the code. If various
     criteria not met, errors are raised.
 
     """
     names = _names_checker(Xs, view_names)
-    blocks_upd = check_Xs(Xs, multiview=True)
-    Xs = _dict_formatting_first(blocks_upd, names)
+    Xs = _dict_formatting_first(Xs, names)
 
     block_names = list(Xs.keys())
 
