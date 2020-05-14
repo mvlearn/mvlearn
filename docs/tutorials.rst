@@ -51,6 +51,15 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
 
+Factorization
+=============
+The following tutorials show how to use multi-view factorization algorithms.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/factorization/ajive_tutorial
+
 Plotting
 ========
 Methods build on top of Matplotlib and Seaborn have been implemented for convenient plotting of multiview data. See examples of such plots on simulated data.
@@ -70,3 +79,4 @@ In order to conviently run tools in this package on multview data, data can be s
 
    tutorials/datasets/load_UCImultifeature
    tutorials/datasets/GaussianMixtures
+   tutorials/cluster/multiview_vs_singleview_clustering

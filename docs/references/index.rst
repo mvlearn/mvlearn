@@ -11,6 +11,7 @@ The package is split up into submodules.
     cluster
     cotraining
     embed
+    factorization
     construct
     datasets
     plotting
