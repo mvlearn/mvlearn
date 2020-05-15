@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Patch 0.2.1
+-----------
+Fixed missing init file in the ajive_utils folder.
+
 Version 0.2.0
 -------------
 Updates in this release:
