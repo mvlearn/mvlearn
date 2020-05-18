@@ -16,7 +16,7 @@ from os.path import dirname, join
 import numpy as np
 
 
-def load_UCImultifeature(select_labeled="all", shuffle=False,
+def load_UCImultifeature(select_labeled="all", views="all", shuffle=False,
                          random_state=None):
     r"""
     Load the UCI multiple features dataset [#1Data]_, taken from the UCI
@@ -40,6 +40,11 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
         A list of the examples that the user wants by label. If not
         specified, all examples in the dataset are returned. Repeated labels
         are ignored.
+
+    views : optional, array-like, shape (n_views,) default (all)
+        A list of the data views that the user would like in the indicated
+        order. If not specified, all data views will be returned. Repeated
+        views are ignored.
 
     shuffle : bool, default=False
         If ``True``, returns each array with its rows and corresponding
@@ -81,6 +86,9 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     if select_labeled == "all":
         select_labeled = range(10)
 
+    if views == "all":
+        views = range(6)
+
     if not shuffle:
         random_state = 1
 
@@ -89,6 +97,14 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
     if len(select_labeled) < 1 or len(select_labeled) > 10:
         raise ValueError("If selecting examples by label, must select "
                          "at least 1 and no more than 10.")
+
+    views = list(dict.fromkeys(views))
+    if len(views) == 0:
+        raise ValueError("If views, must select at least 1.")
+    for v in views:
+        if v not in range(6):
+            raise ValueError("Selected views must be between 0 and 5 "
+                             "inclusive")
 
     module_path = dirname(__file__)
     folder = "UCImultifeature"
@@ -103,22 +119,22 @@ def load_UCImultifeature(select_labeled="all", shuffle=False,
         labels = datatemp[1:, -1]
 
     selected_data = []
-    for i in range(6):
+    for i in views:
         datatemp = np.zeros((200*len(select_labeled), data[i].shape[1]))
-        if i == 0:
-            selected_labels = np.zeros(200*len(select_labeled),)
         for j, label in enumerate(select_labeled):
             # user specified a bad label
             if label not in range(10):
                 raise ValueError("Bad label: labels must be  in 0, 1, 2,.. 9")
             indices = np.nonzero(labels == label)
             datatemp[j * 200: (j+1) * 200, :] = data[i][indices, :]
-            selected_labels[j*200:(j+1)*200] = labels[indices]
 
         np.random.seed(random_state)
         np.random.shuffle(datatemp)
         selected_data.append(datatemp)
 
+    selected_labels = np.zeros((200*len(select_labeled),))
+    for i in range(len(select_labeled)):
+        selected_labels[i * 200: (i+1) * 200] = select_labeled[i]
     np.random.seed(random_state)
     np.random.shuffle(selected_labels)
 
