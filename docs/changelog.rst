@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Patch 0.2.1
+-----------
+Fixed missing ``__init__.py`` file in the ``ajive_utils`` submodule.
+
 Version 0.2.0
 -------------
 Updates in this release:
