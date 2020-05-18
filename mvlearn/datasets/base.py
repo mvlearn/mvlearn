@@ -100,7 +100,8 @@ def load_UCImultifeature(select_labeled="all", views="all", shuffle=False,
 
     views = list(dict.fromkeys(views))
     if len(views) == 0:
-        raise ValueError("If views, must select at least 1.")
+        raise ValueError("If selecting specific views, "
+                         "must select at least 1.")
     for v in views:
         if v not in range(6):
             raise ValueError("Selected views must be between 0 and 5 "
