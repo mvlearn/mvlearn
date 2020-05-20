@@ -13,14 +13,17 @@
 # limitations under the License.
 
 import sys
+
 try:
     import torch
     from torch.utils.data import Dataset, DataLoader
 except ModuleNotFoundError as error:
-    print(f'Error: {error}. torch dependencies required for this function. \
+    print(
+        f"Error: {error}. torch dependencies required for this function. \
     Please consult the mvlearn installation instructions at \
     https://github.com/neurodata/mvlearn to correctly install torch \
-    dependencies.')
+    dependencies."
+    )
     sys.exit(1)
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,6 +43,7 @@ class _FullyConnectedNet(torch.nn.Module):
     - embedding_size: number of nodes in the output layer.
     All are ints. Each hidden layer has the same number of nodes.
     """
+
     def __init__(self, input_size, hidden_size, num_hidden_layers, embedding_size):
         super().__init__()
         assert num_hidden_layers >= 0, "can't have negative hidden layer count"
@@ -50,7 +54,7 @@ class _FullyConnectedNet(torch.nn.Module):
             self.layers.append(torch.nn.Linear(input_size, embedding_size))
         else:
             self.layers.append(torch.nn.Linear(input_size, hidden_size))
-            for i in range(num_hidden_layers-1):
+            for i in range(num_hidden_layers - 1):
                 self.layers.append(torch.nn.Linear(hidden_size, hidden_size))
             self.layers.append(torch.nn.Linear(hidden_size, embedding_size))
 
@@ -146,9 +150,18 @@ class SplitAE(BaseEmbed):
     For more extensive examples, see the ``tutorials`` for SplitAE in this
     documentation.
     """
-    def __init__(self, hidden_size=64, num_hidden_layers=2, embed_size=20,
-                 training_epochs=10, batch_size=16, learning_rate=0.001,
-                 print_info=False, print_graph=True):
+
+    def __init__(
+        self,
+        hidden_size=64,
+        num_hidden_layers=2,
+        embed_size=20,
+        training_epochs=10,
+        batch_size=16,
+        learning_rate=0.001,
+        print_info=False,
+        print_graph=True,
+    ):
         self.hidden_size = hidden_size
         self.embed_size = embed_size
         self.num_hidden_layers = num_hidden_layers
@@ -175,79 +188,94 @@ class SplitAE(BaseEmbed):
         """
 
         Xs = check_Xs(Xs, multiview=True, enforce_views=2)
-        assert Xs[0].shape[0] >= self.batch_size, """batch size must be <= to
+        assert (
+            Xs[0].shape[0] >= self.batch_size
+        ), """batch size must be <= to
             number of samples"""
         assert self.batch_size > 0, """can't have negative batch size"""
-        assert self.training_epochs >= 0, """can't train for negative amount of
+        assert (
+            self.training_epochs >= 0
+        ), """can't train for negative amount of
             times"""
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         view1 = torch.FloatTensor(Xs[0])
         view2 = torch.FloatTensor(Xs[1])
 
-        self.view1_encoder_ = _FullyConnectedNet(view1.shape[1],
-                                                self.hidden_size,
-                                                self.num_hidden_layers,
-                                                self.embed_size).to(device)
-        self.view1_decoder_ = _FullyConnectedNet(self.embed_size,
-                                                self.hidden_size,
-                                                self.num_hidden_layers,
-                                                view1.shape[1]).to(device)
-        self.view2_decoder_ = _FullyConnectedNet(self.embed_size,
-                                                self.hidden_size,
-                                                self.num_hidden_layers,
-                                                view2.shape[1]).to(device)
+        self.view1_encoder_ = _FullyConnectedNet(
+            view1.shape[1], self.hidden_size, self.num_hidden_layers, self.embed_size
+        ).to(device)
+        self.view1_decoder_ = _FullyConnectedNet(
+            self.embed_size, self.hidden_size, self.num_hidden_layers, view1.shape[1]
+        ).to(device)
+        self.view2_decoder_ = _FullyConnectedNet(
+            self.embed_size, self.hidden_size, self.num_hidden_layers, view2.shape[1]
+        ).to(device)
 
         self.view1_encoder_ = self.view1_encoder_
         self.view1_decoder_ = self.view1_decoder_
         self.view2_decoder_ = self.view2_decoder_
 
         if self.print_graph:
-            print("Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
-                  "\nview2Decoder: {:,}"
-                  .format(self.view1_encoder_.param_count(),
-                          self.view1_decoder_.param_count(),
-                          self.view2_decoder_.param_count())
-                  )
+            print(
+                "Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
+                "\nview2Decoder: {:,}".format(
+                    self.view1_encoder_.param_count(),
+                    self.view1_decoder_.param_count(),
+                    self.view2_decoder_.param_count(),
+                )
+            )
 
-        parameters = [self.view1_encoder_.parameters(),
-                      self.view1_decoder_.parameters(),
-                      self.view2_decoder_.parameters()]
-        optim = torch.optim.Adam(itertools.chain(*parameters),
-                                 lr=self.learning_rate)
+        parameters = [
+            self.view1_encoder_.parameters(),
+            self.view1_decoder_.parameters(),
+            self.view2_decoder_.parameters(),
+        ]
+        optim = torch.optim.Adam(itertools.chain(*parameters), lr=self.learning_rate)
         n_samples = view1.shape[0]
         epoch_train_errors = []
         epoch_test_errors = []
 
-        for epoch in tqdm.tqdm(range(self.training_epochs),
-                               disable=(not self.print_info)):
+        for epoch in tqdm.tqdm(
+            range(self.training_epochs), disable=(not self.print_info)
+        ):
             batch_errors = []
             for batch_num in range(n_samples // self.batch_size):
                 optim.zero_grad()
-                view1_batch = view1[batch_num*self.batch_size:
-                                   (batch_num+1)*self.batch_size]
-                view2_batch = view2[batch_num*self.batch_size:
-                                   (batch_num+1)*self.batch_size]
+                view1_batch = view1[
+                    batch_num * self.batch_size : (batch_num + 1) * self.batch_size
+                ]
+                view2_batch = view2[
+                    batch_num * self.batch_size : (batch_num + 1) * self.batch_size
+                ]
                 embedding = self.view1_encoder_(view1_batch.to(device))
                 view1_reconstruction = self.view1_decoder_(embedding)
                 view2_reconstruction = self.view2_decoder_(embedding)
-                view1_error = torch.nn.MSELoss()(view1_reconstruction,
-                                                view1_batch.to(device))
-                view2_error = torch.nn.MSELoss()(view2_reconstruction,
-                                                view2_batch.to(device))
+                view1_error = torch.nn.MSELoss()(
+                    view1_reconstruction, view1_batch.to(device)
+                )
+                view2_error = torch.nn.MSELoss()(
+                    view2_reconstruction, view2_batch.to(device)
+                )
                 total_error = view1_error + view2_error
                 total_error.backward()
-                optim.step()	
+                optim.step()
                 batch_errors.append(total_error.item())
             if self.print_info:
-                print("Average train error during epoch {} was {}"
-                      .format(epoch, np.mean(batch_errors)))
+                print(
+                    "Average train error during epoch {} was {}".format(
+                        epoch, np.mean(batch_errors)
+                    )
+                )
             epoch_train_errors.append(np.mean(batch_errors))
             if validation_Xs is not None:
                 test_error = self._test_error(validation_Xs)
                 if self.print_info:
-                    print("Average test  error during epoch {} was {}\n"
-                          .format(epoch, test_error))
+                    print(
+                        "Average test  error during epoch {} was {}\n".format(
+                            epoch, test_error
+                        )
+                    )
                 epoch_test_errors.append(test_error)
 
         if self.print_graph:
@@ -266,18 +294,19 @@ class SplitAE(BaseEmbed):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         n_samples = Xs[0].shape[0]
         validation_batch_size = self.batch_size
-        test_indices = np.random.choice(n_samples, validation_batch_size,
-                                       replace=False)
+        test_indices = np.random.choice(n_samples, validation_batch_size, replace=False)
         view1_batch = torch.FloatTensor(Xs[0][test_indices])
         view2_batch = torch.FloatTensor(Xs[1][test_indices])
         with torch.no_grad():
             embedding = self.view1_encoder_(view1_batch.to(device))
             view1_reconstruction = self.view1_decoder_(embedding)
             view2_reconstruction = self.view2_decoder_(embedding)
-            view1_error = torch.nn.MSELoss()(view1_reconstruction,
-                                            view1_batch.to(device))
-            view2_error = torch.nn.MSELoss()(view2_reconstruction,
-                                            view2_batch.to(device))
+            view1_error = torch.nn.MSELoss()(
+                view1_reconstruction, view1_batch.to(device)
+            )
+            view2_error = torch.nn.MSELoss()(
+                view2_reconstruction, view2_batch.to(device)
+            )
             total_error = view1_error + view2_error
         return total_error.item()
 
@@ -311,8 +340,11 @@ class SplitAE(BaseEmbed):
             embedding = self.view1_encoder_(view1.to(device))
             view1_reconstruction = self.view1_decoder_(embedding)
             view2_prediction = self.view2_decoder_(embedding)
-        return (embedding.cpu().numpy(), view1_reconstruction.cpu().numpy(),
-                view2_prediction.cpu().numpy())
+        return (
+            embedding.cpu().numpy(),
+            view1_reconstruction.cpu().numpy(),
+            view2_prediction.cpu().numpy(),
+        )
 
     def fit_transform(self, Xs):
         r"""
