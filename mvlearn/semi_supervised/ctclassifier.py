@@ -102,7 +102,7 @@ class CTClassifier(BaseCoTrainEstimator):
     Examples
     --------
     >>> # Supervised learning of single-view data with 2 distinct estimators
-    >>> from mvlearn.cotraining import CTClassifier
+    >>> from mvlearn.semi_supervised import CTClassifier
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> import numpy as np
     >>> from sklearn.ensemble import RandomForestClassifier

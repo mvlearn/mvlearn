@@ -1,7 +1,7 @@
-Cotraining
-==========
+Semi-Supervised
+===============
 
-.. currentmodule:: mvlearn.cotraining
+.. currentmodule:: mvlearn.semi_supervised
 
 Cotraining Classifier
 ---------------------
