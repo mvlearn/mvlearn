@@ -44,7 +44,9 @@ class _FullyConnectedNet(torch.nn.Module):
     All are ints. Each hidden layer has the same number of nodes.
     """
 
-    def __init__(self, input_size, hidden_size, num_hidden_layers, embedding_size):
+    def __init__(
+        self, input_size, hidden_size, num_hidden_layers, embedding_size
+    ):
         super().__init__()
         assert num_hidden_layers >= 0, "can't have negative hidden layer count"
         assert hidden_size >= 1, "hidden size must involve >= 1 node"
@@ -203,13 +205,16 @@ class SplitAE(BaseEmbed):
         view2 = torch.FloatTensor(Xs[1])
 
         self.view1_encoder_ = _FullyConnectedNet(
-            view1.shape[1], self.hidden_size, self.num_hidden_layers, self.embed_size
+            view1.shape[1], self.hidden_size,
+            self.num_hidden_layers, self.embed_size
         ).to(device)
         self.view1_decoder_ = _FullyConnectedNet(
-            self.embed_size, self.hidden_size, self.num_hidden_layers, view1.shape[1]
+            self.embed_size, self.hidden_size,
+            self.num_hidden_layers, view1.shape[1]
         ).to(device)
         self.view2_decoder_ = _FullyConnectedNet(
-            self.embed_size, self.hidden_size, self.num_hidden_layers, view2.shape[1]
+            self.embed_size, self.hidden_size,
+            self.num_hidden_layers, view2.shape[1]
         ).to(device)
 
         self.view1_encoder_ = self.view1_encoder_
@@ -218,8 +223,8 @@ class SplitAE(BaseEmbed):
 
         if self.print_graph:
             print(
-                "Parameter counts: \nview1Encoder: {:,}\nview1Decoder: {:,}"
-                "\nview2Decoder: {:,}".format(
+                "Parameter counts: \nview1_encoder: {:,}\nview1_decoder: {:,}"
+                "\nview2_decoder: {:,}".format(
                     self.view1_encoder_.param_count(),
                     self.view1_decoder_.param_count(),
                     self.view2_decoder_.param_count(),
@@ -231,7 +236,9 @@ class SplitAE(BaseEmbed):
             self.view1_decoder_.parameters(),
             self.view2_decoder_.parameters(),
         ]
-        optim = torch.optim.Adam(itertools.chain(*parameters), lr=self.learning_rate)
+        optim = torch.optim.Adam(
+            itertools.chain(*parameters), lr=self.learning_rate
+        )
         n_samples = view1.shape[0]
         epoch_train_errors = []
         epoch_test_errors = []
@@ -243,10 +250,12 @@ class SplitAE(BaseEmbed):
             for batch_num in range(n_samples // self.batch_size):
                 optim.zero_grad()
                 view1_batch = view1[
-                    batch_num * self.batch_size : (batch_num + 1) * self.batch_size
+                    batch_num * self.batch_size:
+                    (batch_num + 1) * self.batch_size
                 ]
                 view2_batch = view2[
-                    batch_num * self.batch_size : (batch_num + 1) * self.batch_size
+                    batch_num * self.batch_size:
+                    (batch_num + 1) * self.batch_size
                 ]
                 embedding = self.view1_encoder_(view1_batch.to(device))
                 view1_reconstruction = self.view1_decoder_(embedding)
@@ -294,7 +303,9 @@ class SplitAE(BaseEmbed):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         n_samples = Xs[0].shape[0]
         validation_batch_size = self.batch_size
-        test_indices = np.random.choice(n_samples, validation_batch_size, replace=False)
+        test_indices = np.random.choice(
+            n_samples, validation_batch_size, replace=False
+        )
         view1_batch = torch.FloatTensor(Xs[0][test_indices])
         view2_batch = torch.FloatTensor(Xs[1][test_indices])
         with torch.no_grad():
