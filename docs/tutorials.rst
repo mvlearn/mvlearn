@@ -21,16 +21,16 @@ for multiview datasets.
    tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
    tutorials/cluster/multiview_vs_singleview_clustering
 
-Cotraining
-==========
+Semi-supervised
+===============
 The following tutorials demonstrate how effectiveness of cotraining in certain multiview scenarios to 
 boost accuracy over single view methods.
 
 .. toctree::
    :maxdepth: 1
    
-   tutorials/cotraining/cotraining_classification_exampleusage
-   tutorials/cotraining/cotraining_classification_simulatedperformance
+   tutorials/semi_supervised/cotraining_classification_exampleusage
+   tutorials/semi_supervised/cotraining_classification_simulatedperformance
 
 Embedding
 =========
