@@ -21,7 +21,7 @@ for multiview datasets.
    tutorials/cluster/MVCoregSpectral/MVCoregularizedSpectral_Tutorial
    tutorials/cluster/multiview_vs_singleview_clustering
 
-Semi-supervised
+Semi-Supervised
 ===============
 The following tutorials demonstrate how effectiveness of cotraining in certain multiview scenarios to 
 boost accuracy over single view methods.
