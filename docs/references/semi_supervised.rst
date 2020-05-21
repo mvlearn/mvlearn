@@ -1,4 +1,4 @@
-Semi-supervised
+Semi-Supervised
 ===============
 
 .. currentmodule:: mvlearn.semi_supervised
