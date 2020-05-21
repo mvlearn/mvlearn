@@ -9,7 +9,7 @@ The package is split up into submodules.
     :maxdepth: 2
 
     cluster
-    cotraining
+    semi_supervised
     embed
     factorization
     construct
