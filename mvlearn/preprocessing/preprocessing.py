@@ -13,11 +13,13 @@
 # limitations under the License.
 
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn import model_selection
+from itertools import chain
+from ..utils.utils import check_Xs_y, check_Xs
 
 
-def mv_data_split(Xs, test_size=None, train_size=None,
-                  random_state=None, shuffle=True, stratify=None):
+def train_test_split(Xs, y=None, test_size=None, train_size=None,
+                     random_state=None, shuffle=True, stratify=None):
     r'''
     Splits multi-view data into random train and test subsets. This
     utility wraps the train_test_split function from
@@ -62,11 +64,77 @@ def mv_data_split(Xs, test_size=None, train_size=None,
 
     Xs_test : list of array-likes
         The subset of the data for testing.
+
+    y_train : numpy.ndarray or None
+        The subset of the targets for training if y was provided.
+        Otherwise, None is returned.
+
+    y_test : numpy.ndarray or None
+        The subset of the targets for testing if y was provided.
+        Otherwise, None is returned.
+
+    Examples
+    --------
+    >>> from mvlearn.preprocessing import train_test_split
+    >>> import numpy as np
+    >>> RANDOM_STATE=10
+    >>> np.random.seed(RANDOM_STATE)
+    >>> data = np.arange(18).reshape((3, 3, 2))
+    >>> # Print the data
+    >>> for i in range(len(data)):
+    ...     print('View %d' % i, data[i], sep='\n')
+    View 0
+    [[0 1]
+    [2 3]
+    [4 5]]
+    View 1
+    [[ 6  7]
+    [ 8  9]
+    [10 11]]
+    View 2
+    [[12 13]
+    [14 15]
+    [16 17]]
+    >>> train_Xs, test_Xs, _, _ = train_test_split(data, test_size=0.33,
+    ...                                            random_state=RANDOM_STATE)
+    >>> # Printing train set
+    >>> for i in range(len(data)):
+    ...     print('View %d' % i, train_Xs[i], sep='\n')
+    View 0
+    [[4 5]
+    [2 3]]
+    View 1
+    [[10 11]
+    [ 8  9]]
+    View 2
+    [[16 17]
+    [14 15]]
+    # Printing test set
+    >>> for i in range(len(data)):
+    ...     print('View %d' % i, test_Xs[i], sep='\n')
+
+    View 0
+    [[0 1]]
+    View 1
+    [[6 7]]
+    View 2
+    [[12 1]]
     '''
 
-    splits = train_test_split(*Xs, test_size=test_size,
-                              train_size=train_size, random_state=random_state,
-                              shuffle=shuffle, stratify=stratify)
+    if y is None:
+        Xs = check_Xs(Xs)
+        splits = model_selection.train_test_split(*Xs, test_size=test_size,
+                                                  train_size=train_size,
+                                                  random_state=random_state,
+                                                  shuffle=shuffle,
+                                                  stratify=stratify)
+    else:
+        Xs, y = check_Xs_y(Xs, y)
+        splits = model_selection.train_test_split(*Xs, y, test_size=test_size,
+                                                  train_size=train_size,
+                                                  random_state=random_state,
+                                                  shuffle=shuffle,
+                                                  stratify=stratify)
 
     Xs_train = list()
     Xs_test = list()
@@ -76,4 +144,10 @@ def mv_data_split(Xs, test_size=None, train_size=None,
         else:
             Xs_test.append(splits[i])
 
-    return Xs_train, Xs_test
+    y_train = y_test = None
+
+    if y is not None:
+        y_train = Xs_train.pop()
+        y_test = Xs_test.pop()
+
+    return Xs_train, Xs_test, y_train, y_test
