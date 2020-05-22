@@ -88,7 +88,7 @@ class GCCA(BaseEmbed):
     the view 1, view 2, and between view covariance matrix estimates. GCCA
     maximizes the sum of these correlations across all pairwise views and
     computes a set of linearly independent components. This specific algorithm
-    first applies pricipal component analysis (PCA) independently to each view
+    first applies principal component analysis (PCA) independently to each view
     and then aligns the most informative projections to find correlated and
     informative subspaces. Parameters that control the embedding dimension
     apply to the PCA step. The dimension of each aligned subspace is the
