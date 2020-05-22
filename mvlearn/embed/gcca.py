@@ -24,12 +24,12 @@ from .utils import select_dimension
 
 class GCCA(BaseEmbed):
     r"""
-    An implementation of Generalized Canonical Correalation Analysis [#1GCCA]_
+    An implementation of Generalized Canonical Correlation Analysis [#1GCCA]_
     suitable for cases where the number of features exceeds the number of
     samples by first applying single view dimensionality reduction. Computes
     individual projections into a common subspace such that the correlations
     between pairwise projections are minimized (ie. maximize pairwise
-    correlation). An important note, this is applicable to any number of
+    correlation). An important note: this is applicable to any number of
     views, not just two.
 
     Parameters
@@ -59,7 +59,7 @@ class GCCA(BaseEmbed):
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD
 
-    max_ranks : boolean, default=False
+    max_rank : boolean, default=False
         If true, sets the rank of the common latent space as the maximum rank
         of the individual spaces. If false, uses the minimum individual rank.
 
@@ -70,7 +70,7 @@ class GCCA(BaseEmbed):
         latent space
 
     ranks_ : list of ints
-        number of left singular vectors kept for each view during the first
+        Number of left singular vectors kept for each view during the first
         SVD
 
     Notes
@@ -88,7 +88,7 @@ class GCCA(BaseEmbed):
     the view 1, view 2, and between view covariance matrix estimates. GCCA
     maximizes the sum of these correlations across all pairwise views and
     computes a set of linearly independent components. This specific algorithm
-    first applies priciple component analysis (PCA) independently to each view
+    first applies pricipal component analysis (PCA) independently to each view
     and then aligns the most informative projections to find correlated and
     informative subspaces. Parameters that control the embedding dimension
     apply to the PCA step. The dimension of each aligned subspace is the
@@ -160,7 +160,7 @@ class GCCA(BaseEmbed):
 
     def fit(self, Xs):
         r"""
-        Calculates a projection from each view to a latentent space such that
+        Calculates a projection from each view to a latent space such that
         the sum of pairwise latent space correlations is maximized. Each view
         'X' is normalized and the left singular vectors of 'X^T X' are
         calculated using SVD. The number of singular vectors kept is determined
@@ -299,7 +299,7 @@ class GCCA(BaseEmbed):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
             A list of data matrices from each view to transform based on the
-            prior fit function. If view_idx defined, then Xs is a 2D data
+            prior fit function. If view_idx is defined, then Xs is a 2D data
             matrix corresponding to a single view.
         view_idx : int, default=None
             For transformation of a single view. If not None, then Xs is 2D
