@@ -147,7 +147,7 @@ class KCCA(BaseEmbed):
 
     ICD with rank :math:`m` yields storage requirements of :math:`O(mn)`
     instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead of
-    :math:`O(n^3)`[#3KCCA]_. Unlike full decomposition, ICD cannot be
+    :math:`O(n^3)` [#3KCCA]_. Unlike full decomposition, ICD cannot be
     performed out of sample i.e you must fit and transform on the same data.
 
     References
