@@ -114,8 +114,8 @@ class GaussianMixture:
         Notes
         -----
         For each class :math:`i` with prior probability :math:`p_i`,
-        center and covariance matrix :math:`\mu_i` and :math:`\Sigma_i`, and :math:`n`
-        total samples, the latent data is sampled such that:
+        center and covariance matrix :math:`\mu_i` and :math:`\Sigma_i`, and
+        :math:`n` total samples, the latent data is sampled such that:
 
         .. math::
             (X_1, y_1), \dots, (X_{np_i}, Y_{np_i}) \overset{i.i.d.}{\sim}
