@@ -56,7 +56,7 @@ def crossviews_plot(
         Sets the title of the grid.
     cmap : String, default=None
         Colormap argument for matplotlib.pyplot.scatter.
-    show : boolean, default=True
+    show : boolean, default=False
         Shows the plots if true. Returns the objects otherwise.
     context : one of {'paper', 'notebook', 'talk', 'poster, None},
         default='notebook'
@@ -105,7 +105,8 @@ def crossviews_plot(
 
     fig, axes = plt.subplots(n, n, figsize=figsize, **fig_kwargs)
     sns.set_context(context)
-
+    if n == 1:
+        axes = np.asarray([axes])
     for i, ax in enumerate(axes.flatten()):
         dim2 = dimensions[int(i / n)]
         dim1 = dimensions[i % n]
