@@ -573,8 +573,11 @@ class DCCA(BaseEmbed):
             layer_sizes1=None, layer_sizes2=None,
             use_all_singular_values=False, device=torch.device('cpu'),
             epoch_num=200, batch_size=800, learning_rate=1e-3, reg_par=1e-5,
-            tolerance=1e-3, print_train_log_info=False
+            tolerance=1e-3, print_train_log_info=False, codecov_test=False,
             ):
+
+        if codecov_test:
+            print("hello codecoverage test")
 
         super().__init__()
 
