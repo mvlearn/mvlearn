@@ -6,3 +6,4 @@ comment:
   require_head: no        # [yes :: must have a head report to post]
   branches:               # branch names that can post comment
     - "master"
+    - "codecoverage_yaml"
