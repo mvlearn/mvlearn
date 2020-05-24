@@ -100,6 +100,8 @@ class GaussianMixture:
             a gaussian distribution with mean centers[i] and covariance
             covariances[i].
         y_ : np.ndarray, of shape (n_samples)
+            Integer labels denoting which Gaussian distribution each sample
+            came from.
         Xs_ : list of array-like, of shape (2, n_samples, n_dims)
             List of views of data created by transforming the latent.
         centers : ndarray of shape (n_classes, n_dims)
@@ -151,7 +153,7 @@ class GaussianMixture:
             msg = "centers is of the incorrect shape"
             raise ValueError(msg)
         if not self.covariances_.ndim == 3:
-            msg = "covariances if of the incorrect shape"
+            msg = "covariance matrix is of the incorrect shape"
             raise ValueError(msg)
         if self.centers_.shape[0] != self.covariances_.shape[0]:
             msg = "The first dimensions of 2D centers and 3D covariances \
