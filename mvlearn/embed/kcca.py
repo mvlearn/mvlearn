@@ -33,37 +33,39 @@ class KCCA(BaseEmbed):
     applications of classical multivariate data analysis
     originally constrained to linearity relation (CCA).
 
+    If the linear kernel is used, this is equivalent to CCA.
+
     Parameters
     ----------
     n_components : int, default = 2
-                   Number of canonical dimensions to keep
+        Number of canonical dimensions to keep
     ktype : string, default = 'linear'
-            Type of kernel
+        Type of kernel. If 'linear', KCCA is equivalent to CCA.
         - value can be 'linear', 'gaussian' or 'poly'
     constant : float, default = 1.0
-             Balances impact of lower-degree terms in Polynomial kernel
+        Balances impact of lower-degree terms in Polynomial kernel
     sigma : float, default = 1.0
-            Standard deviation of Gaussian kernel
+        Standard deviation of Gaussian kernel
     degree : float, default = 2.0
-             Degree of Polynomial kernel
+        Degree of Polynomial kernel
     reg : float, default = 0.1
-          Regularization parameter
+        Regularization parameter
     decomp : string, default = 'full'
-             Decomposition type. Incomplete Cholesky Decomposition (ICD)
-             can reduce computation times and storage
+        Decomposition type. Incomplete Cholesky Decomposition (ICD)
+        can reduce computation times and storage
         - value can be 'full' or 'icd'
     method : string, default = 'kettenring-like'
-             Decomposition method
+        Decomposition method
         - value can be only be 'kettenring-like'
     mrank : int, default = 2
-            The rank of the ICD approximated kernel matrix
+        The rank of the ICD approximated kernel matrix
     precision: float, default = 0.000001
-               Precision of computing the ICD kernel matrix
+        Precision of computing the ICD kernel matrix
 
     Attributes
     ----------
     weights_ : list of array-likes
-                Canonical weights for each view.
+        Canonical weights for each view.
 
     Notes
     -----
@@ -147,7 +149,7 @@ class KCCA(BaseEmbed):
 
     ICD with rank :math:`m` yields storage requirements of :math:`O(mn)`
     instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead of
-    :math:`O(n^3)`[#3KCCA]_. Unlike full decomposition, ICD cannot be
+    :math:`O(n^3)` [#3KCCA]_. Unlike full decomposition, ICD cannot be
     performed out of sample i.e you must fit and transform on the same data.
 
     References
