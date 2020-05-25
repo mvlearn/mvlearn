@@ -51,38 +51,40 @@ def _sin2view(X):
 
 
 class GaussianMixture:
-    def __init__(self, mu, sigma, n, class_probs=None, random_state=None,
-                 shuffle=False, shuffle_random_state=None):
+    def __init__(
+        self,
+        n_samples,
+        centers,
+        covariances,
+        class_probs=None,
+        random_state=None,
+        shuffle=False,
+        shuffle_random_state=None,
+        seed=1,
+    ):
         r"""
-        Creates a GaussianMixture object and samples a latent variable from a
-        multivariate Gaussian distribution according to the specified
-        parameters and class probability priors if set.
-
-        For each class :math:`i` with prior probability :math:`p_i`,
-        mean and variance :math:`\mu_i` and :math:`\sigma^2_i`, and :math:`n`
-        total samples, the latent data is sampled such that:
-
-        .. math::
-            (X_1, y_1), \dots, (X_{np_i}, Y_{np_i}) \overset{i.i.d.}{\sim}
-                \mathcal{N}(\mu_i, \sigma^2_i)
+        Creates an object with a fixed latent variable sampled from a
+        (potentially) multivariate Gaussian distribution according to the
+        specified parameters and class probability priors.
 
         Parameters
         ----------
-        mu : 1D array-like or list of 1D array-likes
-            The mean(s) of the multivariate Gaussian(s). If `class_probs` is
-            None (default), then is a 1D array-like of the multivariate mean.
-            Otherwise is a list of means of the same length as `class_probs`.
-        sigma : 2D array-like or list of 2D array-likes
-            The variance(s) of the multivariate Gaussian(s). If `class_probs`
-            is None (default), then is a 2D array-like of the multivariate
-            variance. Otherwise is a list of variances of the same length as
+        n_samples : int
+            The number of points in each view, divided across Gaussians per
             `class_probs`.
-        n : int
-            The number of samples to sample.
+        centers : 1D array-like or list of 1D array-likes
+            The mean(s) of the Gaussian(s) from which the latent
+            points are sampled. If is a list of 1D array-likes, each is the
+            mean of a distinct Gaussian, sampled from with
+            probability given by `class_probs`. Otherwise is the mean of a
+            single Gaussian from which all are sampled.
+        covariances : 2D array-like or list of 2D array-likes
+            The covariance matrix(s) of the Gaussian(s), matched
+            to the specified centers.
         class_probs : array-like, default=None
-            A list correponding to the fraction of samples from each class and
-            whose entries sum to 1. If `None`, then data is sampled from one
-            class.
+            A list of probabilities specifying the probability of a latent
+            point being sampled from each of the Gaussians. Must sum to 1. If
+            None, then is taken to be uniform over the Gaussians.
         random_state : int, default=None
             If set, can be used to reproduce the data generated.
         shuffle : bool, default=False
@@ -93,101 +95,115 @@ class GaussianMixture:
 
         Attributes
         ----------
-        latent : np.ndarray
-            Latent distribution data. latent[:,i] is randomly sampled from
-            a gaussian distribution with mean mu[i] and covariance sigma[i].
-        Xs : list of array-like
+        latent_ : np.ndarray, of shape (n_samples, n_dims)
+            Latent distribution data. latent[i] is randomly sampled from
+            a gaussian distribution with mean centers[i] and covariance
+            covariances[i].
+        y_ : np.ndarray, of shape (n_samples)
+            Integer labels denoting which Gaussian distribution each sample
+            came from.
+        Xs_ : list of array-like, of shape (2, n_samples, n_dims)
             List of views of data created by transforming the latent.
-        mu : np.ndarray
-            Means of gaussian blobs in latent distribution. mu[:,i] is
-            mean of *ith* gaussian.
-        sigma : np.ndarray
-            Covariance matrices of gaussian blobs in the latent distribution.
-            sigma[i] is the covariance matrix of the *ith* gaussian.
-        class_probs : array-like, default=None
+        centers : ndarray of shape (n_classes, n_dims)
+            The mean(s) of the Gaussian(s) from which the latent
+            points are sampled.
+        covariances : ndarray of shape (n_classes, n_dims, n_dims)
+            The covariance matrix(s) of the Gaussian(s).
+        class_probs_ : array-like of shape (n_classes,)
             A list correponding to the fraction of samples from each class and
-            whose entries sum to 1. If `None`, then data is sampled from one
-            class.
-        views : int
-            Number of views in the multi-view gaussian mixture.
-        random_state : int
-            Random state for data generation.
-        shuffle : bool
-            Whether or not to shuffle data when creating.
-        shuffle_random_state : int
-            Random state for data shuffling.
+            whose entries sum to 1.
+
+        Notes
+        -----
+        For each class :math:`i` with prior probability :math:`p_i`,
+        center and covariance matrix :math:`\mu_i` and :math:`\Sigma_i`, and
+        :math:`n` total samples, the latent data is sampled such that:
+
+        .. math::
+            (X_1, y_1), \dots, (X_{np_i}, Y_{np_i}) \overset{i.i.d.}{\sim}
+                \mathcal{N}(\mu_i, \Sigma_i)
 
         Examples
         --------
         >>> from mvlearn.datasets import GaussianMixture
         >>> import numpy as np
-        >>> n = 10
-        >>> mu = [[0,1], [0,-1]]
-        >>> sigma = [np.eye(2), np.eye(2)]
-        >>> class_probs = [0.5, 0.5]
-        >>> GM = GaussianMixture(mu,sigma,n,class_probs=class_probs,
+        >>> n_samples = 10
+        >>> centers = [[0,1], [0,-1]]
+        >>> covariances = [np.eye(2), np.eye(2)]
+        >>> GM = GaussianMixture(n_samples, centers, covariances,
         ...                      shuffle=True, shuffle_random_state=42)
         >>> GM = GM.sample_views(transform='poly', n_noise=2)
         >>> Xs, y = GM.get_Xy()
         >>> print(y)
         [1. 0. 1. 0. 1. 0. 1. 0. 0. 1.]
         """
-        self.mu = np.array(mu)
-        self.sigma = np.array(sigma)
-
-        if self.mu.shape[0] != self.sigma.shape[0]:
-            msg = "length of mu and sigma must be equal"
-            raise ValueError(msg)
-        if (self.mu.dtype == np.dtype("O") or
-                self.sigma.dtype == np.dtype("O")):
-            msg = "elements of sigma or mu are of inconsistent lengths or \
-                are not floats nor ints"
-            raise ValueError(msg)
-        if class_probs is not None and sum(class_probs) != 1.0:
-            msg = "elements of `class_probs` must sum to 1"
-            raise ValueError(msg)
-
-        self.class_probs = class_probs
-        self.views = len(mu)
+        self.centers_ = np.asarray(centers)
+        self.covariances_ = np.asarray(covariances)
+        self.n_samples = n_samples
+        self.class_probs_ = class_probs
         self.random_state = random_state
         self.shuffle = shuffle
         self.shuffle_random_state = shuffle_random_state
 
-        if class_probs is None:
-            if self.mu.ndim > 1 or self.sigma.ndim > 2:
-                msg = "mu or sigma of the wrong size"
-                raise ValueError(msg)
-            np.random.seed(random_state)
-            self.latent = np.random.multivariate_normal(mu, sigma, size=n)
-            self.y = None
-        else:
-            if len(self.mu) != len(class_probs) or len(self.sigma) != len(
-                    class_probs):
-                msg = "mu, sigma, and class_probs must be of equal length"
-                raise ValueError(msg)
-            np.random.seed(random_state)
-            self.latent = np.concatenate(
-                [
-                    np.random.multivariate_normal(
-                        self.mu[i], self.sigma[i], size=int(class_probs[i] * n)
-                    )
-                    for i in range(len(class_probs))
-                ]
+        if self.centers_.ndim == 1:
+            self.centers_ = self.centers_[np.newaxis, :]
+        if self.covariances_.ndim == 2:
+            self.covariances_ = self.covariances_[np.newaxis, :]
+        if not self.centers_.ndim == 2:
+            msg = "centers is of the incorrect shape"
+            raise ValueError(msg)
+        if not self.covariances_.ndim == 3:
+            msg = "covariance matrix is of the incorrect shape"
+            raise ValueError(msg)
+        if self.centers_.shape[0] != self.covariances_.shape[0]:
+            msg = "The first dimensions of 2D centers and 3D covariances \
+                must be equal"
+            raise ValueError(msg)
+        if self.centers_.dtype == np.dtype(
+            "O"
+        ) or self.covariances_.dtype == np.dtype("O"):
+            msg = "elements of covariances or centers are of \
+                inconsistent lengths or are not floats nor ints"
+            raise ValueError(msg)
+        if self.class_probs_ is None:
+            self.class_probs_ = np.ones(self.centers_.shape[0])
+            self.class_probs_ /= self.centers_.shape[0]
+        elif sum(self.class_probs_) != 1.0:
+            msg = "elements of `class_probs` must sum to 1"
+            raise ValueError(msg)
+        if len(self.centers_) != len(self.class_probs_) or len(
+            self.covariances_
+        ) != len(self.class_probs_):
+            msg = (
+                "centers, covariances, and class_probs must be of equal length"
             )
-            self.y = np.concatenate(
-                [
-                    i * np.ones(int(class_probs[i] * n))
-                    for i in range(len(class_probs))
-                ]
-            )
+            raise ValueError(msg)
+
+        np.random.seed(self.random_state)
+        self.latent_ = np.concatenate(
+            [
+                np.random.multivariate_normal(
+                    self.centers_[i],
+                    self.covariances_[i],
+                    size=int(self.class_probs_[i] * self.n_samples),
+                )
+                for i in range(len(self.class_probs_))
+            ]
+        )
+        self.y_ = np.concatenate(
+            [
+                i * np.ones(int(self.class_probs_[i] * self.n_samples))
+                for i in range(len(self.class_probs_))
+            ]
+        )
 
         # shuffle latent samples and labels
         if self.shuffle:
             np.random.seed(self.shuffle_random_state)
-            indices = np.arange(self.latent.shape[0]).squeeze()
+            indices = np.arange(self.latent_.shape[0]).squeeze()
             np.random.shuffle(indices)
-            self.latent = self.latent[indices, :]
-            self.y = self.y[indices]
+            self.latent_ = self.latent_[indices, :]
+            self.y_ = self.y_[indices]
 
     def sample_views(self, transform="linear", n_noise=1):
         r"""
@@ -208,18 +224,18 @@ class GaussianMixture:
         """
 
         if callable(transform):
-            X = np.asarray([transform(x) for x in self.latent])
+            X = np.asarray([transform(x) for x in self.latent_])
         elif not type(transform) == str:
             raise TypeError(
                 f"'transform' must be of type string or a callable function,\
                 not {type(transform)}"
             )
         elif transform == "linear":
-            X = _linear2view(self.latent)
+            X = _linear2view(self.latent_)
         elif transform == "poly":
-            X = _poly2view(self.latent)
+            X = _poly2view(self.latent_)
         elif transform == "sin":
-            X = _sin2view(self.latent)
+            X = _sin2view(self.latent_)
         else:
             raise ValueError(
                 "Transform type must be one of {'linear', 'poly'\
@@ -227,18 +243,22 @@ class GaussianMixture:
                 + f"{transform}"
             )
 
-        self.Xs = [self.latent, X]
+        self.Xs_ = [self.latent_, X]
 
         # if random_state is not None, make sure both views are independent
         # but reproducible
         if self.random_state is None:
-            self.Xs = [_add_noise(X, n_noise=n_noise,
-                                  random_state=self.random_state)
-                       for X in self.Xs]
+            self.Xs_ = [
+                _add_noise(X, n_noise=n_noise, random_state=self.random_state)
+                for X in self.Xs_
+            ]
         else:
-            self.Xs = [_add_noise(X, n_noise=n_noise,
-                                  random_state=(self.random_state + i))
-                       for i, X in enumerate(self.Xs)]
+            self.Xs_ = [
+                _add_noise(
+                    X, n_noise=n_noise, random_state=(self.random_state + i)
+                )
+                for i, X in enumerate(self.Xs_)
+            ]
 
         return self
 
@@ -255,11 +275,11 @@ class GaussianMixture:
         Returns
         -------
         (Xs, y) : the transformed views and their labels. If `latents=True`,
-            returns the latent variables instead.
+            returns the latent variables instead of Xs.
         """
         if latents:
-            return (self.latent, self.y)
+            return (self.latent_, self.y_)
         else:
-            if not hasattr(self, "Xs"):
+            if not hasattr(self, "Xs_"):
                 raise NameError("sample_views has not been called yet")
-            return (self.Xs, self.y)
+            return (self.Xs_, self.y_)

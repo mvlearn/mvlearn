@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+from numpy.testing import assert_equal, assert_almost_equal
 import pandas as pd
 import pytest
 from mvlearn.factorization.ajive import (
@@ -10,6 +11,7 @@ from mvlearn.factorization.ajive import (
 from mvlearn.factorization.ajive_utils.utils import svd_wrapper
 from scipy.sparse import csr_matrix
 from scipy.linalg import orth
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 
 class TestFig2Runs(unittest.TestCase):
@@ -400,7 +402,7 @@ def test_check_gen_lin_op_scipy(data):
         ajive.fit(Xs=dat)
 
 
-def test_get_ranks(data):
+def test_get_ranks_not_computed(data):
     with pytest.raises(ValueError):
         ajive = AJIVE(init_signal_ranks=[2, 2])
         ajive.get_ranks()
@@ -411,12 +413,6 @@ def test_check_joint_rank_large(data):
         dat = data["same_views"]
         ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=5)
         ajive.fit(Xs=dat)
-
-
-def test_decomp_not_computed_ranks():
-    with pytest.raises(ValueError):
-        ajive = AJIVE(init_signal_ranks=[2, 2])
-        ajive.get_ranks()
 
 
 def test_indiv_rank(data):
@@ -457,6 +453,66 @@ def test_precomp_init_svd(data):
     ajive.fit(dat, precomp_init_svd=precomp)
     p = 3
     assert p == 3
+
+def test_block_names_not_fit():
+    ajive = AJIVE()
+    assert ajive.block_names is None
+
+def test__repr__(data):
+    dat = data["same_views"]
+    ajive = AJIVE(init_signal_ranks=[2, 2])
+
+    assert ajive.__repr__() == "No data has been fitted yet"
+
+    ajive.fit(Xs=dat)
+    blocks = ajive.predict(return_dict=True)
+    r = "joint rank: {}".format(ajive.common_.rank)
+    for bn in ajive.block_names:
+                indiv_rank = ajive.blocks_[bn].individual.rank
+                r += ", block {} indiv rank: {}".format(bn, indiv_rank)
+    assert ajive.__repr__() == r
+    
+def test_results_dict(data):
+    dat = data["same_views"]
+    precomp = []
+    for i in dat:
+        precomp.append(svd_wrapper(i))
+    ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
+    ajive.fit(dat, precomp_init_svd=precomp)
+    results = ajive.results_dict()
+    assert_frame_equal(results['common']['scores'], ajive.common_.scores_)
+    assert_series_equal(results['common']['svals'], ajive.common_.svals_)
+    assert_frame_equal(results['common']['loadings'], ajive.common_.loadings_)
+    assert_equal(results['common']['rank'], ajive.common_.rank)
+
+    for bn in ajive.block_names:
+        joint = ajive.blocks_[bn].joint
+        indiv = ajive.blocks_[bn].individual
+        assert_frame_equal(results[bn]['joint']['scores'], joint.scores_)
+        assert_series_equal(results[bn]['joint']['svals'], joint.svals_)
+        assert_frame_equal(results[bn]['joint']['loadings'], joint.loadings_)
+        assert_equal(results[bn]['joint']['rank'], joint.rank)
+        assert_frame_equal(results[bn]['joint']['full'], joint.full_)
+
+        assert_frame_equal(results[bn]['individual']['scores'], indiv.scores_)
+        assert_series_equal(results[bn]['individual']['svals'], indiv.svals_)
+        assert_frame_equal(results[bn]['individual']['loadings'], indiv.loadings_)
+        assert_equal(results[bn]['individual']['rank'], indiv.rank)
+        assert_frame_equal(results[bn]['individual']['full'], indiv.full_)
+
+        assert_frame_equal(results[bn]['noise'], ajive.blocks_[bn].noise_)
+
+def test_get_ranks(data):
+    dat = data["same_views"]
+    precomp = []
+    for i in dat:
+        precomp.append(svd_wrapper(i))
+    ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
+    ajive.fit(dat, precomp_init_svd=precomp)
+    joint_rank, indiv_ranks = ajive.get_ranks()
+    assert joint_rank == 1
+    for rank1, rank2 in zip(indiv_ranks, [0, 1]):
+        assert rank1 == rank2
 
 
 # Plotting
