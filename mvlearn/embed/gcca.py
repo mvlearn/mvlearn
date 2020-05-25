@@ -180,6 +180,9 @@ class GCCA(BaseEmbed):
         -------
         self : returns an instance of self.
         """
+        
+        if len(Xs) <= 1:
+            print('Not Multiview!')
 
         Xs = check_Xs(Xs, multiview=True)
         n = Xs[0].shape[0]
