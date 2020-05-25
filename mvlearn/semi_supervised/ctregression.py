@@ -1,4 +1,19 @@
-# python version 3.7.6
+# Copyright 2019 NeuroData (http://neurodata.io)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Implements multi-view co-training regression for 2-view data.
+
 
 import pandas as pd
 import numpy as np
@@ -8,18 +23,16 @@ from scipy.spatial.distance import minkowski
 from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
 from .base import BaseCoTrainEstimator
 
-# Implements Multi view Co training Regression for 2 view data
-
 
 class CTRegressor(BaseCoTrainEstimator):
     r"""
     This class implements the co-training regression for supervised
-    and semisupervised learning with the framework as described in [#1CTR].
+    and semisupervised learning with the framework as described in [#1CTR]_.
     The best use case is when nthe 2 views of input data are sufficiently
-    distinct and independent as detailed in [#1CTR]. However this can also
+    distinct and independent as detailed in [#1CTR]_. However this can also
     be successfull when na single matrix of input data is given as
     both views and two estimators are choosen
-    which are quite different.[#2CTR]
+    which are quite different.[#2CTR]_
 
     In the semi-supervised case, performance can vary greatly, so using
     a separate validation set or cross validation procedure is
@@ -37,36 +50,36 @@ class CTRegressor(BaseCoTrainEstimator):
         The number of neighbours to be considered for determining the mean
         squared error.
 
-    supsample_size: int, optional (default = 50)
+    unlabelled_pool_size: int, optional (default = 50)
         The size of unlabelled subsample
 
-    n_iter: int, optional (default = 100)
+    num_iter: int, optional (default = 100)
         The maximum number of iteration to be performed
 
-    selected_size: int, optional (default = 5)
+    unlabelled_subsample_pool_size: int, optional (default = 5)
         The maximum number of samples to be selected from the
         pool of unlabelled samples
 
-    random_state: int (defalut = None)
+    random_state: int (default = None)
         The seed for fit() method and other class operations
 
     Attributs
     ---------
-    estimator1 : regressor object, used on view1
+    estimator1_ : regressor object, used on view1
 
-    estimator2 : regressor object, used on view2
+    estimator2_ : regressor object, used on view2
 
-    neighbors_size : int
+    neighbors_size_ : int
         The number of neighbours to be considered for determining
         the mean squared error.
 
-    supsample_size: int
+    unlabelled_pool_size: int
         The size of unlabelled subsample
 
-    n_iter: int
+    num_iter: int
         The maximum number of iteration to be performed
 
-    selected_size: int
+    unlabelled_subsample_pool_size: int
         The maximum number of samples to be selected from
         the pool of unlabelled samples
 
@@ -92,8 +105,8 @@ class CTRegressor(BaseCoTrainEstimator):
     >>> data = data.drop(columns = ['id', 'date'])
     >>> X = data.drop(columns = ['price'])
     >>> Y = data['price']
-    >>> X1 = X.iloc[:, : int(X.shape[1]/2)]
-    >>> X2 = X.iloc[:, int(X.shape[1]/2) :]
+    >>> X1 = X[:, : int(X.shape[1]/2)]
+    >>> X2 = X[:, int(X.shape[1]/2) :]
     >>> X1_train, X1_test, y_train, y_test = split_(X1, Y, random_state = 42)
     >>> X2_train, X2_test, y_train, y_test = split_(X1, Y, random_state = 42)
     >>> # Supervised learning with a single view of data and 2 estimator types
@@ -114,10 +127,10 @@ class CTRegressor(BaseCoTrainEstimator):
     other. As is shown in the example notebooks for using this algorithm,
     multi-view co-training can provide good regression results even
     when number of unlabeled samples far exceeds the number of labeled
-    samples. This regressor uses 2 slearn regressors which work individually
+    samples. This regressor uses 2 sklearn regressors which work individually
     on each view but which share information and thus result in improved
     performance over looking at the views completely separately.
-    The regressor needs to be KNearestRegressor, as described in the [#1CTR].
+    The regressor needs to be KNeigborsRegressor, as described in the [#1CTR]_.
 
     Algorithm
     ---------
@@ -145,7 +158,7 @@ class CTRegressor(BaseCoTrainEstimator):
                     as *hj* on the *Lj* union *u* with label as *y_hat*
                     * for i in *omega*
                         * Calculate the predicted value of i and take the
-                        differene between initial predicted value from *hj*
+                        difference between initial predicted value from *hj*
                         and final predicted value from  new *hj'* for each i
                         * Add the calculated value to a list named as *delta*
                 * sort the list in descending order of values and select
@@ -160,11 +173,11 @@ class CTRegressor(BaseCoTrainEstimator):
             * Use *L2* to train the regressor *h2*
     Reference
     ---------
-    [#1CTR] : Semi-Supervised Regression with
+    [#1CTR]_ : Semi-Supervised Regression with
             Co-Training by Zhi-Hua Zhou and Ming Li
             https://pdfs.semanticscholar.org/437c/85ad1c05f60574544d31e96bd8e60393fc92.pdf
 
-    [#2CTC] : Goldman, Sally, and Yan Zhou. "Enhancing supervised
+    [#2CTR]_ : Goldman, Sally, and Yan Zhou. "Enhancing supervised
             learning with unlabeled data." ICML. 2000.
             http://www.cs.columbia.edu/~dplewis/candidacy/goldman00enhancing.pdf
 
@@ -175,10 +188,10 @@ class CTRegressor(BaseCoTrainEstimator):
         estimator1=None,
         estimator2=None,
         neighbors_size=5,
-        subsample_size=50,
-        n_iter=100,
+        unlabelled_pool_size=50,
+        num_iter=100,
         selected_size=5,
-        random_state=None,
+        random_state=None
     ):
 
         # initialize a BaseCTEstimator object
@@ -191,12 +204,12 @@ class CTRegressor(BaseCoTrainEstimator):
             estimator2 = KNeighborsRegressor()
 
         # Initializing the other attributes
-        self.estimator1 = estimator1
-        self.estimator2 = estimator2
-        self.neighbors_size = neighbors_size
-        self.subsample_size = subsample_size
-        self.n_iter = n_iter
-        self.selected_size = selected_size
+        self.estimator1_ = estimator1
+        self.estimator2_ = estimator2
+        self.neighbors_size_ = neighbors_size
+        self.unlabelled_pool_size = unlabelled_pool_size
+        self.num_iter = num_iter
+        self.unlabelled_subsample_pool_size = selected_size
         self.random_state = random_state
         self.n_views = 2
 
@@ -209,10 +222,10 @@ class CTRegressor(BaseCoTrainEstimator):
         if estimators are invalid. Throws ValueError if any other parameters
         are not valid. The checks performed are:
             - estimator1 and estimator2 are KNeigborsRegressor
-            - neighbors_size is positive
-            - subsample_size is positive
-            - n_iter is positive
-            - selected_size is positive
+            - neighbors_size_ is positive
+            - unlabelled_pool_size is positive
+            - num_iter is positive
+            - unlabelled_subsample_pool_size is positive
         """
 
         # The estimator must be KNeighborsRegressor
@@ -220,14 +233,14 @@ class CTRegressor(BaseCoTrainEstimator):
 
         # Taking the str of a class returns the class name
         # along with other parameters
-        string1 = str(self.estimator1)
+        string1 = str(self.estimator1_)
 
         # slicing the list to get the name of the estimator
         string1 = string1[: len(to_be_matched)]
 
         # Taking the str of a class returns the class name
         # along with other parameters
-        string2 = str(self.estimator2)
+        string2 = str(self.estimator2_)
 
         # slicing the list to get the name of the estimator
         string2 = string2[: len(to_be_matched)]
@@ -236,16 +249,16 @@ class CTRegressor(BaseCoTrainEstimator):
             raise AttributeError(
                 "Both the estimator need to be KNeighborsRegressor")
 
-        if self.neighbors_size <= 0:
+        if self.neighbors_size_ <= 0:
             raise ValueError("neighbors size must be positive")
 
-        if self.subsample_size <= 0:
+        if self.unlabelled_pool_size <= 0:
             raise ValueError("subsample size must be positive")
 
-        if self.n_iter <= 0:
+        if self.num_iter <= 0:
             raise ValueError("number of iterations must be positive")
 
-        if self.selected_size <= 0:
+        if self.unlabelled_subsample_pool_size <= 0:
             raise ValueError("selected size must be positive")
 
     def fit(self, Xs, y):
@@ -273,6 +286,8 @@ class CTRegressor(BaseCoTrainEstimator):
         check_Xs_y_nan_allowed(
             Xs, y, multiview=True, enforce_views=self.n_views)
 
+        distance1, distance2 = self._calc_distance(Xs)
+
         # Xs contain two views
         view1 = Xs[0]
         view2 = Xs[1]
@@ -296,21 +311,21 @@ class CTRegressor(BaseCoTrainEstimator):
         not_null2 = L
 
         # fitting the estimator object on the train data
-        self.estimator1.fit(X1.iloc[not_null1], y1.iloc[not_null1])
-        self.estimator2.fit(X2.iloc[not_null2], y2.iloc[not_null2])
+        self.estimator1_.fit(X1[not_null1], y1[not_null1])
+        self.estimator2_.fit(X2[not_null2], y2[not_null2])
 
         # declaring a variable which keeps tracks
         # of the number of iteration performed
         it = 0
 
-        while it < self.n_iter and U:
+        while it < self.num_iter and U:
             # print("Number of iteration done {} \
             # \nSize of unlabelled sample {}".format(it, len(U)))
             it += 1
             random.seed(self.random_state)
 
             # Taking a subsample from unlabelled indexes
-            u = random.sample(U, min(len(U), self.subsample_size))
+            u = random.sample(U, min(len(U), self.unlabelled_pool_size))
 
             # constains a list of [delta, index, predicted_value]
             # and after inclusion of unlabelled index in the training data
@@ -328,43 +343,43 @@ class CTRegressor(BaseCoTrainEstimator):
                 delta = 0
 
                 # list of k nearest neighbour for the unlabelled sample
-                omega = self.find_k_nearest_neighbour(X1, y1, i)
+                omega = self._find_k_nearest_neighbor(y1, i, distance1)
 
                 for j in omega:
 
                     # prediction value of each neighbour before including
                     # the unlabelled sample in the training view
-                    before_pred = self.estimator1.predict(
-                        np.expand_dims(X1.iloc[j], axis=0)
+                    before_pred = self.estimator1_.predict(
+                        np.expand_dims(X1[j], axis=0)
                     )
 
                     # predicted value of unlabelled sample
-                    pred = self.estimator1.predict(
-                        np.expand_dims(X1.iloc[i], axis=0))
+                    pred = self.estimator1_.predict(
+                        np.expand_dims(X1[i], axis=0))
 
                     # include the predicted value of unlabelled sample
-                    y1.iloc[i] = pred
+                    y1[i] = pred
 
                     # a temporary estimator which fits and predicts the value
                     # of each neighbours after inclusion of unlabelled sample
-                    temp_estimator = self.estimator1
+                    temp_estimator_ = self.estimator1_
 
                     # including the unlablled sample index for training
                     not_null1.append(i)
 
-                    temp_estimator.fit(X1.iloc[not_null1], y1.iloc[not_null1])
-                    after_pred = temp_estimator.predict(
-                        np.expand_dims(X1.iloc[j], axis=0)
+                    temp_estimator_.fit(X1[not_null1], y1[not_null1])
+                    after_pred = temp_estimator_.predict(
+                        np.expand_dims(X1[j], axis=0)
                     )
 
                     # calculating the value of delta
-                    delta += pow(y1.iloc[j] - before_pred, 2) - pow(
-                        y1.iloc[j] - after_pred, 2
+                    delta += pow(y1[j] - before_pred, 2) - pow(
+                        y1[j] - after_pred, 2
                     )
 
                     # making the unlabelled sample again unlabelled
                     # and removing it from not_null list
-                    y1.iloc[i] = np.nan
+                    y1[i] = np.nan
                     not_null1.pop()
 
                 # appending the index, delta, pred value in list
@@ -380,7 +395,7 @@ class CTRegressor(BaseCoTrainEstimator):
             index = 0
 
             while index < len(delta1) and\
-                    count < self.selected_size and\
+                    count < self.unlabelled_subsample_pool_size and\
                     delta1:
 
                 # if delta1's delta value is not positive break the loop
@@ -396,7 +411,7 @@ class CTRegressor(BaseCoTrainEstimator):
 
             # Replenishing the subsample of unlabelled data
             for m in U:
-                if len(u) < self.subsample_size:
+                if len(u) < self.unlabelled_pool_size:
                     if m not in u:
                         u.append(m)
                 else:
@@ -414,43 +429,43 @@ class CTRegressor(BaseCoTrainEstimator):
                 delta = 0
 
                 # list of k nearest neighbour
-                omega = self.find_k_nearest_neighbour(X2, y2, i)
+                omega = self._find_k_nearest_neighbor(y2, i, distance2)
 
                 for j in omega:
                     # prediction value of each neighbour before
                     # including the unlabelled sample in the training view
-                    before_pred = self.estimator2.predict(
-                        np.expand_dims(X2.iloc[j], axis=0)
+                    before_pred = self.estimator2_.predict(
+                        np.expand_dims(X2[j], axis=0)
                     )
 
                     # predicted value of unlabelled sample
-                    pred = self.estimator2.\
-                        predict(np.expand_dims(X2.iloc[i], axis=0))
+                    pred = self.estimator2_.\
+                        predict(np.expand_dims(X2[i], axis=0))
 
                     # include the predicted value of unlabelled sample
-                    y2.iloc[i] = pred
+                    y2[i] = pred
 
                     # a temporary estimator which fits and
                     # predicts the value of each neighbours
                     # after the inclusion of unlabelled sample
-                    temp_estimator = self.estimator2
+                    temp_estimator_ = self.estimator2_
 
                     # including the unlablled sample index for training
                     not_null2.append(i)
 
-                    temp_estimator.fit(X2.iloc[not_null2], y2.iloc[not_null2])
-                    after_pred = temp_estimator.predict(
-                        np.expand_dims(X2.iloc[j], axis=0)
+                    temp_estimator_.fit(X2[not_null2], y2[not_null2])
+                    after_pred = temp_estimator_.predict(
+                        np.expand_dims(X2[j], axis=0)
                     )
 
                     # calculating the delta value
-                    delta += pow(y2.iloc[j] - before_pred, 2) - pow(
-                        y2.iloc[j] - after_pred, 2
+                    delta += pow(y2[j] - before_pred, 2) - pow(
+                        y2[j] - after_pred, 2
                     )
 
                     # making the unlabelled sample again unlabelled
                     # and removing it from not_null list
-                    y2.iloc[i] = np.nan
+                    y2[i] = np.nan
                     not_null2.pop()
 
                 # appending the index, delta, pred value in list
@@ -466,7 +481,7 @@ class CTRegressor(BaseCoTrainEstimator):
             index = 0
 
             while index < len(delta2) and\
-                    count < self.selected_size and\
+                    count < self.unlabelled_subsample_pool_size and\
                     delta2:
                 # if delta2's delta value is not positive break the loop
                 if delta2[index][1] <= 0:
@@ -497,14 +512,14 @@ class CTRegressor(BaseCoTrainEstimator):
 
             # label the predicted value of each unlabelled sample
             for i, num in enumerate(to_include1):
-                y2.iloc[num] = delta1[i][2]
+                y2[num] = delta1[i][2]
 
             for i, num in enumerate(to_include2):
-                y1.iloc[num] = delta2[i][2]
+                y1[num] = delta2[i][2]
 
             # fit the estimator again on the new training set
-            self.estimator1.fit(X1.iloc[not_null1], y1.iloc[not_null1])
-            self.estimator2.fit(X2.iloc[not_null2], y2.iloc[not_null2])
+            self.estimator1_.fit(X1[not_null1], y1[not_null1])
+            self.estimator2_.fit(X2[not_null2], y2[not_null2])
 
         return self
 
@@ -530,51 +545,85 @@ class CTRegressor(BaseCoTrainEstimator):
         X2 = Xs[1]
 
         # predicting the value of each view
-        pred1 = self.estimator1.predict(X1)
-        pred2 = self.estimator2.predict(X2)
+        pred1 = self.estimator1_.predict(X1)
+        pred2 = self.estimator2_.predict(X2)
 
         # Taking the average of the predicted value and returning it
         return (pred1 + pred2) * 0.5
 
-    def find_k_nearest_neighbour(self, X, y, index):
+    def _find_k_nearest_neighbor(self, y, index, distance):
         r"""
-        Finds the K nearest neighbour of the unlabelled point.
+        Finds the K nearest neighbor of the unlabelled point.
 
         Parameters
         ----------
-        X : pandas Dataframe, reprsents a particular view
-        y : pandas DataFrame, represent true value
+        y : represent true value of a view
         index : int, represents the index of unlabelled sample
             whose neighbours needs to be calculated
+        distance : dictionary with values as a list of index and distance
+            represents the distance of one index with other indexes
 
         Returns
         -------
-        omega : list, returs a list of K nearest neighbour
+        omega : list, returs a list of K nearest neighbor
         """
 
-        # List of neighbours , contains a list of index and
-        # its corresponding distance from the unlabelled sample
-        dist = []
+        omega = []
 
-        length = X.shape[0]
-
-        for i in range(0, length):
-            if np.isnan(y.iloc[i]):
+        # Calculates the distance of one index with every other index
+        for i, val in enumerate(y):
+            if np.isnan(val) or i == index:
                 continue
-            distance = minkowski(
-                np.array(X.iloc[i]),
-                np.array(X.iloc[index]),
-                2
-                )
-            dist.append([i, distance])
+            else:
+                omega.append(distance[index][i][0])
 
-        # sorting the dist in ascending order of
-        # distance from unlabelled sample
-        dist = sorted(dist)
+        return omega[:min(len(omega, self.neighbors_size_))]
+    
+    def _calc_distance(self, Xs):
+        r"""
+        Calculates the distance of every in a view with every other index.
+        The distances are then stored in a dictionary, where every key has list of indexes
+        and distance as value.
 
-        # storing the index of neigbours with
-        # increasing distance from unlabelled sample
-        omega = [index_[0] for index_ in dist]
+        Parameters
+        ----------
+        Xs : list, contains each view of training sample
 
-        # returns the list of K nearest neighbour
-        return omega[: min(self.neighbors_size, len(omega))]
+        Returns
+        -------
+        distance : tuple, contains a dictionay of respective distances from each view
+        """
+
+        X1 = Xs[0]
+        X2 = Xs[1]
+
+        # Dictionary having a list of index and distance as value for each key
+        distance1 = {}
+
+        for i, arr_i in enumerate(X1):
+            for j, arr_j in enumerate(X1):
+
+                # Calculates the  minkowski distance between two array
+                dist = minkowski(arr_i, arr_j, 2)
+                distance1[i].append([j, dist])
+
+            # sorting the value of each key according to its distance with other indexs
+            distance1[i] = sorted(distance1[i])
+
+        # Dictionary having a list of index and distance as value for each key
+        distance2 = {}
+
+        for i, arr_i in enumerate(X2):
+            for j, arr_j in enumerate(X2):
+
+                # Calculates the  minkowski distance between two array
+                dist = minkowski(arr_i, arr_j, 2)
+                distance2[i].append([j, dist])
+
+            # sorting the value of each key according to its distance with other indexs
+            distance2[i] = sorted(distance2[i])
+
+        # Tuple for storing both the dictionaries
+        distance = (distance1, distance2)
+
+        return distance
