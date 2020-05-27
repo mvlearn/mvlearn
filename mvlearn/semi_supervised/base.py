@@ -22,15 +22,15 @@ from sklearn.base import BaseEstimator
 
 class BaseCoTrainEstimator(BaseEstimator):
     """
-    A base class for multiview co-training. Extends from sklearn's
+    A base class for multiview co-training. Extends sklearn's
     BaseEstimator.
 
     Parameters
     ----------
-    estimator1 : estimator object, default (None)
+    estimator1 : estimator object, default=None
         The estimator object which will be trained on view 1 of the data.
 
-    estimator2 : estimator object, default (None)
+    estimator2 : estimator object, default=None
         The estimator object which will be trained on view 2 of the data.
         Does not need to be of the same type as estimator1.
 
@@ -40,10 +40,10 @@ class BaseCoTrainEstimator(BaseEstimator):
 
     Attributes
     ----------
-    estimator1 : estimator object
+    estimator1_ : estimator object
         The estimator used on view 1.
 
-    estimator2 : estimator object
+    estimator2_ : estimator object
         The estimator used on view 2.
 
     random_state : int
@@ -63,7 +63,7 @@ class BaseCoTrainEstimator(BaseEstimator):
     @abstractmethod
     def fit(self, Xs, y):
         """
-        A method to co-trained estimators to multiview data.
+        A method to fit co-trained estimators to multiview data.
 
         Parameters
         ----------
