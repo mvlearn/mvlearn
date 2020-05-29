@@ -491,6 +491,12 @@ class CTRegressor(BaseCoTrainEstimator):
                     np.expand_dims(X1[unlabeled_pool[i]], axis=0))
                 y2[unlabeled_pool[i]] = pred
 
+            # Currently to_include contains the index of unlabeled samples
+            # in the order in which they are stored in unlabeled_pool
+            # Converting them to the value which unlabeled_pool stores
+            # example unlabeled_pool = [10, 15, 17]
+            # current to_include = [1, 2]
+            # updated to_include = [15, 17]
             to_include1 = [unlabeled_pool[i] for i in to_include1]
             to_include2 = [unlabeled_pool[i] for i in to_include2]
 
