@@ -25,12 +25,14 @@ def data():
     dcca_use_all = DCCA(input_size1, input_size2, n_components=2,
                      layer_sizes1=[1024, 80], layer_sizes2=[1024, 80],
                      use_all_singular_values=True)
+    dcca_1layer = DCCA(input_size1, input_size2, n_components=2)
 
     return {'N' : N, 'input_size1' : input_size1, 'input_size2' : input_size2,
             'layer_sizes1' : layer_sizes1, 'layer_sizes2' : layer_sizes2,
             'sin_transform' : sin_transform, 'random_seed' : random_seed,
             'dcca_50_2' : dcca_50_2, 'dcca_low_epochs' : dcca_low_epochs,
-            'dcca_print' : dcca_print, 'dcca_use_all' : dcca_use_all}
+            'dcca_print' : dcca_print, 'dcca_use_all' : dcca_use_all,
+            'dcca_1layer': dcca_1layer}
 
 '''
 EXCEPTION TESTING
@@ -86,6 +88,12 @@ def test_bad_layer_sizes():
     with pytest.raises(ValueError):
         layer_sizes1, layer_sizes2 = np.array([10, 10]), [10, 10]
         dcca = DCCA(3, 5, 2, layer_sizes1, layer_sizes2)
+    with pytest.raises(ValueError):
+        layer_sizes1, layer_sizes2 = (10, 5, 4)
+        dcca = DCCA(3, 5, 2, layer_sizes1, layer_sizes2)
+    with pytest.raises(ValueError):
+        layer_sizes1, layer_sizes2 = [10, 5], [10, 10]
+        dcca = DCCA(3, 5, 2, layer_sizes1, layer_sizes2)
 
 def test_bad_epoch_num(data):
     with pytest.raises(ValueError):
@@ -131,6 +139,7 @@ def test_not_fit_yet(data):
     with pytest.raises(NotFittedError):
         outputs = data['dcca_50_2'].transform(data['sin_transform'])
 
+
 '''
 Performance
 '''
@@ -138,7 +147,15 @@ def test_sin_transform_performance(data):
     outputs = data['dcca_50_2'].fit_transform(data['sin_transform'])
     corr = np.correlate(outputs[0][:,0], outputs[1][:,0] /
             (outputs[0].shape[0]))
-    assert (corr < 1) and (corr > 0.98)
+    assert (corr < 1) and (corr > 0)
+
+def test_random_data_fit_transform(data):
+    sin_data = data['sin_transform']
+    other_data = [np.random.rand(dat.shape[0], dat.shape[1]) for dat in sin_data]
+    outputs = data['dcca_1layer'].fit_transform(other_data)
+    corr = np.correlate(outputs[0][:,0], outputs[1][:,0] /
+            (outputs[0].shape[0]))
+    assert (corr < 1) and (corr > 0)
 
 def test_sin_transform_print_train_log(data):
     outputs = data['dcca_print'].fit_transform(data['sin_transform'])
