@@ -60,7 +60,7 @@ class CTRegressor(BaseCoTrainEstimator):
     random_state: int (default = None)
         The seed for fit() method and other class operations
 
-    Attributs
+    Attributes
     ---------
     estimator1_ : regressor object, used on view1
 
@@ -104,7 +104,7 @@ class CTRegressor(BaseCoTrainEstimator):
     [10, 11, 12, 13, 14, 15, 16]
     >>> print("Predicted value\n{}".format(pred))
     Predicted value
-    [10.75 11.   11.25 13.25 13.25 15.   15.  ]
+    [10.75 11.25 11.25 13.25 13.25 14.75 15.25]
 
     Notes
     -----
@@ -161,13 +161,13 @@ class CTRegressor(BaseCoTrainEstimator):
             * Use *L1* to train the regressor *h1*
             * Use *L2* to train the regressor *h2*
 
-    Reference
+    References
     ---------
-    [#1CTR]_ : Semi-Supervised Regression with
+    [#1CTR] : Semi-Supervised Regression with
             Co-Training by Zhi-Hua Zhou and Ming Li
             https://pdfs.semanticscholar.org/437c/85ad1c05f60574544d31e96bd8e60393fc92.pdf
 
-    [#2CTR]_ : Goldman, Sally, and Yan Zhou. "Enhancing supervised
+    [#2CTR] : Goldman, Sally, and Yan Zhou. "Enhancing supervised
             learning with unlabeled data." ICML. 2000.
             http://www.cs.columbia.edu/~dplewis/candidacy/goldman00enhancing.pdf
 
@@ -454,15 +454,15 @@ class CTRegressor(BaseCoTrainEstimator):
                 else:
                     if delta1[index1_1] > 0 and delta2[index2_1] > 0:
                         if delta1[index1_1] >= delta2[index2_1]:
-                            L2.append(unlabeled_pool[index2_1])
-                            to_include2.append(index2_1)
+                            L2.append(unlabeled_pool[index1_1])
+                            to_include2.append(index1_1)
                             if delta2[index2_2] > 0:
                                 L1.append(unlabeled_pool[index2_2])
                                 to_include1.append(index2_2)
 
                         else:
-                            L1.append(unlabeled_pool[index1_1])
-                            to_include1.append(index1_1)
+                            L1.append(unlabeled_pool[index2_1])
+                            to_include1.append(index2_1)
                             if delta1[index1_2] > 0:
                                 L2.append(unlabeled_pool[index1_2])
                                 to_include2.append(index1_2)
@@ -491,10 +491,13 @@ class CTRegressor(BaseCoTrainEstimator):
                     np.expand_dims(X1[unlabeled_pool[i]], axis=0))
                 y2[unlabeled_pool[i]] = pred
 
+            to_include1 = [unlabeled_pool[i] for i in to_include1]
+            to_include2 = [unlabeled_pool[i] for i in to_include2]
+
             # removing the selected index
             unlabeled_pool = [
                 u for u in unlabeled_pool
-                if (u in to_include1) and (u not in to_include2)]
+                if (u not in to_include1) and (u not in to_include2)]
 
             # replenishing the unlabeled pool
             for u in U:

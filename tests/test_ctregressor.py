@@ -121,7 +121,7 @@ FUNCTION TESTING
 
 
 def test_fit_regressor(data):
-    truth = [0.3641305, 0.53060798, 0.45748622, 0.48092033, 0.46166651]
+    truth = [0.43418396, 0.43633812, 0.52360168, 0.49169045, 0.4694159]
     ctr = CTRegressor(random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
     pred = (ctr.predict(data['random_test'])).tolist()
@@ -131,7 +131,7 @@ def test_fit_regressor(data):
 
 
 def test_set_num_iter(data):
-    truth = [0.3641305, 0.53060798, 0.45748622, 0.48092033, 0.46166651]
+    truth = [0.34590772, 0.47308874, 0.43699262, 0.48092033, 0.41690168]
     num_iter = 10
     ctr = CTRegressor(num_iter=num_iter, random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
@@ -143,7 +143,7 @@ def test_set_num_iter(data):
 
 
 def test_set_k_neighbors(data):
-    truth = [0.35815005, 0.52436586, 0.45632093, 0.50337765, 0.44128616]
+    truth = [0.48113792, 0.44530868, 0.5269744, 0.50646773, 0.53355599]
     k_neighbors = 4
     ctr = CTRegressor(k_neighbors=k_neighbors, random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
@@ -167,7 +167,7 @@ def test_set_unlabeled_pool_size_as_one(data):
 
 
 def test_set_unlabeled_pool_size_as_two(data):
-    truth = [0.42243919, 0.4282216, 0.47170146, 0.45441732, 0.50122427]
+    truth = [0.45287164, 0.44940644, 0.45653891, 0.48608956, 0.53500596]
     unlabeled_pool_size = 2
     ctr = CTRegressor(unlabeled_pool_size=unlabeled_pool_size, random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
@@ -179,12 +179,28 @@ def test_set_unlabeled_pool_size_as_two(data):
 
 
 def test_set_unlabeled_pool_size_as_ten(data):
-    truth = [0.3408056, 0.46978821, 0.40552626, 0.51559782, 0.4691247]
+    truth = [0.48274064, 0.43065151, 0.45900958, 0.50178144, 0.49710094]
     unlabeled_pool_size = 10
     ctr = CTRegressor(unlabeled_pool_size=unlabeled_pool_size, random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
     pred = (ctr.predict(data['random_test'])).tolist()
     assert ctr.unlabeled_pool_size == unlabeled_pool_size
     assert len(truth) == len(pred)
+    for i, j in zip(truth, pred):
+        assert abs(i-j) < 0.00000001
+
+
+def test_set_n_neighbors_as_one():
+    X1 = [[0], [1], [2], [3], [4], [5], [6]]
+    X2 = [[2], [3], [4], [6], [7], [8], [10]]
+    y = [10, -200, 12, 13, -100, 15, 16]
+    y_train = [10, np.nan, np.nan, 13, np.nan, 15, 16]
+    truth = [10.75, 10.75, 12.25, 13.75, 13.75, 14.75, 15.5]
+    ctr = CTRegressor(
+        KNeighborsRegressor(n_neighbors=2),
+        KNeighborsRegressor(n_neighbors=2),
+        k_neighbors=2, random_state=42)
+    ctr.fit([X1, X2], y_train)
+    pred = ctr.predict([X1, X2])
     for i, j in zip(truth, pred):
         assert abs(i-j) < 0.00000001
