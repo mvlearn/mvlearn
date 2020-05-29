@@ -61,7 +61,7 @@ class CTRegressor(BaseCoTrainEstimator):
         The seed for fit() method and other class operations
 
     Attributes
-    ---------
+    ----------
     estimator1_ : regressor object, used on view1
 
     estimator2_ : regressor object, used on view2
@@ -162,7 +162,7 @@ class CTRegressor(BaseCoTrainEstimator):
             * Use *L2* to train the regressor *h2*
 
     References
-    ---------
+    ----------
     [#1CTR] : Semi-Supervised Regression with
             Co-Training by Zhi-Hua Zhou and Ming Li
             https://pdfs.semanticscholar.org/437c/85ad1c05f60574544d31e96bd8e60393fc92.pdf
