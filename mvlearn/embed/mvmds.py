@@ -231,7 +231,7 @@ class MVMDS(BaseEmbed):
 
         return(components)
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         """
         Calculates dimensionally reduced components by inputting the Euclidean
         distances of each view, double centering them, and using the _commonpcs
@@ -243,6 +243,8 @@ class MVMDS(BaseEmbed):
         Xs: list of array-likes or numpy.ndarray
                 - Xs length: n_views
                 - Xs[i] shape: (n_samples, n_features_i)
+        y : ignored
+            Included for API compliance.
 
         """
 
@@ -290,7 +292,7 @@ class MVMDS(BaseEmbed):
 
         return self
 
-    def fit_transform(self, Xs):
+    def fit_transform(self, Xs, y=None):
 
         """"
         Embeds data matrix(s) using fitted projection matrices
@@ -302,6 +304,8 @@ class MVMDS(BaseEmbed):
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the fit function.
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------

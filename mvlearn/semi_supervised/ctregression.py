@@ -256,8 +256,8 @@ class CTRegressor(BaseCoTrainEstimator):
             A list of the different views of data to train on.
 
         y : array, shape (n_samples,)
-            The values of the training data. Unlabeled_pool examples should
-            have label np.nan.
+            The target values of the training data. Unlabeled examples
+            should have label np.nan.
 
         Returns
         -------

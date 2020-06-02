@@ -629,7 +629,8 @@ class DCCA(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
 
-        y : Unused parameter for base class fit_transform compliance
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------
