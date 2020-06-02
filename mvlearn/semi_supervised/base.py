@@ -124,3 +124,5 @@ class BaseCoTrainEstimator(BaseEstimator):
         y_pred : array-like (n_samples,)
             Predictions for each sample.
         """
+
+        return self.fit(Xs, y).predict(Xs)
