@@ -17,10 +17,10 @@
 
 import numpy as np
 from abc import abstractmethod
-from sklearn.base import BaseEstimator
+from .base import BaseCluster
 
 
-class BaseKMeans(BaseEstimator):
+class BaseKMeans(BaseCluster):
     '''
     A base class for kmeans clustering.
     Parameters

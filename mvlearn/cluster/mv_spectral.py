@@ -19,9 +19,9 @@
 import numpy as np
 import scipy as sp
 from scipy.spatial.distance import cdist
-from sklearn.base import BaseEstimator
 from sklearn.cluster import KMeans
 from ..utils.utils import check_Xs
+from .base import BaseCluster
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
 from sklearn.neighbors import NearestNeighbors
@@ -29,7 +29,7 @@ from sklearn.neighbors import NearestNeighbors
 AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']
 
 
-class MultiviewSpectralClustering(BaseEstimator):
+class MultiviewSpectralClustering(BaseCluster):
 
     r'''
     An implementation of multi-view spectral clustering using the

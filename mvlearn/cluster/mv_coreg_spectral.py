@@ -19,7 +19,6 @@
 import numpy as np
 import scipy as sp
 from scipy.spatial.distance import cdist
-from sklearn.base import BaseEstimator
 from sklearn.cluster import KMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError
