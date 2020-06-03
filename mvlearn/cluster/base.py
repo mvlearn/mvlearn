@@ -15,6 +15,7 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 
+
 class BaseCluster(BaseEstimator):
     r'''
     A base class for clustering.
@@ -41,8 +42,8 @@ class BaseCluster(BaseEstimator):
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
 
-        y : labels
-            Only used for supervised algorithms.
+        y : array-like, shape (n_samples,)
+            Labels for each sample. Only used by supervised algorithms.
 
         Returns
         -------
