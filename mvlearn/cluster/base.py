@@ -16,7 +16,7 @@ from abc import abstractmethod
 from sklearn.base import BaseEstimator
 
 class BaseCluster(BaseEstimator):
-	'''
+    r'''
     A base class for clustering.
     Parameters
     ----------
@@ -25,11 +25,12 @@ class BaseCluster(BaseEstimator):
     See Also
     --------
     '''
-    def __init__():
-    	pass
+
+    def __init__(self):
+        pass
 
     @abstractmethod
-    def fit_predict(self, Xs):
+    def fit_predict(self, Xs, y=None):
 
         '''
         A method for fitting then predicting cluster assignments.
@@ -39,6 +40,9 @@ class BaseCluster(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+
+        y : labels
+            Only used for supervised algorithms.
 
         Returns
         -------

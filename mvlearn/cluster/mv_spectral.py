@@ -399,7 +399,7 @@ class MultiviewSpectralClustering(BaseCluster):
             self.embedding_ = np.hstack(U_mats)
             self.labels_ = kmeans.fit_predict(self.embedding_)
 
-    def fit_predict(self, Xs):
+    def fit_predict(self, Xs, y=None):
 
         r'''
         Performs clustering on the multiple views of data and returns
@@ -415,6 +415,9 @@ class MultiviewSpectralClustering(BaseCluster):
             This list must be of size n_views, corresponding to the number
             of views of data. Each view can have a different number of
             features, but they must have the same number of samples.
+
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------

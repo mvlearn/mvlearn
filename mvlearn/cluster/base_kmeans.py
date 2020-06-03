@@ -74,7 +74,7 @@ class BaseKMeans(BaseCluster):
         '''
         return
 
-    def fit_predict(self, Xs):
+    def fit_predict(self, Xs, y=None):
 
         '''
         Fit the cluster centroids to the data and then
@@ -90,6 +90,9 @@ class BaseKMeans(BaseCluster):
             of the data. The two views can each have a different number
             of features, but they must have the same number of samples.
 
+        y : ignored
+            Included for API compliance.
+
         Returns
         -------
         labels : array-like, shape (n_samples,)
@@ -98,5 +101,4 @@ class BaseKMeans(BaseCluster):
         '''
 
         self.fit(Xs)
-        labels = self.predict(Xs)
-        return labels
+        return self.predict(Xs)
