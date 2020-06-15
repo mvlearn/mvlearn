@@ -3,8 +3,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.linalg import orth
-
-from mvlearn.embed.gcca import GCCA
+from mvlearn.embed import GCCA
 
 
 def generate_data(n=10, elbows=3, seed=1):
@@ -19,7 +18,6 @@ def generate_data(n=10, elbows=3, seed=1):
         d[:i] += 10
     A = xorth.T.dot(np.diag(d)).dot(xorth)
     return A, d
-
 
 def test_output():
     def _get_Xs(n_views=2):
@@ -140,11 +138,7 @@ def test_bad_inputs(Xs, params, err):
         np.random.seed(1)
         GCCA(**params).fit(**Xs)
 
-
 def test_no_fit(Xs={"Xs": mat_good}, err=RuntimeError):
     with pytest.raises(err):
         np.random.seed(1)
         GCCA().transform(**Xs)
-
-test_no_fit()
-test_output()

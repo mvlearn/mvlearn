@@ -21,6 +21,7 @@ from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
 from joblib import Parallel, delayed
 from .utils import select_dimension
+import warnings
 
 
 def center(X):
@@ -61,30 +62,29 @@ class GCCA(BaseEmbed):
         If ``self.sv_tolerance=None``, selects the number of SVD
         components to keep for each view. If none, another selection
         method is used.
-
     fraction_var : float, default=None
         If ``self.sv_tolerance=None``, and ``self.n_components=None``,
         selects the number of SVD components to keep for each view by
         capturing enough of the variance. If none, another selection
         method is used.
-
     sv_tolerance : float, optional, default=None
         Selects the number of SVD components to keep for each view by
         thresholding singular values. If none, another selection
         method is used.
-
     n_elbows : int, optional, default: 2
         If ``self.fraction_var=None``, ``self.sv_tolerance=None``, and
         ``self.n_components=None``, then compute the optimal embedding
         dimension using :func:`.utils.select_dimension`.
         Otherwise, ignored.
-
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD
-
     max_rank : boolean, default=False
         If true, sets the rank of the common latent space as the maximum rank
         of the individual spaces. If false, uses the minimum individual rank.
+    n_jobs : int (positive), default=None
+        The number of jobs to run in parallel when computing the SVDs for each
+        view in `fit` and `partial_fit`. `None` means 1 job, `-1` means using
+        all processors.
 
     Attributes
     ----------
@@ -148,6 +148,7 @@ class GCCA(BaseEmbed):
             n_elbows=2,
             tall=False,
             max_rank=False,
+            n_jobs=1,
             ):
 
         self.n_components = n_components
@@ -158,6 +159,7 @@ class GCCA(BaseEmbed):
         self.projection_mats_ = None
         self.ranks_ = None
         self.max_rank = max_rank
+        self.n_jobs = n_jobs
 
     def fit(self, Xs, y=None):
         r"""
@@ -188,20 +190,73 @@ class GCCA(BaseEmbed):
         n = Xs[0].shape[0]
         min_m = min(X.shape[1] for X in Xs)
 
-        self._Uall = []
-        self._Sall = []
-        self._Vall = []
-        self.ranks_ = []
-
-        for X in Xs:
-            X = center(X)
-            u, s, v, rank = self._fit_view(X, n, min_m)
-            self._Sall.append(s)
-            self._Vall.append(v)
-            self._Uall.append(u)
-            self.ranks_.append(rank)
+        ## Parallel center
+        Xs = Parallel(n_jobs=self.n_jobs)(
+            delayed(center)(X) for X in Xs
+            )
+        ## Parallel SVDs
+        usvr = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._fit_view)(X, n, min_m) for X in Xs
+            )
+        ## Reshape from parallel output
+        self._Uall, self._Sall, self._Vall, self.ranks_ = zip(*usvr)
 
         self = self._fit_multistep()
+
+        return self
+
+    def partial_fit(self, Xs, multiview_step=True):
+        r"""
+        Performs like `fit`, but will not overwrite previously fitted single
+        views and instead uses them as well as the new data. Useful if the data
+        needs to be processe in batches.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to. Each view will receive its own embedding.
+        multiview_step : boolean, (default = True)
+            If True, performs the joint SVD step on the results from individual
+            views. Must be set to True in the final call.
+
+        Returns
+        -------
+        self : returns an instance of self.
+        """
+        if not hasattr(self, '_Uall'):
+            self._Uall = []
+            self._Sall = []
+            self._Vall = []
+            self.ranks_ = []
+
+        Xs = check_Xs(Xs, multiview=False)
+        n = Xs[0].shape[0]
+        min_m = min(X.shape[1] for X in Xs)
+
+        ## Parallel center
+        Xs = Parallel(n_jobs=self.n_jobs)(
+            delayed(center)(X) for X in Xs
+            )
+        ## Parallel SVDs
+        usvr = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._fit_view)(X, n, min_m) for X in Xs
+            )
+        ## Reshape and concatenate from parallel output
+        u, s, v, r = zip(*usvr)
+        self._Uall = np.concatenate([self._Uall, u])
+        self._Sall = np.concatenate([self._Sall, r])
+        self._Vall = np.concatenate([self._Vall, v])
+        self.ranks_ = np.concatenate([self.ranks_, r])
+
+        if multiview_step:
+            if len(self.ranks_) < 2:
+                msg = "Fewer than two single views fitted. Unable to perform \
+                    multiview step."
+                warnings.warn(msg, UserWarning)
+            else:
+                self = self._fit_multistep()
 
         return self
 
@@ -267,11 +322,13 @@ class GCCA(BaseEmbed):
             rank = elbows[-1]
 
         u = ut.T[:, :rank]
-        return v,s,u,rank
+
+        return u, s, v, rank
         
     def _fit_multistep(self):
         """
-
+        Helper function to compute the SVD on the results from individuals
+        view SVDs.
         """
         if self.max_rank:
             d = max(self.ranks_)
@@ -303,13 +360,6 @@ class GCCA(BaseEmbed):
         self.projection_mats_ = projection_mats
 
         return self
-
-    def partial_fit(self, Xs, multiview_step=True):
-        """
-
-        """
-        return
-
 
     def transform(self, Xs, view_idx=None):
         r"""
