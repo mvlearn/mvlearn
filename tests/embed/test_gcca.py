@@ -145,3 +145,6 @@ def test_no_fit(Xs={"Xs": mat_good}, err=RuntimeError):
     with pytest.raises(err):
         np.random.seed(1)
         GCCA().transform(**Xs)
+
+test_no_fit()
+test_output()

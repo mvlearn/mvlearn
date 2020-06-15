@@ -72,7 +72,7 @@ class BaseEmbed(BaseEstimator):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit an embeddor to the data and transform the data
+        Fit an embedder to the data and transform the data
 
         Parameters
         ----------
@@ -87,4 +87,4 @@ class BaseEmbed(BaseEstimator):
             - out length: n_views
             - out[i] shape: (n_samples, n_components_i)
         """
-        return self.fit(Xs, y).transform(Xs)
+        return self.fit(Xs=Xs, y=y).transform(Xs=Xs)
