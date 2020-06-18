@@ -247,9 +247,29 @@ def test_get_stats_1_component():
     #                 'pChisq': np.array([0.79506984])
     #                 }
 
-    kcca = KCCA(n_components=1)
-    kcca.fit_transform([X,Y])
-    stats = kcca.get_stats()
+    kcca1 = KCCA(n_components=1)
+    kcca1.fit_transform([X,Y])
+    stats = kcca1.get_stats()
+    for key in stats:
+        assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
+
+def test_get_stats_2_components():
+    np.random.seed(12)
+    X = X = np.random.rand(100,3)
+    Y = np.random.rand(100,4)
+    past_stats = {'r': np.array([0.22441608, 0.19056307]),
+                    'Wilks': np.array([0.91515202, 0.96368572]),
+                    'df1': np.array([12, 6]),
+                    'df2': np.array([246.34637455, 188]),
+                    'F': np.array([0.69962605, 0.58490315]),
+                    'pF': np.array([0.75134965, 0.74212361]),
+                    'chisq': np.array([8.42318331, 4.2115406 ]),
+                    'pChisq': np.array([0.75124771, 0.64807349])
+                    }
+
+    kcca2 = KCCA(n_components=2)
+    kcca2.fit_transform([X,Y])
+    stats = kcca2.get_stats()
     for key in stats:
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
