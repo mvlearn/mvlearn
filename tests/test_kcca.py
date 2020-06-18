@@ -226,17 +226,26 @@ def test_get_stats_vs_matlab():
 
 def test_get_stats_1_component():
     np.random.seed(12)
-    X = X = np.random.rand(10,3)
-    Y = np.random.rand(10,4)
-    past_stats = {'r': np.array([0.8904259034955739]),
-                    'Wilks': np.array([0.20714171]),
+    X = X = np.random.rand(100,3)
+    Y = np.random.rand(100,4)
+    past_stats = {'r': np.array([0.22441608326082138]),
+                    'Wilks': np.array([0.94963742]),
                     'df1': np.array([12]),
-                    'df2': np.array([8.22875656]),
-                    'F': np.array([0.55758061]),
-                    'pF': np.array([0.82647676]),
-                    'chisq': np.array([7.87176064]),
-                    'pChisq': np.array([0.79506984])
+                    'df2': np.array([246.34637455]),
+                    'F': np.array([0.40489714]),
+                    'pF': np.array([0.96096493]),
+                    'chisq': np.array([4.90912773]),
+                    'pChisq': np.array([0.9609454])
                     }
+    # past_stats = {'r': np.array([0.8904259034955739]),
+    #                 'Wilks': np.array([0.20714171]),
+    #                 'df1': np.array([12]),
+    #                 'df2': np.array([8.22875656]),
+    #                 'F': np.array([0.55758061]),
+    #                 'pF': np.array([0.82647676]),
+    #                 'chisq': np.array([7.87176064]),
+    #                 'pChisq': np.array([0.79506984])
+    #                 }
 
     kcca = KCCA(n_components=1)
     kcca.fit_transform([X,Y])
