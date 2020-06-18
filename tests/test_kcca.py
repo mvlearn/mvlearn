@@ -221,8 +221,8 @@ def test_get_stats_vs_matlab():
     out = kcca.fit([X, Y]).transform([X, Y])
     stats = kcca.get_stats()
 
-    assert stats['r'][0] == 1
-    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    assert np.allclose(stats['r'][0], 1)
+    nondegen = np.argwhere(stats['r'] < 1 - 3 * np.finfo(float).eps).squeeze()
     assert np.array_equal(nondegen, np.array([1, 2]))
 
     for key in stats:
@@ -258,7 +258,7 @@ def test_get_stats_1_component():
 
     assert not stats['r'] == 1
 
-    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    nondegen = np.argwhere(stats['r'] < 1 - 3 * np.finfo(float).eps).squeeze()
     assert np.array_equal(nondegen, np.array([0]).squeeze())
 
     for key in stats:
@@ -282,7 +282,7 @@ def test_get_stats_2_components():
     kcca2.fit_transform([X,Y])
     stats = kcca2.get_stats()
 
-    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    nondegen = np.argwhere(stats['r'] < 1 - 3 * np.finfo(float).eps).squeeze()
     assert np.array_equal(nondegen, np.array([0, 1]))
 
     for key in stats:
