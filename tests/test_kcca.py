@@ -224,6 +224,27 @@ def test_get_stats_vs_matlab():
     for key in stats:
         assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
 
+def test_get_stats_1_component():
+    np.random.seed(12)
+    X = X = np.random.rand(10,3)
+    Y = np.random.rand(10,4)
+    past_stats = {'r': np.array([0.8904259034955739]),
+                    'Wilks': np.array([0.20714171]),
+                    'df1': np.array([12]),
+                    'df2': np.array([8.22875656]),
+                    'F': np.array([0.55758061]),
+                    'pF': np.array([0.82647676]),
+                    'chisq': np.array([7.87176064]),
+                    'pChisq': np.array([0.79506984])
+                    }
+
+    kcca = KCCA(n_components=1)
+    kcca.fit_transform([X,Y])
+    stats = kcca.get_stats()
+    for key in stats:
+        assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
+
+
 def test_get_stats_vs_matlab_r():
     X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
     Y1 = np.fliplr(np.eye(3,3))

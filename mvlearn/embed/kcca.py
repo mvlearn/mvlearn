@@ -490,15 +490,22 @@ class KCCA(BaseEmbed):
         if self.ktype == 'linear' and self.decomp == 'full':
 
             # Wilks' Lambda test statistic
-            d = max(self.matrix_ranks_)
+            d = min([self.n_components, min(self.matrix_ranks_)])
             k = np.arange(d)
             rank1_k = self.matrix_ranks_[0] - k
             rank2_k = self.matrix_ranks_[1] - k
             nondegen = np.argwhere(r < 1).squeeze()
             log_lambda = np.NINF * np.ones(self.n_components,)
-            log_lambda[nondegen] = np.cumsum((np.log(1 -
-                                                     r[nondegen]**2))[::-1])
-            log_lambda[nondegen] = log_lambda[nondegen][::-1]
+
+            if nondegen.size > 0:
+                if r.size > 1:
+                    log_lambda[nondegen] = np.cumsum(
+                                            (np.log(1 - r[nondegen]**2))[::-1])
+                    log_lambda[nondegen] = log_lambda[nondegen][::-1]
+                else:
+                    log_lambda[nondegen] = np.cumsum(
+                                            (np.log(1 - r**2)))
+
             stats['Wilks'] = np.exp(log_lambda)
 
             # Rao's approximation to F distribution.
@@ -522,17 +529,19 @@ class KCCA(BaseEmbed):
             ratio = np.inf * np.ones(d,)
             ratio[nondegen] = ((1 - pow_lambda[nondegen]) /
                                pow_lambda[nondegen])
-            print(ratio)
             stats['F'] = ratio * stats['df2'] / stats['df1']
             stats['pF'] = 1 - f.cdf(stats['F'], stats['df1'], stats['df2'])
 
             # Lawley's modification to Bartlett's chi-squared statistic
+            if r.size == 1:
+                r = np.array([r])
             stats['chisq'] = -(self.n_samples_ - k - .5 *
                                (self.matrix_ranks_[0] +
                                 self.matrix_ranks_[1] + 3) +
                                np.cumsum(np.hstack((np.zeros(1,),
                                                     1 / r[:d-1]))**2)) *\
                 log_lambda
+
             stats['pChisq'] = 1 - chi2.cdf(stats['chisq'], stats['df1'])
 
         return stats
