@@ -169,3 +169,57 @@ def test_make_icd_kernelg():
     p_icd_kernel = _make_icd_kernel(x, ktype="poly", degree = 3, mrank = 2)
     assert g_icd_kernel.shape==l_icd_kernel.shape==p_icd_kernel.shape == (100,2)
 
+# Test getting stats wrongly
+def test_get_stats_wrong():
+    kcca_bad = KCCA()
+    with pytest.raises(NameError):
+        kcca_bad.get_stats()
+    with pytest.raises(NameError):
+        kcca_bad.fit([train1, train2])
+        stats = kcca_bad.get_stats()
+
+def test_get_stats_nonlinear_kernel():
+    kcca_poly = KCCA(ktype='poly')
+    kcca_poly.fit([train1, train2]).transform([train1, train2])
+    stats = kcca_poly.get_stats()
+    assert np.all(stats['r']>0)
+    assert stats['r'].shape == (2,)
+
+    kcca_gaussian = KCCA(ktype='gaussian')
+    kcca_gaussian.fit([train1, train2]).transform([train1, train2])
+    stats = kcca_gaussian.get_stats()
+    assert np.all(stats['r']>0)
+    assert stats['r'].shape == (2,)
+
+def test_get_stats_icd_check_corrs():
+    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
+    Y1 = np.fliplr(np.eye(3,3))
+    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
+
+    kcca = KCCA(n_components=3, decomp='icd')
+    out = kcca.fit([X, Y]).transform([X, Y])
+    stats = kcca.get_stats()
+
+    assert np.allclose(stats['r'], np.array([0.51457091, 0.3656268]))
+
+# Test getting stats correctly, and check against stats that Matlab canoncorr gives
+def test_get_stats_vs_matlab():
+    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
+    Y1 = np.fliplr(np.eye(3,3))
+    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
+    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
+                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
+                    'df1': np.array([9, 4, 1]),
+                    'df2': np.array([0.150605850666856, 2, 2]),
+                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
+                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
+                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
+                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
+                    }
+
+    kcca = KCCA(n_components=3)
+    out = kcca.fit([X, Y]).transform([X, Y])
+    stats = kcca.get_stats()
+
+    for key in stats:
+        assert np.allclose(stats[key], matlab_stats[key])

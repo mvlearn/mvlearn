@@ -21,6 +21,7 @@ from ..utils.utils import check_Xs
 import numpy as np
 import numpy.matlib
 from scipy import linalg
+from scipy.stats import f, chi2
 from sklearn.metrics.pairwise import euclidean_distances
 
 
@@ -366,6 +367,10 @@ class KCCA(BaseEmbed):
 
         Xs = check_Xs(Xs, multiview=True)
 
+        self.matrix_ranks_ = [np.linalg.matrix_rank(Xs[i])
+                              for i in range(len(Xs))]
+        self.n_samples_ = Xs[0].shape[0]
+
         weight1 = self.weights_[0]
         weight2 = self.weights_[1]
 
@@ -416,6 +421,120 @@ class KCCA(BaseEmbed):
         self.components_ = [comp1, comp2]
 
         return self.components_
+
+    def get_stats(self):
+        r"""
+        Compute relevant statistics for the KCCA model after fitting
+        and transforming.
+
+        Implementations of the statistics generally follow the code in
+        the Matlab implementation of the function canoncorr.
+
+        Note: most statistics are only available if the linear kernel is
+        used and decomposition method is full,
+        i.e. self.ktype=='linear' and self.decomp='full'.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        stats : dict
+            Dict containing the statistics, with the following keys:
+
+            - 'r' : numpy.ndarray of shape (n_components,)
+                Canonical correlations of each component.
+            - 'Wilks' : numpy.ndarray of shape (n_components,)
+                Wilks' Lambda likelihood ratio statistic.
+                Only available if self.ktype == 'linear'.
+            - 'df1' : numpy.ndarray of shape (n_components,)
+                Degrees of freedom for the chi-squared statistic, and
+                the numerator degrees of freedom for the F statistic.
+                Only available if self.ktype == 'linear'.
+            - 'df2' : numpy.ndarray of shape (n_components,)
+                Denominator degrees of freedom for the F statistic.
+                Only available if self.ktype == 'linear'.
+            - 'F' : numpy.ndarray of shape (n_components,)
+                Rao's approximate F statistic for H_0(k).
+                Only available if self.ktype == 'linear'.
+            - 'pF' : numpy.ndarray of shape (n_components,)
+                Right-tail significance level for stats['F'].
+                Only available if self.ktype == 'linear'.
+            - 'chisq' : numpy.ndarray of shape (n_components,)
+                Bartlett's approximate chi-squared statistic for H_0(k)
+                with Lawley's modification.
+                Only available if self.ktype == 'linear'.
+            - 'pChisq' : numpy.ndarray of shape (n_components,)
+                Right-tail significance level for stats['chisq'].
+                Only available if self.ktype == 'linear'.
+
+        """
+        if not hasattr(self, "weights_"):
+            raise NameError("KCCA has not been trained or fitted. Call"
+                            " .fit() and .transform() or .fit_transform()"
+                            " before getting statistics.")
+        if not hasattr(self, "components_"):
+            raise NameError("KCCA has not been fitted. Call .fit()"
+                            " and .transform() or .fit_transform() before"
+                            " getting statistics.")
+
+        stats = {}
+        r = np.array([np.corrcoef(self.components_[0][:, i],
+                                  self.components_[1][:, i])[0, 1]
+                      for i in range(self.n_components)]).squeeze()
+        stats['r'] = r
+
+        # Compute stats that are only defined for linear CCA. These follow
+        # the format and computation of the stats in Matlab's canoncorr
+        # function
+        if self.ktype == 'linear' and self.decomp == 'full':
+
+            # Wilks' Lambda test statistic
+            d = max(self.matrix_ranks_)
+            k = np.arange(d)
+            rank1_k = self.matrix_ranks_[0] - k
+            rank2_k = self.matrix_ranks_[1] - k
+            nondegen = np.argwhere(r < 1).squeeze()
+            log_lambda = -1 * np.inf * np.ones(self.n_components,)
+            log_lambda[nondegen] = np.cumsum((np.log(1 -
+                                                     r[nondegen]**2))[::-1])
+            log_lambda[nondegen] = log_lambda[nondegen][::-1]
+            stats['Wilks'] = np.exp(log_lambda)
+
+            # Rao's approximation to F distribution.
+            # default value for cases where the exponent formula fails
+            s = np.ones(d,)
+            # cases where (d1k,d2k) not one of (1,2), (2,1), or (2,2)
+            okCases = np.argwhere(rank1_k*rank2_k > 2).squeeze()
+            snumer = rank1_k*rank1_k*rank2_k*rank2_k - 4
+            sdenom = rank1_k*rank1_k + rank2_k*rank2_k - 5
+            s[okCases] = np.sqrt(np.divide(snumer[okCases], sdenom[okCases]))
+
+            # Degrees of freedom for null hypothesis H_0k
+            stats['df1'] = rank1_k * rank2_k
+            stats['df2'] = (self.n_samples_ - .5 * (self.matrix_ranks_[0] +
+                            self.matrix_ranks_[1] + 3)) * s - (.5 *
+                                                               rank1_k *
+                                                               rank2_k) + 1
+
+            # Rao's F statistic
+            pow_lambda = stats['Wilks']**(1 / s)
+            ratio = np.inf * np.ones(d,)
+            ratio[nondegen] = ((1 - pow_lambda[nondegen]) /
+                               pow_lambda[nondegen])
+            stats['F'] = ratio * stats['df2'] / stats['df1']
+            stats['pF'] = 1 - f.cdf(stats['F'], stats['df1'], stats['df2'])
+
+            # Lawley's modification to Bartlett's chi-squared statistic
+            stats['chisq'] = -(self.n_samples_ - k - .5 *
+                               (self.matrix_ranks_[0] +
+                                self.matrix_ranks_[1] + 3) +
+                               np.cumsum(np.hstack((np.zeros(1,),
+                                                    1 / r[:d-1]))**2)) *\
+                log_lambda
+            stats['pChisq'] = 1 - chi2.cdf(stats['chisq'], stats['df1'])
+
+        return stats
 
 
 def _center_norm(x):
