@@ -495,7 +495,7 @@ class KCCA(BaseEmbed):
             rank1_k = self.matrix_ranks_[0] - k
             rank2_k = self.matrix_ranks_[1] - k
             nondegen = np.argwhere(r < 1).squeeze()
-            log_lambda = -1 * np.inf * np.ones(self.n_components,)
+            log_lambda = np.NINF * np.ones(self.n_components,)
             log_lambda[nondegen] = np.cumsum((np.log(1 -
                                                      r[nondegen]**2))[::-1])
             log_lambda[nondegen] = log_lambda[nondegen][::-1]
@@ -522,6 +522,7 @@ class KCCA(BaseEmbed):
             ratio = np.inf * np.ones(d,)
             ratio[nondegen] = ((1 - pow_lambda[nondegen]) /
                                pow_lambda[nondegen])
+            print(ratio)
             stats['F'] = ratio * stats['df2'] / stats['df1']
             stats['pF'] = 1 - f.cdf(stats['F'], stats['df1'], stats['df2'])
 
