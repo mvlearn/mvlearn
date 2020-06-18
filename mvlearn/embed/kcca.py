@@ -496,7 +496,7 @@ class KCCA(BaseEmbed):
             rank2_k = self.matrix_ranks_[1] - k
             if r.size > 1:
                 nondegen = np.argwhere(r < 1 - 2 *
-                        np.finfo(float).eps).squeeze()
+                                       np.finfo(float).eps).squeeze()
             elif r < 1 - 2 * np.finfo(float).eps:
                 nondegen = np.array(0, dtype=int)
             else:
