@@ -258,9 +258,6 @@ def test_get_stats_1_component():
 
     assert not stats['r'] == 1
 
-    nondegen = np.argwhere(stats['r'] < 1 - 3 * np.finfo(float).eps).squeeze()
-    assert np.array_equal(nondegen, np.array([0]).squeeze())
-
     for key in stats:
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
