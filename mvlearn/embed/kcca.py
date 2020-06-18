@@ -494,7 +494,7 @@ class KCCA(BaseEmbed):
             k = np.arange(d)
             rank1_k = self.matrix_ranks_[0] - k
             rank2_k = self.matrix_ranks_[1] - k
-            nondegen = np.argwhere(r < 1).squeeze()
+            nondegen = np.argwhere(r < 1 - np.finfo(float).eps).squeeze()
             log_lambda = np.NINF * np.ones(self.n_components,)
 
             if nondegen.size > 0:
