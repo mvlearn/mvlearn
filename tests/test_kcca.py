@@ -221,6 +221,10 @@ def test_get_stats_vs_matlab():
     out = kcca.fit([X, Y]).transform([X, Y])
     stats = kcca.get_stats()
 
+    assert stats['r'][0] == 1
+    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    assert np.array_equal(nondegen, np.array([1, 2]))
+
     for key in stats:
         assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
 
@@ -237,6 +241,7 @@ def test_get_stats_1_component():
                     'chisq': np.array([4.90912773]),
                     'pChisq': np.array([0.9609454])
                     }
+
     # past_stats = {'r': np.array([0.8904259034955739]),
     #                 'Wilks': np.array([0.20714171]),
     #                 'df1': np.array([12]),
@@ -250,6 +255,12 @@ def test_get_stats_1_component():
     kcca1 = KCCA(n_components=1)
     kcca1.fit_transform([X,Y])
     stats = kcca1.get_stats()
+
+    assert not stats['r'] == 1
+
+    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    assert np.array_equal(nondegen, np.array([0]).squeeze())
+
     for key in stats:
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
@@ -270,6 +281,10 @@ def test_get_stats_2_components():
     kcca2 = KCCA(n_components=2)
     kcca2.fit_transform([X,Y])
     stats = kcca2.get_stats()
+
+    nondegen = np.argwhere(stats['r'] < 1 - np.finfo(float).eps).squeeze()
+    assert np.array_equal(nondegen, np.array([0, 1]))
+
     for key in stats:
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
