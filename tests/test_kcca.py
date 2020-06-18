@@ -222,4 +222,4 @@ def test_get_stats_vs_matlab():
     stats = kcca.get_stats()
 
     for key in stats:
-        assert np.allclose(stats[key], matlab_stats[key])
+        assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
