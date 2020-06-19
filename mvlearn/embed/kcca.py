@@ -169,7 +169,6 @@ class KCCA(BaseEmbed):
     Examples
     --------
     >>> import numpy as np
-    >>> from scipy import stats
     >>> from mvlearn.embed.kcca import KCCA
     >>> np.random.seed(1)
     >>> # Define two latent variables
@@ -185,14 +184,14 @@ class KCCA(BaseEmbed):
     >>> Xs = [x, y]
     >>> Xs_train = [Xs[0][:80], Xs[1][:80]]
     >>> Xs_test = [Xs[0][80:], Xs[1][80:]]
-    >>> kcca_l = KCCA(ktype ="linear", n_components = 3,  reg = 0.01)
-    >>> a = kcca_l.fit(Xs_train)
-    >>> linearkcca = kcca_l.transform(Xs_test)
-    >>> (r1, _) = stats.pearsonr(linearkcca[0][:,0], linearkcca[1][:,0])
-    >>> #Below is the canonical correlation for the first component:
-    >>> print(round(r1, 2))
-    0.85
-
+    >>> kcca = KCCA(ktype ="linear", n_components = 3,  reg = 0.01)
+    >>> kcca.fit(Xs_train)
+    >>> linear_transform = kcca.transform(Xs_test)
+    >>> stats = kcca.get_stats()
+    >>> # Print the correlations of first 3 transformed variates
+    >>> # from the testing data
+    >>> print(stats['r'])
+    [0.85363047 0.91171037 0.06029391]
 
     """
 
@@ -503,8 +502,6 @@ class KCCA(BaseEmbed):
                 nondegen = np.array([], dtype=int)
 
             log_lambda = np.NINF * np.ones(self.n_components,)
-
-            print(nondegen)
 
             if nondegen.size > 0:
                 if r.size > 1:
