@@ -228,6 +228,26 @@ def test_get_stats_vs_matlab():
     for key in stats:
         assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
 
+def test_get_stats_1_feature_vs_matlab():
+    X = np.arange(1, 11).reshape(-1, 1)
+    Y = np.arange(2, 21, 2).reshape(-1, 1)
+    matlab_stats = {'r': np.array([1]),
+                    'Wilks': np.array([0]),
+                    'df1': np.array([1]),
+                    'df2': np.array([8]),
+                    'F': np.array([np.inf]),
+                    'pF': np.array([0]),
+                    'chisq': np.array([np.inf]),
+                    'pChisq': np.array([0])
+                    }
+
+    kcca = KCCA(n_components=1)
+    out = kcca.fit([X, Y]).transform([X, Y])
+    stats = kcca.get_stats()
+
+    for key in stats:
+        assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
+
 def test_get_stats_1_component():
     np.random.seed(12)
     X = X = np.random.rand(100,3)
@@ -241,16 +261,6 @@ def test_get_stats_1_component():
                     'chisq': np.array([4.90912773]),
                     'pChisq': np.array([0.9609454])
                     }
-
-    # past_stats = {'r': np.array([0.8904259034955739]),
-    #                 'Wilks': np.array([0.20714171]),
-    #                 'df1': np.array([12]),
-    #                 'df2': np.array([8.22875656]),
-    #                 'F': np.array([0.55758061]),
-    #                 'pF': np.array([0.82647676]),
-    #                 'chisq': np.array([7.87176064]),
-    #                 'pChisq': np.array([0.79506984])
-    #                 }
 
     kcca1 = KCCA(n_components=1)
     kcca1.fit_transform([X,Y])
@@ -287,162 +297,4 @@ def test_get_stats_2_components():
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
 
-def test_get_stats_vs_matlab_r():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
 
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['r'], matlab_stats['r'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_wilks():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['Wilks'], matlab_stats['Wilks'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_df1():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['df1'], matlab_stats['df1'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_df2():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['df2'], matlab_stats['df2'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_F():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['F'], matlab_stats['F'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_pF():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['pF'], matlab_stats['pF'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_chisq():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['chisq'], matlab_stats['chisq'], rtol=1e-3, atol=1e-4)
-
-def test_get_stats_vs_matlab_pChisq():
-    X = np.vstack((np.eye(3,3), 2*np.eye(3,3)))
-    Y1 = np.fliplr(np.eye(3,3))
-    Y = np.vstack((Y1, 0.1*np.eye(3,3)))
-    matlab_stats = {'r': np.array([1.000000000000000, 0.533992991387982, 0.355995327591988]),
-                    'Wilks': np.array([0, 0.624256445446525, 0.873267326732673]),
-                    'df1': np.array([9, 4, 1]),
-                    'df2': np.array([0.150605850666856, 2, 2]),
-                    'F': np.array([np.inf, 0.132832080200501, 0.290249433106576]),
-                    'pF': np.array([0, 0.955941574355455, 0.644004672408012]),
-                    'chisq': np.array([np.inf, 0.706791037156489, 0.542995281660087]),
-                    'pChisq': np.array([0, 0.950488814632803, 0.461194028737338])
-                    }
-
-    kcca = KCCA(n_components=3)
-    out = kcca.fit([X, Y]).transform([X, Y])
-    stats = kcca.get_stats()
-
-    assert np.allclose(stats['pChisq'], matlab_stats['pChisq'], rtol=1e-3, atol=1e-4)
