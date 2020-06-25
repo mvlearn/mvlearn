@@ -46,6 +46,7 @@ def center(X):
     centered_X -= mu
     return centered_X
 
+
 class GCCA(BaseEmbed):
     r"""
     An implementation of Generalized Canonical Correlation Analysis [#1GCCA]_
@@ -190,15 +191,15 @@ class GCCA(BaseEmbed):
         n = Xs[0].shape[0]
         min_m = min(X.shape[1] for X in Xs)
 
-        ## Parallel center
+        # Parallel center
         Xs = Parallel(n_jobs=self.n_jobs)(
             delayed(center)(X) for X in Xs
             )
-        ## Parallel SVDs
+        # Parallel SVDs
         usvr = Parallel(n_jobs=self.n_jobs)(
             delayed(self._fit_view)(X, n, min_m) for X in Xs
             )
-        ## Reshape from parallel output
+        # Reshape from parallel output
         self._Uall, self._Sall, self._Vall, self.ranks_ = zip(*usvr)
 
         self = self._fit_multistep()
@@ -237,15 +238,15 @@ class GCCA(BaseEmbed):
         n = Xs[0].shape[0]
         min_m = min(X.shape[1] for X in Xs)
 
-        ## Parallel center
+        # Parallel center
         Xs = Parallel(n_jobs=self.n_jobs)(
             delayed(center)(X) for X in Xs
             )
-        ## Parallel SVDs
+        # Parallel SVDs
         usvr = Parallel(n_jobs=self.n_jobs)(
             delayed(self._fit_view)(X, n, min_m) for X in Xs
             )
-        ## Reshape and concatenate from parallel output
+        # Reshape and concatenate from parallel output
         u, s, v, r = zip(*usvr)
         self._Uall += u
         self._Sall += s
@@ -326,7 +327,7 @@ class GCCA(BaseEmbed):
         u = ut.T[:, :rank]
 
         return u, s, v, rank
-        
+
     def _fit_multistep(self):
         """
         Helper function to compute the SVD on the results from individuals
@@ -355,7 +356,9 @@ class GCCA(BaseEmbed):
 
             # Compute the canonical projections
             A = np.sqrt(n - 1) * self._Vall[i][:, : self.ranks_[i]]
-            A = A @ (linalg.solve(np.diag(self._Sall[i][: self.ranks_[i]]), VVi))
+            A = A @ (linalg.solve(
+                np.diag(self._Sall[i][: self.ranks_[i]]), VVi
+                ))
 
             projection_mats.append(A)
 
