@@ -57,8 +57,8 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
             msg = "Must provide at least two data matrices"
             raise ValueError(msg)
         if enforce_views is not None and len(Xs) != enforce_views:
-            msg = "Wrong number of views. Expected {enforce_views} " \
-                " but found {len(Xs)}"
+            msg = "Wrong number of views. Expected {} " \
+                " but found {}".format(enforce_views, len(Xs))
             raise ValueError(msg)
 
     Xs_converted = [check_array(X, allow_nd=False) for X in Xs]
@@ -152,8 +152,10 @@ def check_Xs_y_nan_allowed(
 
     y_converted = np.array(y)
     if len(y_converted) != Xs_converted[0].shape[0]:
-        raise ValueError("Incompatible label length {len(y_converted)} for "
-                         " data with {Xs_converted[0].shape[0]} samples")
+        msg = "Incompatible label length {} for "\
+            " data with {} samples".format(
+                len(y_converted), Xs_converted[0].shape[0])
+        raise ValueError(msg)
 
     if num_classes is not None:
         # if not exactly correct number of class labels, raise error
