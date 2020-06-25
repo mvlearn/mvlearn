@@ -31,7 +31,7 @@ class CTRegressor(BaseCoTrainEstimator):
     distinct and independent as detailed in [#1CTR]_. However this can also
     be successfull when a single matrix of input data is given as
     both views and two estimators are choosen
-    which are quite different.[#2CTR]_
+    which are quite different [#2CTR]_.
 
     In the semi-supervised case, performance can vary greatly, so using
     a separate validation set or cross validation procedure is
@@ -86,8 +86,9 @@ class CTRegressor(BaseCoTrainEstimator):
 
     Examples
     --------
-    >>> from sklearn.neighbors import KNeighborsRegressor
     >>> from mvlearn.semi_supervised import CTRegressor
+    >>> from sklearn.neighbors import KNeighborsRegressor
+    >>> import numpy as np
     >>> # X1 and X2 are the 2 views of the data
     >>> X1 = [[0], [1], [2], [3], [4], [5], [6]]
     >>> X2 = [[2], [3], [4], [6], [7], [8], [10]]
@@ -163,11 +164,11 @@ class CTRegressor(BaseCoTrainEstimator):
 
     References
     ----------
-    [#1CTR] : Semi-Supervised Regression with
+    .. [#1CTR] Semi-Supervised Regression with
             Co-Training by Zhi-Hua Zhou and Ming Li
             https://pdfs.semanticscholar.org/437c/85ad1c05f60574544d31e96bd8e60393fc92.pdf
 
-    [#2CTR] : Goldman, Sally, and Yan Zhou. "Enhancing supervised
+    .. [#2CTR] Goldman, Sally, and Yan Zhou. "Enhancing supervised
             learning with unlabeled data." ICML. 2000.
             http://www.cs.columbia.edu/~dplewis/candidacy/goldman00enhancing.pdf
 
