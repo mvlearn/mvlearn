@@ -9,7 +9,7 @@ Version 0.2.0
 -------------
 Updates in this release:
 
-- ``MVMDS`` can not also accept distance matrices as input, rather than only views of data with samples and features
+- ``MVMDS`` can now also accept distance matrices as input, rather than only views of data with samples and features
 - A new clustering algorithm, ``CoRegMultiviewSpectralClustering`` - co-regularized multi-view spectral clustering functionality
 - Some attribute names slightly changed for more intuitive use in ``DCCA``, ``KCCA``, ``MVMDS``, ``CTClassifier``
 - Option to use an Incomplete Cholesky Decomposition method for ``KCCA`` to reduce up computation times
