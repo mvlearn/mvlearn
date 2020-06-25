@@ -149,7 +149,7 @@ class GCCA(BaseEmbed):
             n_elbows=2,
             tall=False,
             max_rank=False,
-            n_jobs=1,
+            n_jobs=None,
             ):
 
         self.n_components = n_components
@@ -210,7 +210,7 @@ class GCCA(BaseEmbed):
         r"""
         Performs like `fit`, but will not overwrite previously fitted single
         views and instead uses them as well as the new data. Useful if the data
-        needs to be processe in batches.
+        needs to be processed in batches.
 
         Parameters
         ----------
