@@ -1,3 +1,3 @@
 from .ctclassifier import CTClassifier
-
-__all__ = ["CTClassifier"]
+from .ctregression import CTRegressor
+__all__ = ["CTClassifier", "CTRegressor"]
