@@ -68,8 +68,7 @@ class BaseCluster(BaseEstimator):
             Returns the predicted cluster labels for each sample.
         '''
 
-        labels = self.labels_
-        return labels
+        pass
 
     def fit_predict(self, Xs, y=None):
         '''
