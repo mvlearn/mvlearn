@@ -79,7 +79,7 @@ class MultiviewSpectralClustering(BaseCluster):
     Attributes
     ----------
     labels_ : array-like, shape (n_samples)
-        Cluster labels for each point.
+        Cluster labels for each sample in the fitted data.
 
     embedding_ : array-like, shape (n_samples, n_clusters)
         The final spectral representation of the data to be used as input
@@ -263,7 +263,6 @@ class MultiviewSpectralClustering(BaseCluster):
 
         Parameters
         ----------
-
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
@@ -274,7 +273,6 @@ class MultiviewSpectralClustering(BaseCluster):
 
         Returns
         -------
-
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
@@ -330,14 +328,13 @@ class MultiviewSpectralClustering(BaseCluster):
 
         return Xs
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
 
         r'''
         Performs clustering on the multiple views of data.
 
         Parameters
         ----------
-
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
@@ -345,6 +342,9 @@ class MultiviewSpectralClustering(BaseCluster):
             This list must be of size n_views, corresponding to the number
             of views of data. Each view can have a different number of
             features, but they must have the same number of samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         Returns
         -------
@@ -398,33 +398,3 @@ class MultiviewSpectralClustering(BaseCluster):
             # and use result for clustering
             self.embedding_ = np.hstack(U_mats)
             self.labels_ = kmeans.fit_predict(self.embedding_)
-
-    def fit_predict(self, Xs, y=None):
-
-        r'''
-        Performs clustering on the multiple views of data and returns
-        the cluster labels.
-
-        Parameters
-        ----------
-
-        Xs : list of array-likes or numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-
-            This list must be of size n_views, corresponding to the number
-            of views of data. Each view can have a different number of
-            features, but they must have the same number of samples.
-
-        y : ignored
-            Included for API compliance.
-
-        Returns
-        -------
-        labels : array-like, shape (n_samples,)
-        The predicted cluster labels for each sample.
-        '''
-
-        self.fit(Xs)
-        labels = self.labels_
-        return labels

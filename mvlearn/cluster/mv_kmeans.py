@@ -16,13 +16,13 @@
 
 import numpy as np
 from joblib import Parallel, delayed
-from .base_kmeans import BaseKMeans
+from .base_kmeans import BaseCluster
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 from scipy.spatial.distance import cdist
 
 
-class MultiviewKMeans(BaseKMeans):
+class MultiviewKMeans(BaseCluster):
 
     r'''
     This class implements multi-view k-means using the co-EM framework
@@ -82,6 +82,9 @@ class MultiviewKMeans(BaseKMeans):
 
     Attributes
     ----------
+    labels_ : array-like, shape (n_samples)
+        Cluster labels for each sample in the fitted data.
+
     centroids_ : list of array-likes
         - centroids_ length: n_views
         - centroids_[i] shape: (n_clusters, n_features_i)
@@ -489,7 +492,7 @@ class MultiviewKMeans(BaseKMeans):
 
         return intertia, centroids
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
 
         r'''
         Fit the cluster centroids to the data.
@@ -503,6 +506,9 @@ class MultiviewKMeans(BaseKMeans):
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         Returns
         -------
@@ -561,6 +567,8 @@ class MultiviewKMeans(BaseKMeans):
 
         # Compute final cluster centroids
         self._final_centroids(Xs, centroids[max_ind])
+
+        self.labels_ = self.predict(Xs)
 
         return self
 
