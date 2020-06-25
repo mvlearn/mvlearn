@@ -206,7 +206,7 @@ class GCCA(BaseEmbed):
 
         return self
 
-    def partial_fit(self, Xs, start=False, multiview_step=True):
+    def partial_fit(self, Xs, reset=False, multiview_step=True):
         r"""
         Performs like `fit`, but will not overwrite previously fitted single
         views and instead uses them as well as the new data. Useful if the data
@@ -218,7 +218,7 @@ class GCCA(BaseEmbed):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
-        start : boolean (default = False)
+        reset : boolean (default = False)
             If True, overwrites all prior computations.
         multiview_step : boolean, (default = True)
             If True, performs the joint SVD step on the results from individual
@@ -228,7 +228,7 @@ class GCCA(BaseEmbed):
         -------
         self : returns an instance of self.
         """
-        if not hasattr(self, '_Uall') or start:
+        if not hasattr(self, '_Uall') or reset:
             self._Uall = []
             self._Sall = []
             self._Vall = []

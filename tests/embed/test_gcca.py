@@ -21,11 +21,11 @@ def generate_data(n=10, elbows=3, seed=1):
     return A, d
 
 def _get_Xs(n_views=2):
-        np.random.seed(0)
-        n_obs = 4
-        n_features = 6
-        X = np.random.normal(0, 1, size=(n_views, n_obs, n_features))
-        return X
+    np.random.seed(0)
+    n_obs = 4
+    n_features = 6
+    X = np.random.normal(0, 1, size=(n_views, n_obs, n_features))
+    return X
 
 def _compute_dissimilarity(arr):
     n = len(arr)
@@ -117,7 +117,7 @@ def test_partial_equals_full():
     Xs = [X1, X2]
     gcca = GCCA()
     projs_full = gcca.fit(Xs).transform(Xs)
-    projs_partial = gcca.partial_fit(Xs, start=True).transform(Xs)
+    projs_partial = gcca.partial_fit(Xs, reset=True).transform(Xs)
     assert_almost_equal(np.abs(projs_full), np.abs(projs_partial))
 
 def test_partial_multistep():
@@ -127,13 +127,13 @@ def test_partial_multistep():
     gcca = GCCA()
     projs_full = gcca.partial_fit(Xs).transform(Xs)
     projs_partial = gcca.partial_fit(
-        Xs[0], start=True, multiview_step=False
+        Xs[0], reset=True, multiview_step=False
         ).partial_fit(
-            Xs[1], start=False, multiview_step=True
+            Xs[1], reset=False, multiview_step=True
         ).transform(Xs)
     assert_almost_equal(np.abs(projs_full), np.abs(projs_partial))
 
-################## Test Error Calls ####################
+################## Test Error/Warning Calls ####################
 test_mat = np.array([[1, 2], [3, 4]])
 mat_good = np.ones((2, 4, 2))
 Xs = np.random.normal(0, 1, size=(2, 4, 6))
@@ -160,3 +160,9 @@ def test_no_fit(Xs={"Xs": mat_good}, err=RuntimeError):
     with pytest.raises(err):
         np.random.seed(1)
         GCCA().transform(**Xs)
+
+def test_multiview_step():
+    X1, _ = generate_data(10, 3, seed=1)
+    gcca = GCCA()
+    with pytest.warns(UserWarning):
+        projs_partial = gcca.partial_fit(X1)
