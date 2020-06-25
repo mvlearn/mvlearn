@@ -20,7 +20,7 @@ from sklearn.base import BaseEstimator
 
 class BaseFactorize(BaseEstimator):
     """
-    A base class for factorizing multiview data.
+    A base class for factoring multiview data.
     Parameters
     ----------
     Attributes
@@ -50,3 +50,43 @@ class BaseFactorize(BaseEstimator):
         """
 
         return self
+
+    @abstractmethod
+    def transform(self, Xs):
+        r"""
+        A method to fit model to multiview data.
+
+        Parameters
+        ----------
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        Xs_transformed : list of array-likes
+            - length: n_views
+            - Xs_transformed[i] shape: (n_samples, n_components_i)
+        """
+
+        pass
+
+    def fit_transform(self, Xs, y=None):
+        """
+        Fit  to the data and transform the data
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        X_transformed : list of array-likes
+            - out length: n_views
+            - out[i] shape: (n_samples, n_components_i)
+        """
+        return self.fit(Xs, y).transform(Xs)

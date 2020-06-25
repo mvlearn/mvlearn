@@ -84,8 +84,8 @@ class BaseEmbed(BaseEstimator):
 
         Returns
         -------
-        out : list of array-likes
-            - out length: n_views
-            - out[i] shape: (n_samples, n_components_i)
+        X_transformed : list of array-likes
+            - X_transformed length: n_views
+            - X_transformed[i] shape: (n_samples, n_components_i)
         """
         return self.fit(Xs, y).transform(Xs)

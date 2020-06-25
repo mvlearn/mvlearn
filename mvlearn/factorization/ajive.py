@@ -574,7 +574,7 @@ class AJIVE(BaseFactorize):
         else:
             return None
 
-    def predict(self, Xs=None, return_dict=False):
+    def transform(self, Xs=None, return_dict=False):
         r"""
 
         Returns the joint, individual, and noise components of each view from
