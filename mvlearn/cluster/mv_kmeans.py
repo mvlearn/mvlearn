@@ -16,7 +16,7 @@
 
 import numpy as np
 from joblib import Parallel, delayed
-from .base_kmeans import BaseCluster
+from .base import BaseCluster
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 from scipy.spatial.distance import cdist
