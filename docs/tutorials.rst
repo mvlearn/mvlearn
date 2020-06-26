@@ -31,6 +31,7 @@ boost accuracy over single view methods.
    
    tutorials/semi_supervised/cotraining_classification_exampleusage
    tutorials/semi_supervised/cotraining_classification_simulatedperformance
+   tutorials/semi_supervised/cotraining_regression_exampleusage
 
 Embedding
 =========
