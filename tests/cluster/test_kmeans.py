@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from mvlearn.cluster.mv_kmeans import MultiviewKMeans
+from mvlearn.cluster import MultiviewKMeans
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 
 # EXCEPTION TESTING
@@ -15,7 +15,6 @@ def data_small():
     return data
     
 def test_n_clusters_not_positive_int(data_small):
-    
     with pytest.raises(ValueError):
         kmeans = MultiviewKMeans(n_clusters=-1)
         kmeans.fit(data_small)
