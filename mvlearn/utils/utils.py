@@ -40,7 +40,8 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
-            msg = "If not list, input must be of type np.ndarray"
+            msg = f"If not list, input must be of type np.ndarray,\
+                not {type(Xs)}"
             raise ValueError(msg)
         if Xs.ndim == 2:
             Xs = [Xs]
