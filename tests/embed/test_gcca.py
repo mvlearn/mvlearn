@@ -3,10 +3,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.linalg import orth
+from mvlearn.embed import GCCA
 
-from mvlearn.embed.gcca import GCCA
 
-
+################## Helper Functions ####################
 def generate_data(n=10, elbows=3, seed=1):
     """
     Generate data matrix with a specific number of elbows on scree plot
@@ -20,107 +20,123 @@ def generate_data(n=10, elbows=3, seed=1):
     A = xorth.T.dot(np.diag(d)).dot(xorth)
     return A, d
 
+def _get_Xs(n_views=2):
+    np.random.seed(0)
+    n_obs = 4
+    n_features = 6
+    X = np.random.normal(0, 1, size=(n_views, n_obs, n_features))
+    return X
 
-def test_output():
-    def _get_Xs(n_views=2):
-        np.random.seed(0)
-        n_obs = 4
-        n_features = 6
-        X = np.random.normal(0, 1, size=(n_views, n_obs, n_features))
-        return X
+def _compute_dissimilarity(arr):
+    n = len(arr)
+    out = np.zeros((n, n))
+    for i in range(n):
+        out[i] = np.linalg.norm(arr - arr[i])
+    return out
 
-    def _compute_dissimilarity(arr):
-        n = len(arr)
-        out = np.zeros((n, n))
-        for i in range(n):
-            out[i] = np.linalg.norm(arr - arr[i])
+################## Test Functionality ####################
+def test_fit_transform():
+    n = 2
+    Xs = _get_Xs(n)
 
-        return out
+    projs = GCCA(fraction_var=0.9).fit_transform(Xs)
+    dists = _compute_dissimilarity(projs)
 
-    def test_fit_transform():
-        n = 2
-        Xs = _get_Xs(n)
+    # Checks up to 7 decimal points
+    assert_almost_equal(np.zeros((n, n)), dists)
 
-        projs = GCCA(fraction_var=0.9).fit_transform(Xs)
-        dists = _compute_dissimilarity(projs)
+def test_fit_view_idx():
+    n = 2
+    Xs = _get_Xs(n)
 
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
+    gcca = GCCA(fraction_var=0.9).fit(Xs)
+    projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
 
-    def test_fit_view_idx():
-        n = 2
-        Xs = _get_Xs(n)
+    dists = _compute_dissimilarity(projs)
 
-        gcca = GCCA(fraction_var=0.9).fit(Xs)
-        projs = [gcca.transform(Xs[i], view_idx=i) for i in range(n)]
+    # Checks up to 7 decimal points
+    assert_almost_equal(np.zeros((n, n)), dists)
 
-        dists = _compute_dissimilarity(projs)
+def test_fit_tall():
+    n = 2
+    Xs = _get_Xs(n)
 
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
+    projs = GCCA(fraction_var=0.9, tall=True).fit_transform(Xs)
+    dists = _compute_dissimilarity(projs)
 
-    def test_fit_tall():
-        n = 2
-        Xs = _get_Xs(n)
+    # Checks up to 7 decimal points
+    assert_almost_equal(np.zeros((n, n)), dists)
 
-        projs = GCCA(fraction_var=0.9, tall=True).fit_transform(Xs)
-        dists = _compute_dissimilarity(projs)
+def test_fit_n_components():
+    n = 2
+    Xs = _get_Xs(n)
 
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
+    projs = GCCA(n_components=3).fit_transform(Xs)
+    dists = _compute_dissimilarity(projs)
 
-    def test_fit_n_components():
-        n = 2
-        Xs = _get_Xs(n)
+    # Checks up to 7 decimal points
+    assert_almost_equal(np.zeros((n, n)), dists)
 
-        projs = GCCA(n_components=3).fit_transform(Xs)
-        dists = _compute_dissimilarity(projs)
+def test_fit_sv_tolerance():
+    n = 2
+    Xs = _get_Xs(n)
 
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
+    projs = GCCA(sv_tolerance=1).fit_transform(Xs)
+    dists = _compute_dissimilarity(projs)
 
-    def test_fit_sv_tolerance():
-        n = 2
-        Xs = _get_Xs(n)
+    # Checks up to 7 decimal points
+    assert_almost_equal(np.zeros((n, n)), dists)
 
-        projs = GCCA(sv_tolerance=1).fit_transform(Xs)
-        dists = _compute_dissimilarity(projs)
+def test_fit_elbows():
+    X, _ = generate_data(10, 3)
+    Xs = [X, X]
 
-        # Checks up to 7 decimal points
-        assert_almost_equal(np.zeros((n, n)), dists)
+    gcca = GCCA(n_elbows=2)
+    _ = gcca.fit_transform(Xs)
 
-    def test_fit_elbows():
-        X, _ = generate_data(10, 3)
-        Xs = [X, X]
+    assert_equal(gcca.ranks_[0], 4)
 
-        gcca = GCCA(n_elbows=2)
-        _ = gcca.fit_transform(Xs)
+def test_max_ranks():
+    X, _ = generate_data(10, 3)
+    Xs = [X, X]
 
-        assert_equal(gcca.ranks_[0], 4)
-    
-    def test_max_ranks():
-        X, _ = generate_data(10, 3)
-        Xs = [X, X]
+    gcca = GCCA(n_elbows=2, max_rank=True)
+    projs = gcca.fit_transform(Xs)
 
-        gcca = GCCA(n_elbows=2, max_rank=True)
-        projs = gcca.fit_transform(Xs)
+    assert_equal(gcca.ranks_[0], 4)
 
-        assert_equal(gcca.ranks_[0], 4)
+def test_n_jobs():
+    X, _ = generate_data(10, 3)
+    Xs = [X, X]
+    gcca = GCCA(n_elbows=2, n_jobs=-1)
+    _ = gcca.fit_transform(Xs)
 
-    test_fit_transform()
-    test_fit_tall()
-    test_fit_n_components()
-    test_fit_sv_tolerance()
-    test_fit_view_idx()
-    test_fit_elbows()
-    test_max_ranks()
+def test_partial_equals_full():
+    X1, _ = generate_data(10, 3, seed=1)
+    X2 = X1*np.random.normal(0,1,X1.shape)
+    Xs = [X1, X2]
+    gcca = GCCA()
+    projs_full = gcca.fit(Xs).transform(Xs)
+    projs_partial = gcca.partial_fit(Xs, reset=True).transform(Xs)
+    assert_almost_equal(np.abs(projs_full), np.abs(projs_partial))
 
+def test_partial_multistep():
+    X1, _ = generate_data(10, 3, seed=1)
+    X2 = X1*np.random.normal(0,1,X1.shape)
+    Xs = [X1, X2]
+    gcca = GCCA()
+    projs_full = gcca.partial_fit(Xs).transform(Xs)
+    projs_partial = gcca.partial_fit(
+        Xs[0], reset=True, multiview_step=False
+        ).partial_fit(
+            Xs[1], reset=False, multiview_step=True
+        ).transform(Xs)
+    assert_almost_equal(np.abs(projs_full), np.abs(projs_partial))
 
+################## Test Error/Warning Calls ####################
 test_mat = np.array([[1, 2], [3, 4]])
 mat_good = np.ones((2, 4, 2))
 Xs = np.random.normal(0, 1, size=(2, 4, 6))
-
-
 @pytest.mark.parametrize(
     "Xs,params,err",
     [
@@ -140,8 +156,13 @@ def test_bad_inputs(Xs, params, err):
         np.random.seed(1)
         GCCA(**params).fit(**Xs)
 
-
 def test_no_fit(Xs={"Xs": mat_good}, err=RuntimeError):
     with pytest.raises(err):
         np.random.seed(1)
         GCCA().transform(**Xs)
+
+def test_multiview_step():
+    X1, _ = generate_data(10, 3, seed=1)
+    gcca = GCCA()
+    with pytest.warns(UserWarning):
+        projs_partial = gcca.partial_fit(X1)
