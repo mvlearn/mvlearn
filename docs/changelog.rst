@@ -1,6 +1,21 @@
 Changelog
 =========
 
+Version 0.3.0
+-------------
+Updates in this release:
+
+- ``cotraining`` module changed to ``semi_supervised``
+- A new class within the ``semi_supervised`` module, ``CTRegressor``, and regression tool for 2-view semi-supervised learning, following the cotraining framework.
+- Adds a function (get_stats()) to perform statistical tests within the ``embed.KCCA`` class so that canonical correlations and canonical variates can be robustly assessed for significance. See the documentation in Reference for more details.
+- Adds ability to select which views to return from the UCI multiple features dataset loader, ``datasets.UCI_multifeature``
+- API enhancements including base classes for each module and algorithm type, allowing for greater flexibility to extend ``mvlearn``.
+- Internals of ``SplitAE`` changed to snake case to fit with the rest of the package.
+- Fixes a bug which prevented the ``visualize.crossviews_plot`` from plotting when each view only has a single feature.
+- Changes to the ``mvlearn.datasets.gaussian_mixture.GaussianMixture`` parameters to better mimic sklearn's datasets
+- Fixes a bug with printing error messages in a few classes
+
+
 Patch 0.2.1
 -----------
 Fixed missing ``__init__.py`` file in the ``ajive_utils`` submodule.
