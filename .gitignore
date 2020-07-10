@@ -103,3 +103,13 @@ venv.bak/
 # mypy
 .mypy_cache/
 .gitattributes
+
+# vscode
+.vscode/
+
+# files generated
+checkpoint.model
+.coverage.*
+
+# gitignore
+.gitignore
