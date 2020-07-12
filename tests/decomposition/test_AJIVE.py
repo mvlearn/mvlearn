@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import pandas as pd
 import pytest
-from mvlearn.factorization.ajive import (
+from mvlearn.decomposition.ajive import (
     AJIVE,
     ajive_full_estimate_heatmaps,
     data_block_heatmaps,

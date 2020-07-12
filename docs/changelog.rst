@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.3.0
+-------------
+Updates in this release:
+
+- Three multiview ICA methods added: MultiviewICA, GroupICA, PermICA.
+
 Patch 0.2.1
 -----------
 Fixed missing ``__init__.py`` file in the ``ajive_utils`` submodule.
