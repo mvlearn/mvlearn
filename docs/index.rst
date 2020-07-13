@@ -1,6 +1,6 @@
 ..  -*- coding: utf-8 -*-
 
-.. image:: figures/mvlearn-logo-medium.png
+.. image:: figures/mvlearn-logo-transparent.png
   :width: 250
   :alt: mvlearn logo
 
