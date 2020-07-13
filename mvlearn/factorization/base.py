@@ -18,9 +18,9 @@ import numpy as np
 from sklearn.base import BaseEstimator
 
 
-class BaseEmbed(BaseEstimator):
+class BaseFactorize(BaseEstimator):
     """
-    A base class for embedding multiview data.
+    A base class for factoring multiview data.
     Parameters
     ----------
     Attributes
@@ -34,7 +34,7 @@ class BaseEmbed(BaseEstimator):
 
     @abstractmethod
     def fit(self, Xs, y=None):
-        """
+        r"""
         A method to fit model to multiview data.
 
         Parameters
@@ -42,7 +42,6 @@ class BaseEmbed(BaseEstimator):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
-
         y : array, shape (n_samples,), optional
 
         Returns
@@ -54,14 +53,15 @@ class BaseEmbed(BaseEstimator):
 
     @abstractmethod
     def transform(self, Xs):
-        """
-        Transform data
+        r"""
+        A method to fit model to multiview data.
 
         Parameters
         ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
 
         Returns
         -------
@@ -74,7 +74,7 @@ class BaseEmbed(BaseEstimator):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit an embedder to the data and transform the data
+        Fit  to the data and transform the data
 
         Parameters
         ----------
@@ -82,12 +82,11 @@ class BaseEmbed(BaseEstimator):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional
-            Targets to be used if fitting the algorithm is supervised.
 
         Returns
         -------
         X_transformed : list of array-likes
-            - X_transformed length: n_views
-            - X_transformed[i] shape: (n_samples, n_components_i)
+            - out length: n_views
+            - out[i] shape: (n_samples, n_components_i)
         """
-        return self.fit(Xs=Xs, y=y).transform(Xs=Xs)
+        return self.fit(Xs, y).transform(Xs)
