@@ -1,4 +1,4 @@
-![mvlearn logo](/docs/figures/mvlearn-logo.png)
+![mvlearn logo](/docs/figures/mvlearn-logo-medium.png)
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/neurodata/mvlearn.svg?branch=master)](https://travis-ci.com/neurodata/mvlearn)
