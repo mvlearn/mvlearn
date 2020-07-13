@@ -1,6 +1,6 @@
 import sys
 import pytest
-from mvlearn.factorization.base import BaseDecomposer
+from mvlearn.decomposition.base import BaseDecomposer
 
 
 def test_base_decomposer():

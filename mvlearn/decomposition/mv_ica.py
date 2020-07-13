@@ -147,22 +147,24 @@ class MultiviewICA(BaseICA):
     Given each view :math:`X_i` It optimizes:
 
         .. math::
-            l(W) = mean_t [sum_k log(cosh(Y_avg(t)[k])) + sum_i l_i(X_i(t))]
+            l(W) = \frac{1}{T} \sum_{t=1}^T [\sum_k log(cosh(Y_{avg,k,t}))
+            + \sum_i l_i(X_{i,.,t})]
 
     where
 
         .. math::
-            l _i(X_i(t)) = - log(|W_i|) + 1/(2 noise) ||X_i(t)W_i -
-            Y_avg(t)||^2,
+            l _i(X_{i,.,t}) = - log(|W_i|) + 1/(2 \sigma) ||X_{i,.,t}W_i -
+            Y_{avg,.,t}||^2,
 
-    :math:`W_i` is the mixing matrix for view i and
-    :math:`Y_avg = mean_i X_i W_i`.
+    :math:`W_i` is the mixing matrix for view  :math:`i`,
+    :math:`Y_{avg} = \frac{1}{n} \sum_{i=1}^n X_i W_i`, and :math:`\sigma`
+    is the noise level.
 
     References
     ----------
     .. [#1mvica] Hugo Richard, Luigi Gresele, Aapo Hyvärinen, Bertrand Thirion,
-    Alexandre Gramfort, Pierre Ablin. Modeling Shared Responses in Neuroimaging
-    Studies through MultiView ICA. arXiv 2020.
+        Alexandre Gramfort, Pierre Ablin. Modeling Shared Responses in
+        Neuroimaging Studies through MultiView ICA. arXiv 2020.
 
     Examples
     --------
@@ -292,8 +294,8 @@ class PermICA(BaseICA):
     References
     ----------
     .. [#1permica] Hugo Richard, Luigi Gresele, Aapo Hyvärinen, Bertrand
-    Thirion, Alexandre Gramfort, Pierre Ablin. Modeling Shared Responses in
-    Neuroimaging Studies through MultiView ICA. arXiv 2020.
+        Thirion, Alexandre Gramfort, Pierre Ablin. Modeling Shared Responses
+        in Neuroimaging Studies through MultiView ICA. arXiv 2020.
 
     Examples
     --------
@@ -418,9 +420,9 @@ class GroupICA(BaseICA):
     References
     ----------
     .. [#1groupica] Vince D Calhoun, Tülay Adali, Godfrey D Pearlson,
-    and James J Pekar. A method for making group inferences from functional
-    MRI data using independent component analysis. Human brain mapping,
-    14(3):140–151, 2001.
+        and James J Pekar. A method for making group inferences from
+        functional MRI data using independent component analysis. Human brain
+        mapping, 14(3):140–151, 2001.
 
     Examples
     --------
