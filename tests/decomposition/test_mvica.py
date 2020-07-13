@@ -51,6 +51,14 @@ def error(M):
     order, _ = _hungarian(M)
     return 1 - M[np.arange(M.shape[0]), order]
 
+# Initialize data
+@pytest.fixture(scope="module")
+def Xs():
+    np.random.seed(0)
+    view1 = np.random.random((10, 9))
+    view2 = np.random.random((10, 9))
+    Xs = [view1, view2]
+    return np.asarray(Xs)
 
 @pytest.mark.parametrize(
     ("algo, init"),
@@ -71,20 +79,20 @@ def test_ica(algo, init):
     S_true = normalize(S_true)
     A_list = rng.randn(n, v, p)
     noises = rng.randn(n, v, t)
-    X = np.array([A.dot(S_true) for A in A_list])
-    X += [sigma * N for A, N in zip(A_list, noises)]
+    Xs = [A.dot(S_true) for A in A_list]
+    Xs = [X + sigma * N for X, A, N in zip(Xs, A_list, noises)]
     # Run ICA
     if init is None:
         algo = algo(
             n_components=5,
             tol=1e-5,
-        ).fit(np.swapaxes(X,1,2))
+        ).fit(np.swapaxes(Xs,1,2))
     else:
         algo = algo(
             n_components=5,
             tol=1e-5,
             init=init,
-        ).fit(np.swapaxes(X,1,2))
+        ).fit(np.swapaxes(Xs,1,2))
     K = np.swapaxes(algo.components_, 1, 2)
     W = np.swapaxes(algo.unmixings_, 1, 2)
     S = algo.source_.T
@@ -93,3 +101,40 @@ def test_ica(algo, init):
     err = np.mean(error(np.abs(S.dot(S_true.T))))
     assert dist < 0.01
     assert err < 0.01
+
+
+def test_transform(Xs):
+    ica = MultiviewICA(n_components=2)
+    with pytest.raises(ValueError):
+        ica.transform(Xs)
+    assert(ica.fit_transform(Xs).shape == (Xs.shape[0], Xs.shape[1], 2))
+
+    ica = MultiviewICA()
+    assert(ica.fit_transform(Xs).shape == Xs.shape)
+
+def test_inverse_transform(Xs):
+    ica = MultiviewICA(n_components=2)
+    with pytest.raises(ValueError):
+        ica.transform(Xs)
+    ica = ica.fit(Xs)
+    Xs_mixed = ica.inverse_transform()
+    avg_mixed = np.mean([X @ C for X,C in zip(Xs, ica.components_)], axis=0)
+    for X_mixed in Xs_mixed:
+        assert np.linalg.norm(X_mixed - avg_mixed) < 0.5
+
+def test_fit_errors(Xs):
+    with pytest.raises(ValueError):
+        ica = MultiviewICA()
+        ica.fit(Xs[:,:5, :])
+    with pytest.raises(ValueError):
+        ica = MultiviewICA(init='WRONG')
+        ica.fit(Xs)
+    with pytest.raises(TypeError):
+        ica = MultiviewICA(init=list())
+        ica.fit(Xs)
+
+def test_fit(Xs, capfd):
+    ica = MultiviewICA(verbose=True)
+    ica.fit(Xs)
+    out, err = capfd.readouterr()
+    assert out[:2] == "it"

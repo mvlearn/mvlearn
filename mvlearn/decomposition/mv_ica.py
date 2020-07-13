@@ -236,6 +236,9 @@ class MultiviewICA(BaseICA):
                 raise TypeError("init should be a numpy array")
             W = self.init
         # Performs multiview ica
+        if Xs.shape[2] > Xs.shape[1]:
+            raise ValueError(f"Solution underdetermined. Please set \
+                `n_components` to be less than or equal to {Xs.shape[1]}")
         W, S = _multiview_ica_main(
             Xs,
             noise=self.noise,
@@ -542,8 +545,6 @@ def _multiview_ica_main(
     tol=1e-6,
     verbose=False,
     init=None,
-    ortho=False,
-    return_gradients=False,
 ):
     # Turn list into an array to make it compatible with the rest of the code
     if type(Xs) == list:
@@ -567,7 +568,7 @@ def _multiview_ica_main(
             Y_denoise = Y_avg - W_old.dot(X) / n_pb
             # Perform one ICA quasi-Newton step
             basis_list[j], g_norm = _noisy_ica_step(
-                W_old, X, Y_denoise, noise, n_pb, ortho, scale=True
+                W_old, X, Y_denoise, noise, n_pb, scale=True
             )
             # Update the average vector (estimate of the sources)
             Y_avg += np.dot(basis_list[j] - W_old, X) / n_pb
@@ -595,7 +596,7 @@ def _multiview_ica_main(
             Y_denoise = Y_avg - W_old.dot(X) / n_pb
             # Perform one ICA quasi-Newton step
             basis_list[j], g_norm = _noisy_ica_step(
-                W_old, X, Y_denoise, noise, n_pb, ortho
+                W_old, X, Y_denoise, noise, n_pb
             )
             # Update the average vector (estimate of the sources)
             Y_avg += np.dot(basis_list[j] - W_old, X) / n_pb
@@ -617,8 +618,7 @@ def _multiview_ica_main(
         warnings.warn(
             "Multiview ICA has not converged - gradient norm: %e " % g_norms
         )
-    if return_gradients:
-        return basis_list, Y_avg, g_list
+
     return np.swapaxes(basis_list, 1, 2), Y_avg.T
 
 
@@ -677,7 +677,6 @@ def _noisy_ica_step(
     Y_denoise,
     noise,
     n_pb,
-    ortho,
     lambda_min=0.001,
     n_ls_tries=50,
     scale=False,
@@ -701,8 +700,6 @@ def _noisy_ica_step(
     if scale:
         G = np.diag(np.diag(G))
     # print(G)
-    if ortho:
-        G = 0.5 * (G - G.T)
     g_norm = np.max(np.abs(G))
 
     # These are the terms H_{ijij} of the approximated hessian
@@ -719,16 +716,11 @@ def _noisy_ica_step(
     # Compute Newton's direction
     det = h * h.T - 1
     direction = (h.T * G - G.T) / det
-    if ortho:
-        direction = 0.5 * (direction - direction.T)
     # print(direction)
     # Line search
     step = 1
     for j in range(n_ls_tries):
-        if ortho:
-            new_W = expm(-step * direction).dot(W)
-        else:
-            new_W = W - step * direction.dot(W)
+        new_W = W - step * direction.dot(W)
         new_loss = _loss_partial(new_W, X, Y_denoise, noise, n_pb)
         if new_loss < loss0:
             break
