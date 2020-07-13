@@ -1,4 +1,4 @@
-# mvlearn
+
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/neurodata/mvlearn.svg?branch=master)](https://travis-ci.com/neurodata/mvlearn)
@@ -7,6 +7,11 @@
 [![PyPI version](https://badge.fury.io/py/mvlearn.svg)](https://badge.fury.io/py/mvlearn)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mvlearn.svg)](https://anaconda.org/conda-forge/mvlearn)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![arXiv shield](https://img.shields.io/badge/arXiv-2005.11890-red.svg?style=flat)](https://arxiv.org/abs/2005.11890)
+
+<p align="center">
+  <img width=300 src="docs/figures/mvlearn-logo-transparent.png" />
+</p>
 
 `mvlearn` is an open-source Python software package for multi-view learning tools.
 
