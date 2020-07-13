@@ -8,8 +8,8 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mvlearn.svg)](https://anaconda.org/conda-forge/mvlearn)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-<p align="left">
-  <img width=350 src="docs/figures/mvlearn-logo-transparent.png" />
+<p align="center">
+  <img width=300 src="docs/figures/mvlearn-logo-transparent.png" />
 </p>
 
 `mvlearn` is an open-source Python software package for multi-view learning tools.
