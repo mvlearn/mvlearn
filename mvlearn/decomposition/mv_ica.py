@@ -106,23 +106,24 @@ class MultiviewICA(BaseICA):
     n_components : int, optional
         Number of components to extract. If None, no dimension reduction is
         performed and all views must have the same number of features.
-    noise : float, optional
+    noise : float, default=1.0
         Gaussian noise level
-    max_iter : int, optional
+    max_iter : int, default=1000
         Maximum number of iterations to perform
-    init : str or np array of shape (n_groups, n_components, n_components)
+    init : {'permica', 'groupica'} or np array of shape
+        (n_groups, n_components, n_components), default='permica'
         If permica: initialize with perm ICA, if groupica, initialize with
         group ica. Else, use the provided array to initialize.
-    random_state : int, RandomState instance or None, optional (default=None)
+    random_state : int, RandomState instance or None, default=None
         Used to perform a random initialization. If int, random_state is
         the seed used by the random number generator; If RandomState
         instance, random_state is the random number generator; If
         None, the random number generator is the RandomState instance
         used by np.random.
-    tol : float, optional
+    tol : float, default=1e-3
         A positive scalar giving the tolerance at which
         the un-mixing matrices are considered to have converged.
-    verbose : bool, optional
+    verbose : bool, default=False
         Print information
     n_jobs : int (positive), default=None
         The number of jobs to run in parallel. `None` means 1 job, `-1`
@@ -265,15 +266,15 @@ class PermICA(BaseICA):
     n_components : int, optional
         Number of components to extract. If None, no dimension reduction is
         performed and all views must have the same number of features.
-    max_iter : int, optional
+    max_iter : int, default=1000
         Maximum number of iterations to perform
-    random_state : int, RandomState instance or None, optional (default=None)
+    random_state : int, RandomState instance or None, default=None
         Used to perform a random initialization. If int, random_state is
         the seed used by the random number generator; If RandomState
         instance, random_state is the random number generator; If
         None, the random number generator is the RandomState instance
         used by np.random.
-    tol : float, optional
+    tol : float, default=1e-3
         A positive scalar giving the tolerance at which
         the un-mixing matrices are considered to have converged.
     n_jobs : int (positive), default=None
@@ -391,15 +392,15 @@ class GroupICA(BaseICA):
     n_components : int, optional
         Number of components to extract. If None, no dimension reduction is
         performed and all views must have the same number of features.
-    max_iter : int, optional
+    max_iter : int, default=1000
         Maximum number of iterations to perform
-    random_state : int, RandomState instance or None, optional (default=None)
+    random_state : int, RandomState instance or None, default=None
         Used to perform a random initialization. If int, random_state is
         the seed used by the random number generator; If RandomState
         instance, random_state is the random number generator; If
         None, the random number generator is the RandomState instance
         used by np.random.
-    tol : float, optional
+    tol : float, default=1e-3
         A positive scalar giving the tolerance at which
         the un-mixing matrices are considered to have converged.
     n_jobs : int (positive), default=None
