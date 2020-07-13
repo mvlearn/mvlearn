@@ -1,7 +1,7 @@
 <!-- ![mvlearn logo](/docs/figures/mvlearn-logo-transparent.png) -->
 
 <p align="center">
-  <img width="50%" src="docs/figures/mvlearn-logo-transparent.png" />
+  <img width=250px src="docs/figures/mvlearn-logo-transparent.png" />
 </p>
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
