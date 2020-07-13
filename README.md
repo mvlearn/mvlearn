@@ -1,6 +1,4 @@
-<p align="left">
-  <img src="https://raw.githubusercontent.com/neurodata/mvlearn/docs/figures/mvlearn-logo.png?sanitize=true" />
-</p>
+![mvlearn logo](/docs/figures/mvlearn-logo.png)
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/neurodata/mvlearn.svg?branch=master)](https://travis-ci.com/neurodata/mvlearn)
