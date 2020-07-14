@@ -18,9 +18,9 @@ import numpy as np
 from sklearn.base import BaseEstimator
 
 
-class BaseFactorize(BaseEstimator):
+class BaseDecomposer(BaseEstimator):
     """
-    A base class for factoring multiview data.
+    A base class for decomposing multiview data.
     Parameters
     ----------
     Attributes

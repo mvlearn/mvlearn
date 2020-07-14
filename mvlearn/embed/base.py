@@ -42,6 +42,7 @@ class BaseEmbed(BaseEstimator):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
+
         y : array, shape (n_samples,), optional
 
         Returns
@@ -81,6 +82,7 @@ class BaseEmbed(BaseEstimator):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional
+            Targets to be used if fitting the algorithm is supervised.
 
         Returns
         -------

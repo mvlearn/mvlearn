@@ -179,8 +179,8 @@ class GCCA(BaseEmbed):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
-        y : Ignored (default = None)
-            For compliance with base class
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------
@@ -402,21 +402,3 @@ class GCCA(BaseEmbed):
                     for X, proj in zip(Xs, self.projection_mats_)
                 ]
             )
-
-    def fit_transform(self, Xs):
-        r"""
-        Fits transformer to Xs and returns a transformed version of the Xs.
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each view will receive its own
-            transformation matrix and projection.
-        Returns
-        -------
-        Xs_transformed : array-like, 2D if view_idx not None, otherwise
-            (n_views, n_samples, self.n_components)
-        """
-
-        return self.fit(Xs).transform(Xs)
