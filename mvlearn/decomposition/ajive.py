@@ -16,7 +16,7 @@ import numpy as np
 from scipy.sparse import issparse
 from copy import deepcopy
 import pandas as pd
-from .base import BaseFactorize
+from .base import BaseDecomposer
 from ..utils.utils import check_Xs
 from ..embed.utils import select_dimension
 from .ajive_utils.block_visualization import _data_block_heatmaps, \
@@ -27,7 +27,7 @@ from .ajive_utils.random_direction import sample_randdir
 from .ajive_utils.pca import pca, ViewSpecificResults
 
 
-class AJIVE(BaseFactorize):
+class AJIVE(BaseDecomposer):
     r"""
     An implementation of Angle-based Joint and Individual Variation Explained
     [#1ajive]_. This algorithm takes multiple views and decomposes them into 3

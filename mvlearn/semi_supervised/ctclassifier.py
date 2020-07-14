@@ -241,11 +241,7 @@ class CTClassifier(BaseCoTrainEstimator):
         if self.num_iter <= 0:
             raise ValueError("num_iter must be positive.")
 
-    def fit(
-            self,
-            Xs,
-            y
-            ):
+    def fit(self, Xs, y):
         r"""
         Fit the classifier object to the data in Xs, y.
 
@@ -257,7 +253,7 @@ class CTClassifier(BaseCoTrainEstimator):
             A list of the different views of data to train on.
 
         y : array, shape (n_samples,)
-            The labels of the training data. Unlabeled_pool examples should
+            The labels of the training data. Unlabeled examples should
             have label np.nan.
 
         Returns
@@ -397,7 +393,7 @@ class CTClassifier(BaseCoTrainEstimator):
         y_pred : array-like (n_samples,)
             The predicted class of each input example. If the two classifiers
             don't agree, pick the one with the highest predicted probability
-            from predict_proba()
+            from predict_proba().
         """
 
         Xs = check_Xs(Xs,

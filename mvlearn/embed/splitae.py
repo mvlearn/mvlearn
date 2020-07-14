@@ -173,7 +173,7 @@ class SplitAE(BaseEmbed):
         self.print_info = print_info
         self.print_graph = print_graph
 
-    def fit(self, Xs, validation_Xs=None):
+    def fit(self, Xs, validation_Xs=None, y=None):
         r"""
         Given two views, create and train the autoencoder.
 
@@ -187,6 +187,8 @@ class SplitAE(BaseEmbed):
             optional validation data in the same shape of Xs. If
             :code:`print_info=True`, then validation error, calculated with
             this data, will be printed as the network trains.
+        y : ignored
+            Included for API compliance.
         """
 
         Xs = check_Xs(Xs, multiview=True, enforce_views=2)
@@ -357,7 +359,7 @@ class SplitAE(BaseEmbed):
             view2_prediction.cpu().numpy(),
         )
 
-    def fit_transform(self, Xs):
+    def fit_transform(self, Xs, y=None):
         r"""
         :code:`fit(Xs)` and then :code:`transform(Xs[:1])`.
         Note that this method will be
@@ -366,6 +368,9 @@ class SplitAE(BaseEmbed):
         Parameters
         ----------
         Xs : see :code:`fit(...)` Xs parameters
+
+        y : ignored
+            Included for API compliance.
 
         Returns
         ----------

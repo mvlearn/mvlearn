@@ -52,14 +52,15 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
 
-Factorization
+Decomposition
 =============
-The following tutorials show how to use multi-view factorization algorithms.
+The following tutorials show how to use multi-view decomposition algorithms.
 
 .. toctree::
    :maxdepth: 1
 
-   tutorials/factorization/ajive_tutorial
+   tutorials/decomposition/ajive_tutorial
+   tutorials/decomposition/mv_ica_tutorial
 
 Plotting
 ========

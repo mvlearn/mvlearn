@@ -141,7 +141,7 @@ class Omnibus(BaseEmbed):
         if not isinstance(self.n_iter, int) or self.n_iter <= 0:
             raise ValueError("n_iter must be positive int.")
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         """
         Fit the model with Xs and apply the embedding on Xs.
         The embeddings are saved as a class attribute.
@@ -153,6 +153,8 @@ class Omnibus(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
+        y : ignored
+            Included for API compliance.
         """
         Xs = check_Xs(Xs)
         dissimilarities = []
@@ -169,7 +171,7 @@ class Omnibus(BaseEmbed):
 
         self.embeddings_ = embedder.fit_transform(dissimilarities)
 
-    def fit_transform(self, Xs):
+    def fit_transform(self, Xs, y=None):
         """
         Fit the model with Xs and apply the embedding on Xs using
         the fit() function. The resulting embeddings are returned.
@@ -181,6 +183,8 @@ class Omnibus(BaseEmbed):
              - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
+        y : ignored
+            Included for API compliance.
 
         Returns
         =======
