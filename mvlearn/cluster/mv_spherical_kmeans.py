@@ -81,6 +81,9 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
 
     Attributes
     ----------
+    labels_ : array-like, shape (n_samples)
+        Cluster labels for each sample in the fitted data.
+
     centroids_ : list of array-likes
         - centroids_ length: n_views
         - centroids_[i] shape: (n_clusters, n_features_i)
@@ -325,7 +328,7 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
 
         return Xs
 
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
 
         r'''
         Fit the cluster centroids to the data.
@@ -339,6 +342,9 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
             This list must be of size 2, corresponding to the two views of
             the data. The two views can each have a different number of
             features, but they must have the same number of samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         Returns
         -------

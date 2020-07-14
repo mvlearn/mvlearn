@@ -19,7 +19,6 @@
 import numpy as np
 import scipy as sp
 from scipy.spatial.distance import cdist
-from sklearn.base import BaseEstimator
 from sklearn.cluster import KMeans
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError
@@ -272,7 +271,7 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
         self.labels_ = kmeans.fit_predict(self.embedding_)
         return self
 
-    def fit_predict(self, Xs):
+    def fit_predict(self, Xs, y=None):
 
         r'''
         Performs clustering on the multiple views of data and returns
@@ -288,6 +287,9 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
             This list must be of size n_views, corresponding to the number
             of views of data. Each view can have a different number of
             features, but they must have the same number of samples.
+
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------

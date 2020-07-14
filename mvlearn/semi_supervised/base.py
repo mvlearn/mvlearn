@@ -73,6 +73,8 @@ class BaseCoTrainEstimator(BaseEstimator):
             A list of the different views of data to train on.
 
         y : array, shape (n_samples,)
+            Targets of the training data. Unlabeled examples should
+            have label np.nan.
 
         Returns
         -------
@@ -95,8 +97,32 @@ class BaseCoTrainEstimator(BaseEstimator):
 
         Returns
         -------
-        y : array-like (n_samples, n_classes)
-            Returns predictions for each sample.
+        y : array-like (n_samples,)
+            Predictions for each sample.
         """
 
         return self
+
+    def fit_predict(self, Xs, y):
+        """
+        Fit a co-train estimator to the semi-supervised data and
+        then predict.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+             A list of the different views of data to fit and
+             then predict.
+        y : array, shape (n_samples,)
+            Targets of the training data. Unlabeled examples should
+            have label np.nan.
+
+        Returns
+        -------
+        y_pred : array-like (n_samples,)
+            Predictions for each sample.
+        """
+
+        return self.fit(Xs, y).predict(Xs)

@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
 from sklearn.neighbors import NearestNeighbors
-from mvlearn.cluster.mv_spectral import MultiviewSpectralClustering
+from mvlearn.cluster import MultiviewSpectralClustering
 from sklearn.exceptions import NotFittedError
 
 # EXCEPTION TESTING
@@ -17,18 +17,16 @@ def small_data():
     view1 = np.random.random((5, 8))
     view2 = np.random.random((5, 9))
     data = [view1, view2]
-    return small_data
-    
-    
+    return data
+
 def test_n_clusters_not_positive_int(small_data):
-    
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=-1)
         spectral.fit_predict(small_data)
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=0)
         spectral.fit_predict(small_data)
-        
+
 def test_random_state_not_convertible(small_data):
     with pytest.raises(ValueError):
         spectral = MultiviewSpectralClustering(n_clusters=5, random_state='ab')
@@ -47,7 +45,6 @@ def test_n_views_too_small1(small_data):
         view1 = np.random.random((5, 8))
         spectral = MultiviewSpectralClustering(random_state=RANDOM_STATE)
         spectral.fit_predict([view1])
-
 
 def test_n_views_too_small2(small_data):
     with pytest.raises(ValueError):
@@ -291,3 +288,5 @@ def test_fit_predict_info_view(data):
     for clust in predictions:
         assert(clust >= 0 and clust < n_clusts)
 
+
+test_n_clusters_not_positive_int(small_data)
