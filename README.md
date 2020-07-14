@@ -10,7 +10,7 @@
 [![arXiv shield](https://img.shields.io/badge/arXiv-2005.11890-red.svg?style=flat)](https://arxiv.org/abs/2005.11890)
 
 <p align="center">
-  <img width=300 src="docs/figures/mvlearn-logo-transparent.png" />
+  <img width=300 src="docs/figures/mvlearn-logo-transparent-grey.png" />
 </p>
 
 `mvlearn` is an open-source Python software package for multiview learning tools.

@@ -85,7 +85,8 @@ repository on GitHub, clone, and develop on a branch. Steps:
 
    .. code:: bash
 
-       $ git clone git@github.com:YourLogin/mvlearn.git $ cd mvlearn
+       $ git clone git@github.com:YourLogin/mvlearn.git
+       $ cd mvlearn
 
 
 3. Create a ``feature`` branch to hold your development changes:
@@ -103,7 +104,8 @@ repository on GitHub, clone, and develop on a branch. Steps:
 
    .. code:: bash
 
-       $ git add modified_files $ git commit
+       $ git add modified_files
+       $ git commit
 
    to record your changes in Git, then push the changes to your GitHub
    account with:
@@ -160,7 +162,8 @@ before you submit a pull request:
 
    .. code:: bash
 
-       $ pip install black $ black path/to/module.py
+       $ pip install black
+       $ black path/to/module.py
 
 .. _guidelines:
 
