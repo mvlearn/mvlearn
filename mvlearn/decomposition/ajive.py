@@ -16,6 +16,7 @@ import numpy as np
 from scipy.sparse import issparse
 from copy import deepcopy
 import pandas as pd
+from .base import BaseDecomposer
 from ..utils.utils import check_Xs
 from ..embed.utils import select_dimension
 from .ajive_utils.block_visualization import _data_block_heatmaps, \
@@ -26,7 +27,7 @@ from .ajive_utils.random_direction import sample_randdir
 from .ajive_utils.pca import pca, ViewSpecificResults
 
 
-class AJIVE(object):
+class AJIVE(BaseDecomposer):
     r"""
     An implementation of Angle-based Joint and Individual Variation Explained
     [#1ajive]_. This algorithm takes multiple views and decomposes them into 3
@@ -573,7 +574,7 @@ class AJIVE(object):
         else:
             return None
 
-    def predict(self, return_dict=False):
+    def transform(self, Xs=None, return_dict=False):
         r"""
 
         Returns the joint, individual, and noise components of each view from
@@ -581,6 +582,10 @@ class AJIVE(object):
 
         Parameters
         ----------
+
+        Xs : ignored
+            Not used but included for API consistency. Predictions come from
+            the fitted data.
 
         return_dict: bool, default = False
             If True, return is in dictionary format, if False, return is in

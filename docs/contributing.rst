@@ -25,6 +25,9 @@ rules before submitting:
 -  If you are submitting a bug report, we strongly encourage you to
    follow the guidelines in :ref:`filing_bugs`.
 
+-  Always make sure your code follows the general :ref:`guidelines` 
+   and adheres to the :ref:`api_of_mvlearn_objects`.
+
 .. _filing_bugs:
 
 How to make a good bug report
@@ -159,6 +162,8 @@ before you submit a pull request:
 
        $ pip install black $ black path/to/module.py
 
+.. _guidelines:
+
 Guidelines
 ----------
 
@@ -182,8 +187,10 @@ guidelines. Refer to the
 `example.py <https://numpydoc.readthedocs.io/en/latest/example.html#example>`__
 provided by numpydoc.
 
+.. _api_of_mvlearn_objects:
+
 API of mvlearn Objects
-------------------------
+----------------------
 
 Estimators
 ~~~~~~~~~~
@@ -191,9 +198,17 @@ Estimators
 The main mvlearn object is the estimator and its documentation draws
 mainly from the formatting of sklearn’s estimator object. An estimator
 is an object that fits a set of training data and generates some new
-view of the data. In contributing, borrow from sklearn requirements as
+view of the data. Each module in mvlearn contains a main base class
+(found in ``module_name.base``) which all estimators in that module
+should implement. Each of these base classes implements
+sklearn.base.BaseEstimator. If you are contributing a new estimator,
+be sure that it properly implements the base class
+of the module it is contained within.
+
+When contributing, borrow from sklearn requirements as
 much as possible and utilize their checks to automatically check the
-suitability of inputted data.
+suitability of inputted data, or use the checks available in
+``mvlearn.utils`` such as ``check_Xs``.
 
 Instantiation
 ^^^^^^^^^^^^^
@@ -217,7 +232,8 @@ implementation of ``__init__`` looks like
 Fitting
 ^^^^^^^
 
-All estimators implement the fit method to make some estimation, either:
+All estimators should implement the ``fit(Xs, y=None)`` method to
+make some estimation, which is called with:
 
 .. code:: python
 
@@ -252,25 +268,25 @@ samples (rows) but the number of features (columns) may differ.
 The ``fit`` method should return the object (``self``) so that simple
 one line processes can be written.
 
-All attributed calculated in the ``fit`` method should be saved with a
+All attributes calculated in the ``fit`` method should be saved with a
 trailing underscore to distinguish them from the constants passes to
 ``__init__``. They are overwritten every time ``fit`` is called.
 
 Additional Functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Transformer
-^^^^^^^^^^^
+Transformers and Predictors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A transformer object modifies the data it is given. An estimator may
+A ``transformer`` object modifies the data it is given. An estimator may
 also be a transformer that learns the transformation parameters. The
-transformer object implements the method
+transformer object implements the ``transform`` method, i.e.
 
 .. code:: python
 
    new_data = transformer.transform(Xs)
 
-and if the fit method must be called first,
+or if the fit method must be called first,
 
 .. code:: python
 
@@ -278,3 +294,21 @@ and if the fit method must be called first,
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``transform`` separately.
+
+Similarly, a ``predictor`` object makes predictions based on the
+data it is given. An estimator may also be a predictor that learns
+the prediction parameters. The predictor object implements
+the ``predict`` method, i.e.
+
+.. code:: python
+
+   predictions = predictor.predict(Xs)
+
+or if the fit method must be called first,
+
+.. code:: python
+
+   predictions = predictor.fit_predict(Xs, y)
+
+It may be more efficient in some cases to compute the latter example
+rather than call ``fit`` and ``predict`` separately.

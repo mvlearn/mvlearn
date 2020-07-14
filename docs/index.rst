@@ -1,5 +1,9 @@
 ..  -*- coding: utf-8 -*-
 
+.. image:: figures/mvlearn-logo-transparent.png
+  :width: 200
+  :alt: mvlearn logo
+
 .. _contents:
 
 Overview of mvlearn_
@@ -7,12 +11,12 @@ Overview of mvlearn_
 
 .. _mvlearn: https://github.com/neurodata/mvlearn
 
-mvlearn is a Python module for multi-view learning. 
+mvlearn is a Python module for multiview learning. 
 
 Motivation
 ----------
 
-In many data sets, there are multiple measurement modalities of the same subject, i.e. multiple *X* matrices (views) for the same class label vector *y*. For example, a set of diseased and healthy patients in a neuroimaging study may undergo both CT and MRI scans. Traditional methods for inference and analysis are often poorly suited to account for multiple views of the same subject as they cannot account for complementing views that hold different statistical properties. While single-view methods are consolidated in well-documented packages such as scikit-learn, there is no equivalent for multi-view methods. In this package, we provide a well-documented and tested collection of utilities and algorithms designed for the processing and analysis of multi-view data sets.
+In many data sets, there are multiple measurement modalities of the same subject, i.e. multiple *X* matrices (views) for the same class label vector *y*. For example, a set of diseased and healthy patients in a neuroimaging study may undergo both CT and MRI scans. Traditional methods for inference and analysis are often poorly suited to account for multiple views of the same subject as they cannot account for complementing views that hold different statistical properties. While single-view methods are consolidated in well-documented packages such as scikit-learn, there is no equivalent for multiview methods. In this package, we provide a well-documented and tested collection of utilities and algorithms designed for the processing and analysis of multiview data sets.
 
 Python
 ------
@@ -40,7 +44,7 @@ mvlearn was developed during the end of 2019 by Richard Guo, Ronan Perry, Gavin 
 Documentation
 =============
 
-mvlearn is a Python package of multi-view learning tools.
+mvlearn is a Python package of multiview learning tools.
 
 .. toctree::
    :maxdepth: 1

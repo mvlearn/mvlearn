@@ -11,18 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# A base class for multi-view kmeans clustering algorithms that apply the
-# co-EM framework.
 
-import numpy as np
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 
 
-class BaseKMeans(BaseEstimator):
-    '''
-    A base class for kmeans clustering.
+class BaseCluster(BaseEstimator):
+    r'''
+    A base class for clustering.
     Parameters
     ----------
     Attributes
@@ -35,8 +31,7 @@ class BaseKMeans(BaseEstimator):
         pass
 
     @abstractmethod
-    def fit(self, Xs):
-
+    def fit(self, Xs, y=None):
         '''
         A method to fit clustering parameters to the multiview data.
         Parameters
@@ -44,8 +39,10 @@ class BaseKMeans(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
-
             A list of different views to fit the model on.
+
+        y : array-like, shape (n_samples,)
+            Labels for each sample. Only used by supervised algorithms.
 
         Returns
         -------
@@ -56,7 +53,6 @@ class BaseKMeans(BaseEstimator):
 
     @abstractmethod
     def predict(self, Xs):
-
         '''
         A method to predict cluster labels of multiview data.
         Parameters
@@ -64,39 +60,36 @@ class BaseKMeans(BaseEstimator):
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
-
             A list of different views to cluster.
 
         Returns
         -------
-        predictions : array-like, shape (n_samples,)
+        labels : array-like, shape (n_samples,)
             Returns the predicted cluster labels for each sample.
         '''
-        return
 
-    def fit_predict(self, Xs):
+        pass
 
+    def fit_predict(self, Xs, y=None):
         '''
-        Fit the cluster centroids to the data and then
-        predict the cluster labels for the data.
+        A method for fitting then predicting cluster assignments.
 
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views to fit the model on.
 
-            This list must be of size 2, corresponding to the two views
-            of the data. The two views can each have a different number
-            of features, but they must have the same number of samples.
+        y : array-like, shape (n_samples,)
+            Labels for each sample. Only used by supervised algorithms.
 
         Returns
         -------
         labels : array-like, shape (n_samples,)
             The predicted cluster labels for each sample.
-
         '''
 
         self.fit(Xs)
-        labels = self.predict(Xs)
+        labels = self.labels_
         return labels

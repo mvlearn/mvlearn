@@ -19,7 +19,32 @@ import numpy as np
 from scipy import linalg, stats
 from scipy.sparse.linalg import svds
 from sklearn.preprocessing import normalize
+from joblib import Parallel, delayed
 from .utils import select_dimension
+import warnings
+
+
+def center(X):
+    r"""
+    Subtracts the row means and divides by the row standard deviations.
+    Then subtracts column means.
+
+    Parameters
+    ----------
+    X : array-like, shape (n_observations, n_features)
+        The data to preprocess
+
+    Returns
+    -------
+    centered_X : preprocessed data matrix
+    """
+
+    # Mean along rows using sample mean and sample std
+    centered_X = stats.zscore(X, axis=1, ddof=1)
+    # Mean along columns
+    mu = np.mean(centered_X, axis=0)
+    centered_X -= mu
+    return centered_X
 
 
 class GCCA(BaseEmbed):
@@ -38,30 +63,29 @@ class GCCA(BaseEmbed):
         If ``self.sv_tolerance=None``, selects the number of SVD
         components to keep for each view. If none, another selection
         method is used.
-
     fraction_var : float, default=None
         If ``self.sv_tolerance=None``, and ``self.n_components=None``,
         selects the number of SVD components to keep for each view by
         capturing enough of the variance. If none, another selection
         method is used.
-
     sv_tolerance : float, optional, default=None
         Selects the number of SVD components to keep for each view by
         thresholding singular values. If none, another selection
         method is used.
-
     n_elbows : int, optional, default: 2
         If ``self.fraction_var=None``, ``self.sv_tolerance=None``, and
         ``self.n_components=None``, then compute the optimal embedding
         dimension using :func:`.utils.select_dimension`.
         Otherwise, ignored.
-
     tall : boolean, default=False
         Set to true if n_samples > n_features, speeds up SVD
-
     max_rank : boolean, default=False
         If true, sets the rank of the common latent space as the maximum rank
         of the individual spaces. If false, uses the minimum individual rank.
+    n_jobs : int (positive), default=None
+        The number of jobs to run in parallel when computing the SVDs for each
+        view in `fit` and `partial_fit`. `None` means 1 job, `-1` means using
+        all processors.
 
     Attributes
     ----------
@@ -125,6 +149,7 @@ class GCCA(BaseEmbed):
             n_elbows=2,
             tall=False,
             max_rank=False,
+            n_jobs=None,
             ):
 
         self.n_components = n_components
@@ -135,30 +160,9 @@ class GCCA(BaseEmbed):
         self.projection_mats_ = None
         self.ranks_ = None
         self.max_rank = max_rank
+        self.n_jobs = n_jobs
 
-    def center(self, X):
-        r"""
-        Subtracts the row means and divides by the row standard deviations.
-        Then subtracts column means.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_observations, n_features)
-            The data to preprocess
-
-        Returns
-        -------
-        centered_X : preprocessed data matrix
-        """
-
-        # Mean along rows using sample mean and sample std
-        centered_X = stats.zscore(X, axis=1, ddof=1)
-        # Mean along columns
-        mu = np.mean(centered_X, axis=0)
-        centered_X -= mu
-        return centered_X
-
-    def fit(self, Xs):
+    def fit(self, Xs, y=None):
         r"""
         Calculates a projection from each view to a latent space such that
         the sum of pairwise latent space correlations is maximized. Each view
@@ -175,6 +179,8 @@ class GCCA(BaseEmbed):
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
+        y : ignored
+            Included for API compliance.
 
         Returns
         -------
@@ -185,85 +191,155 @@ class GCCA(BaseEmbed):
         n = Xs[0].shape[0]
         min_m = min(X.shape[1] for X in Xs)
 
-        data = [self.center(x) for x in Xs]
+        # Parallel center
+        Xs = Parallel(n_jobs=self.n_jobs)(
+            delayed(center)(X) for X in Xs
+            )
+        # Parallel SVDs
+        usvr = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._fit_view)(X, n, min_m) for X in Xs
+            )
+        # Reshape from parallel output
+        self._Uall, self._Sall, self._Vall, self.ranks_ = zip(*usvr)
 
-        Uall = []
-        Sall = []
-        Vall = []
-        ranks = []
+        self = self._fit_multistep()
 
-        for x in data:
-            # Preprocess
-            x[np.isnan(x)] = 0
+        return self
 
-            # compute the SVD of the data
-            if self.tall:
-                v, s, ut = linalg.svd(x.T, full_matrices=False)
+    def partial_fit(self, Xs, reset=False, multiview_step=True):
+        r"""
+        Performs like `fit`, but will not overwrite previously fitted single
+        views and instead uses them as well as the new data. Useful if the data
+        needs to be processed in batches.
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to. Each view will receive its own embedding.
+        reset : boolean (default = False)
+            If True, overwrites all prior computations.
+        multiview_step : boolean, (default = True)
+            If True, performs the joint SVD step on the results from individual
+            views. Must be set to True in the final call.
+
+        Returns
+        -------
+        self : returns an instance of self.
+        """
+        if not hasattr(self, '_Uall') or reset:
+            self._Uall = []
+            self._Sall = []
+            self._Vall = []
+            self.ranks_ = []
+
+        Xs = check_Xs(Xs, multiview=False)
+        n = Xs[0].shape[0]
+        min_m = min(X.shape[1] for X in Xs)
+
+        # Parallel center
+        Xs = Parallel(n_jobs=self.n_jobs)(
+            delayed(center)(X) for X in Xs
+            )
+        # Parallel SVDs
+        usvr = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._fit_view)(X, n, min_m) for X in Xs
+            )
+        # Reshape and concatenate from parallel output
+        u, s, v, r = zip(*usvr)
+        self._Uall += u
+        self._Sall += s
+        self._Vall += v
+        self.ranks_ += r
+
+        if multiview_step:
+            if len(self.ranks_) < 2:
+                msg = "Fewer than two single views fitted. Unable to perform \
+                    multiview step."
+                warnings.warn(msg, UserWarning)
             else:
-                u, s, vt = linalg.svd(x, full_matrices=False)
-                ut = u.T
-                v = vt.T
+                self = self._fit_multistep()
 
-            Sall.append(s)
-            Vall.append(v)
-            # Dimensions to reduce to
-            if self.sv_tolerance:
-                if not isinstance(self.sv_tolerance, float) and not isinstance(
-                    self.sv_tolerance, int
-                ):
-                    raise TypeError("sv_tolerance must be numeric")
-                elif self.sv_tolerance <= 0:
-                    raise ValueError(
-                        "sv_tolerance must be greater than 0"
-                        )
+        return self
 
-                rank = sum(s > self.sv_tolerance)
-            elif self.n_components:
-                if not isinstance(self.n_components, int):
-                    raise TypeError("n_components must be an integer")
-                elif self.n_components <= 0:
-                    raise ValueError(
-                        "n_components must be greater than 0"
-                        )
-                elif self.n_components > min((n, min_m)):
-                    raise ValueError(
-                        "n_components must be less than or equal to the \
-                            minimum input rank"
+    def _fit_view(self, X, n, min_m):
+        """
+        Helper function to compute SVD on each view.
+        """
+        # Preprocess
+        X[np.isnan(X)] = 0
+
+        # compute the SVD of the data
+        if self.tall:
+            v, s, ut = linalg.svd(X.T, full_matrices=False)
+        else:
+            u, s, vt = linalg.svd(X, full_matrices=False)
+            ut = u.T
+            v = vt.T
+
+        # Dimensions to reduce to
+        if self.sv_tolerance:
+            if not isinstance(self.sv_tolerance, float) and not isinstance(
+                self.sv_tolerance, int
+            ):
+                raise TypeError("sv_tolerance must be numeric")
+            elif self.sv_tolerance <= 0:
+                raise ValueError(
+                    "sv_tolerance must be greater than 0"
                     )
 
-                rank = self.n_components
-            elif self.fraction_var:
-                if not isinstance(self.fraction_var, float) and not isinstance(
-                    self.fraction_var, int
-                ):
-                    raise TypeError(
-                        "fraction_var must be an integer or float"
-                        )
-                elif self.fraction_var <= 0 or self.fraction_var > 1:
-                    raise ValueError("fraction_var must be in (0,1]")
-
-                s2 = np.square(s)
-                rank = sum(np.cumsum(s2 / sum(s2)) < self.fraction_var) + 1
-            else:
-                # Sweep over only first log2, else too large elbows
-                s = s[: int(np.ceil(np.log2(np.min(x.shape))))]
-                elbows, _ = select_dimension(
-                    s, n_elbows=self.n_elbows, threshold=None
+            rank = sum(s > self.sv_tolerance)
+        elif self.n_components:
+            if not isinstance(self.n_components, int):
+                raise TypeError("n_components must be an integer")
+            elif self.n_components <= 0:
+                raise ValueError(
+                    "n_components must be greater than 0"
+                    )
+            elif self.n_components > min((n, min_m)):
+                raise ValueError(
+                    "n_components must be less than or equal to the \
+                        minimum input rank"
                 )
-                rank = elbows[-1]
 
-            ranks.append(rank)
+            rank = self.n_components
+        elif self.fraction_var:
+            if not isinstance(self.fraction_var, float) and not isinstance(
+                self.fraction_var, int
+            ):
+                raise TypeError(
+                    "fraction_var must be an integer or float"
+                    )
+            elif self.fraction_var <= 0 or self.fraction_var > 1:
+                raise ValueError("fraction_var must be in (0,1]")
 
-            u = ut.T[:, :rank]
-            Uall.append(u)
-
-        if self.max_rank:
-            d = max(ranks)
+            s2 = np.square(s)
+            rank = sum(np.cumsum(s2 / sum(s2)) < self.fraction_var) + 1
         else:
-            d = min(ranks)
+            # Sweep over only first log2, else too large elbows
+            s = s[: int(np.ceil(np.log2(np.min(X.shape))))]
+            elbows, _ = select_dimension(
+                s, n_elbows=self.n_elbows, threshold=None
+            )
+            rank = elbows[-1]
+
+        u = ut.T[:, :rank]
+
+        return u, s, v, rank
+
+    def _fit_multistep(self):
+        """
+        Helper function to compute the SVD on the results from individuals
+        view SVDs.
+        """
+        if self.max_rank:
+            d = max(self.ranks_)
+        else:
+            d = min(self.ranks_)
 
         # Create a concatenated view of Us
-        Uall_c = np.concatenate(Uall, axis=1)
+        Uall_c = np.concatenate(self._Uall, axis=1)
 
         _, _, VV = svds(Uall_c, d)
         VV = np.flip(VV.T, axis=1)
@@ -272,19 +348,21 @@ class GCCA(BaseEmbed):
         # SVDS the concatenated Us
         idx_end = 0
         projection_mats = []
-        for i in range(len(data)):
+        n = len(self.ranks_)
+        for i in range(n):
             idx_start = idx_end
-            idx_end = idx_start + ranks[i]
+            idx_end = idx_start + self.ranks_[i]
             VVi = normalize(VV[idx_start:idx_end, :], "l2", axis=0)
 
             # Compute the canonical projections
-            A = np.sqrt(n - 1) * Vall[i][:, : ranks[i]]
-            A = A @ (linalg.solve(np.diag(Sall[i][: ranks[i]]), VVi))
+            A = np.sqrt(n - 1) * self._Vall[i][:, : self.ranks_[i]]
+            A = A @ (linalg.solve(
+                np.diag(self._Sall[i][: self.ranks_[i]]), VVi
+                ))
 
             projection_mats.append(A)
 
         self.projection_mats_ = projection_mats
-        self.ranks_ = ranks
 
         return self
 
@@ -316,31 +394,11 @@ class GCCA(BaseEmbed):
             raise RuntimeError("Must call fit function before transform")
         Xs = check_Xs(Xs)
         if view_idx is not None:
-            return self.center(Xs[0]) @ self.projection_mats_[view_idx]
+            return center(Xs[0]) @ self.projection_mats_[view_idx]
         else:
             return np.array(
                 [
-                    self.center(x) @ proj
-                    for x, proj in zip(Xs, self.projection_mats_)
+                    center(X) @ proj
+                    for X, proj in zip(Xs, self.projection_mats_)
                 ]
             )
-
-    def fit_transform(self, Xs):
-        r"""
-        Fits transformer to Xs and returns a transformed version of the Xs.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to. Each view will receive its own
-            transformation matrix and projection.
-
-        Returns
-        -------
-        Xs_transformed : array-like, 2D if view_idx not None, otherwise
-            (n_views, n_samples, self.n_components)
-        """
-
-        return self.fit(Xs).transform(Xs)

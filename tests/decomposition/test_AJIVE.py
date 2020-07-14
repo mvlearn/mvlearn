@@ -3,12 +3,12 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import pandas as pd
 import pytest
-from mvlearn.factorization.ajive import (
+from mvlearn.decomposition.ajive import (
     AJIVE,
     ajive_full_estimate_heatmaps,
     data_block_heatmaps,
 )
-from mvlearn.factorization.ajive_utils.utils import svd_wrapper
+from mvlearn.decomposition.ajive_utils.utils import svd_wrapper
 from scipy.sparse import csr_matrix
 from scipy.linalg import orth
 from pandas.testing import assert_frame_equal, assert_series_equal
@@ -338,7 +338,7 @@ def test_joint_indiv_length(data):
     dat = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     assert blocks[0]["joint"].shape == blocks[0]["individual"].shape
 
 
@@ -346,7 +346,7 @@ def test_joint_noise_length(data):
     dat = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     assert blocks[0]["joint"].shape == blocks[0]["noise"].shape
 
 
@@ -354,7 +354,7 @@ def test_joint(data):
     dat = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     for i in np.arange(100):
         j = np.sum(blocks[0]["joint"][i] == blocks[1]["joint"][i])
         assert j == 20
@@ -364,7 +364,7 @@ def test_indiv(data):
     dat = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     for i in np.arange(100):
         j = np.sum(blocks[0]["individual"][i] == blocks[1]["individual"][i])
         assert j == 20
@@ -388,7 +388,7 @@ def test_check_sparse(data):
     assert np.sum(spar_mat == 0) > np.sum(spar_mat != 0)
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     assert np.sum(np.sum(blocks[0]["individual"] == 0)) > np.sum(
         np.sum(blocks[0]["individual"] != 0)
     )
@@ -465,7 +465,7 @@ def test__repr__(data):
     assert ajive.__repr__() == "No data has been fitted yet"
 
     ajive.fit(Xs=dat)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     r = "joint rank: {}".format(ajive.common_.rank)
     for bn in ajive.block_names:
                 indiv_rank = ajive.blocks_[bn].individual.rank
@@ -529,7 +529,7 @@ def test_ajive_plot(data):
     x = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=x)
-    blocks = ajive.predict(return_dict=True)
+    blocks = ajive.transform(return_dict=True)
     ajive_full_estimate_heatmaps(x, blocks)
     p = 1
     assert p == 1
@@ -539,7 +539,7 @@ def test_ajive_plot_list(data):
     x = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=x)
-    blocks = ajive.predict(return_dict=False)
+    blocks = ajive.transform(return_dict=False)
     ajive_full_estimate_heatmaps(x, blocks, names=["x1", "x2"])
     p = 1
     assert p == 1
@@ -563,7 +563,7 @@ def test_traditional_output(data):
     x = data["same_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2])
     ajive.fit(Xs=x, view_names=["x", "y"])
-    ajive.predict(return_dict=False)
+    ajive.transform(return_dict=False)
 
 def test_fit_elbows():
     n=10; elbows=3

@@ -31,6 +31,7 @@ boost accuracy over single view methods.
    
    tutorials/semi_supervised/cotraining_classification_exampleusage
    tutorials/semi_supervised/cotraining_classification_simulatedperformance
+   tutorials/semi_supervised/cotraining_regression_exampleusage
 
 Embedding
 =========
@@ -51,14 +52,15 @@ Inference on and visualization of multiview data often requires low-dimensional 
    tutorials/embed/SplitAE Tutorial
    tutorials/embed/SplitAE Simulated Data
 
-Factorization
+Decomposition
 =============
-The following tutorials show how to use multi-view factorization algorithms.
+The following tutorials show how to use multi-view decomposition algorithms.
 
 .. toctree::
    :maxdepth: 1
 
-   tutorials/factorization/ajive_tutorial
+   tutorials/decomposition/ajive_tutorial
+   tutorials/decomposition/mv_ica_tutorial
 
 Plotting
 ========
