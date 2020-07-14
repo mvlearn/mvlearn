@@ -14,3 +14,4 @@ def test_base_ctclassifier():
     assert isinstance(base_clf, BaseEstimator)
     base_clf.fit([],[])
     base_clf.predict([])
+    base_clf.fit_predict([],[])
