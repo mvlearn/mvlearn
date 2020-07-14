@@ -11,7 +11,7 @@ The package is split up into submodules.
     cluster
     semi_supervised
     embed
-    factorization
+    decomposition
     construct
     datasets
     plotting

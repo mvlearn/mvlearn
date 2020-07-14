@@ -5,7 +5,7 @@ from numpy.testing import assert_equal, assert_almost_equal
 from scipy.sparse import csr_matrix
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
-from mvlearn.factorization.ajive_utils.pca import pca, _arg_checker, _default_obs_names, svd2pd, _unnorm_scores, pca_reconstruct, _safe_frob_norm
+from mvlearn.decomposition.ajive_utils.pca import pca, _arg_checker, _default_obs_names, svd2pd, _unnorm_scores, pca_reconstruct, _safe_frob_norm
 
 
 class TestPCA(unittest.TestCase):
