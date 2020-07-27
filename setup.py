@@ -19,13 +19,19 @@ AUTHOR = (
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/NeuroDataDesign/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
-with open("requirements.txt", "r") as f:
-    REQUIRED_PACKAGES = f.read()
-with open("requirements_torch.txt", "r") as f:
-    torch_extras = f.read()
-EXTRA_PACKAGES = {
-    'torch':torch_extras
-}
+REQUIRED_PACKAGES = [
+    "graspy>=0.1.1",
+    "matplotlib>=3.0.0",
+    "numpy>=1.17.0",
+    "pandas>=0.25.0",
+    "scikit-learn>=0.19.1",
+    "scipy>=1.1.0",
+    "seaborn>=0.9.0",
+    "torch>=1.1.0",
+    "tqdm",
+    "joblib>=0.11",
+    "python-picard>=0.4",
+]
 
 # Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
