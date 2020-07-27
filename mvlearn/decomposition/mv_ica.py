@@ -130,7 +130,7 @@ class MultiviewICA(BaseICA):
         means using all processors.
 
     Attributes
-    -------
+    ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         P is the projection matrix that projects data in reduced space
     unmixings_ : np array of shape (n_groups, n_components, n_components)
@@ -282,7 +282,7 @@ class PermICA(BaseICA):
         means using all processors.
 
     Attributes
-    -------
+    ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         P is the projection matrix that projects data in reduced space
     unmixings_ : np array of shape (n_groups, n_components, n_components)
@@ -408,7 +408,7 @@ class GroupICA(BaseICA):
         means using all processors.
 
     Attributes
-    -------
+    ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         P is the projection matrix that projects data in reduced space
     unmixings_ : np array of shape (n_groups, n_components, n_components)
