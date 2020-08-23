@@ -1,5 +1,5 @@
-View Embedding
-==============
+Embedding
+=========
 
 .. currentmodule:: mvlearn.embed
 
