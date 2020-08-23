@@ -18,6 +18,7 @@ install:
 script:
   - pytest tests/ --cov=./mvlearn/
   - pycodestyle mvlearn/
+  - flake8 mvlearn
 
 after_success:
   - codecov

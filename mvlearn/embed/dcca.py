@@ -27,9 +27,10 @@
 
 import warnings
 import sys
-from sklearn.utils import check_X_y, check_array
-from sklearn.exceptions import NotFittedError
 import numpy as np
+
+from sklearn.exceptions import NotFittedError
+
 try:
     import torch
     import torch.nn as nn
@@ -40,6 +41,7 @@ except ModuleNotFoundError as error:
     https://github.com/neurodata/mvlearn to correctly install torch \
     dependencies.')
     sys.exit(1)
+
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
 
