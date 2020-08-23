@@ -1,6 +1,6 @@
 <!--
 Thanks for contributing a pull request! Please ensure you have taken a look at
-the contribution guidelines: https://github.com/neurodata/mvlearn/blob/master/CONTRIBUTING.md#pull-request-checklist
+the contribution guidelines: https://github.com/mvlearn/mvlearn/blob/master/CONTRIBUTING.md#pull-request-checklist
 -->
 
 #### Reference Issues/PRs

@@ -21,7 +21,7 @@ except ModuleNotFoundError as error:
     print(
         f"Error: {error}. torch dependencies required for this function. \
     Please consult the mvlearn installation instructions at \
-    https://github.com/neurodata/mvlearn to correctly install torch \
+    https://github.com/mvlearn/mvlearn to correctly install torch \
     dependencies."
     )
     sys.exit(1)
