@@ -13,7 +13,7 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install -r requirements_torch.txt
-  - pip install -U pytest pytest-cov codecov pycodestyle
+  - pip install -U pytest pytest-cov codecov pycodestyle flake8
 
 script:
   - pytest tests/ --cov=./mvlearn/
