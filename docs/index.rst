@@ -5,7 +5,7 @@
 Overview of mvlearn_
 ====================
 
-.. _mvlearn: https://github.com/neurodata/mvlearn
+.. _mvlearn: https://github.com/mvlearn/mvlearn
 
 mvlearn is a Python module for multiview learning. 
 
@@ -30,7 +30,7 @@ Free software
 
 mvlearn is free software; you can redistribute it and/or modify it under the
 terms of the :doc:`Apache-2.0 </license>`.  We welcome contributions.
-Join us on `GitHub <https://github.com/neurodata/mvlearn>`_.
+Join us on `GitHub <https://github.com/mvlearn/mvlearn>`_.
 
 History
 -------
@@ -56,9 +56,9 @@ mvlearn is a Python package of multiview learning tools.
    :maxdepth: 1
    :caption: Useful Links
 
-   mvlearn @ GitHub <https://github.com/neurodata/mvlearn>
+   mvlearn @ GitHub <https://github.com/mvlearn/mvlearn>
    mvlearn @ PyPI <https://pypi.org/project/mvlearn/>
-   Issue Tracker <https://github.com/neurodata/mvlearn/issues>
+   Issue Tracker <https://github.com/mvlearn/mvlearn/issues>
 
 
 Indices and tables

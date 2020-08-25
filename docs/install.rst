@@ -37,7 +37,7 @@ install into your user directory using the ``--user`` flag::
     $ pip3 install --user mvlearn
 
 Alternatively, you can manually download ``mvlearn`` from
-`GitHub <https://github.com/neurodata/mvlearn>`_  or
+`GitHub <https://github.com/mvlearn/mvlearn>`_  or
 `PyPI <https://pypi.org/project/mvlearn/>`_.
 To install one of these versions, unpack it and run the following from the
 top-level source directory using the Terminal::
