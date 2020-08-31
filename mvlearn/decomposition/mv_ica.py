@@ -131,11 +131,12 @@ class MultiviewICA(BaseICA):
     Attributes
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
-        P is the projection matrix that projects data in reduced space
+        The projection matrices that project group data in reduced space.
+        Only available if n_components is not None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
-        Estimated source
+        Estimated source matrix
 
     See also
     --------
@@ -283,11 +284,12 @@ class PermICA(BaseICA):
     Attributes
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
-        P is the projection matrix that projects data in reduced space
+        The projection matrices that project group data in reduced space.
+        Only available if n_components is not None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
-        Estimated source
+        Estimated source matrix
 
     See also
     --------
@@ -409,11 +411,12 @@ class GroupICA(BaseICA):
     Attributes
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
-        P is the projection matrix that projects data in reduced space
+        The projection matrices that project group data in reduced space.
+        Only available if n_components is not None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
-        Estimated source
+        Estimated source matrix
 
     See also
     --------
@@ -533,7 +536,7 @@ def _reduce_data(Xs, n_components, n_jobs=None):
         delayed(temp)(X) for X in Xs
     )
     projections, reduced = zip(*parallelized_pca)
-    return projections, np.asarray(reduced)
+    return np.asarray(projections), np.asarray(reduced)
 
 
 def _multiview_ica_main(
