@@ -132,7 +132,7 @@ class MultiviewICA(BaseICA):
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         The projection matrices that project group data in reduced space.
-        Only available if n_components is not None
+        Has value None if n_components is None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
@@ -285,7 +285,7 @@ class PermICA(BaseICA):
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         The projection matrices that project group data in reduced space.
-        Only available if n_components is not None
+        Has value None if n_components is None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
@@ -412,7 +412,7 @@ class GroupICA(BaseICA):
     ----------
     components_ : np array of shape (n_groups, n_features, n_components)
         The projection matrices that project group data in reduced space.
-        Only available if n_components is not None
+        Has value None if n_components is None
     unmixings_ : np array of shape (n_groups, n_components, n_components)
         Estimated un-mixing matrices
     source_ : np array of shape (n_samples, n_components)
