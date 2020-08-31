@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
-from sklearn.utils import check_X_y, check_array
 import numpy as np
+from sklearn.utils import check_X_y, check_array
 
 
 def check_Xs(Xs, multiview=False, enforce_views=None):

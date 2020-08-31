@@ -28,14 +28,13 @@
 #
 # Modified from source package https://github.com/hugorichard/multiviewica
 
-import numpy as np
 import warnings
-from scipy.linalg import expm
+import numpy as np
 from scipy.optimize import linear_sum_assignment
 from sklearn.utils.extmath import randomized_svd
-from scipy import stats
 from joblib import Parallel, delayed
 from picard import picard
+
 from .base import BaseDecomposer
 
 
@@ -524,9 +523,7 @@ def _reduce_data(Xs, n_components, n_jobs=None):
     if n_components is None:
         return None, np.asarray(Xs)
 
-    n_groups = len(Xs)
     reduced = []
-    basis = []
 
     def temp(X):
         U_i, S_i, V_i = randomized_svd(X, n_components=n_components)

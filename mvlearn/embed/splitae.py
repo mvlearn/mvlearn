@@ -13,10 +13,15 @@
 # limitations under the License.
 
 import sys
+import itertools
+
+import numpy as np
+# XXX  I would use a nested import for matplotlib to make it a soft dep
+import matplotlib.pyplot as plt
+import tqdm
 
 try:
     import torch
-    from torch.utils.data import Dataset, DataLoader
 except ModuleNotFoundError as error:
     print(
         f"Error: {error}. torch dependencies required for this function. \
@@ -25,10 +30,6 @@ except ModuleNotFoundError as error:
     dependencies."
     )
     sys.exit(1)
-import matplotlib.pyplot as plt
-import numpy as np
-import itertools
-import tqdm
 
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
