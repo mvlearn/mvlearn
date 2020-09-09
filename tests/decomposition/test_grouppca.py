@@ -11,7 +11,7 @@ import scipy
 def test_pca(n_components, n_individual_components):
     gpca = GroupPCA(
         n_components=n_components,
-        n_individual_components=n_individual_components
+        n_individual_components=n_individual_components,
     )
     n_samples = 100
     n_features = [6, 4, 5]
@@ -28,8 +28,8 @@ def test_pca(n_components, n_individual_components):
 
     # check the equivalence of fit.transform and fit_transform
     X_r2 = gpca.fit_transform(Xs)
-    assert_allclose(X_r, X_r2)
     X_r = gpca.transform(Xs)
+    assert_allclose(X_r, X_r2)
     assert_allclose(X_r, X_r2)
 
 
