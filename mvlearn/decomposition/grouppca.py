@@ -166,8 +166,6 @@ class GroupPCA(BaseEstimator):
                 else:
                     dimension = self.n_individual_components_[i]
                 pca = PCA(dimension, whiten=self.whiten)
-
-                print(X.shape)
                 Xs[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
                 self.individual_explained_variance_ratio_.append(
