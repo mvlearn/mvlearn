@@ -13,7 +13,9 @@ class GroupICA(BaseEstimator):
     As an optional preprocessing, each dataset in `Xs` is reduced with
     usual PCA. Then, datasets are concatenated in the features direction,
     and a PCA is performed on this matrix, yielding a single dataset.
-    Then an ICA is performed yielding the output dataset.
+    Then an ICA is performed yielding the output dataset S. The unmixing matrix
+    corresponding to data X are obtained by solving
+    argmin_{W} ||S - WXs[i]||^2.
 
     Parameters
     ----------
@@ -51,13 +53,64 @@ class GroupICA(BaseEstimator):
 
     Attributes
     ----------
-    gpca_ : Instance of GroupPCA
-        GroupPCA used to reduce the data
+    components_ : array, shape (n_components, n_total_features)
+        Principal axes in feature space, representing the directions of
+        maximum variance in the data. The components are sorted by
+        ``explained_variance_``. `n_total_features` is the sum of all
+        the number of input features.
 
-    unmixing: np array of shape n_components, n_components
+    explained_variance_ : array, shape (n_components,)
+        The amount of variance explained by each of the selected components.
+
+    explained_variance_ratio_ : array, shape (n_components,)
+        Percentage of variance explained by each of the selected components.
+        If ``n_components`` is not set then all components are stored and the
+        sum of the ratios is equal to 1.0.
+
+    mean_ : array, shape (n_total_features, )
+        Per-feature empirical mean, estimated from the training set.
+
+    individual_components_ : list of array
+        Individual components for each individual PCA.
+        `individual_components_[i]` is an array of shape
+        (n_individual_components, n_features) where n_features is the number of
+        features in the dataset `i`.
+
+    individual_explained_variance_ : list of array
+        Individual explained variance for each individual PCA.
+        `individual_explained_variance_[i]` is an array of shape
+        (n_individual_components, ).
+
+    individual_explained_variance_ratio_ : list of array
+        Individual explained variance ratio for each individual PCA.
+        `individual_explained_variance_ratio_[i]` is an array of shape
+        (n_individual_components, ) where n_features is the number of
+        features in the dataset `i`.
+
+    individual_mean_ : list of array
+        Individual mean for each individual PCA.
+        `individual_mean_[i]` is an array of shape
+        (n_features) where n_features is the number of
+        features in the dataset `i`.
+
+    n_components_ : int
+        The estimated number of components.
+
+    n_features_ : list of int
+        Number of features in each training dataset.
+
+    n_samples_ : int
+        Number of samples in the training data.
+
+    n_subjects_ : int
+        Number of subjects in the training data
+
+    unmixing_: np array of shape n_components, n_components
         Unmixing matrix. Sources are given by unmixing.dot(X_reduced)
         where X_reduced are the data reduced by GroupPCA
 
+    mixings_: list of np array of shape n_components, n_features
+        Subject specific mixing matrices
     References
     ----------
 
@@ -80,12 +133,8 @@ class GroupICA(BaseEstimator):
         max_iter=100,
         tol=1e-7,
     ):
-        self.gpca = GroupPCA(
-            n_components=n_components,
-            n_individual_components=n_individual_components,
-            whiten=whiten,
-            random_state=random_state,
-        )
+        self.whiten = whiten
+        self.n_individual_components = n_individual_components
         self.n_components = n_components
         self.random_state = random_state
         self.max_iter = max_iter
@@ -108,9 +157,28 @@ class GroupICA(BaseEstimator):
             The transformed data
         """
         Xs = check_Xs(Xs)
-        X = self.gpca.fit_transform(Xs)
+        gpca = GroupPCA(
+            n_components=self.n_components,
+            n_individual_components=self.n_individual_components,
+            whiten=self.whiten,
+            random_state=self.random_state,
+        )
+        X = gpca.fit_transform(Xs)
         K, W, output = picard(X, max_iter=self.max_iter, tol=self.tol)
-        self.unmixing = W.dot(K)
+        self.unmixing_ = W.dot(K)
+        self.mean_ = gpca.mean_
+        self.individual_components_ = gpca.individual_components_
+        self.individual_explained_variance_ = (
+            gpca.individual_explained_variance_
+        )
+        self.individual_explained_variance_ratio_ = (
+            gpca.individual_explained_variance_ratio_
+        )
+        self.individual_mean_ = gpca.individual_mean_
+        self.n_components_ = gpca.n_components_
+        self.n_features_ = gpca.n_features_
+        self.n_samples_ = gpca.n_samples_
+        self.n_subjects_ = gpca.n_subjects_
         return output
 
     def fit(self, Xs, y=None):
@@ -146,13 +214,51 @@ class GroupICA(BaseEstimator):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
+        gpca = GroupPCA(
+            n_components=self.n_components,
+            n_individual_components=self.n_individual_components,
+            whiten=self.whiten,
+            random_state=self.random_state,
+        )
+        gpca.mean_ = self.mean_
+        gpca.individual_components_ = self.individual_components_
+        gpca.individual_explained_variance_ = (
+            self.individual_explained_variance_
+        )
+        gpca.individual_explained_variance_ratio_ = (
+            self.individual_explained_variance_ratio_
+        )
+        gpca.individual_mean_ = self.individual_mean_
+        gpca.n_components_ = self.n_components_
+        gpca.n_features_ = self.n_features_
+        gpca.n_samples_ = self.n_samples_
+        gpca.n_subjects_ = self.n_subjects_
         X = self.gpca.transform(Xs)
-        return self.unmixing.dot(X)
+        return self.unmixing_.dot(X)
 
     def inverse_transform(self, X_transformed):
         r"""
         A method to recover multiview data from transformed data
         """
+        gpca = GroupPCA(
+            n_components=self.n_components,
+            n_individual_components=self.n_individual_components,
+            whiten=self.whiten,
+            random_state=self.random_state,
+        )
+        gpca.mean_ = self.mean_
+        gpca.individual_components_ = self.individual_components_
+        gpca.individual_explained_variance_ = (
+            self.individual_explained_variance_
+        )
+        gpca.individual_explained_variance_ratio_ = (
+            self.individual_explained_variance_ratio_
+        )
+        gpca.individual_mean_ = self.individual_mean_
+        gpca.n_components_ = self.n_components_
+        gpca.n_features_ = self.n_features_
+        gpca.n_samples_ = self.n_samples_
+        gpca.n_subjects_ = self.n_subjects_
         return self.gpca.inverse_transform(
-            np.linalg.inv(self.unmixing).dot(X_transformed)
+            np.linalg.pinv(self.unmixing_).dot(X_transformed)
         )

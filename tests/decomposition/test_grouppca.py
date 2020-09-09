@@ -14,13 +14,14 @@ Xs = [
 ]
 
 
-@pytest.mark.parametrize("n_components", [None, 1, 3, 9])
-@pytest.mark.parametrize("n_individual_components",
-                         ['auto', None, 3, [2, 3, 4]])
+@pytest.mark.parametrize("n_components", [None, 1, 2, 3])
+@pytest.mark.parametrize(
+    "n_individual_components", ["auto", None, 3, [2, 3, 4]]
+)
 def test_pca(n_components, n_individual_components):
     gpca = GroupPCA(
         n_components=n_components,
-        n_individual_components=n_individual_components
+        n_individual_components=n_individual_components,
     )
     # check the shape of fit.transform
     X_transformed = gpca.fit(Xs).transform(Xs)
@@ -30,9 +31,10 @@ def test_pca(n_components, n_individual_components):
 
     # check the equivalence of fit.transform and fit_transform
     X_r2 = gpca.fit_transform(Xs)
-    assert_allclose(X_r, X_r2)
     X_r = gpca.transform(Xs)
     assert_allclose(X_r, X_r2)
+    assert_allclose(X_r, X_r2)
+
 
 #
 # @pytest.mark.parametrize("n_individual_components", [None, 3, [2, 3, 4]])
@@ -122,9 +124,3 @@ def test_pca(n_components, n_individual_components):
 #     assert_allclose(
 #         transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
 #     )
-
-
-# def test_grouppca_transform():
-#     X1 = np.zeros(100, 2)
-#     X1[:, 0] = np.arange(100)
-#     X1[:, 1] = 5 * np.arange(100) + np.random.rand(100)
