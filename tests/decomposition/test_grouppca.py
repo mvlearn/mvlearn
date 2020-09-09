@@ -1,10 +1,6 @@
 import numpy as np
-
 import pytest
-
 from sklearn.utils._testing import assert_allclose
-
-from sklearn.decomposition import PCA
 from mvlearn.decomposition.grouppca import GroupPCA
 
 n_samples = 1000
@@ -84,7 +80,7 @@ def test_whitening(n_individual_components, individual_output):
 
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2]])
-def test_pca_inverse(n_individual_components, whiten):
+def test_grouppca_inverse(n_individual_components, whiten):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -92,11 +88,9 @@ def test_pca_inverse(n_individual_components, whiten):
     X[:, 1] *= 0.00001  # make middle component relatively small
     X += [5, 4, 3]  # make a large mean
 
-    X2 = rng.randn(n, p)  # spherical data
-    X2[:, 2] *= 0.00001  # make middle component relatively small
-    X2 += [4, 5, 8]  # make a large mean
-    # same check that we can find the original data from the transformed
-    # signal (since the data is almost of rank n_components)
+    X2 = np.copy(X)
+    X2[:, 1] += rng.randn(n) * 0.00001
+
     Xs = [X, X2]
 
     gpca = GroupPCA(
@@ -113,8 +107,17 @@ def test_grouppca_deterministic_output():
     rng = np.random.RandomState(0)
     transformed_X = np.zeros((20, 2))
     for i in range(20):
-        pca = PCA(n_components=2, n_individual_components=3, random_state=rng)
+        pca = GroupPCA(
+            n_components=2, n_individual_components=3, random_state=rng
+        )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]
     assert_allclose(
         transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
     )
+
+
+# def test_grouppca_transform():
+#     X1 = np.zeros(100, 2)
+#     X1[:, 0] = np.arange(100)
+#     X1[:, 1] = 5 * np.arange(100) + np.random.rand(100)
+    

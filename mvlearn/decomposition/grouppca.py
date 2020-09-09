@@ -108,8 +108,13 @@ class GroupPCA(BaseEstimator):
     >>> Xs_transformed = pca.fit_transform(Xs)
     """
 
-    def __init__(self, n_components=None, n_individual_components='auto',
-                 whiten=False, random_state=None):
+    def __init__(
+        self,
+        n_components=None,
+        n_individual_components="auto",
+        whiten=False,
+        random_state=None,
+    ):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.whiten = whiten
@@ -140,15 +145,17 @@ class GroupPCA(BaseEstimator):
         if self.n_components is None:
             self.n_components_ = min(n_features)
             if self.individual_projection_:
-                self.n_components_ = min(self.n_components_,
-                                         self.n_individual_components_)
+                self.n_components_ = min(
+                    self.n_components_, self.n_individual_components_
+                )
         else:
             self.n_components_ = self.n_components
-        if self.n_individual_components == 'auto':
-            self.n_individual_components_ = min(self.n_components,
-                                                min(n_features))
+        if self.n_individual_components == "auto":
+            self.n_individual_components_ = min(
+                self.n_components, min(n_features)
+            )
         else:
-            self.n_individual_components_ = n_individual_components
+            self.n_individual_components_ = self.n_individual_components
         self.individual_projection_ = self.n_individual_components_ is not None
 
         if self.individual_projection_:
@@ -170,10 +177,10 @@ class GroupPCA(BaseEstimator):
                 self.individual_components_.append(pca.components_)
                 self.individual_explained_variance_ratio_.append(
                     pca.explained_variance_ratio_
-                    )
+                )
                 self.individual_explained_variance_.append(
                     pca.explained_variance_
-                    )
+                )
                 self.individual_mean_.append(pca.mean_)
         X_stack = np.hstack(Xs)
         pca = PCA(self.n_components_, whiten=self.whiten)
@@ -198,6 +205,7 @@ class GroupPCA(BaseEstimator):
         self : object
             Returns the instance itself.
         """
+        self.features = [x.shape[1] for x in Xs]
         self.fit_transform(Xs, y)
         return self
 
@@ -218,11 +226,14 @@ class GroupPCA(BaseEstimator):
             The transformed data
         """
         if self.individual_projection_:
-            for i, (X, mean, components_, explained_variance_) in (
-                enumerate(zip(Xs, self.individual_mean_,
-                              self.individual_components_,
-                              self.individual_explained_variance_s))
-                                                                   ):
+            for i, (X, mean, components_, explained_variance_) in enumerate(
+                zip(
+                    Xs,
+                    self.individual_mean_,
+                    self.individual_components_,
+                    self.individual_explained_variance_,
+                )
+            ):
                 X = X - mean
                 X_transformed = np.dot(X, components_.T)
                 if self.whiten:
@@ -233,3 +244,41 @@ class GroupPCA(BaseEstimator):
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
         return X_transformed
+
+    def inverse_transform(self, X_transformed):
+        r"""
+        A method to recover multiview data from transformed data
+        """
+        # Inverse stacked PCA
+        if self.whiten:
+            X_t = X_transformed * np.sqrt(self.explained_variance_)
+        else:
+            X_t = X_transformed
+        X_stack = X_t.dot(self.components_)
+        X_stack = X_stack + self.mean_
+
+        if self.individual_projection_:
+            Xs = []
+            cur_p = 0
+            for (mean, components_, explained_variance_) in zip(
+                self.individual_mean_,
+                self.individual_components_,
+                self.individual_explained_variance_,
+            ):
+                n_components, n_features_i = components_.shape
+                sl = slice(cur_p, cur_p + n_features_i)
+                Xt_i = X_stack[:, sl]
+                if self.whiten:
+                    Xt_i *= np.sqrt(explained_variance_)
+                X_i = Xt_i.dot(components_)
+                X_i = X_i + mean
+                Xs.append(X_i)
+                cur_p += n_features_i
+        else:
+            Xs = []
+            cur_p = 0
+            for n_features_i in self.features:
+                sl = slice(cur_p, cur_p + n_features_i)
+                Xs.append(X_stack[:, sl])
+                cur_p += n_features_i
+        return Xs
