@@ -16,7 +16,7 @@ import numpy as np
 from sklearn.utils import check_X_y, check_array
 
 
-def check_Xs(Xs, multiview=False, enforce_views=None):
+def check_Xs(Xs, multiview=False, enforce_views=None, copy=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices.
 
@@ -60,7 +60,7 @@ def check_Xs(Xs, multiview=False, enforce_views=None):
                 " but found {}".format(enforce_views, len(Xs))
             raise ValueError(msg)
 
-    Xs_converted = [check_array(X, allow_nd=False) for X in Xs]
+    Xs_converted = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
 
     if not len(set([X.shape[0] for X in Xs_converted])) == 1:
         msg = "All views must have the same number of samples"

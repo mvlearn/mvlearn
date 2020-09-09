@@ -28,6 +28,11 @@ class GroupPCA(BaseEstimator):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
+    copy : bool, default=True
+        If False, data passed to fit are overwritten and running
+        fit(X).transform(X) will not yield the expected results,
+        use fit_transform(X) instead.
+
     whiten : bool, optional (default False)
         When True (False by default) the `components_` vectors are multiplied
         by the square root of n_samples and then divided by the singular values
@@ -112,11 +117,13 @@ class GroupPCA(BaseEstimator):
         self,
         n_components=None,
         n_individual_components="auto",
+        copy=True,
         whiten=False,
         random_state=None,
     ):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
+        self.copy = copy
         self.whiten = whiten
         self.random_state = random_state
 
@@ -136,7 +143,7 @@ class GroupPCA(BaseEstimator):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
-        Xs = check_Xs(Xs)
+        Xs = check_Xs(Xs, copy=self.copy)
         n_features = [X.shape[1] for X in Xs]
         self.n_subjects_ = len(Xs)
         self.n_features_ = n_features
@@ -220,6 +227,7 @@ class GroupPCA(BaseEstimator):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
+        Xs = check_Xs(Xs, copy=self.copy)
         if self.individual_projection_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
                 zip(
@@ -249,7 +257,7 @@ class GroupPCA(BaseEstimator):
             X_t = X_transformed * np.sqrt(self.explained_variance_)
         else:
             X_t = X_transformed
-        X_stack = X_t.dot(self.components_)
+        X_stack = np.dot(X_t, self.components_)
         X_stack = X_stack + self.mean_
 
         if self.individual_projection_:
@@ -260,20 +268,15 @@ class GroupPCA(BaseEstimator):
                 self.individual_components_,
                 self.individual_explained_variance_,
             ):
-                n_components, n_features_i = components_.shape
+                n_features_i = components_.shape[0]
                 sl = slice(cur_p, cur_p + n_features_i)
-                Xt_i = X_stack[:, sl]
+                X_i = X_stack[:, sl]
                 if self.whiten:
-                    Xt_i *= np.sqrt(explained_variance_)
-                X_i = Xt_i.dot(components_)
+                    X_i *= np.sqrt(explained_variance_)
+                X_i = np.dot(X_i, components_)
                 X_i = X_i + mean
                 Xs.append(X_i)
                 cur_p += n_features_i
         else:
-            Xs = []
-            cur_p = 0
-            for n_features_i in self.features:
-                sl = slice(cur_p, cur_p + n_features_i)
-                Xs.append(X_stack[:, sl])
-                cur_p += n_features_i
+            Xs = np.split(X_stack, np.cumsum(self.n_features_)[:-1], axis=1)
         return Xs
