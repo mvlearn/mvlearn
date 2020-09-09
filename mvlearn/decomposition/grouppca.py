@@ -164,6 +164,9 @@ class GroupPCA(BaseEstimator):
             )
         else:
             self.n_individual_components_ = self.n_individual_components
+        if self.n_individual_components_ is None and self.prewhiten:
+            # Still need to whiten data
+            self.n_individual_components_ = self.n_features_
         self.individual_projection_ = self.n_individual_components_ is not None
 
         if self.individual_projection_:
