@@ -33,8 +33,8 @@ def test_pca(n_components, n_individual_components):
     assert_allclose(X_r, X_r2)
 
 
-@pytest.mark.parametrize("n_individual_components", [None, 3, [2, 3, 4]])
-def test_whitening(n_individual_components, individual_output):
+@pytest.mark.parametrize("n_individual_components", [None, 20, [10, 15, 20]])
+def test_whitening(n_individual_components):
     # Check that PCA output has unit-variance
     rng = np.random.RandomState(0)
     n_samples = 100
@@ -56,7 +56,7 @@ def test_whitening(n_individual_components, individual_output):
     # the component-wise variance is thus highly varying:
     assert X.std(axis=0).std() > 43.8
     Xs = np.array_split(X, 3, axis=1)
-    # whiten the data while projecting to the lower dim subspace
+    print([x.shape for x in Xs])
     Xs_ = Xs.copy()  # make sure we keep an original across iterations.
     gpca = GroupPCA(
         n_components=n_components,
