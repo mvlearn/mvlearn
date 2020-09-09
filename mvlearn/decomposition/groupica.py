@@ -29,6 +29,13 @@ class GroupICA(BaseEstimator):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
+    max_iter : int
+        Maximal number of iterations for the algorithm
+
+    tol : float
+        tolerance for the stopping criterion. Iterations stop when the norm
+        of the gradient gets smaller than tol.
+
     whiten : bool, optional (default False)
         When True (False by default) the `components_` vectors are multiplied
         by the square root of n_samples and then divided by the singular values
