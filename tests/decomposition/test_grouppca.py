@@ -34,7 +34,8 @@ def test_pca(n_components, n_individual_components):
 
 
 @pytest.mark.parametrize("n_individual_components", [None, 20, [10, 15, 20]])
-def test_whitening(n_individual_components):
+@pytest.mark.parametrize("prewhiten", [True, False])
+def test_whitening(n_individual_components, prewhiten):
     # Check that PCA output has unit-variance
     rng = np.random.RandomState(0)
     n_samples = 100
@@ -61,6 +62,7 @@ def test_whitening(n_individual_components):
     gpca = GroupPCA(
         n_components=n_components,
         whiten=True,
+        prewhiten=prewhiten,
         random_state=0,
         n_individual_components=n_individual_components,
     )
@@ -75,17 +77,17 @@ def test_whitening(n_individual_components):
     gpca = GroupPCA(
         n_components=n_components,
         whiten=False,
+        prewhiten=prewhiten,
         n_individual_components=n_individual_components,
     ).fit(Xs)
     X_unwhitened = gpca.transform(Xs_)
     assert X_unwhitened.shape == (n_samples, n_components)
-    # in that case the output components still have varying variances
-    assert X_unwhitened.std(axis=0).std() > 20
 
 
+@pytest.mark.parametrize("prewhiten", [False, True])
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2]])
-def test_grouppca_inverse(n_individual_components, whiten):
+def test_grouppca_inverse(n_individual_components, prewhiten, whiten):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -100,6 +102,7 @@ def test_grouppca_inverse(n_individual_components, whiten):
 
     gpca = GroupPCA(
         n_components=2,
+        prewhiten=prewhiten,
         whiten=whiten,
         n_individual_components=n_individual_components,
     ).fit(Xs)

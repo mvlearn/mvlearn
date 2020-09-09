@@ -33,6 +33,9 @@ class GroupPCA(BaseEstimator):
         fit(X).transform(X) will not yield the expected results,
         use fit_transform(X) instead.
 
+    prewhiten : bool, optional (default False)
+        Whether the data should be whitened after the original preprocessing.
+
     whiten : bool, optional (default False)
         When True (False by default) the `components_` vectors are multiplied
         by the square root of n_samples and then divided by the singular values
@@ -118,12 +121,14 @@ class GroupPCA(BaseEstimator):
         n_components=None,
         n_individual_components="auto",
         copy=True,
+        prewhiten=False,
         whiten=False,
         random_state=None,
     ):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.copy = copy
+        self.prewhiten = prewhiten
         self.whiten = whiten
         self.random_state = random_state
 
@@ -175,7 +180,8 @@ class GroupPCA(BaseEstimator):
                     dimension = self.n_individual_components_
                 else:
                     dimension = self.n_individual_components_[i]
-                pca = PCA(dimension, whiten=self.whiten)
+                pca = PCA(dimension, whiten=self.prewhiten,
+                          random_state=self.random_state)
                 Xs[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
                 self.individual_explained_variance_ratio_.append(
@@ -239,7 +245,7 @@ class GroupPCA(BaseEstimator):
             ):
                 X = X - mean
                 X_transformed = np.dot(X, components_.T)
-                if self.whiten:
+                if self.prewhiten:
                     X_transformed /= np.sqrt(explained_variance_)
                 Xs[i] = X_transformed
         X_stack = np.hstack(Xs) - self.mean_
@@ -271,7 +277,7 @@ class GroupPCA(BaseEstimator):
                 n_features_i = components_.shape[0]
                 sl = slice(cur_p, cur_p + n_features_i)
                 X_i = X_stack[:, sl]
-                if self.whiten:
+                if self.prewhiten:
                     X_i *= np.sqrt(explained_variance_)
                 X_i = np.dot(X_i, components_)
                 X_i = X_i + mean
