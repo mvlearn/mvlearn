@@ -18,7 +18,7 @@ class GroupPCA(BaseEstimator):
     ----------
     n_components : int, optional
         Number of components to extract. If None, n_components is set to
-        the minimum number of features in the dataset
+        the minimum number of features in the dataset.
 
     n_individual_components : int or list of int or 'auto', optional
         The number of individual components to extract as a preprocessing.
@@ -144,15 +144,11 @@ class GroupPCA(BaseEstimator):
 
         if self.n_components is None:
             self.n_components_ = min(n_features)
-            if self.individual_projection_:
-                self.n_components_ = min(
-                    self.n_components_, self.n_individual_components_
-                )
         else:
             self.n_components_ = self.n_components
         if self.n_individual_components == "auto":
             self.n_individual_components_ = min(
-                self.n_components, min(n_features)
+                self.n_components_, min(n_features)
             )
         else:
             self.n_individual_components_ = self.n_individual_components
@@ -205,7 +201,6 @@ class GroupPCA(BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        self.features = [x.shape[1] for x in Xs]
         self.fit_transform(Xs, y)
         return self
 
