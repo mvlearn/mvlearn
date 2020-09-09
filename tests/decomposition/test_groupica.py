@@ -37,7 +37,7 @@ def test_group_ica_simple(add_noise, seed):
     mixings = [rng.randn(n_feature, n_sources) for n_feature in n_features]
     Xs = [np.dot(sources, mixing.T) for mixing in mixings]
     if add_noise:
-        for i, (X, n_feature) in zip(Xs, n_featuress):
+        for i, (X, n_feature) in zip(Xs, n_features):
             Xs[i] = X + 0.01 * rng.randn(n_samples, n_feature)
 
     groupica = GroupICA(n_sources=n_sources).fit(Xs)
