@@ -20,17 +20,17 @@ from sklearn.decomposition import fastica
 
 
 from ..utils.utils import check_Xs
-from .base import BaseEstimator
+from .base import BaseDecomposer
 from .grouppca import GroupPCA
 
 
-class GroupICA(BaseEstimator):
+class GroupICA(BaseDecomposer):
     r"""
     Group Independent component analysis.
-    As an optional preprocessing, each dataset in `Xs` is reduced with
-    usual PCA. Then, datasets are concatenated in the features direction,
-    and a PCA is performed on this matrix, yielding a single dataset.
-    Then an ICA is performed yielding the output dataset S. The unmixing matrix
+    Each dataset in `Xs` is reduced with usual PCA (this step is optional).
+    Then, datasets are concatenated in the features direction, and a PCA is
+    performed on this matrix, yielding a single dataset. ICA is finally
+    performed yielding the output dataset S. The unmixing matrix W
     corresponding to data X are obtained by solving
     argmin_{W} ||S - WX||^2.
 
@@ -106,6 +106,10 @@ class GroupICA(BaseEstimator):
     n_subjects_ : int
         Number of subjects in the training data
 
+    See also
+    --------
+    multiviewica
+
     References
     ----------
     .. [#1groupica] Calhoun, Vince, et al. "A method for making group
@@ -165,8 +169,8 @@ class GroupICA(BaseEstimator):
 
         Returns
         -------
-        X_transformed : array of shape (n_samples, n_components)
-            The transformed data
+        sources : array, shape (n_samples, n_components)
+             Estimated sources
         """
         Xs = check_Xs(Xs, copy=True)
         self.means_ = [np.mean(X, axis=0) for X in Xs]
@@ -210,7 +214,7 @@ class GroupICA(BaseEstimator):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit  to the data and transform the data
+        Fit to the data and transform the data into sources
 
         Parameters
         ----------
@@ -221,8 +225,12 @@ class GroupICA(BaseEstimator):
 
         Returns
         -------
-        X_transformed : array of shape (n_samples, n_components)
-            The transformed data
+        X_transformed : list of array-likes or numpy.ndarray
+            The transformed data.
+            If `multiple_outputs` is True, it is a list with the estimated
+            individual sources.
+            If `multiple_outputs` is False, it is a single array containing the
+            shared sources.
         """
         sources = self._fit(Xs, y)
         if self.multiple_outputs:
@@ -234,9 +242,9 @@ class GroupICA(BaseEstimator):
         r"""Fit the model with Xs.
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where n_samples is the number of samples
-            and n_features is the number of features.
+        Xs: list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
         y : None
             Ignored variable.
         Returns
@@ -260,8 +268,12 @@ class GroupICA(BaseEstimator):
 
         Returns
         -------
-        X_transformed : array of shape (n_samples, n_components)
-            The transformed data
+        X_transformed : list of array-likes or numpy.ndarray
+            The transformed data.
+            If `multiple_outputs` is True, it is a list with the estimated
+            individual sources.
+            If `multiple_outputs` is False, it is a single array containing the
+            shared sources.
         """
         Xs = check_Xs(Xs, copy=True)
         if self.multiple_outputs:
@@ -277,7 +289,20 @@ class GroupICA(BaseEstimator):
 
     def inverse_transform(self, X_transformed):
         r"""
-        A method to recover multiview data from transformed data
+        A method to recover multiview data from transformed data.
+
+        Parameters
+        ----------
+        list of array-likes or numpy.ndarray
+            If `multiple_outputs` is True, it must be a list of arrays of shape
+            (n_samples, n_components) containing estimated sources.
+            If `multiple_outputs` is False, it must be a single
+            array containing shared sources.
+
+        Returns
+        -------
+        Xs : array of shape (n_samples, n_components) or list of arrays
+            The recovered individual datasets.
         """
         if self.multiple_outputs:
             return [
