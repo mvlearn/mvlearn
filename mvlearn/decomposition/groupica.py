@@ -17,6 +17,7 @@ import numpy as np
 from picard import picard
 import scipy.linalg as linalg
 from sklearn.decomposition import fastica
+from sklearn.utils.validation import check_is_fitted
 
 
 from ..utils.utils import check_Xs
@@ -124,6 +125,8 @@ class GroupICA(BaseDecomposer):
     >>> Xs, _ = load_UCImultifeature()
     >>> ica = GroupICA(n_components=3)
     >>> Xs_transformed = ica.fit_transform(Xs)
+    >>> print(Xs_transformed.shape)
+    (2000, 3)
     """
 
     def __init__(
@@ -276,7 +279,9 @@ class GroupICA(BaseDecomposer):
             If `multiple_outputs` is False, it is a single array containing the
             shared sources.
         """
+        check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
+
         if self.multiple_outputs:
             return [
                 np.dot(X - mean, W.T)
@@ -294,7 +299,7 @@ class GroupICA(BaseDecomposer):
 
         Parameters
         ----------
-        list of array-likes or numpy.ndarray
+        X_transformed : list of array-likes or numpy.ndarray
             If `multiple_outputs` is True, it must be a list of arrays of shape
             (n_samples, n_components) containing estimated sources.
             If `multiple_outputs` is False, it must be a single
@@ -302,9 +307,11 @@ class GroupICA(BaseDecomposer):
 
         Returns
         -------
-        Xs : array of shape (n_samples, n_components) or list of arrays
+        Xs : list of arrays
             The recovered individual datasets.
         """
+        check_is_fitted(self)
+
         if self.multiple_outputs:
             return [
                 np.dot(X, A.T) + mean

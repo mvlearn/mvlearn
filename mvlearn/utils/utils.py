@@ -32,6 +32,12 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False):
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
 
+    copy : boolean, (default=False)
+        If True, the returned Xs is a copy of the input Xs,
+        and operations on the output will not affect
+        the input.
+        If False, the returned Xs is a view of the input Xs,
+        and operations on the output will change the input.
     Returns
     -------
     Xs_converted : object

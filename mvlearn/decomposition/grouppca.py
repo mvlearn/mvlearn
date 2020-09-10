@@ -15,6 +15,7 @@
 
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.utils.validation import check_is_fitted
 
 
 from ..utils.utils import check_Xs
@@ -128,6 +129,8 @@ class GroupPCA(BaseDecomposer):
     >>> Xs, _ = load_UCImultifeature()
     >>> pca = GroupPCA(n_components=3)
     >>> Xs_transformed = pca.fit_transform(Xs)
+    >>> print(Xs_transformed.shape)
+    (2000, 3)
     """
 
     def __init__(
@@ -148,7 +151,8 @@ class GroupPCA(BaseDecomposer):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit  to the data and transform the data
+        Fit  to the data and transform the data, merging datasets
+        together and reducing the dimensionality.
 
         Parameters
         ----------
@@ -239,7 +243,10 @@ class GroupPCA(BaseDecomposer):
 
     def transform(self, Xs, y=None):
         r"""
-        A method to fit model to multiview data.
+        Apply groupPCA to Xs.
+
+        Xs is projected on the principal components learned
+        in the training set.
 
         Parameters
         ----------
@@ -253,7 +260,9 @@ class GroupPCA(BaseDecomposer):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
+        check_is_fitted(self)
         Xs = check_Xs(Xs, copy=self.copy)
+
         if self.individual_projection_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
                 zip(
@@ -276,8 +285,22 @@ class GroupPCA(BaseDecomposer):
 
     def inverse_transform(self, X_transformed):
         r"""
-        A method to recover multiview data from transformed data
+        A method to recover multiview data from transformed data.
+        Returns an array Xs such that the transform of Xs would be
+        X_transformed
+
+        Parameters
+        ----------
+        X_transformed : array of shape (n_samples, n_components)
+            The dataset corresponding to transformed data
+
+        Returns
+        -------
+        Xs : list of arrays
+            The recovered individual datasets
         """
+        check_is_fitted(self)
+
         # Inverse stacked PCA
         if self.whiten:
             X_t = X_transformed * np.sqrt(self.explained_variance_)
