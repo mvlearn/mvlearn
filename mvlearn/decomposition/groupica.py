@@ -108,6 +108,7 @@ class GroupICA(BaseDecomposer):
 
     See also
     --------
+    grouppca
     multiviewica
 
     References
