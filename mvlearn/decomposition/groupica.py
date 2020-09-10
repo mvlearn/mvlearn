@@ -133,7 +133,7 @@ class GroupICA(BaseEstimator):
     ):
         if solver == "picard":
             try:
-                from picard import picard
+                from picard import picard  # noqa: F401
             except ModuleNotFoundError:
                 raise ModuleNotFoundError(
                     "Picard does not seem to be "
