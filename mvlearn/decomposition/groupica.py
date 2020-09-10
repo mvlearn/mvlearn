@@ -1,4 +1,3 @@
-
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,20 +127,21 @@ class GroupICA(BaseEstimator):
         n_individual_components="auto",
         multiple_outputs=False,
         prewhiten=False,
-        solver='fastica',
+        solver="fastica",
         ica_kwargs={},
-        random_state=None
+        random_state=None,
     ):
-        if solver == 'picard':
+        if solver == "picard":
             try:
                 from picard import picard
             except ModuleNotFoundError:
-                raise ModuleNotFoundError("Picard does not seem to be "
-                                          "installed. Try $pip install "
-                                          "python-picard")
-        elif solver != 'fastica':
-            raise ValueError("Invalid solver, must be either `fastica` or "
-                             "`picard`")
+                raise ModuleNotFoundError(
+                    "Picard does not seem to be "
+                    "installed. Try $pip install "
+                    "python-picard"
+                )
+        elif solver != "fastica":
+            raise ValueError("Invalid solver, must be either `fastica` or `picard`")
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.multiple_outputs = multiple_outputs
@@ -178,12 +178,14 @@ class GroupICA(BaseEstimator):
         )
         X_pca = gpca.fit_transform(Xs)
         self.grouppca_ = gpca
-        if self.solver == 'fastica':
-            K, W, sources = fastica(X_pca, **self.ica_kwargs,
-                                    random_state=self.random_state)
+        if self.solver == "fastica":
+            K, W, sources = fastica(
+                X_pca, **self.ica_kwargs, random_state=self.random_state
+            )
         else:
-            K, W, sources = picard(X_pca.T, **self.ica_kwargs,
-                                   random_state=self.random_state)
+            K, W, sources = picard(
+                X_pca.T, **self.ica_kwargs, random_state=self.random_state
+            )
             sources = sources.T
         if K is not None:
             self.components_ = np.dot(W, K)
@@ -261,19 +263,25 @@ class GroupICA(BaseEstimator):
         """
         Xs = check_Xs(Xs, copy=True)
         if self.multiple_outputs:
-            return [np.dot(X - mean, W.T) for W, X, mean in (
-                    zip(self.individual_components_, Xs, self.means_))]
+            return [
+                np.dot(X - mean, W.T)
+                for W, X, mean in (zip(self.individual_components_, Xs, self.means_))
+            ]
         else:
             X = self.grouppca_.transform(Xs)
-            return np.dot(X, self.components_)
+            return np.dot(X, self.components_.T)
 
     def inverse_transform(self, X_transformed):
         r"""
         A method to recover multiview data from transformed data
         """
         if self.multiple_outputs:
-            return [np.dot(X, A.T) + mean for X, A, mean in (
-                zip(X_transformed, self.individual_mixing_, self.means_))]
+            return [
+                np.dot(X, A.T) + mean
+                for X, A, mean in (
+                    zip(X_transformed, self.individual_mixing_, self.means_)
+                )
+            ]
 
         else:
             return self.grouppca_.inverse_transform(

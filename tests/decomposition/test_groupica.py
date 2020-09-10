@@ -24,25 +24,25 @@ def generate_signals(n_samples, n_sources, n_features, noise_level, rng):
     sources = rng.laplace(size=(n_samples, n_sources))
     mixings = [rng.randn(n_feature, n_sources) for n_feature in n_features]
     noises = [rng.randn(n_samples, n_feature) for n_feature in n_features]
-    Xs = [np.dot(sources, mixing.T) + noise_level * noise
-          for mixing, noise in zip(mixings, noises)]
+    Xs = [
+        np.dot(sources, mixing.T) + noise_level * noise
+        for mixing, noise in zip(mixings, noises)
+    ]
     return Xs, sources, mixings
 
 
 @pytest.mark.parametrize("n_components", [None, 1, 3])
-@pytest.mark.parametrize("n_individual_components",
-                         ['auto', None, 3, [2, 3, 4]])
+@pytest.mark.parametrize("n_individual_components", ["auto", None, 3, [2, 3, 4]])
 @pytest.mark.parametrize("multiple_outputs", [True, False])
-@pytest.mark.parametrize("solver", ['picard', 'fastica'])
-def test_transform(n_components, n_individual_components, multiple_outputs,
-                   solver):
+@pytest.mark.parametrize("solver", ["picard", "fastica"])
+def test_transform(n_components, n_individual_components, multiple_outputs, solver):
     ica_kwargs = dict(tol=1)
     ica = GroupICA(
         n_components=n_components,
         n_individual_components=n_individual_components,
         multiple_outputs=multiple_outputs,
         solver=solver,
-        ica_kwargs=ica_kwargs
+        ica_kwargs=ica_kwargs,
     )
     rng = np.random.RandomState(0)
     n_samples = 100
@@ -64,57 +64,76 @@ def test_transform(n_components, n_individual_components, multiple_outputs,
             assert_allclose(X, X2)
     else:
         assert_allclose(X_r, X_r2)
+    X_r = ica.fit_transform(Xs)
+    X_r2 = ica.transform(Xs)
+    if multiple_outputs:
+        for X, X2 in zip(X_r, X_r2):
+            assert_allclose(X, X2)
+    else:
+        assert_allclose(X_r, X_r2)
 
 
 @pytest.mark.parametrize("n_features", [(4, 4, 4), (3, 4, 5)])
 @pytest.mark.parametrize("n_components", [None, 2, 3])
-@pytest.mark.parametrize("n_individual_components", ['auto', (2, 3, 2)])
+@pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
 @pytest.mark.parametrize("multiple_outputs", [True, False])
 @pytest.mark.parametrize("prewhiten", [True, False])
-@pytest.mark.parametrize("solver", ['picard', 'fastica'])
-def test_dimensions(n_features, n_components, n_individual_components,
-                    multiple_outputs, prewhiten, solver):
+@pytest.mark.parametrize("solver", ["picard", "fastica"])
+def test_dimensions(
+    n_features,
+    n_components,
+    n_individual_components,
+    multiple_outputs,
+    prewhiten,
+    solver,
+):
     n_samples = 10
     n_sources = 3
     noise_level = 0.1
     rng = np.random.RandomState(0)
-    Xs, sources, mixings = generate_signals(n_samples, n_sources, n_features,
-                                            noise_level, rng)
+    Xs, sources, mixings = generate_signals(
+        n_samples, n_sources, n_features, noise_level, rng
+    )
     ica_kwargs = dict(tol=1)
-    ica = GroupICA(n_components=n_components,
-                   n_individual_components=n_individual_components,
-                   multiple_outputs=multiple_outputs,
-                   prewhiten=prewhiten,
-                   solver=solver,
-                   ica_kwargs=ica_kwargs,
-                   random_state=rng)
+    ica = GroupICA(
+        n_components=n_components,
+        n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
+        prewhiten=prewhiten,
+        solver=solver,
+        ica_kwargs=ica_kwargs,
+        random_state=rng,
+    )
     ica.fit(Xs)
     if n_components is None:
         n_components = min(n_features)
     assert ica.mixing_.shape == (n_components, n_components)
     assert ica.components_.shape == (n_components, n_components)
     for i, n_feature in enumerate(n_features):
-        assert ica.means_[i].shape == (n_feature, )
+        assert ica.means_[i].shape == (n_feature,)
         assert ica.individual_components_[i].shape == (n_components, n_feature)
         assert ica.individual_mixing_[i].shape == (n_feature, n_components)
 
 
-@pytest.mark.parametrize("n_individual_components", ['auto', (2, 3, 2)])
+@pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
 @pytest.mark.parametrize("multiple_outputs", [True, False])
-@pytest.mark.parametrize("solver", ['picard', 'fastica'])
+@pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_source_recovery(n_individual_components, multiple_outputs, solver):
     rng = np.random.RandomState(0)
     n_samples = 500
     n_sources = 2
     n_features = [2, 3, 4]
     noise_level = 0.01
-    Xs, sources, mixings = generate_signals(n_samples, n_sources, n_features,
-                                            noise_level, rng)
-    ica = GroupICA(n_components=2,
-                   n_individual_components=n_individual_components,
-                   multiple_outputs=multiple_outputs,
-                   solver=solver,
-                   random_state=rng)
+    Xs, sources, mixings = generate_signals(
+        n_samples, n_sources, n_features, noise_level, rng
+    )
+    ica = GroupICA(
+        n_components=2,
+        n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
+        solver=solver,
+        random_state=rng,
+    )
     ica.fit(Xs)
     estimated_sources = ica.transform(Xs)
     estimated_mixings = ica.individual_mixing_
@@ -126,22 +145,25 @@ def test_source_recovery(n_individual_components, multiple_outputs, solver):
             assert amari_d(np.linalg.pinv(A), A_) < 1e-3
 
 
-@pytest.mark.parametrize("n_individual_components", ['auto', (2, 3, 2)])
+@pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
 @pytest.mark.parametrize("multiple_outputs", [True, False])
-@pytest.mark.parametrize("solver", ['picard', 'fastica'])
+@pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_inverse_transform(n_individual_components, multiple_outputs, solver):
     rng = np.random.RandomState(0)
     n_samples = 500
     n_sources = 2
     n_features = [2, 3, 4]
     noise_level = 0.0001
-    Xs, sources, mixings = generate_signals(n_samples, n_sources, n_features,
-                                            noise_level, rng)
-    ica = GroupICA(n_components=2,
-                   n_individual_components=n_individual_components,
-                   multiple_outputs=multiple_outputs,
-                   solver=solver,
-                   random_state=rng)
+    Xs, sources, mixings = generate_signals(
+        n_samples, n_sources, n_features, noise_level, rng
+    )
+    ica = GroupICA(
+        n_components=2,
+        n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
+        solver=solver,
+        random_state=rng,
+    )
     ica.fit(Xs)
     estimated_sources = ica.transform(Xs)
     recovered_signals = ica.inverse_transform(estimated_sources)
