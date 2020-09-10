@@ -1,5 +1,4 @@
 import numpy as np
-from scipy import linalg
 from sklearn.decomposition import PCA
 
 
