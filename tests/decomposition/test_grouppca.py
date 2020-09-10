@@ -30,7 +30,6 @@ def test_pca(n_components, n_individual_components):
     X_r2 = gpca.fit_transform(Xs)
     X_r = gpca.transform(Xs)
     assert_allclose(X_r, X_r2)
-    assert_allclose(X_r, X_r2)
 
 
 @pytest.mark.parametrize("n_individual_components", [None, 20, [10, 15, 20]])

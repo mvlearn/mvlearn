@@ -1,10 +1,12 @@
 import numpy as np
 from picard import picard
-from .grouppca import GroupPCA
+import scipy.linalg as linalg
+from sklearn.decomposition import fastica
 
 
 from ..utils.utils import check_Xs
 from .base import BaseEstimator
+from .grouppca import GroupPCA
 
 
 class GroupICA(BaseEstimator):
@@ -15,7 +17,7 @@ class GroupICA(BaseEstimator):
     and a PCA is performed on this matrix, yielding a single dataset.
     Then an ICA is performed yielding the output dataset S. The unmixing matrix
     corresponding to data X are obtained by solving
-    argmin_{W} ||S - WXs[i]||^2.
+    argmin_{W} ||S - WX||^2.
 
     Parameters
     ----------
@@ -31,66 +33,50 @@ class GroupICA(BaseEstimator):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
-    max_iter : int
-        Maximal number of iterations for the algorithm
+    multiple_outputs : bool, optional
+        If True, the `.transform` method returns one dataset per view.
+        Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
-    tol : float
-        tolerance for the stopping criterion. Iterations stop when the norm
-        of the gradient gets smaller than tol.
+    prewhiten : bool, optional (default False)
+        Whether the data should be whitened after the original preprocessing.
 
-    whiten : bool, optional (default False)
-        When True (False by default) the `components_` vectors are multiplied
-        by the square root of n_samples and then divided by the singular values
-        to ensure uncorrelated outputs with unit component-wise variances.
-        Whitening will remove some information from the transformed signal
-        (the relative variance scales of the components) but can sometime
-        improve the predictive accuracy of the downstream estimators by
-        making their data respect some hard-wired assumptions.
+    solver : str {'fastica', 'picard'}
+        Chooses which ICA solver to use. `picard` is generally faster and
+        more reliable, but it requires to be installed.
+
+    ica_kwargs : dict
+        Optional keyword arguments for the ICA solver. If solver='fastica',
+        see the documentation of sklearn.decomposition.fastica.
+        If solver='picard', see the documentation of picard.picard.
 
     random_state : int, RandomState instance, default=None
-        Used when ``svd_solver`` == 'arpack' or 'randomized'. Pass an int
-        for reproducible results across multiple function calls.
+            random state
 
     Attributes
     ----------
-    components_ : array, shape (n_components, n_total_features)
-        Principal axes in feature space, representing the directions of
-        maximum variance in the data. The components are sorted by
-        ``explained_variance_``. `n_total_features` is the sum of all
-        the number of input features.
+    means_ : list of arrays of shape (n_components,)
+        The mean of each dataset
 
-    explained_variance_ : array, shape (n_components,)
-        The amount of variance explained by each of the selected components.
+    grouppca_ : mvlearn.decomposition.GroupPCA instance
+        A GroupPCA class for preprocessing and dimension reduction
 
-    explained_variance_ratio_ : array, shape (n_components,)
-        Percentage of variance explained by each of the selected components.
-        If ``n_components`` is not set then all components are stored and the
-        sum of the ratios is equal to 1.0.
+    unmixing_ : array, shape (n_components, n_components)
+        The square unmixing matrix, linking the output of the group-pca
+        and the independent components.
 
-    mean_ : array, shape (n_total_features, )
-        Per-feature empirical mean, estimated from the training set.
+    components_ : array, shape (n_components, n_components)
+        The square mixing matrix
 
     individual_components_ : list of array
-        Individual components for each individual PCA.
+        Individual unmixing matrices estimated by least squares.
         `individual_components_[i]` is an array of shape
-        (n_individual_components, n_features) where n_features is the number of
+        (n_components, n_features) where n_features is the number of
         features in the dataset `i`.
 
-    individual_explained_variance_ : list of array
-        Individual explained variance for each individual PCA.
-        `individual_explained_variance_[i]` is an array of shape
-        (n_individual_components, ).
-
-    individual_explained_variance_ratio_ : list of array
-        Individual explained variance ratio for each individual PCA.
-        `individual_explained_variance_ratio_[i]` is an array of shape
-        (n_individual_components, ) where n_features is the number of
-        features in the dataset `i`.
-
-    individual_mean_ : list of array
-        Individual mean for each individual PCA.
-        `individual_mean_[i]` is an array of shape
-        (n_features) where n_features is the number of
+    individual_mixing_ : list of array
+        Individual mixing matrices estimated by least squares.
+        `individual_components_[i]` is an array of shape
+        (n_features, n_components) where n_features is the number of
         features in the dataset `i`.
 
     n_components_ : int
@@ -105,16 +91,12 @@ class GroupICA(BaseEstimator):
     n_subjects_ : int
         Number of subjects in the training data
 
-    unmixing_: np array of shape n_components, n_components
-        Unmixing matrix. Sources are given by unmixing.dot(X_reduced)
-        where X_reduced are the data reduced by GroupPCA
-
-    mixings_: list of np array of shape n_components, n_features
-        Subject specific mixing matrices
     References
     ----------
-
-
+    .. [#1groupica] Calhoun, Vince, et al. "A method for making group
+                    inferences from functional MRI data using independent
+                    component analysis."
+                    Human brain mapping 14.3 (2001): 140-151.
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
@@ -128,17 +110,83 @@ class GroupICA(BaseEstimator):
         self,
         n_components=None,
         n_individual_components="auto",
-        whiten=False,
-        random_state=None,
-        max_iter=100,
-        tol=1e-7,
+        multiple_outputs=False,
+        prewhiten=False,
+        solver='fastica',
+        ica_kwargs={},
+        random_state=None
     ):
-        self.whiten = whiten
-        self.n_individual_components = n_individual_components
+        if solver == 'picard':
+            try:
+                from picard import picard
+            except ModuleNotFoundError:
+                raise ModuleNotFoundError("Picard does not seem to be "
+                                          "installed. Try $pip install "
+                                          "python-picard")
+        elif solver != 'fastica':
+            raise ValueError("Invalid solver, must be either `fastica` or "
+                             "`picard`")
         self.n_components = n_components
+        self.n_individual_components = n_individual_components
+        self.multiple_outputs = multiple_outputs
+        self.prewhiten = prewhiten
+        self.solver = solver
+        self.ica_kwargs = ica_kwargs
         self.random_state = random_state
-        self.max_iter = max_iter
-        self.tol = tol
+
+    def _fit(self, Xs, y=None):
+        """
+        Fit  to the data and transform the data
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        X_transformed : array of shape (n_samples, n_components)
+            The transformed data
+        """
+        Xs = check_Xs(Xs, copy=True)
+        self.means_ = [np.mean(X, axis=0) for X in Xs]
+        gpca = GroupPCA(
+            n_components=self.n_components,
+            n_individual_components=self.n_individual_components,
+            copy=True,
+            prewhiten=self.prewhiten,
+            whiten=True,
+            random_state=self.random_state,
+        )
+        X_pca = gpca.fit_transform(Xs)
+        self.grouppca_ = gpca
+        if self.solver == 'fastica':
+            K, W, sources = fastica(X_pca, **self.ica_kwargs,
+                                    random_state=self.random_state)
+        else:
+            K, W, sources = picard(X_pca.T, **self.ica_kwargs,
+                                   random_state=self.random_state)
+            sources = sources.T
+        if K is not None:
+            self.components_ = np.dot(W, K)
+        else:
+            self.components_ = W
+        self.mixing_ = linalg.pinv(self.components_)
+        # Compute individual unmixing matrices by least-squares
+        self.individual_mixing_ = []
+        self.individual_components_ = []
+        sources_pinv = linalg.pinv(sources)
+        for X, mean in zip(Xs, self.means_):
+            lstq_solution = np.dot(sources_pinv, X - mean)
+            self.individual_components_.append(linalg.pinv(lstq_solution).T)
+            self.individual_mixing_.append(lstq_solution.T)
+        self.n_components_ = gpca.n_components_
+        self.n_features_ = gpca.n_features_
+        self.n_samples_ = gpca.n_samples_
+        self.n_subjects_ = gpca.n_subjects_
+        return sources
 
     def fit_transform(self, Xs, y=None):
         """
@@ -156,30 +204,11 @@ class GroupICA(BaseEstimator):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
-        Xs = check_Xs(Xs)
-        gpca = GroupPCA(
-            n_components=self.n_components,
-            n_individual_components=self.n_individual_components,
-            whiten=self.whiten,
-            random_state=self.random_state,
-        )
-        X = gpca.fit_transform(Xs)
-        K, W, output = picard(X, max_iter=self.max_iter, tol=self.tol)
-        self.unmixing_ = W.dot(K)
-        self.mean_ = gpca.mean_
-        self.individual_components_ = gpca.individual_components_
-        self.individual_explained_variance_ = (
-            gpca.individual_explained_variance_
-        )
-        self.individual_explained_variance_ratio_ = (
-            gpca.individual_explained_variance_ratio_
-        )
-        self.individual_mean_ = gpca.individual_mean_
-        self.n_components_ = gpca.n_components_
-        self.n_features_ = gpca.n_features_
-        self.n_samples_ = gpca.n_samples_
-        self.n_subjects_ = gpca.n_subjects_
-        return output
+        sources = self._fit(Xs, y)
+        if self.multiple_outputs:
+            return self.transform(Xs)
+        else:
+            return sources
 
     def fit(self, Xs, y=None):
         r"""Fit the model with Xs.
@@ -195,7 +224,7 @@ class GroupICA(BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        self.fit_transform(Xs, y)
+        self._fit(Xs, y)
         return self
 
     def transform(self, Xs, y=None):
@@ -214,51 +243,23 @@ class GroupICA(BaseEstimator):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
-        gpca = GroupPCA(
-            n_components=self.n_components,
-            n_individual_components=self.n_individual_components,
-            whiten=self.whiten,
-            random_state=self.random_state,
-        )
-        gpca.mean_ = self.mean_
-        gpca.individual_components_ = self.individual_components_
-        gpca.individual_explained_variance_ = (
-            self.individual_explained_variance_
-        )
-        gpca.individual_explained_variance_ratio_ = (
-            self.individual_explained_variance_ratio_
-        )
-        gpca.individual_mean_ = self.individual_mean_
-        gpca.n_components_ = self.n_components_
-        gpca.n_features_ = self.n_features_
-        gpca.n_samples_ = self.n_samples_
-        gpca.n_subjects_ = self.n_subjects_
-        X = self.gpca.transform(Xs)
-        return self.unmixing_.dot(X)
+        Xs = check_Xs(Xs, copy=True)
+        if self.multiple_outputs:
+            return [np.dot(X - mean, W.T) for W, X, mean in (
+                    zip(self.individual_components_, Xs, self.means_))]
+        else:
+            X = self.grouppca_.transform(Xs)
+            return np.dot(X, self.components_)
 
     def inverse_transform(self, X_transformed):
         r"""
         A method to recover multiview data from transformed data
         """
-        gpca = GroupPCA(
-            n_components=self.n_components,
-            n_individual_components=self.n_individual_components,
-            whiten=self.whiten,
-            random_state=self.random_state,
-        )
-        gpca.mean_ = self.mean_
-        gpca.individual_components_ = self.individual_components_
-        gpca.individual_explained_variance_ = (
-            self.individual_explained_variance_
-        )
-        gpca.individual_explained_variance_ratio_ = (
-            self.individual_explained_variance_ratio_
-        )
-        gpca.individual_mean_ = self.individual_mean_
-        gpca.n_components_ = self.n_components_
-        gpca.n_features_ = self.n_features_
-        gpca.n_samples_ = self.n_samples_
-        gpca.n_subjects_ = self.n_subjects_
-        return self.gpca.inverse_transform(
-            np.linalg.pinv(self.unmixing_).dot(X_transformed)
-        )
+        if self.multiple_outputs:
+            return [np.dot(X, A.T) + mean for X, A, mean in (
+                zip(X_transformed, self.individual_mixing_, self.means_))]
+
+        else:
+            return self.grouppca_.inverse_transform(
+                np.dot(X_transformed, self.mixing_.T)
+            )
