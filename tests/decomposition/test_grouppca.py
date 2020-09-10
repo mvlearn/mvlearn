@@ -21,7 +21,9 @@ import scipy
 
 
 @pytest.mark.parametrize("n_components", [None, 1, 3, 9])
-@pytest.mark.parametrize("n_individual_components", ["auto", None, 3, [2, 3, 4]])
+@pytest.mark.parametrize(
+    "n_individual_components", ["auto", None, 3, [2, 3, 4]]
+)
 def test_pca(n_components, n_individual_components):
     gpca = GroupPCA(
         n_components=n_components,
@@ -59,7 +61,9 @@ def test_whitening(n_individual_components, prewhiten):
     # some low rank data with correlated features
     X = np.dot(
         rng.randn(n_samples, rank),
-        np.dot(np.diag(np.linspace(10.0, 1.0, rank)), rng.randn(rank, n_features)),
+        np.dot(
+            np.diag(np.linspace(10.0, 1.0, rank)), rng.randn(rank, n_features)
+        ),
     )
     # the component-wise variance of the first 50 features is 3 times the
     # mean component-wise variance of the remaining 30 features
@@ -134,9 +138,13 @@ def test_grouppca_deterministic_output():
     ]
     transformed_X = np.zeros((20, 2))
     for i in range(20):
-        pca = GroupPCA(n_components=2, n_individual_components=3, random_state=rng)
+        pca = GroupPCA(
+            n_components=2, n_individual_components=3, random_state=rng
+        )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]
-    assert_allclose(transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2))
+    assert_allclose(
+        transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
+    )
 
 
 def test_grouppca_transform():

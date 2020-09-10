@@ -159,7 +159,9 @@ class GroupPCA(BaseEstimator):
         else:
             self.n_components_ = self.n_components
         if self.n_individual_components == "auto":
-            self.n_individual_components_ = min(self.n_components_, min(n_features))
+            self.n_individual_components_ = min(
+                self.n_components_, min(n_features)
+            )
         else:
             self.n_individual_components_ = self.n_individual_components
         if self.n_individual_components_ is None and self.prewhiten:
@@ -182,14 +184,18 @@ class GroupPCA(BaseEstimator):
                 else:
                     dimension = self.n_individual_components_[i]
                 pca = PCA(
-                    dimension, whiten=self.prewhiten, random_state=self.random_state
+                    dimension,
+                    whiten=self.prewhiten,
+                    random_state=self.random_state,
                 )
                 Xs[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
                 self.individual_explained_variance_ratio_.append(
                     pca.explained_variance_ratio_
                 )
-                self.individual_explained_variance_.append(pca.explained_variance_)
+                self.individual_explained_variance_.append(
+                    pca.explained_variance_
+                )
                 self.individual_mean_.append(pca.mean_)
         X_stack = np.hstack(Xs)
         pca = PCA(self.n_components_, whiten=self.whiten)

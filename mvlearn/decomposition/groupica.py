@@ -141,7 +141,9 @@ class GroupICA(BaseEstimator):
                     "python-picard"
                 )
         elif solver != "fastica":
-            raise ValueError("Invalid solver, must be either `fastica` or `picard`")
+            raise ValueError(
+                "Invalid solver, must be either `fastica` or `picard`"
+            )
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.multiple_outputs = multiple_outputs
@@ -265,7 +267,9 @@ class GroupICA(BaseEstimator):
         if self.multiple_outputs:
             return [
                 np.dot(X - mean, W.T)
-                for W, X, mean in (zip(self.individual_components_, Xs, self.means_))
+                for W, X, mean in (
+                    zip(self.individual_components_, Xs, self.means_)
+                )
             ]
         else:
             X = self.grouppca_.transform(Xs)
