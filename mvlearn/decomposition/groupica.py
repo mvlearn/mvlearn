@@ -1,3 +1,4 @@
+"""Group Independent Component Analysis."""
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,7 +154,7 @@ class GroupICA(BaseDecomposer):
 
     def _fit(self, Xs, y=None):
         """
-        Fit  to the data and transform the data
+        Fit  to the data and transform the data.
 
         Parameters
         ----------
@@ -209,7 +210,7 @@ class GroupICA(BaseDecomposer):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit to the data and transform the data into sources
+        Fit to the data and transform the data into sources.
 
         Parameters
         ----------
@@ -234,7 +235,9 @@ class GroupICA(BaseDecomposer):
             return sources
 
     def fit(self, Xs, y=None):
-        r"""Fit the model with Xs.
+        r"""
+        Fit the model with Xs.
+
         Parameters
         ----------
         Xs: list of array-likes
@@ -252,7 +255,7 @@ class GroupICA(BaseDecomposer):
 
     def transform(self, Xs, y=None):
         r"""
-        A method to fit model to multiview data.
+        Transform the data Xs into sources.
 
         Parameters
         ----------
@@ -286,7 +289,7 @@ class GroupICA(BaseDecomposer):
 
     def inverse_transform(self, X_transformed):
         r"""
-        A method to recover multiview data from transformed data.
+        Recover multiview data from transformed data.
 
         Parameters
         ----------

@@ -1,3 +1,4 @@
+"""Group Principal Component Analysis."""
 # Copyright 2019 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +24,8 @@ from .base import BaseDecomposer
 
 
 class GroupPCA(BaseDecomposer):
-    r"""
-    Group Principal Component Analysis.
+    r"""Group Principal Component Analysis.
+
     As an optional preprocessing, each dataset in `Xs` is reduced with
     usual PCA. Then, datasets are concatenated in the features direction,
     and a PCA is performed on this matrix, yielding a single output dataset.
@@ -120,7 +121,10 @@ class GroupPCA(BaseDecomposer):
 
     References
     ----------
-
+    .. [#1grouppca] Calhoun, Vince, et al. "A method for making group
+                    inferences from functional MRI data using independent
+                    component analysis."
+                    Human brain mapping 14.3 (2001): 140-151.
 
     Examples
     --------
@@ -151,8 +155,9 @@ class GroupPCA(BaseDecomposer):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit  to the data and transform the data, merging datasets
-        together and reducing the dimensionality.
+        Fit  to the data and transform the data.
+
+        This merges datasets together and reduces the dimensionality.
 
         Parameters
         ----------
@@ -226,6 +231,7 @@ class GroupPCA(BaseDecomposer):
 
     def fit(self, Xs, y=None):
         r"""Fit the model with Xs.
+
         Parameters
         ----------
         Xs: list of array-likes
@@ -285,7 +291,8 @@ class GroupPCA(BaseDecomposer):
 
     def inverse_transform(self, X_transformed):
         r"""
-        A method to recover multiview data from transformed data.
+        Recover multiview data from transformed data.
+
         Returns an array Xs such that the transform of Xs would be
         X_transformed
 
