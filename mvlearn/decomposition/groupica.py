@@ -66,7 +66,7 @@ class GroupICA(BaseDecomposer):
         If solver='picard', see the documentation of picard.picard.
 
     random_state : int, RandomState instance, default=None
-            random state
+        Controls the random number generator used in the estimator. Pass an int for reproducible output across multiple function calls.
 
     Attributes
     ----------
