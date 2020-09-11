@@ -15,7 +15,7 @@
 
 import numpy as np
 from picard import picard
-import scipy.linalg as linalg
+from scipy import linalg
 from sklearn.decomposition import fastica
 from sklearn.utils.validation import check_is_fitted
 
