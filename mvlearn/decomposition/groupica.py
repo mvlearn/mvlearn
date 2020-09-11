@@ -14,7 +14,7 @@
 # Authors: Pierre Ablin, Hugo Richard
 
 import numpy as np
-import scipy.linalg as linalg
+from scipy import linalg
 from sklearn.decomposition import fastica
 from sklearn.utils.validation import check_is_fitted
 from picard import picard
@@ -25,8 +25,8 @@ from .grouppca import GroupPCA
 
 
 class GroupICA(BaseDecomposer):
-    r"""
-    Group Independent component analysis.
+    r"""Group Independent component analysis.
+
     Each dataset in `Xs` is reduced with usual PCA (this step is optional).
     Then, datasets are concatenated in the features direction, and a PCA is
     performed on this matrix, yielding a single dataset. ICA is finally
@@ -65,7 +65,8 @@ class GroupICA(BaseDecomposer):
         If solver='picard', see the documentation of picard.picard.
 
     random_state : int, RandomState instance, default=None
-            random state
+        Controls the random number generator used in the estimator. Pass an int
+        for reproducible output across multiple function calls.
 
     Attributes
     ----------
