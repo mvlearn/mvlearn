@@ -26,8 +26,8 @@ from .grouppca import GroupPCA
 
 
 class GroupICA(BaseDecomposer):
-    r"""
-    Group Independent component analysis.
+    r"""Group Independent component analysis.
+
     Each dataset in `Xs` is reduced with usual PCA (this step is optional).
     Then, datasets are concatenated in the features direction, and a PCA is
     performed on this matrix, yielding a single dataset. ICA is finally
