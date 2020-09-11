@@ -14,11 +14,10 @@
 # Authors: Pierre Ablin, Hugo Richard
 
 import numpy as np
-from picard import picard
 import scipy.linalg as linalg
 from sklearn.decomposition import fastica
 from sklearn.utils.validation import check_is_fitted
-
+from picard import picard
 
 from ..utils.utils import check_Xs
 from .base import BaseDecomposer
@@ -56,9 +55,9 @@ class GroupICA(BaseDecomposer):
     prewhiten : bool, optional (default False)
         Whether the data should be whitened after the original preprocessing.
 
-    solver : str {'fastica', 'picard'}
+    solver : str {'picard', 'fastica'}
         Chooses which ICA solver to use. `picard` is generally faster and
-        more reliable, but it requires to be installed.
+        more reliable.
 
     ica_kwargs : dict
         Optional keyword arguments for the ICA solver. If solver='fastica',
@@ -135,20 +134,11 @@ class GroupICA(BaseDecomposer):
         n_individual_components="auto",
         multiple_outputs=False,
         prewhiten=False,
-        solver="fastica",
+        solver="picard",
         ica_kwargs={},
         random_state=None,
     ):
-        if solver == "picard":
-            try:
-                from picard import picard  # noqa: F401
-            except ModuleNotFoundError:
-                raise ModuleNotFoundError(
-                    "Picard does not seem to be "
-                    "installed. Try $pip install "
-                    "python-picard"
-                )
-        elif solver != "fastica":
+        if solver not in ["picard", "fastica"]:
             raise ValueError(
                 "Invalid solver, must be either `fastica` or `picard`"
             )
