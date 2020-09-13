@@ -49,7 +49,7 @@ class GroupICA(BaseDecomposer):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
-    multiple_outputs : bool, optional
+    multiple_outputs : bool, optional (default True)
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
@@ -126,7 +126,9 @@ class GroupICA(BaseDecomposer):
     >>> Xs, _ = load_UCImultifeature()
     >>> ica = GroupICA(n_components=3)
     >>> Xs_transformed = ica.fit_transform(Xs)
-    >>> print(Xs_transformed.shape)
+    >>> print(len(Xs_transformed))
+    6
+    >>> print(Xs_transformed[0].shape)
     (2000, 3)
     """
 
@@ -134,7 +136,7 @@ class GroupICA(BaseDecomposer):
         self,
         n_components=None,
         n_individual_components="auto",
-        multiple_outputs=False,
+        multiple_outputs=True,
         prewhiten=False,
         solver="picard",
         ica_kwargs={},
