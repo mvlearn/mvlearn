@@ -154,8 +154,8 @@ class GroupPCA(BaseDecomposer):
         self.random_state = random_state
 
     def fit_transform(self, Xs, y=None):
-        """
-        Fit  to the data and transform the data.
+        """Fit  to the data and transform the data.
+
 
         This merges datasets together and reduces the dimensionality.
 
