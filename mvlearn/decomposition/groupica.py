@@ -105,12 +105,12 @@ class GroupICA(BaseDecomposer):
     n_samples_ : int
         Number of samples in the training data.
 
-    n_subjects_ : int
-        Number of subjects in the training data
+    n_views_ : int
+        Number of views in the training data
 
     See also
     --------
-    grouppca
+    GroupPCA
     multiviewica
 
     References
@@ -205,7 +205,7 @@ class GroupICA(BaseDecomposer):
         self.n_components_ = gpca.n_components_
         self.n_features_ = gpca.n_features_
         self.n_samples_ = gpca.n_samples_
-        self.n_subjects_ = gpca.n_subjects_
+        self.n_views_ = gpca.n_views_
         return sources
 
     def fit_transform(self, Xs, y=None):

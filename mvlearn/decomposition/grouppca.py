@@ -116,8 +116,8 @@ class GroupPCA(BaseDecomposer):
     n_samples_ : int
         Number of samples in the training data.
 
-    n_subjects_ : int
-        Number of subjects in the training data
+    n_views_ : int
+        Number of views in the training data
 
     References
     ----------
@@ -173,7 +173,7 @@ class GroupPCA(BaseDecomposer):
         """
         Xs = check_Xs(Xs, copy=self.copy)
         n_features = [X.shape[1] for X in Xs]
-        self.n_subjects_ = len(Xs)
+        self.n_views_ = len(Xs)
         self.n_features_ = n_features
         self.n_samples_ = Xs[0].shape[0]
 
@@ -237,6 +237,7 @@ class GroupPCA(BaseDecomposer):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
+
         y : None
             Ignored variable.
         Returns
