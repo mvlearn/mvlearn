@@ -1,6 +1,3 @@
-from .merge_transformers import ConcatTransformer, MeanTransformer
+from .merge_transformers import StackTransformer, MeanTransformer
 
-__all__ = [
-    "ConcatTransformer",
-    "MeanTransformer"
-    ]
+__all__ = ["StackTransformer", "MeanTransformer"]
