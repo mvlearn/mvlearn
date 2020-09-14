@@ -265,7 +265,6 @@ class GroupICA(BaseDecomposer):
             The recovered individual datasets.
         """
         check_is_fitted(self)
-        X_transformed =
 
         if self.multiple_outputs:
             X_transformed = check_Xs(X_transformed)
