@@ -44,6 +44,10 @@ class GroupPCA(BaseDecomposer):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
+    multiple_outputs : bool, optional (default True)
+        If True, the `.transform` method returns one dataset per view.
+        Otherwise, it returns one dataset, of shape (n_samples, n_components)
+
     copy : bool, default=True
         If False, data passed to fit are overwritten and running
         fit(X).transform(X) will not yield the expected results,
@@ -133,7 +137,9 @@ class GroupPCA(BaseDecomposer):
     >>> Xs, _ = load_UCImultifeature()
     >>> pca = GroupPCA(n_components=3)
     >>> Xs_transformed = pca.fit_transform(Xs)
-    >>> print(Xs_transformed.shape)
+    >>> print(len(Xs_transformed))
+    6
+    >>> print(Xs_transformed[0].shape)
     (2000, 3)
     """
 
@@ -141,6 +147,7 @@ class GroupPCA(BaseDecomposer):
         self,
         n_components=None,
         n_individual_components="auto",
+        multiple_outputs=True,
         copy=True,
         prewhiten=False,
         whiten=False,
@@ -148,14 +155,15 @@ class GroupPCA(BaseDecomposer):
     ):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
+        self.multiple_outputs = multiple_outputs
         self.copy = copy
         self.prewhiten = prewhiten
         self.whiten = whiten
         self.random_state = random_state
 
-    def fit_transform(self, Xs, y=None):
+    def _fit(self, Xs, y=None):
         """
-        Fit  to the data and transform the data.
+        Fit  to the data and return the single view dataset
 
         This merges datasets together and reduces the dimensionality.
 
@@ -223,6 +231,13 @@ class GroupPCA(BaseDecomposer):
         X_stack = np.hstack(Xs)
         pca = PCA(self.n_components_, whiten=self.whiten)
         output = pca.fit_transform(X_stack)
+        self.individual_mixing_ = []
+        self.individual_components_ = []
+        sources_pinv = linalg.pinv(sources)
+        for X, mean in zip(Xs, self.means_):
+            lstq_solution = np.dot(sources_pinv, X - mean)
+            self.individual_components_.append(linalg.pinv(lstq_solution).T)
+            self.individual_mixing_.append(lstq_solution.T)
         self.components_ = pca.components_
         self.explained_variance_ = pca.explained_variance_
         self.mean_ = pca.mean_
@@ -244,8 +259,34 @@ class GroupPCA(BaseDecomposer):
         self : object
             Returns the instance itself.
         """
-        self.fit_transform(Xs, y)
+        self._fit(Xs, y)
         return self
+
+    def fit_transform(self, Xs, y=None):
+        """
+        Fit to the data and reduce the dimension
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        X_transformed : list of array-likes or numpy.ndarray
+            The transformed data.
+            If `multiple_outputs` is True, it is a list with the estimated
+            individual sources.
+            If `multiple_outputs` is False, it is a single array containing the
+            shared sources.
+        """
+        output = self._fit(Xs, y)
+        if self.multiple_outputs:
+            return self.transform(Xs)
+        else:
+            return output
 
     def transform(self, Xs, y=None):
         r"""
@@ -263,8 +304,12 @@ class GroupPCA(BaseDecomposer):
 
         Returns
         -------
-        X_transformed : array of shape (n_samples, n_components)
-            The transformed data
+        X_transformed : list of array-likes or numpy.ndarray
+            The transformed data.
+            If `multiple_outputs` is True, it is a list with the estimated
+            individual sources.
+            If `multiple_outputs` is False, it is a single array containing the
+            shared sources.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=self.copy)
