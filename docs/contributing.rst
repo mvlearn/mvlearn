@@ -278,28 +278,35 @@ trailing underscore to distinguish them from the constants passes to
 Additional Functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Transformers and Predictors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Transformers
+^^^^^^^^^^^^
 
-A ``transformer`` object modifies the data it is given. An estimator may
-also be a transformer that learns the transformation parameters. The
-transformer object implements the ``transform`` method, i.e.
-
-.. code:: python
-
-   new_data = transformer.transform(Xs)
-
-or if the fit method must be called first,
+A ``transformer`` object modifies the data it is given and by default outputs
+multiview data, a transformation of each input view. Additional parameters may
+allow for a single view output in the case of some algorithms. An estimator may
+also be a transformer that learns the transformation parameters. The transformer
+object implements the ``transform`` method, i.e.
 
 .. code:: python
 
-   new_data = transformer.fit_transform(Xs, y)
+   Xs_transformed = transformer.transform(Xs)
+
+which follows a call to ``fit``. One may alternatively perform both in the
+single call
+
+.. code:: python
+
+   Xs_transformed = transformer.fit_transform(Xs, y)
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``transform`` separately.
 
+Predictors
+^^^^^^^^^^
+
 Similarly, a ``predictor`` object makes predictions based on the
-data it is given. An estimator may also be a predictor that learns
+data it is given and outputs a single array of sample-specific predictions
+based on all views. An estimator may also be a predictor that learns
 the prediction parameters. The predictor object implements
 the ``predict`` method, i.e.
 
@@ -307,7 +314,8 @@ the ``predict`` method, i.e.
 
    predictions = predictor.predict(Xs)
 
-or if the fit method must be called first,
+which follows a call to ``fit``. One may alternatively perform both in the
+single call
 
 .. code:: python
 
