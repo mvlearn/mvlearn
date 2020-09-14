@@ -15,6 +15,7 @@
 # Authors: Pierre Ablin, Hugo Richard
 
 import numpy as np
+from scipy import linalg
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import check_is_fitted
 
@@ -29,6 +30,9 @@ class GroupPCA(BaseDecomposer):
     As an optional preprocessing, each dataset in `Xs` is reduced with
     usual PCA. Then, datasets are concatenated in the features direction,
     and a PCA is performed on this matrix, yielding a single output dataset.
+    Linear coefficients linking the output dataset and each view are computed
+    using least squares estimation, which permits to return one dataset per
+    view.
 
     Parameters
     ----------
@@ -47,11 +51,6 @@ class GroupPCA(BaseDecomposer):
     multiple_outputs : bool, optional (default True)
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
-
-    copy : bool, default=True
-        If False, data passed to fit are overwritten and running
-        fit(X).transform(X) will not yield the expected results,
-        use fit_transform(X) instead.
 
     prewhiten : bool, optional (default False)
         Whether the data should be whitened after the original preprocessing.
@@ -85,9 +84,6 @@ class GroupPCA(BaseDecomposer):
         If ``n_components`` is not set then all components are stored and the
         sum of the ratios is equal to 1.0.
 
-    mean_ : array, shape (n_total_features, )
-        Per-feature empirical mean, estimated from the training set.
-
     individual_components_ : list of array
         Individual components for each individual PCA.
         `individual_components_[i]` is an array of shape
@@ -106,10 +102,19 @@ class GroupPCA(BaseDecomposer):
         features in the dataset `i`.
 
     individual_mean_ : list of array
-        Individual mean for each individual PCA.
+        Mean of each dataset, estimated on the training data
         `individual_mean_[i]` is an array of shape
         (n_features) where n_features is the number of
         features in the dataset `i`.
+
+    individual_projections_ : list of array
+        List containing the linear transform linking the dataset to the output.
+        Xs[i].dot(individual_projections_[i].T) gives the estimated reduced
+        dataset for view i. This is obtained by least squares estimation.
+
+    individual_embeddings_ : list of array
+       List containing the pseudo-inverses of individual_projections_.
+       Allows to recover each original dataset from reduced data.
 
     n_components_ : int
         The estimated number of components.
@@ -120,8 +125,8 @@ class GroupPCA(BaseDecomposer):
     n_samples_ : int
         Number of samples in the training data.
 
-    n_subjects_ : int
-        Number of subjects in the training data
+    n_views_ : int
+        Number of views in the training data
 
     References
     ----------
@@ -148,7 +153,6 @@ class GroupPCA(BaseDecomposer):
         n_components=None,
         n_individual_components="auto",
         multiple_outputs=True,
-        copy=True,
         prewhiten=False,
         whiten=False,
         random_state=None,
@@ -156,14 +160,13 @@ class GroupPCA(BaseDecomposer):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.multiple_outputs = multiple_outputs
-        self.copy = copy
         self.prewhiten = prewhiten
         self.whiten = whiten
         self.random_state = random_state
 
-    def _fit(self, Xs, y=None):
-        """
-        Fit  to the data and return the single view dataset
+    def fit(self, Xs, y=None):
+        """Fit  to the data and transform the data.
+
 
         This merges datasets together and reduces the dimensionality.
 
@@ -179,9 +182,9 @@ class GroupPCA(BaseDecomposer):
         X_transformed : array of shape (n_samples, n_components)
             The transformed data
         """
-        Xs = check_Xs(Xs, copy=self.copy)
+        X_transformed = check_Xs(Xs, copy=True)
         n_features = [X.shape[1] for X in Xs]
-        self.n_subjects_ = len(Xs)
+        self.n_views_ = len(Xs)
         self.n_features_ = n_features
         self.n_samples_ = Xs[0].shape[0]
 
@@ -198,9 +201,9 @@ class GroupPCA(BaseDecomposer):
         if self.n_individual_components_ is None and self.prewhiten:
             # Still need to whiten data
             self.n_individual_components_ = self.n_features_
-        self.individual_projection_ = self.n_individual_components_ is not None
-
-        if self.individual_projection_:
+        self.individual_pca_ = self.n_individual_components_ is not None
+        self.individual_mean_ = [np.mean(X, axis=0) for X in Xs]
+        if self.individual_pca_:
             if type(self.n_individual_components_) == int:
                 one_dimension = True
             else:
@@ -208,7 +211,6 @@ class GroupPCA(BaseDecomposer):
             self.individual_components_ = []
             self.individual_explained_variance_ = []
             self.individual_explained_variance_ratio_ = []
-            self.individual_mean_ = []
             for i, X in enumerate(Xs):
                 if one_dimension:
                     dimension = self.n_individual_components_
@@ -219,7 +221,7 @@ class GroupPCA(BaseDecomposer):
                     whiten=self.prewhiten,
                     random_state=self.random_state,
                 )
-                Xs[i] = pca.fit_transform(X)
+                X_transformed[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
                 self.individual_explained_variance_ratio_.append(
                     pca.explained_variance_ratio_
@@ -227,70 +229,23 @@ class GroupPCA(BaseDecomposer):
                 self.individual_explained_variance_.append(
                     pca.explained_variance_
                 )
-                self.individual_mean_.append(pca.mean_)
-        X_stack = np.hstack(Xs)
+        X_stack = np.hstack(X_transformed)
         pca = PCA(self.n_components_, whiten=self.whiten)
-        output = pca.fit_transform(X_stack)
-        self.individual_mixing_ = []
-        self.individual_components_ = []
-        sources_pinv = linalg.pinv(sources)
-        for X, mean in zip(Xs, self.means_):
-            lstq_solution = np.dot(sources_pinv, X - mean)
-            self.individual_components_.append(linalg.pinv(lstq_solution).T)
-            self.individual_mixing_.append(lstq_solution.T)
+        X_transformed = pca.fit_transform(X_stack)
+        self.individual_projections_ = []
+        self.individual_embeddings_ = []
+        transformed_pinv = linalg.pinv(X_transformed)
+        for X, mean in zip(Xs, self.individual_mean_):
+            lstq_solution = np.dot(transformed_pinv, X - mean)
+            self.individual_projections_.append(linalg.pinv(lstq_solution).T)
+            self.individual_embeddings_.append(lstq_solution.T)
         self.components_ = pca.components_
         self.explained_variance_ = pca.explained_variance_
-        self.mean_ = pca.mean_
         self.explained_variance_ratio_ = pca.explained_variance_ratio_
-        return output
-
-    def fit(self, Xs, y=None):
-        r"""Fit the model with Xs.
-
-        Parameters
-        ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        y : None
-            Ignored variable.
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-        self._fit(Xs, y)
         return self
 
-    def fit_transform(self, Xs, y=None):
-        """
-        Fit to the data and reduce the dimension
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        X_transformed : list of array-likes or numpy.ndarray
-            The transformed data.
-            If `multiple_outputs` is True, it is a list with the estimated
-            individual sources.
-            If `multiple_outputs` is False, it is a single array containing the
-            shared sources.
-        """
-        output = self._fit(Xs, y)
-        if self.multiple_outputs:
-            return self.transform(Xs)
-        else:
-            return output
-
     def transform(self, Xs, y=None):
-        r"""
-        Apply groupPCA to Xs.
+        r"""Apply groupPCA to Xs.
 
         Xs is projected on the principal components learned
         in the training set.
@@ -312,9 +267,17 @@ class GroupPCA(BaseDecomposer):
             shared sources.
         """
         check_is_fitted(self)
-        Xs = check_Xs(Xs, copy=self.copy)
-
-        if self.individual_projection_:
+        Xs = check_Xs(Xs, copy=True)
+        if self.multiple_outputs:
+            return [
+                np.dot(X - mean, W.T)
+                for W, X, mean in (
+                    zip(
+                        self.individual_projections_, Xs, self.individual_mean_
+                    )
+                )
+            ]
+        if self.individual_pca_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
                 zip(
                     Xs,
@@ -328,7 +291,9 @@ class GroupPCA(BaseDecomposer):
                 if self.prewhiten:
                     X_transformed /= np.sqrt(explained_variance_)
                 Xs[i] = X_transformed
-        X_stack = np.hstack(Xs) - self.mean_
+        else:
+            Xs = [X - mean for X, mean in zip(Xs, self.individual_mean_)]
+        X_stack = np.hstack(Xs)
         X_transformed = np.dot(X_stack, self.components_.T)
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
@@ -343,7 +308,7 @@ class GroupPCA(BaseDecomposer):
 
         Parameters
         ----------
-        X_transformed : array of shape (n_samples, n_components)
+        X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
         Returns
@@ -352,16 +317,25 @@ class GroupPCA(BaseDecomposer):
             The recovered individual datasets
         """
         check_is_fitted(self)
-
+        if self.multiple_outputs:
+            return [
+                np.dot(X, A.T) + mean
+                for X, A, mean in (
+                    zip(
+                        X_transformed,
+                        self.individual_embeddings_,
+                        self.individual_mean_,
+                    )
+                )
+            ]
         # Inverse stacked PCA
         if self.whiten:
             X_t = X_transformed * np.sqrt(self.explained_variance_)
         else:
             X_t = X_transformed
         X_stack = np.dot(X_t, self.components_)
-        X_stack = X_stack + self.mean_
 
-        if self.individual_projection_:
+        if self.individual_pca_:
             Xs = []
             cur_p = 0
             for (mean, components_, explained_variance_) in zip(
@@ -380,4 +354,5 @@ class GroupPCA(BaseDecomposer):
                 cur_p += n_features_i
         else:
             Xs = np.split(X_stack, np.cumsum(self.n_features_)[:-1], axis=1)
+            Xs = [X + mean for X, mean in zip(Xs, self.individual_mean_)]
         return Xs

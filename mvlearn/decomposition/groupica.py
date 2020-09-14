@@ -105,12 +105,12 @@ class GroupICA(BaseDecomposer):
     n_samples_ : int
         Number of samples in the training data.
 
-    n_subjects_ : int
-        Number of subjects in the training data
+    n_views_ : int
+        Number of views in the training data
 
     See also
     --------
-    grouppca
+    GroupPCA
     multiviewica
 
     References
@@ -154,9 +154,8 @@ class GroupICA(BaseDecomposer):
         self.ica_kwargs = ica_kwargs
         self.random_state = random_state
 
-    def _fit(self, Xs, y=None):
-        """
-        Fit  to the data and transform the data.
+    def fit(self, Xs, y=None):
+        r"""Fit  to the data and transform the data.
 
         Parameters
         ----------
@@ -175,9 +174,9 @@ class GroupICA(BaseDecomposer):
         gpca = GroupPCA(
             n_components=self.n_components,
             n_individual_components=self.n_individual_components,
-            copy=True,
             prewhiten=self.prewhiten,
             whiten=True,
+            multiple_outputs=False,
             random_state=self.random_state,
         )
         X_pca = gpca.fit_transform(Xs)
@@ -207,52 +206,7 @@ class GroupICA(BaseDecomposer):
         self.n_components_ = gpca.n_components_
         self.n_features_ = gpca.n_features_
         self.n_samples_ = gpca.n_samples_
-        self.n_subjects_ = gpca.n_subjects_
-        return sources
-
-    def fit_transform(self, Xs, y=None):
-        """
-        Fit to the data and transform the data into sources.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        X_transformed : list of array-likes or numpy.ndarray
-            The transformed data.
-            If `multiple_outputs` is True, it is a list with the estimated
-            individual sources.
-            If `multiple_outputs` is False, it is a single array containing the
-            shared sources.
-        """
-        sources = self._fit(Xs, y)
-        if self.multiple_outputs:
-            return self.transform(Xs)
-        else:
-            return sources
-
-    def fit(self, Xs, y=None):
-        r"""
-        Fit the model with Xs.
-
-        Parameters
-        ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        y : None
-            Ignored variable.
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-        self._fit(Xs, y)
+        self.n_views_ = gpca.n_views_
         return self
 
     def transform(self, Xs, y=None):

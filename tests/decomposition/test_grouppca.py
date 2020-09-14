@@ -9,10 +9,12 @@ import scipy
 @pytest.mark.parametrize(
     "n_individual_components", ["auto", None, 3, [2, 3, 4]]
 )
-def test_pca(n_components, n_individual_components):
+@pytest.mark.parametrize("multiple_outputs", [True, False])
+def test_pca(n_components, n_individual_components, multiple_outputs):
     gpca = GroupPCA(
         n_components=n_components,
         n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
     )
     n_samples = 100
     n_features = [6, 4, 5]
@@ -23,9 +25,16 @@ def test_pca(n_components, n_individual_components):
     ]
     # check the shape of fit.transform
     X_r = gpca.fit(Xs).transform(Xs)
-    assert X_r.shape[0] == n_samples
-    if n_components is not None:
-        assert X_r.shape[1] == n_components
+    if multiple_outputs:
+        assert len(X_r) == 3
+        for X in X_r:
+            assert X.shape[0] == n_samples
+            if n_components is not None:
+                assert X.shape[1] == n_components
+    else:
+        assert X_r.shape[0] == n_samples
+        if n_components is not None:
+            assert X_r.shape[1] == n_components
 
     # check the equivalence of fit.transform and fit_transform
     X_r2 = gpca.fit_transform(Xs)
@@ -35,7 +44,8 @@ def test_pca(n_components, n_individual_components):
 
 @pytest.mark.parametrize("n_individual_components", [None, 20, [10, 15, 20]])
 @pytest.mark.parametrize("prewhiten", [True, False])
-def test_whitening(n_individual_components, prewhiten):
+@pytest.mark.parametrize("multiple_outputs", [True, False])
+def test_whitening(n_individual_components, prewhiten, multiple_outputs):
     # Check that PCA output has unit-variance
     rng = np.random.RandomState(0)
     n_samples = 100
@@ -65,13 +75,19 @@ def test_whitening(n_individual_components, prewhiten):
         prewhiten=prewhiten,
         random_state=0,
         n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
     )
     # test fit_transform
     X_whitened = gpca.fit_transform(Xs_)
     X_whitened2 = gpca.transform(Xs_)
     assert_allclose(X_whitened, X_whitened2, rtol=5e-4)
-    assert X_whitened.shape == (n_samples, n_components)
-    assert_allclose(X_whitened.std(ddof=1, axis=0), np.ones(n_components))
+    if multiple_outputs:
+        assert len(X_whitened) == 3
+        for X in X_whitened:
+            assert X.shape == (n_samples, n_components)
+    else:
+        assert X_whitened.shape == (n_samples, n_components)
+        assert_allclose(X_whitened.std(ddof=1, axis=0), np.ones(n_components))
 
     Xs_ = Xs.copy()
     gpca = GroupPCA(
@@ -79,15 +95,25 @@ def test_whitening(n_individual_components, prewhiten):
         whiten=False,
         prewhiten=prewhiten,
         n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
+        random_state=rng,
     ).fit(Xs)
     X_unwhitened = gpca.transform(Xs_)
-    assert X_unwhitened.shape == (n_samples, n_components)
+    if multiple_outputs:
+        assert len(X_unwhitened) == 3
+        for X in X_unwhitened:
+            assert X.shape == (n_samples, n_components)
+    else:
+        assert X_unwhitened.shape == (n_samples, n_components)
 
 
 @pytest.mark.parametrize("prewhiten", [False, True])
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2]])
-def test_grouppca_inverse(n_individual_components, prewhiten, whiten):
+@pytest.mark.parametrize("multiple_outputs", [True, False])
+def test_grouppca_inverse(
+    n_individual_components, prewhiten, whiten, multiple_outputs
+):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -105,6 +131,7 @@ def test_grouppca_inverse(n_individual_components, prewhiten, whiten):
         prewhiten=prewhiten,
         whiten=whiten,
         n_individual_components=n_individual_components,
+        multiple_outputs=multiple_outputs,
     ).fit(Xs)
     Y = gpca.transform(Xs)
     Y_inverse = gpca.inverse_transform(Y)
@@ -124,15 +151,12 @@ def test_grouppca_deterministic_output():
     transformed_X = np.zeros((20, 2))
     for i in range(20):
         pca = GroupPCA(
-            n_components=2, n_individual_components=3, random_state=rng
+            n_components=2,
+            n_individual_components=3,
+            multiple_outputs=False,
+            random_state=rng,
         )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]
     assert_allclose(
         transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
     )
-
-
-def test_grouppca_transform():
-    X1 = np.zeros((100, 2))
-    X1[:, 0] = np.arange(100)
-    X1[:, 1] = 5 * np.arange(100) + np.random.rand(100)

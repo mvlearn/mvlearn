@@ -36,11 +36,12 @@ def generate_signals(n_samples, n_sources, n_features, noise_level, rng):
     "n_individual_components", ["auto", None, 3, [2, 3, 4]]
 )
 @pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("whiten", [True, False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_transform(
-    n_components, n_individual_components, multiple_outputs, solver
+    n_components, n_individual_components, multiple_outputs, solver, whiten
 ):
-    ica_kwargs = dict(tol=1)
+    ica_kwargs = dict(tol=1, whiten=whiten)
     ica = GroupICA(
         n_components=n_components,
         n_individual_components=n_individual_components,
