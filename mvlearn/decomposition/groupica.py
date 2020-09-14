@@ -155,19 +155,23 @@ class GroupICA(BaseDecomposer):
         self.random_state = random_state
 
     def fit(self, Xs, y=None):
-        r"""Fit  to the data and transform the data.
+        r"""Fit to the data.
+
+        Estimate the parameters of the model
 
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
+
+        y : None
+            Ignored variable.
 
         Returns
         -------
-        sources : array, shape (n_samples, n_components)
-             Estimated sources
+        self : object
+            Returns the instance itself.
         """
         Xs = check_Xs(Xs, copy=True)
         self.means_ = [np.mean(X, axis=0) for X in Xs]
@@ -210,15 +214,16 @@ class GroupICA(BaseDecomposer):
         return self
 
     def transform(self, Xs, y=None):
-        r"""
-        Transform the data Xs into sources.
+        r"""Transform the data Xs into sources.
 
         Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
+
+        y : None
+            Ignored variable.
 
         Returns
         -------
@@ -244,8 +249,7 @@ class GroupICA(BaseDecomposer):
             return np.dot(X, self.components_.T)
 
     def inverse_transform(self, X_transformed):
-        r"""
-        Recover multiview data from transformed data.
+        r"""Recover multiview data from transformed data.
 
         Parameters
         ----------
@@ -261,8 +265,10 @@ class GroupICA(BaseDecomposer):
             The recovered individual datasets.
         """
         check_is_fitted(self)
+        X_transformed =
 
         if self.multiple_outputs:
+            X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (

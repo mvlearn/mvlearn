@@ -165,8 +165,7 @@ class GroupPCA(BaseDecomposer):
         self.random_state = random_state
 
     def fit(self, Xs, y=None):
-        """Fit  to the data and transform the data.
-
+        """Fit  to the data.
 
         This merges datasets together and reduces the dimensionality.
 
@@ -175,12 +174,14 @@ class GroupPCA(BaseDecomposer):
         Xs : list of array-likes or numpy.ndarray
              - Xs length: n_views
              - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
+
+        y : None
+            Ignored variable.
 
         Returns
         -------
-        X_transformed : array of shape (n_samples, n_components)
-            The transformed data
+        self : object
+            Returns the instance itself.
         """
         X_transformed = check_Xs(Xs, copy=True)
         n_features = [X.shape[1] for X in Xs]
@@ -248,23 +249,25 @@ class GroupPCA(BaseDecomposer):
         r"""Apply groupPCA to Xs.
 
         Xs is projected on the principal components learned
-        in the training set.
+        from the training set.
 
         Parameters
         ----------
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
+
+        y : None
+            Ignored variable.
 
         Returns
         -------
         X_transformed : list of array-likes or numpy.ndarray
             The transformed data.
             If `multiple_outputs` is True, it is a list with the estimated
-            individual sources.
+            individual principal components.
             If `multiple_outputs` is False, it is a single array containing the
-            shared sources.
+            shared principal components.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
@@ -300,8 +303,7 @@ class GroupPCA(BaseDecomposer):
         return X_transformed
 
     def inverse_transform(self, X_transformed):
-        r"""
-        Recover multiview data from transformed data.
+        r"""Recover multiview data from transformed data.
 
         Returns an array Xs such that the transform of Xs would be
         X_transformed
@@ -318,6 +320,7 @@ class GroupPCA(BaseDecomposer):
         """
         check_is_fitted(self)
         if self.multiple_outputs:
+            X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (
