@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_raises
+from numpy.testing import assert_raises, assert_allclose
 
 import pytest
 
@@ -26,6 +26,9 @@ def test_single_transformer():
     assert len(X_transformed) == n_views
     for X in X_transformed:
         assert X.shape == (n_samples, 2)
+    X_transformed2 = filt.fit_transform(Xs)
+    for X, X2 in zip(X_transformed, X_transformed2):
+        assert_allclose(X, X2)
     X_orig = filt.inverse_transform(X_transformed)
 
     for X, X2 in zip(Xs, X_orig):
