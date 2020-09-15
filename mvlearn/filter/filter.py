@@ -1,5 +1,3 @@
-import numpy as np
-
 from sklearn.base import clone, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
