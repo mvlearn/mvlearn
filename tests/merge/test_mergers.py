@@ -3,7 +3,7 @@ from numpy.testing import assert_raises
 
 import pytest
 
-from mvlearn.merge import StackTransformer, MeanTransformer
+from mvlearn.merge import StackMerger, MeanMerger
 
 
 @pytest.mark.parametrize(
@@ -20,7 +20,7 @@ def test_stack(n_features):
     rng = np.random.RandomState(0)
     n_samples = 10
     Xs = [rng.randn(n_samples, n_feature) for n_feature in n_features]
-    st = StackTransformer()
+    st = StackMerger()
     st.fit(Xs)
     X_transformed = st.merge(Xs)
     # Check dimensions
@@ -48,7 +48,7 @@ def test_mean(n_features):
     n_views = 4
     n_samples = 10
     Xs = [rng.randn(n_samples, n_features) for _ in range(n_views)]
-    mean = MeanTransformer()
+    mean = MeanMerger()
     mean.fit(Xs)
     X_transformed = mean.merge(Xs)
     # Check dimensions
@@ -63,8 +63,8 @@ def test_mean(n_features):
 def test_errors():
     Xs = [np.random.randn(10, 3), np.random.randn(10, 4)]
     with assert_raises(ValueError):
-        MeanTransformer().fit(Xs)
-    st = StackTransformer().fit(Xs)
+        MeanMerger().fit(Xs)
+    st = StackMerger().fit(Xs)
     X2 = np.random.randn(10, 5)
     with assert_raises(ValueError):
         st.inverse_transform(X2)

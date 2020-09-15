@@ -172,7 +172,7 @@ class BaseMerger(TransformerMixin):
         return self.inverse_merge(X)
 
 
-class StackTransformer(BaseMerger):
+class StackMerger(BaseMerger):
     r"""A transformer that stacks features of multiview datasets.
 
     Take a multiview dataset and transform it in a single view dataset
@@ -212,6 +212,7 @@ class StackTransformer(BaseMerger):
         self : object
             Transformer instance.
         """
+        Xs = check_Xs(Xs)
         self.n_features_ = [X.shape[1] for X in Xs]
         self.n_total_features_ = sum(self.n_features_)
         self.n_views_ = len(self.n_features_)
@@ -267,7 +268,7 @@ class StackTransformer(BaseMerger):
         return np.split(X, np.cumsum(self.n_features_)[:-1], axis=1)
 
 
-class MeanTransformer(BaseMerger):
+class MeanMerger(BaseMerger):
     r"""A transformer that computes the mean of multiview datasets
 
     Take a multiview dataset and transform it in a single view dataset
@@ -306,13 +307,14 @@ class MeanTransformer(BaseMerger):
         self : object
             Transformer instance.
         """
-        check_Xs(Xs)
+        Xs = check_Xs(Xs)
         n_features_ = [X.shape[1] for X in Xs]
         if len(set(n_features_)) > 1:
             raise ValueError(
                 "The number of features in each dataset should be the same."
             )
         self.n_feature_ = n_features_[0]
+        self.n_views_ = len(n_features_)
         return self
 
     def merge(self, Xs, y=None):
