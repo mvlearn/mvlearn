@@ -61,7 +61,7 @@ class Filter(TransformerMixin):
     def __init__(self, transformer):
         self.transformer = transformer
 
-    def prefit(self, Xs, y=None):
+    def _prefit(self, Xs, y=None):
         r"""Estimate the attributes of the class.
 
         Parameters
@@ -112,7 +112,7 @@ class Filter(TransformerMixin):
         self : object
             Returns the instance itself.
         """
-        self.prefit(Xs, y)
+        self._prefit(Xs, y)
         for transformer, X in zip(self.transformer_list_, Xs):
             transformer.fit(X)
         return self
@@ -136,7 +136,7 @@ class Filter(TransformerMixin):
             List of length n_views.
             The transformed data.
         """
-        self.prefit(Xs, y)
+        self._prefit(Xs, y)
         X_transformed = []
         for transformer, X in zip(self.transformer_list_, Xs):
             X_transformed.append(transformer.fit_transform(X))
