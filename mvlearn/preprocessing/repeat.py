@@ -20,7 +20,7 @@ from sklearn.utils.validation import check_is_fitted
 from ..utils import check_Xs
 
 
-class Filter(TransformerMixin):
+class RepeatTransform(TransformerMixin):
     r"""Apply a sklearn transformer to each view of a dataset
 
     Build a transformer from multiview dataset to multiview dataset by
@@ -47,11 +47,11 @@ class Filter(TransformerMixin):
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
-    >>> from mvlearn.filter import Filter
+    >>> from mvlearn.preprocessing import RepeatTransform
     >>> from sklearn.decomposition import PCA
     >>> Xs, _ = load_UCImultifeature()
-    >>> filt = Filter(PCA(n_components=2))
-    >>> X_transformed = filt.fit_transform(Xs)
+    >>> repeat = RepeatTransform(PCA(n_components=2))
+    >>> X_transformed = repeat.fit_transform(Xs)
     >>> print(len(X_transformed))
     6
     >>> print(X_transformed[0].shape)
