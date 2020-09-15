@@ -195,12 +195,6 @@ class Filter(TransformerMixin):
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs)
-        for transformer in self.transformer_list_:
-            if not hasattr(transformer, "inverse_transform"):
-                raise AttributeError(
-                    "A transfomer does no implement an inverse_transform "
-                    "method"
-                )
         X_transformed = []
         for transformer, X in zip(self.transformer_list_, Xs):
             X_transformed.append(transformer.inverse_transform(X))

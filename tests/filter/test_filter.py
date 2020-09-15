@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.testing import assert_raises
 
 import pytest
 
@@ -54,3 +55,16 @@ def test_multiple_transformers():
     X_orig = filt.inverse_transform(X_transformed)
     for X, X2 in zip(Xs, X_orig):
         assert X.shape == X2.shape
+
+
+def test_error():
+    rng = np.random.RandomState(0)
+    n_views = 4
+    n_features = 5
+    n_samples = 10
+    Xs = rng.randn(n_views, n_samples, n_features)
+    n_components = [2, 2]
+    transformers = [PCA(n_component) for n_component in n_components]
+    filt = Filter(transformers)
+    with assert_raises(ValueError):
+        filt.fit(Xs)
