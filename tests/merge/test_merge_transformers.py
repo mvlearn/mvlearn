@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.testing import assert_raises
 
 import pytest
 
@@ -57,3 +58,13 @@ def test_mean(n_features):
     Xs = [rng.randn(n_samples, n_feature) for n_feature in n_features]
     with np.testing.assert_raises(ValueError):
         mean.fit(Xs)
+
+
+def test_errors():
+    Xs = [np.random.randn(10, 3), np.random.randn(10, 4)]
+    with assert_raises(ValueError):
+        MeanTransformer().fit(Xs)
+    st = StackTransformer().fit(Xs)
+    X2 = np.random.randn(10, 5)
+    with assert_raises(ValueError):
+        st.inverse_transform(X2)
