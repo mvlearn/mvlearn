@@ -9,12 +9,12 @@ import scipy
 @pytest.mark.parametrize(
     "n_individual_components", ["auto", None, 3, [2, 3, 4]]
 )
-@pytest.mark.parametrize("multiple_outputs", [True, False])
-def test_pca(n_components, n_individual_components, multiple_outputs):
+@pytest.mark.parametrize("multiview_output", [True, False])
+def test_pca(n_components, n_individual_components, multiview_output):
     gpca = GroupPCA(
         n_components=n_components,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
     )
     n_samples = 100
     n_features = [6, 4, 5]
@@ -25,7 +25,7 @@ def test_pca(n_components, n_individual_components, multiple_outputs):
     ]
     # check the shape of fit.transform
     X_r = gpca.fit(Xs).transform(Xs)
-    if multiple_outputs:
+    if multiview_output:
         assert len(X_r) == 3
         for X in X_r:
             assert X.shape[0] == n_samples
@@ -44,8 +44,8 @@ def test_pca(n_components, n_individual_components, multiple_outputs):
 
 @pytest.mark.parametrize("n_individual_components", [None, 20, [10, 15, 20]])
 @pytest.mark.parametrize("prewhiten", [True, False])
-@pytest.mark.parametrize("multiple_outputs", [True, False])
-def test_whitening(n_individual_components, prewhiten, multiple_outputs):
+@pytest.mark.parametrize("multiview_output", [True, False])
+def test_whitening(n_individual_components, prewhiten, multiview_output):
     # Check that PCA output has unit-variance
     rng = np.random.RandomState(0)
     n_samples = 100
@@ -75,13 +75,13 @@ def test_whitening(n_individual_components, prewhiten, multiple_outputs):
         prewhiten=prewhiten,
         random_state=0,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
     )
     # test fit_transform
     X_whitened = gpca.fit_transform(Xs_)
     X_whitened2 = gpca.transform(Xs_)
     assert_allclose(X_whitened, X_whitened2, rtol=5e-4)
-    if multiple_outputs:
+    if multiview_output:
         assert len(X_whitened) == 3
         for X in X_whitened:
             assert X.shape == (n_samples, n_components)
@@ -95,11 +95,11 @@ def test_whitening(n_individual_components, prewhiten, multiple_outputs):
         whiten=False,
         prewhiten=prewhiten,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
         random_state=rng,
     ).fit(Xs)
     X_unwhitened = gpca.transform(Xs_)
-    if multiple_outputs:
+    if multiview_output:
         assert len(X_unwhitened) == 3
         for X in X_unwhitened:
             assert X.shape == (n_samples, n_components)
@@ -110,9 +110,9 @@ def test_whitening(n_individual_components, prewhiten, multiple_outputs):
 @pytest.mark.parametrize("prewhiten", [False, True])
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2]])
-@pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("multiview_output", [True, False])
 def test_grouppca_inverse(
-    n_individual_components, prewhiten, whiten, multiple_outputs
+    n_individual_components, prewhiten, whiten, multiview_output
 ):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
@@ -131,7 +131,7 @@ def test_grouppca_inverse(
         prewhiten=prewhiten,
         whiten=whiten,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
     ).fit(Xs)
     Y = gpca.transform(Xs)
     Y_inverse = gpca.inverse_transform(Y)
@@ -153,7 +153,7 @@ def test_grouppca_deterministic_output():
         pca = GroupPCA(
             n_components=2,
             n_individual_components=3,
-            multiple_outputs=False,
+            multiview_output=False,
             random_state=rng,
         )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]

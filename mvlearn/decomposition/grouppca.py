@@ -48,7 +48,7 @@ class GroupPCA(BaseDecomposer):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
-    multiple_outputs : bool, optional (default True)
+    multiview_output : bool, optional (default True)
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
@@ -152,14 +152,14 @@ class GroupPCA(BaseDecomposer):
         self,
         n_components=None,
         n_individual_components="auto",
-        multiple_outputs=True,
+        multiview_output=True,
         prewhiten=False,
         whiten=False,
         random_state=None,
     ):
         self.n_components = n_components
         self.n_individual_components = n_individual_components
-        self.multiple_outputs = multiple_outputs
+        self.multiview_output = multiview_output
         self.prewhiten = prewhiten
         self.whiten = whiten
         self.random_state = random_state
@@ -264,14 +264,14 @@ class GroupPCA(BaseDecomposer):
         -------
         X_transformed : list of array-likes or numpy.ndarray
             The transformed data.
-            If `multiple_outputs` is True, it is a list with the estimated
+            If `multiview_output` is True, it is a list with the estimated
             individual principal components.
-            If `multiple_outputs` is False, it is a single array containing the
+            If `multiview_output` is False, it is a single array containing the
             shared principal components.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
-        if self.multiple_outputs:
+        if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
@@ -319,7 +319,7 @@ class GroupPCA(BaseDecomposer):
             The recovered individual datasets
         """
         check_is_fitted(self)
-        if self.multiple_outputs:
+        if self.multiview_output:
             X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean

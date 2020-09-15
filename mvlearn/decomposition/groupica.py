@@ -49,7 +49,7 @@ class GroupICA(BaseDecomposer):
         If `'auto'`, set to the minimum between n_components and the
         smallest number of features in each dataset.
 
-    multiple_outputs : bool, optional (default True)
+    multiview_output : bool, optional (default True)
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
@@ -136,7 +136,7 @@ class GroupICA(BaseDecomposer):
         self,
         n_components=None,
         n_individual_components="auto",
-        multiple_outputs=True,
+        multiview_output=True,
         prewhiten=False,
         solver="picard",
         ica_kwargs={},
@@ -148,7 +148,7 @@ class GroupICA(BaseDecomposer):
             )
         self.n_components = n_components
         self.n_individual_components = n_individual_components
-        self.multiple_outputs = multiple_outputs
+        self.multiview_output = multiview_output
         self.prewhiten = prewhiten
         self.solver = solver
         self.ica_kwargs = ica_kwargs
@@ -180,7 +180,7 @@ class GroupICA(BaseDecomposer):
             n_individual_components=self.n_individual_components,
             prewhiten=self.prewhiten,
             whiten=True,
-            multiple_outputs=False,
+            multiview_output=False,
             random_state=self.random_state,
         )
         X_pca = gpca.fit_transform(Xs)
@@ -229,15 +229,15 @@ class GroupICA(BaseDecomposer):
         -------
         X_transformed : list of array-likes or numpy.ndarray
             The transformed data.
-            If `multiple_outputs` is True, it is a list with the estimated
+            If `multiview_output` is True, it is a list with the estimated
             individual sources.
-            If `multiple_outputs` is False, it is a single array containing the
+            If `multiview_output` is False, it is a single array containing the
             shared sources.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
 
-        if self.multiple_outputs:
+        if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
@@ -254,9 +254,9 @@ class GroupICA(BaseDecomposer):
         Parameters
         ----------
         X_transformed : list of array-likes or numpy.ndarray
-            If `multiple_outputs` is True, it must be a list of arrays of shape
+            If `multiview_output` is True, it must be a list of arrays of shape
             (n_samples, n_components) containing estimated sources.
-            If `multiple_outputs` is False, it must be a single
+            If `multiview_output` is False, it must be a single
             array containing shared sources.
 
         Returns
@@ -266,7 +266,7 @@ class GroupICA(BaseDecomposer):
         """
         check_is_fitted(self)
 
-        if self.multiple_outputs:
+        if self.multiview_output:
             X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean

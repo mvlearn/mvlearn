@@ -35,17 +35,17 @@ def generate_signals(n_samples, n_sources, n_features, noise_level, rng):
 @pytest.mark.parametrize(
     "n_individual_components", ["auto", None, 3, [2, 3, 4]]
 )
-@pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("multiview_output", [True, False])
 @pytest.mark.parametrize("whiten", [True, False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_transform(
-    n_components, n_individual_components, multiple_outputs, solver, whiten
+    n_components, n_individual_components, multiview_output, solver, whiten
 ):
     ica_kwargs = dict(tol=1, whiten=whiten)
     ica = GroupICA(
         n_components=n_components,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
         solver=solver,
         ica_kwargs=ica_kwargs,
     )
@@ -54,7 +54,7 @@ def test_transform(
     Xs, _, _ = generate_signals(n_samples, 2, [4, 5, 6], 0.1, rng)
     # check the shape of fit.transform
     X_r = ica.fit(Xs).transform(Xs)
-    if multiple_outputs:
+    if multiview_output:
         for X in X_r:
             assert X.shape[0] == n_samples
             if n_components is not None:
@@ -64,14 +64,14 @@ def test_transform(
         if n_components is not None:
             assert X_r.shape[1] == n_components
     X_r2 = ica.transform(Xs)
-    if multiple_outputs:
+    if multiview_output:
         for X, X2 in zip(X_r, X_r2):
             assert_allclose(X, X2)
     else:
         assert_allclose(X_r, X_r2)
     X_r = ica.fit_transform(Xs)
     X_r2 = ica.transform(Xs)
-    if multiple_outputs:
+    if multiview_output:
         for X, X2 in zip(X_r, X_r2):
             assert_allclose(X, X2)
     else:
@@ -81,14 +81,14 @@ def test_transform(
 @pytest.mark.parametrize("n_features", [(4, 4, 4), (3, 4, 5)])
 @pytest.mark.parametrize("n_components", [None, 2, 3])
 @pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
-@pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("multiview_output", [True, False])
 @pytest.mark.parametrize("prewhiten", [True, False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_dimensions(
     n_features,
     n_components,
     n_individual_components,
-    multiple_outputs,
+    multiview_output,
     prewhiten,
     solver,
 ):
@@ -103,7 +103,7 @@ def test_dimensions(
     ica = GroupICA(
         n_components=n_components,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
         prewhiten=prewhiten,
         solver=solver,
         ica_kwargs=ica_kwargs,
@@ -121,9 +121,9 @@ def test_dimensions(
 
 
 @pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
-@pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("multiview_output", [True, False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
-def test_source_recovery(n_individual_components, multiple_outputs, solver):
+def test_source_recovery(n_individual_components, multiview_output, solver):
     rng = np.random.RandomState(0)
     n_samples = 500
     n_sources = 2
@@ -135,14 +135,14 @@ def test_source_recovery(n_individual_components, multiple_outputs, solver):
     ica = GroupICA(
         n_components=2,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
         solver=solver,
         random_state=rng,
     )
     ica.fit(Xs)
     estimated_sources = ica.transform(Xs)
     estimated_mixings = ica.individual_mixing_
-    if multiple_outputs:
+    if multiview_output:
         for s in estimated_sources:
             C = np.dot(s.T, sources)
             assert amari_d(C) < 1e-3
@@ -151,9 +151,9 @@ def test_source_recovery(n_individual_components, multiple_outputs, solver):
 
 
 @pytest.mark.parametrize("n_individual_components", ["auto", (2, 3, 2)])
-@pytest.mark.parametrize("multiple_outputs", [True, False])
+@pytest.mark.parametrize("multiview_output", [True, False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
-def test_inverse_transform(n_individual_components, multiple_outputs, solver):
+def test_inverse_transform(n_individual_components, multiview_output, solver):
     rng = np.random.RandomState(0)
     n_samples = 500
     n_sources = 2
@@ -165,7 +165,7 @@ def test_inverse_transform(n_individual_components, multiple_outputs, solver):
     ica = GroupICA(
         n_components=2,
         n_individual_components=n_individual_components,
-        multiple_outputs=multiple_outputs,
+        multiview_output=multiview_output,
         solver=solver,
         random_state=rng,
     )
