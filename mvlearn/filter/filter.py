@@ -29,6 +29,19 @@ class Filter(TransformerMixin):
         The list of transformer used to transform data. If
         self.transformer is a single transformer, it is a list containing
         clones of that transformer, otherwise it is a view of self.transformer.
+
+    Examples
+    --------
+    >>> from mvlearn.datasets import load_UCImultifeature
+    >>> from mvlearn.filter import Filter
+    >>> from sklearn.decomposition import PCA
+    >>> Xs, _ = load_UCImultifeature()
+    >>> filt = Filter(PCA(n_components=2))
+    >>> X_transformed = filt.fit_transform(Xs)
+    >>> print(len(X_transformed))
+    6
+    >>> print(X_transformed[0].shape)
+    (2000, 2)
     """
 
     def __init__(self, transformer):
