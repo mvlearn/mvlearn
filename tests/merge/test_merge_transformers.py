@@ -22,7 +22,7 @@ def test_stack(n_features):
     Xs = [rng.randn(n_samples, n_feature) for n_feature in n_features]
     st = StackTransformer()
     st.fit(Xs)
-    X_transformed = st.transform(Xs)
+    X_transformed = st.merge(Xs)
     # Check dimensions
     assert X_transformed.shape == (n_samples, sum(n_features))
     assert st.n_total_features_ == sum(n_features)
@@ -50,7 +50,7 @@ def test_mean(n_features):
     Xs = [rng.randn(n_samples, n_features) for _ in range(n_views)]
     mean = MeanTransformer()
     mean.fit(Xs)
-    X_transformed = mean.transform(Xs)
+    X_transformed = mean.merge(Xs)
     # Check dimensions
     assert X_transformed.shape == (n_samples, n_features)
     # Check that you cannot transform data of different number of features
