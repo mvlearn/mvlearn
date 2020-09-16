@@ -52,10 +52,10 @@ class RepeatTransform(TransformerMixin):
     >>> from sklearn.decomposition import PCA
     >>> Xs, _ = load_UCImultifeature()
     >>> repeat = RepeatTransform(PCA(n_components=2))
-    >>> X_transformed = repeat.fit_transform(Xs)
-    >>> print(len(X_transformed))
+    >>> Xs_transformed = repeat.fit_transform(Xs)
+    >>> print(len(Xs_transformed))
     6
-    >>> print(X_transformed[0].shape)
+    >>> print(Xs_transformed[0].shape)
     (2000, 2)
     """
 
@@ -133,15 +133,15 @@ class RepeatTransform(TransformerMixin):
 
         Returns
         -------
-        X_transformed : list of array-likes
+        Xs_transformed : list of array-likes
             List of length n_views.
             The transformed data.
         """
         self._prefit(Xs, y)
-        X_transformed = []
+        Xs_transformed = []
         for transformer, X in zip(self.transformers_, Xs):
-            X_transformed.append(transformer.fit_transform(X))
-        return X_transformed
+            Xs_transformed.append(transformer.fit_transform(X))
+        return Xs_transformed
 
     def transform(self, Xs, y=None):
         r"""Transform each dataset
@@ -161,16 +161,16 @@ class RepeatTransform(TransformerMixin):
 
         Returns
         -------
-        X_transformed : list of array-likes
+        Xs_transformed : list of array-likes
             List of length n_views.
             The transformed data.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs)
-        X_transformed = []
+        Xs_transformed = []
         for transformer, X in zip(self.transformers_, Xs):
-            X_transformed.append(transformer.transform(X))
-        return X_transformed
+            Xs_transformed.append(transformer.transform(X))
+        return Xs_transformed
 
     def inverse_transform(self, Xs, y=None):
         r"""Compute the inverse transform of a dataset
@@ -190,13 +190,13 @@ class RepeatTransform(TransformerMixin):
 
         Returns
         -------
-        X_transformed : list of array-likes
+        Xs_transformed : list of array-likes
             List of length n_views.
             The transformed data.
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs)
-        X_transformed = []
+        Xs_transformed = []
         for transformer, X in zip(self.transformers_, Xs):
-            X_transformed.append(transformer.inverse_transform(X))
-        return X_transformed
+            Xs_transformed.append(transformer.inverse_transform(X))
+        return Xs_transformed
