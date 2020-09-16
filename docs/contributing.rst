@@ -313,14 +313,14 @@ the ``predict`` method, i.e.
 
 .. code:: python
 
-   y_predictions = predictor.predict(Xs)
+   y_predicted = predictor.predict(Xs)
 
 which follows a call to ``fit``. One may alternatively perform both in the
 single call
 
 .. code:: python
 
-   y_predictions = predictor.fit_predict(Xs, y)
+   y_predicted = predictor.fit_predict(Xs, y)
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``predict`` separately.
