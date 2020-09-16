@@ -282,8 +282,9 @@ Transformers
 ^^^^^^^^^^^^
 
 A ``transformer`` object modifies the data it is given and by default outputs
-multiview data, a transformation of each input view. Additional parameters may
-allow for a single view output in the case of some algorithms. An estimator may
+multiview data, a transformation of each input view. The object also has a
+``multiview_output`` parameter in the constructor that may be set to ``False``
+so as to return a single view, joint transformation instead. An estimator may
 also be a transformer that learns the transformation parameters. The transformer
 object implements the ``transform`` method, i.e.
 
@@ -312,14 +313,33 @@ the ``predict`` method, i.e.
 
 .. code:: python
 
-   predictions = predictor.predict(Xs)
+   y_predictions = predictor.predict(Xs)
 
 which follows a call to ``fit``. One may alternatively perform both in the
 single call
 
 .. code:: python
 
-   predictions = predictor.fit_predict(Xs, y)
+   y_predictions = predictor.fit_predict(Xs, y)
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``predict`` separately.
+
+Mergers
+^^^^^^^
+
+In some cases, it is helpful to extract a single view representation of
+multiple views, as when one is integrating mvlearn estimators with an
+sklearn pipeline. A ``merger`` object implements a ``transform`` method
+which takes in multiview data and returns a single view representation, i.e.
+
+.. code:: python
+
+   X_merged = merger.transform(Xs)
+
+which follows a call to ``fit`` and as above, one can perform both functions
+in the single, potentially more efficient call
+
+.. code:: python
+
+   X_merged = merger.fit_transform(Xs)
