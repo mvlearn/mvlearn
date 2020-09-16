@@ -28,7 +28,7 @@ class RepeatTransform(TransformerMixin):
 
     Parameters
     ----------
-    transformer : a sklearn transformer instance, or a list
+    base_transformer : a sklearn transformer instance, or a list
         Either a single sklearn transformer that will be applied to each
         view. One clone of the estimator will correspond to each view.
         Otherwise, it should be a list of estimators, of length the number of
@@ -39,10 +39,11 @@ class RepeatTransform(TransformerMixin):
     n_views_ : int
         The number of views in the input dataset
 
-    transformer_list_ : list of objects of length n_views_
+    transformers_ : list of objects of length n_views_
         The list of transformer used to transform data. If
-        self.transformer is a single transformer, it is a list containing
-        clones of that transformer, otherwise it is a view of self.transformer.
+        self.base_transformer is a single transformer, it is a list containing
+        clones of that transformer, otherwise it is a view of
+        self.base_transformer.
 
     Examples
     --------
@@ -58,8 +59,8 @@ class RepeatTransform(TransformerMixin):
     (2000, 2)
     """
 
-    def __init__(self, transformer):
-        self.transformer = transformer
+    def __init__(self, base_transformer):
+        self.base_transformer = base_transformer
 
     def _prefit(self, Xs, y=None):
         r"""Estimate the attributes of the class.
@@ -81,16 +82,16 @@ class RepeatTransform(TransformerMixin):
         """
         Xs = check_Xs(Xs)
         self.n_views_ = len(Xs)
-        if type(self.transformer) is list:
-            if len(self.transformer) != self.n_views_:
+        if type(self.base_transformer) is list:
+            if len(self.base_transformer) != self.n_views_:
                 raise ValueError(
                     "The length of the transformers should be the same as the"
                     "number of views"
                 )
-            self.transformer_list_ = self.transformer
+            self.transformers_ = self.base_transformer
         else:
-            self.transformer_list_ = [
-                clone(self.transformer) for _ in range(self.n_views_)
+            self.transformers_ = [
+                clone(self.base_transformer) for _ in range(self.n_views_)
             ]
         return self
 
@@ -113,7 +114,7 @@ class RepeatTransform(TransformerMixin):
             Returns the instance itself.
         """
         self._prefit(Xs, y)
-        for transformer, X in zip(self.transformer_list_, Xs):
+        for transformer, X in zip(self.transformers_, Xs):
             transformer.fit(X)
         return self
 
@@ -138,7 +139,7 @@ class RepeatTransform(TransformerMixin):
         """
         self._prefit(Xs, y)
         X_transformed = []
-        for transformer, X in zip(self.transformer_list_, Xs):
+        for transformer, X in zip(self.transformers_, Xs):
             X_transformed.append(transformer.fit_transform(X))
         return X_transformed
 
@@ -167,7 +168,7 @@ class RepeatTransform(TransformerMixin):
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         X_transformed = []
-        for transformer, X in zip(self.transformer_list_, Xs):
+        for transformer, X in zip(self.transformers_, Xs):
             X_transformed.append(transformer.transform(X))
         return X_transformed
 
@@ -196,6 +197,6 @@ class RepeatTransform(TransformerMixin):
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         X_transformed = []
-        for transformer, X in zip(self.transformer_list_, Xs):
+        for transformer, X in zip(self.transformers_, Xs):
             X_transformed.append(transformer.inverse_transform(X))
         return X_transformed

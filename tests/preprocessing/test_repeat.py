@@ -17,10 +17,10 @@ def test_single_transformer():
     repeat = RepeatTransform(pca)
     repeat.fit(Xs)
     assert repeat.n_views_ == n_views
-    assert len(repeat.transformer_list_) == n_views
+    assert len(repeat.transformers_) == n_views
     assert (
-        repeat.transformer_list_[0].components_[0, 0]
-        != repeat.transformer_list_[1].components_[0, 0]
+        repeat.transformers_[0].components_[0, 0]
+        != repeat.transformers_[1].components_[0, 0]
     )
     X_transformed = repeat.transform(Xs)
     assert len(X_transformed) == n_views
@@ -46,10 +46,10 @@ def test_multiple_transformers():
     repeat = RepeatTransform(transformers)
     repeat.fit(Xs)
     assert repeat.n_views_ == n_views
-    assert len(repeat.transformer_list_) == n_views
+    assert len(repeat.transformers_) == n_views
     assert (
-        repeat.transformer_list_[0].components_[0, 0]
-        != repeat.transformer_list_[1].components_[0, 0]
+        repeat.transformers_[0].components_[0, 0]
+        != repeat.transformers_[1].components_[0, 0]
     )
     X_transformed = repeat.transform(Xs)
     assert len(X_transformed) == n_views
