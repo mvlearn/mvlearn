@@ -3,7 +3,7 @@ from numpy.testing import assert_raises, assert_allclose
 
 import pytest
 
-from mvlearn.preprocessing import ViewTransformed
+from mvlearn.preprocessing import ViewTransformer
 from sklearn.decomposition import PCA
 
 
@@ -14,7 +14,7 @@ def test_single_transformer():
     n_samples = 10
     Xs = rng.randn(n_views, n_samples, n_features)
     pca = PCA(n_components=2)
-    repeat = ViewTransformed(pca)
+    repeat = ViewTransformer(pca)
     repeat.fit(Xs)
     assert repeat.n_views_ == n_views
     assert len(repeat.transformers_) == n_views
@@ -43,7 +43,7 @@ def test_multiple_transformers():
     Xs = rng.randn(n_views, n_samples, n_features)
     n_components = [2, 2, 3, 4]
     transformers = [PCA(n_component) for n_component in n_components]
-    repeat = ViewTransformed(transformers)
+    repeat = ViewTransformer(transformers)
     repeat.fit(Xs)
     assert repeat.n_views_ == n_views
     assert len(repeat.transformers_) == n_views
@@ -68,6 +68,6 @@ def test_error():
     Xs = rng.randn(n_views, n_samples, n_features)
     n_components = [2, 2]
     transformers = [PCA(n_component) for n_component in n_components]
-    repeat = ViewTransformed(transformers)
+    repeat = ViewTransformer(transformers)
     with assert_raises(ValueError):
         repeat.fit(Xs)

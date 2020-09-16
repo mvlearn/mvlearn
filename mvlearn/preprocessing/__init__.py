@@ -1,5 +1,5 @@
-from .repeat import ViewTransformed
+from .repeat import ViewTransformer
 
 __all__ = [
-    "ViewTransformed",
+    "ViewTransformer",
 ]

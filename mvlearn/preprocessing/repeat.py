@@ -20,7 +20,7 @@ from sklearn.utils.validation import check_is_fitted
 from ..utils import check_Xs
 
 
-class ViewTransformed(TransformerMixin):
+class ViewTransformer(TransformerMixin):
     r"""Apply a sklearn transformer to each view of a dataset
 
     Build a transformer from multiview dataset to multiview dataset by
@@ -48,10 +48,10 @@ class ViewTransformed(TransformerMixin):
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
-    >>> from mvlearn.preprocessing import ViewTransformed
+    >>> from mvlearn.preprocessing import ViewTransformer
     >>> from sklearn.decomposition import PCA
     >>> Xs, _ = load_UCImultifeature()
-    >>> repeat = ViewTransformed(PCA(n_components=2))
+    >>> repeat = ViewTransformer(PCA(n_components=2))
     >>> Xs_transformed = repeat.fit_transform(Xs)
     >>> print(len(Xs_transformed))
     6
