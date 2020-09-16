@@ -27,9 +27,7 @@ from ..utils.utils import check_Xs
 class BaseMerger(TransformerMixin):
     """A base class for merging multiview datasets into single view datasets.
 
-    The .merge function should return a single dataset. The .transform function
-    should not be used, it is only included for compatibility with scikit learn
-    pipelines.
+    The .transform function should return a single dataset.
 
     Parameters
     ----------
@@ -60,8 +58,8 @@ class BaseMerger(TransformerMixin):
         return self
 
     @abstractmethod
-    def merge(self, Xs):
-        r"""Merge multiview data
+    def transform(self, Xs, y=None):
+        r"""Merge multiview data into a single dataset
 
         Parameters
         ----------
@@ -75,68 +73,12 @@ class BaseMerger(TransformerMixin):
         X_transformed : numpy.ndarray of shape (n_samples, n_features)
              The singleview output
         """
-
         pass
-
-    def fit_merge(self, Xs, y=None):
-        r"""Fit  to the data and merge
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        X_transformed : numpy.ndarray of shape (n_samples, n_features)
-             The singleview output
-        """
-        return self.fit(Xs, y).merge(Xs)
 
     @abstractmethod
-    def inverse_merge(self, X):
-        r"""Take a single view dataset and split it into multiple views.
-
-        Parameters
-        ----------
-        X : numpy.ndarray, shape (n_total_features, n_samples)
-            The input dataset
-
-        Returns
-        -------
-        Xs : list of numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-        """
-
-        pass
-
-    def transform(self, Xs, y=None):
-        r"""Merge multiview data
-
-        Necessary to be included into sklearn pipelines
-
-        Parameters
-        ----------
-        Xs: list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        X_transformed : numpy.ndarray of shape (n_samples, n_features)
-             The singleview output
-        """
-        return self.merge(Xs, y)
-
     def fit_transform(self, Xs, y=None):
         r"""Fit  to the data and merge
 
-        Necessary to be included into sklearn pipelines
-
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
@@ -149,14 +91,12 @@ class BaseMerger(TransformerMixin):
         X_transformed : numpy.ndarray of shape (n_samples, n_features)
              The singleview output
         """
-        return self.fit_merge(Xs, y)
+        return self.fit(Xs, y).transform(Xs)
 
     @abstractmethod
     def inverse_transform(self, X):
         r"""Take a single view dataset and split it into multiple views.
 
-        Necessary for inclusion in sklearn pipelines
-
         Parameters
         ----------
         X : numpy.ndarray, shape (n_total_features, n_samples)
@@ -169,7 +109,7 @@ class BaseMerger(TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
         """
 
-        return self.inverse_merge(X)
+        pass
 
 
 class StackMerger(BaseMerger):
@@ -218,9 +158,11 @@ class StackMerger(BaseMerger):
         self.n_views_ = len(self.n_features_)
         return self
 
-    def merge(self, Xs, y=None):
+    def transform(self, Xs, y=None):
         r"""Merge the data by stacking its features.
 
+        The multiple views are transformed into a single view dataset by
+        stacking (i.e. concatenating) the features.
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
@@ -238,7 +180,7 @@ class StackMerger(BaseMerger):
         Xs = check_Xs(Xs)
         return np.hstack(Xs)
 
-    def inverse_merge(self, X):
+    def inverse_transform(self, X):
         r"""Take a single view dataset and split it into multiple views.
 
         The input dimension must match the fitted dimension of the multiview
@@ -317,8 +259,11 @@ class MeanMerger(BaseMerger):
         self.n_views_ = len(n_features_)
         return self
 
-    def merge(self, Xs, y=None):
+    def transform(self, Xs, y=None):
         r"""Merge the views by averaging
+
+        Transform the multiview dataset into a single view by averaging
+        the views
 
         Parameters
         ----------
