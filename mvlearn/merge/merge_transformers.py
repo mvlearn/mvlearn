@@ -37,7 +37,7 @@ class BaseMerger(TransformerMixin):
     --------
     """
     def __init__(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def fit(self, Xs, y=None):
@@ -55,7 +55,7 @@ class BaseMerger(TransformerMixin):
         self: returns an instance of self.
         """
 
-        return self
+        return self  # pragma: no cover
 
     @abstractmethod
     def transform(self, Xs, y=None):
@@ -73,7 +73,7 @@ class BaseMerger(TransformerMixin):
         X_transformed : numpy.ndarray of shape (n_samples, n_features)
              The singleview output
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def fit_transform(self, Xs, y=None):
@@ -109,7 +109,7 @@ class BaseMerger(TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
         """
 
-        pass
+        pass  # pragma: no cover
 
 
 class StackMerger(BaseMerger):
