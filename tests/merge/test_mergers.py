@@ -28,6 +28,9 @@ def test_stack(n_features):
     assert st.n_total_features_ == sum(n_features)
     assert st.n_views_ == len(n_features)
     assert st.n_features_ == n_features
+    # Check fit transform
+    X_transformed2 = st.fit_transform(Xs)
+    assert (X_transformed == X_transformed2).all()
     # Back transform
     X_init = st.inverse_transform(X_transformed)
     assert len(X_init) == len(n_features)
@@ -53,6 +56,9 @@ def test_mean(n_features):
     X_transformed = mean.transform(Xs)
     # Check dimensions
     assert X_transformed.shape == (n_samples, n_features)
+    # Check fit transform
+    X_transformed2 = mean.fit_transform(Xs)
+    assert (X_transformed == X_transformed2).all()
     # Check that you cannot transform data of different number of features
     n_features = [2, 3]
     Xs = [rng.randn(n_samples, n_feature) for n_feature in n_features]
