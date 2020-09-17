@@ -14,6 +14,7 @@ The package is split up into submodules.
     decomposition
     construct
     merge
+    preprocessing
     datasets
     plotting
     utils
