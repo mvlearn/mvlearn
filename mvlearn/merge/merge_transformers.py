@@ -75,7 +75,6 @@ class BaseMerger(TransformerMixin):
         """
         pass  # pragma: no cover
 
-    @abstractmethod
     def fit_transform(self, Xs, y=None):
         r"""Fit  to the data and merge
 
@@ -112,12 +111,11 @@ class BaseMerger(TransformerMixin):
         pass  # pragma: no cover
 
 
-class StackMerger(BaseMerger):
+class ConcatMerger(BaseMerger):
     r"""A transformer that stacks features of multiview datasets.
 
     Take a multiview dataset and transform it in a single view dataset
     by stacking features.
-
 
     Attributes
     ----------
@@ -163,6 +161,7 @@ class StackMerger(BaseMerger):
 
         The multiple views are transformed into a single view dataset by
         stacking (i.e. concatenating) the features.
+
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
@@ -210,7 +209,7 @@ class StackMerger(BaseMerger):
         return np.split(X, np.cumsum(self.n_features_)[:-1], axis=1)
 
 
-class MeanMerger(BaseMerger):
+class AverageMerger(BaseMerger):
     r"""A transformer that computes the mean of multiview datasets
 
     Take a multiview dataset and transform it in a single view dataset

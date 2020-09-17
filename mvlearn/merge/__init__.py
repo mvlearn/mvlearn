@@ -1,3 +1,3 @@
-from .merge_transformers import StackMerger, MeanMerger
+from .merge_transformers import ConcatMerger, AverageMerger
 
-__all__ = ["StackMerger", "MeanMerger"]
+__all__ = ["ConcatMerger", "AverageMerger"]
