@@ -13,6 +13,7 @@ The package is split up into submodules.
     embed
     decomposition
     construct
+    merge
     datasets
     plotting
     utils
