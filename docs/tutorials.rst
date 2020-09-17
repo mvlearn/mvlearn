@@ -61,6 +61,7 @@ The following tutorials show how to use multi-view decomposition algorithms.
 
    tutorials/decomposition/ajive_tutorial
    tutorials/decomposition/mv_ica_tutorial
+   tutorials/decomposition/group_ica_tutorial
 
 Plotting
 ========
