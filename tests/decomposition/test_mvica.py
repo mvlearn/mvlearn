@@ -31,7 +31,7 @@
 import pytest
 import numpy as np
 from mvlearn.decomposition.mv_ica import _hungarian
-from mvlearn.decomposition import MultiviewICA, GroupICA, PermICA
+from mvlearn.decomposition import MultiviewICA, PermICA
 
 
 def normalize(A):
@@ -64,7 +64,6 @@ def Xs():
     ("algo, init"),
     [
         (PermICA, None),
-        (GroupICA, None),
         (MultiviewICA, "permica"),
         (MultiviewICA, "groupica"),
     ],

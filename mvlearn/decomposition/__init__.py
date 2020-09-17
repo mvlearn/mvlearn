@@ -1,5 +1,7 @@
 from .ajive import AJIVE, data_block_heatmaps, ajive_full_estimate_heatmaps
-from .mv_ica import MultiviewICA, GroupICA, PermICA
+from .mv_ica import MultiviewICA, PermICA
+from .grouppca import GroupPCA
+from .groupica import GroupICA
 
 __all__ = [
     "AJIVE",
@@ -7,5 +9,6 @@ __all__ = [
     "ajive_full_estimate_heatmaps",
     "MultiviewICA",
     "PermICA",
-    "GroupICA"
+    "GroupICA",
+    "GroupPCA"
     ]
