@@ -127,6 +127,10 @@ class ConcatMerger(BaseMerger):
 
     n_views_ : int
         The number of views in the dataset
+
+    See Also
+    --------
+    AverageMerger
     """
     def __init__(self):
         pass
@@ -224,6 +228,10 @@ class AverageMerger(BaseMerger):
 
     n_views_ : int
         The number of views in the dataset
+
+    See Also
+    --------
+    ConcatMerger
     """
     def __init__(self):
         pass
