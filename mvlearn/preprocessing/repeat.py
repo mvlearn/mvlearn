@@ -118,31 +118,6 @@ class ViewTransformer(TransformerMixin):
             transformer.fit(X)
         return self
 
-    def fit_transform(self, Xs, y=None):
-        r"""Fit and transform each dataset
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to.
-
-        y : None
-            Ignored variable.
-
-        Returns
-        -------
-        Xs_transformed : list of array-likes
-            List of length n_views.
-            The transformed data.
-        """
-        self._prefit(Xs, y)
-        Xs_transformed = []
-        for transformer, X in zip(self.transformers_, Xs):
-            Xs_transformed.append(transformer.fit_transform(X))
-        return Xs_transformed
-
     def transform(self, Xs, y=None):
         r"""Transform each dataset
 
@@ -170,6 +145,31 @@ class ViewTransformer(TransformerMixin):
         Xs_transformed = []
         for transformer, X in zip(self.transformers_, Xs):
             Xs_transformed.append(transformer.transform(X))
+        return Xs_transformed
+
+    def fit_transform(self, Xs, y=None):
+        r"""Fit and transform each dataset
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to.
+
+        y : None
+            Ignored variable.
+
+        Returns
+        -------
+        Xs_transformed : list of array-likes
+            List of length n_views.
+            The transformed data.
+        """
+        self._prefit(Xs, y)
+        Xs_transformed = []
+        for transformer, X in zip(self.transformers_, Xs):
+            Xs_transformed.append(transformer.fit_transform(X))
         return Xs_transformed
 
     def inverse_transform(self, Xs, y=None):
