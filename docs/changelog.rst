@@ -21,7 +21,7 @@ Date TBD. Updates in this release:
 `mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
 `mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
