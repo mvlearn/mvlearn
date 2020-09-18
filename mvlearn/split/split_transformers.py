@@ -193,7 +193,7 @@ class ConcatSplitter(BaseSplitter):
         X = check_array(X)
         return np.split(X, np.cumsum(self.n_features)[:-1], axis=1)
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, Xs):
         r"""Take a multiview dataset and merge it in a single view
 
         The input dimension must match the fitted dimension of the multiview
