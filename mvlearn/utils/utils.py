@@ -179,6 +179,7 @@ def check_Xs_y_nan_allowed(
     num_classes=None,
     max_classes=None,
     min_classes=None,
+    return_dimensions=False
 ):
     r"""
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
@@ -188,27 +189,41 @@ def check_Xs_y_nan_allowed(
     ----------
     Xs : nd-array, list
         Input data.
+
     y : nd-array, list
         Labels.
+
     multiview : boolean, default=False
         If True, throws error if just 1 data matrix given.
+
     enforce_views : int, (default=not checked)
         If provided, ensures this number of views in Xs. Otherwise not
         checked.
+
     num_classes : int, default=None
         Number of classes that must appear in the labels. If none, then
         not checked.
+
     max_classes : int, default=None
         Maximum number of classes that must appear in labels. If none, then
         not checked.
+
     min_classes : int, default=None
         Minimum number of classes that must appear in labels. If none, then
         not checked.
+
+    return_dimensions : boolean, (default=False)
+        If True, the function also returns the dimensions of the multiview
+        dataset. The dimensions are n_views, n_samples, n_features where
+        n_samples and n_views are respectively the number of views and the
+        number of samples, and n_features is a list of length n_views
+        containing the number of features of each view.
 
     Returns
     -------
     Xs_converted : object
         The converted and validated Xs (list of data arrays).
+
     y_converted : object
         The converted and validated y.
     """
@@ -250,4 +265,10 @@ def check_Xs_y_nan_allowed(
                 )
             )
 
-    return Xs_converted, y_converted
+    if not return_dimensions:
+        return Xs_converted, y_converted
+    else:
+        n_views = len(Xs_converted)
+        n_samples = Xs_converted[0].shape[0]
+        n_features = [X.shape for X in Xs_converted]
+        return Xs_converted, y_converted, n_views, n_samples, n_features
