@@ -270,5 +270,5 @@ def check_Xs_y_nan_allowed(
     else:
         n_views = len(Xs_converted)
         n_samples = Xs_converted[0].shape[0]
-        n_features = [X.shape for X in Xs_converted]
+        n_features = [X.shape[1] for X in Xs_converted]
         return Xs_converted, y_converted, n_views, n_samples, n_features

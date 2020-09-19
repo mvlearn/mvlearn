@@ -51,6 +51,18 @@ def test_good_input():
     assert n_views == 3
     assert n_samples == 10
     assert n_features_ == n_features
+    (
+        Xs_converted,
+        y_converted,
+        n_views,
+        n_samples,
+        n_features_,
+    ) = check_Xs_y_nan_allowed(
+        Xs, np.random.randint(2, size=10), return_dimensions=True
+    )
+    assert n_views == 3
+    assert n_samples == 10
+    assert n_features_ == n_features
 
 
 def test_bad_inputs():
