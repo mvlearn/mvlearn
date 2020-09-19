@@ -36,6 +36,7 @@ class BaseMerger(TransformerMixin):
     See Also
     --------
     """
+
     def __init__(self):
         pass  # pragma: no cover
 
@@ -132,6 +133,7 @@ class ConcatMerger(BaseMerger):
     --------
     AverageMerger
     """
+
     def __init__(self):
         pass
 
@@ -154,10 +156,12 @@ class ConcatMerger(BaseMerger):
         self : object
             Transformer instance.
         """
-        Xs = check_Xs(Xs)
-        self.n_features_ = [X.shape[1] for X in Xs]
+        Xs, n_views, n_samples, n_features = check_Xs(
+            Xs, return_dimensions=True
+        )
+        self.n_features_ = n_features
         self.n_total_features_ = sum(self.n_features_)
-        self.n_views_ = len(self.n_features_)
+        self.n_views_ = n_views
         return self
 
     def transform(self, Xs, y=None):
@@ -233,6 +237,7 @@ class AverageMerger(BaseMerger):
     --------
     ConcatMerger
     """
+
     def __init__(self):
         pass
 
