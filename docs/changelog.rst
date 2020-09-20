@@ -1,6 +1,41 @@
 Changelog
 =========
 
+Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0.23.html>`_):
+
+- |Major Feature| : something big that you couldn’t do before.
+
+- |Feature| : something that you couldn’t do before.
+
+- |Efficiency| : an existing feature now may not require as much computation or memory.
+
+- |Enhancement| : a miscellaneous minor improvement.
+
+- |Fix| : something that previously didn’t work as documentated – or according to reasonable expectations – should now work.
+
+- |API Change| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
+
+Version 0.4.0
+-------------
+**In development**. 
+
+Updates in this release:
+
+`mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
+
+`mvlearn.merge <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/merge>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Major Feature| Introduces Merger objects to create single views from multiviews: ConcatMerger and AverageMerger. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+
+`mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Major Feature| Adds a preprocessing module with ViewTransformer to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+
 Version 0.3.0
 -------------
 Updates in this release:
