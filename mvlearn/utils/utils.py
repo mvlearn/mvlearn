@@ -100,12 +100,12 @@ def check_Xs(
         msg = "All views must have the same number of samples"
         raise ValueError(msg)
 
-    if not return_dimensions:
-        return Xs_converted
-    else:
+    if return_dimensions:
         n_samples = Xs[0].shape[0]
         n_features = [X.shape[1] for X in Xs]
         return Xs_converted, n_views, n_samples, n_features
+    else:
+        return Xs_converted
 
 
 def check_Xs_y(
