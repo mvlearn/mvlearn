@@ -183,11 +183,12 @@ class GroupPCA(BaseDecomposer):
         self : object
             Returns the instance itself.
         """
-        X_transformed = check_Xs(Xs, copy=True)
-        n_features = [X.shape[1] for X in Xs]
-        self.n_views_ = len(Xs)
+        X_transformed, n_views, n_samples, n_features = check_Xs(
+            Xs, copy=True, return_dimensions=True
+        )
+        self.n_views_ = n_views
         self.n_features_ = n_features
-        self.n_samples_ = Xs[0].shape[0]
+        self.n_samples_ = n_samples
 
         if self.n_components is None:
             self.n_components_ = min(n_features)
