@@ -21,20 +21,25 @@ Version 0.4.0
 
 Updates in this release:
 
-`mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
-
 `mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/compose>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Introduces Merger objects to create single views from multiviews: ConcatMerger and AverageMerger. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+
+`mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Feature| Adds ``GroupICA`` and ``GroupPCA``. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
+
+`mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Major Feature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
 
 `mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Adds a preprocessing module with ViewTransformer to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``mvlearn.preprocessing`` module with ``ViewTransformer`` to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
 
 Version 0.3.0
 -------------
