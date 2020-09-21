@@ -167,10 +167,10 @@ def check_Xs_y(
         )
     _, y_converted = check_X_y(Xs_converted[0], y, allow_nd=False)
 
-    if not return_dimensions:
-        return Xs_converted, y_converted
-    else:
+    if return_dimensions:
         return Xs_converted, y_converted, n_views, n_samples, n_features
+    else:
+        return Xs_converted, y_converted
 
 
 def check_Xs_y_nan_allowed(
