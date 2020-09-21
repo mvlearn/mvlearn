@@ -19,7 +19,7 @@ from sklearn.model_selection import cross_validate as sk_cross_validate
 from sklearn.pipeline import Pipeline
 
 from ..utils import check_Xs
-from ..split import ConcatSplitter
+from ..compose import ConcatSplitter
 
 
 def cross_validate(estimator, Xs, y, *args, **kwargs):
@@ -33,7 +33,7 @@ def cross_validate(estimator, Xs, y, *args, **kwargs):
     estimator : estimator object implementing 'fit'
         The object to use to fit the data.
 
-    Xs_transformed : list of array-likes
+    Xs : list of array-likes
         - Xs shape: (n_views,)
         - Xs[i] shape: (n_samples, n_features_i)
         The multiview data to fit
@@ -56,6 +56,6 @@ def cross_validate(estimator, Xs, y, *args, **kwargs):
     """
     Xs = check_Xs(Xs)
     n_features = [X.shape[1] for X in Xs]
-    pipeline = Pipeline([('splitted', ConcatSplitter(n_features)),
+    pipeline = Pipeline([('splitter', ConcatSplitter(n_features)),
                          ('estimator', estimator)])
     return sk_cross_validate(pipeline, np.hstack(Xs), y, *args, **kwargs)

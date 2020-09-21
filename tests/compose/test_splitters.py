@@ -3,7 +3,7 @@ from numpy.testing import assert_raises
 
 import pytest
 
-from mvlearn.split import ConcatSplitter
+from mvlearn.compose import ConcatSplitter
 
 
 @pytest.mark.parametrize(

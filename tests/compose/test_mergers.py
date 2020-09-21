@@ -3,7 +3,7 @@ from numpy.testing import assert_raises
 
 import pytest
 
-from mvlearn.merge import ConcatMerger, AverageMerger
+from mvlearn.compose import ConcatMerger, AverageMerger
 
 
 @pytest.mark.parametrize(

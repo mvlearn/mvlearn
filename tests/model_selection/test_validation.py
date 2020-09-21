@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 
 from mvlearn.model_selection import cross_validate
-from mvlearn.merge import ConcatMerger
+from mvlearn.compose import ConcatMerger
 
 
 def test_cross_validate():
