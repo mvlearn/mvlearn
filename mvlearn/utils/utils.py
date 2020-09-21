@@ -142,15 +142,17 @@ def check_Xs_y(
     y_converted : object
         The converted and validated y.
 
-    n_views : int, returned only if return_dimensions is True
-        The number of views in the dataset.
+    n_views : int
+        The number of views in the dataset. Returned only if ``return_dimensions``
+        is ``True``.
 
-    n_samples : int, returned only if return_dimensions is True
-        The number of samples in the dataset.
+    n_samples : int
+        The number of samples in the dataset. Returned only if
+        ``return_dimensions`` is ``True``.
 
-    n_views : list, returned only if return_dimensions is True
-        List of lenght n_views containing the number of features for each
-        view.
+    n_features : list
+        List of length ``n_views`` containing the number of features in
+        each view. Returned only if ``return_dimensions`` is ``True``.
     """
     if return_dimensions:
         Xs_converted, n_views, n_samples, n_features = check_Xs(
