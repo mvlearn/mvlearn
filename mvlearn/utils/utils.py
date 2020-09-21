@@ -60,12 +60,13 @@ def check_Xs(
     n_views : int, returned only if return_dimensions is True
         The number of views in the dataset.
 
-    n_samples : int, returned only if return_dimensions is True
-        The number of samples in the dataset.
+    n_samples : int
+        The number of samples in the dataset. Returned only if
+        ``return_dimensions`` is ``True``.
 
-    n_views : list, returned only if return_dimensions is True
-        List of lenght n_views containing the number of features for each
-        view.
+    n_features : list
+        List of length ``n_views`` containing the number of features in
+        each view. Returned only if ``return_dimensions`` is ``True``.
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
