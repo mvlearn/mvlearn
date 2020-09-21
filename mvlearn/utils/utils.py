@@ -57,8 +57,9 @@ def check_Xs(
     Xs_converted : object
         The converted and validated Xs (list of data arrays).
 
-    n_views : int, returned only if return_dimensions is True
-        The number of views in the dataset.
+    n_views : int
+        The number of views in the dataset. Returned only if
+        ``return_dimensions`` is ``True``.
 
     n_samples : int
         The number of samples in the dataset. Returned only if
