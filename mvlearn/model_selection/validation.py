@@ -54,8 +54,9 @@ def cross_validate(estimator, Xs, y, *args, **kwargs):
     scores : dict of float arrays of shape (n_splits,)
         The output of `sklearn.model_selection.cross_validate`.
     """
-    Xs = check_Xs(Xs)
-    n_features = [X.shape[1] for X in Xs]
+    X_transformed, _, _, n_features = check_Xs(
+        Xs, copy=True, return_dimensions=True
+    )
     pipeline = Pipeline([('splitter', SimpleSplitter(n_features)),
                          ('estimator', estimator)])
     return sk_cross_validate(pipeline, np.hstack(Xs), y, *args, **kwargs)
