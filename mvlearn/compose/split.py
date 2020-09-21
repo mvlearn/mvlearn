@@ -115,7 +115,7 @@ class BaseSplitter(TransformerMixin):
         pass  # pragma: no cover
 
 
-class ConcatSplitter(BaseSplitter):
+class SimpleSplitter(BaseSplitter):
     r"""A transformer that splits the features of a single dataset.
 
     Take a singleview dataset and transform it in a multiview dataset

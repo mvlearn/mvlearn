@@ -19,7 +19,7 @@ from sklearn.model_selection import cross_validate as sk_cross_validate
 from sklearn.pipeline import Pipeline
 
 from ..utils import check_Xs
-from ..compose import ConcatSplitter
+from ..compose import SimpleSplitter
 
 
 def cross_validate(estimator, Xs, y, *args, **kwargs):
@@ -56,6 +56,6 @@ def cross_validate(estimator, Xs, y, *args, **kwargs):
     """
     Xs = check_Xs(Xs)
     n_features = [X.shape[1] for X in Xs]
-    pipeline = Pipeline([('splitter', ConcatSplitter(n_features)),
+    pipeline = Pipeline([('splitter', SimpleSplitter(n_features)),
                          ('estimator', estimator)])
     return sk_cross_validate(pipeline, np.hstack(Xs), y, *args, **kwargs)

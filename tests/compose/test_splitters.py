@@ -3,7 +3,7 @@ from numpy.testing import assert_raises
 
 import pytest
 
-from mvlearn.compose import ConcatSplitter
+from mvlearn.compose import SimpleSplitter
 
 
 @pytest.mark.parametrize(
@@ -20,7 +20,7 @@ def test_split(n_features):
     rng = np.random.RandomState(0)
     n_samples = 10
     X = rng.randn(n_samples, np.sum(n_features))
-    st = ConcatSplitter(n_features)
+    st = SimpleSplitter(n_features)
     st.fit(X)
     Xs_transformed = st.transform(X)
     # Check dimensions
@@ -41,8 +41,8 @@ def test_split(n_features):
 def test_errors():
     X = np.random.randn(10, 5)
     with assert_raises(ValueError):
-        ConcatSplitter([2, 2]).fit(X)
-    st = ConcatSplitter([2, 3]).fit(X)
+        SimpleSplitter([2, 2]).fit(X)
+    st = SimpleSplitter([2, 3]).fit(X)
     Xs = [np.random.randn(10, n) for n in [2, 2]]
     with assert_raises(ValueError):
         st.inverse_transform(Xs)
