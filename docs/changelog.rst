@@ -17,7 +17,7 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 
 Version 0.4.0
 -------------
-**In development**. 
+**In development**.
 
 Updates in this release:
 
@@ -26,7 +26,7 @@ Updates in this release:
 
 - |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
-`mvlearn.merge <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/merge>`_
+`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/compose>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Major Feature| Introduces Merger objects to create single views from multiviews: ConcatMerger and AverageMerger. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
@@ -87,24 +87,24 @@ This version includes multiple new algorithms, more utility functions, as well a
 Additionally, mvlearn now makes the ``torch`` and ``tqdm`` dependencies optional, so users who don’t need the DCCA or SplitAE functionality do not have to import such a large package. **Note** this is only the case for installing with pip. Installing from ``conda`` includes these dependencies automatically. To install the full version of mvlearn with ``torch`` and ``tqdm`` from pip, you must include the optional torch in brackets:
 
     .. code-block:: python
-        
+
         pip3 install mvlearn[torch]
 
 or
 
     .. code-block:: python
-        
+
         pip3 install --upgrade mvlearn[torch]
 
 
 To install **without** ``torch``, do:
 
     .. code-block:: python
-        
+
         pip3 install mvlearn
 
 or
 
     .. code-block:: python
-        
+
         pip3 install --upgrade mvlearn
