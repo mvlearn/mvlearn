@@ -143,8 +143,8 @@ def check_Xs_y(
         The converted and validated y.
 
     n_views : int
-        The number of views in the dataset. Returned only if ``return_dimensions``
-        is ``True``.
+        The number of views in the dataset. Returned only if
+        ``return_dimensions`` is ``True``.
 
     n_samples : int
         The number of samples in the dataset. Returned only if
