@@ -23,7 +23,7 @@ from ..split import ConcatSplitter
 
 
 def cross_validate(estimator, Xs, y, *args, **kwargs):
-    r"""Evaluate metric(s) by cross-validation and also record fit/score times.
+    """Evaluate metric(s) by cross-validation and also record fit/score times.
 
     Works on multiview data, by wrapping
     `sklearn.model_selection.cross_validate`.
@@ -48,6 +48,11 @@ def cross_validate(estimator, Xs, y, *args, **kwargs):
 
     kwargs : any
         Additional named arguments to `sklearn.model_selection.cross_validate`
+
+    Returns
+    -------
+    scores : dict of float arrays of shape (n_splits,)
+        The output of `sklearn.model_selection.cross_validate`.
     """
     Xs = check_Xs(Xs)
     n_features = [X.shape[1] for X in Xs]
