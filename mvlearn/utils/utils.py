@@ -87,8 +87,8 @@ def check_Xs(
             msg = "Must provide at least two data matrices"
             raise ValueError(msg)
         if enforce_views is not None and n_views != enforce_views:
-            msg = "Wrong number of views. Expected {} " " but found {}".format(
-                enforce_views, len(Xs)
+            msg = "Wrong number of views. Expected {} but found {}".format(
+                enforce_views, n_views
             )
             raise ValueError(msg)
 
@@ -178,8 +178,7 @@ def check_Xs_y_nan_allowed(
     enforce_views=None,
     num_classes=None,
     max_classes=None,
-    min_classes=None,
-    return_dimensions=False
+    min_classes=None
 ):
     r"""
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
@@ -211,13 +210,6 @@ def check_Xs_y_nan_allowed(
     min_classes : int, default=None
         Minimum number of classes that must appear in labels. If none, then
         not checked.
-
-    return_dimensions : boolean, (default=False)
-        If True, the function also returns the dimensions of the multiview
-        dataset. The dimensions are n_views, n_samples, n_features where
-        n_samples and n_views are respectively the number of views and the
-        number of samples, and n_features is a list of length n_views
-        containing the number of features of each view.
 
     Returns
     -------
@@ -265,10 +257,4 @@ def check_Xs_y_nan_allowed(
                 )
             )
 
-    if not return_dimensions:
-        return Xs_converted, y_converted
-    else:
-        n_views = len(Xs_converted)
-        n_samples = Xs_converted[0].shape[0]
-        n_features = [X.shape[1] for X in Xs_converted]
-        return Xs_converted, y_converted, n_views, n_samples, n_features
+    return Xs_converted, y_converted
