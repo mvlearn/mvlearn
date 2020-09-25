@@ -278,40 +278,68 @@ trailing underscore to distinguish them from the constants passes to
 Additional Functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Transformers and Predictors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Transformers
+^^^^^^^^^^^^
 
-A ``transformer`` object modifies the data it is given. An estimator may
-also be a transformer that learns the transformation parameters. The
-transformer object implements the ``transform`` method, i.e.
-
-.. code:: python
-
-   new_data = transformer.transform(Xs)
-
-or if the fit method must be called first,
+A ``transformer`` object modifies the data it is given and by default outputs
+multiview data, a transformation of each input view. The object also has a
+``multiview_output`` parameter in the constructor that may be set to ``False``
+so as to return a single view, joint transformation instead. An estimator may
+also be a transformer that learns the transformation parameters. The transformer
+object implements the ``transform`` method, i.e.
 
 .. code:: python
 
-   new_data = transformer.fit_transform(Xs, y)
+   Xs_transformed = transformer.transform(Xs)
+
+which follows a call to ``fit``. One may alternatively perform both in the
+single call
+
+.. code:: python
+
+   Xs_transformed = transformer.fit_transform(Xs, y)
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``transform`` separately.
 
+Predictors
+^^^^^^^^^^
+
 Similarly, a ``predictor`` object makes predictions based on the
-data it is given. An estimator may also be a predictor that learns
+data it is given and outputs a single array of sample-specific predictions
+based on all views. An estimator may also be a predictor that learns
 the prediction parameters. The predictor object implements
 the ``predict`` method, i.e.
 
 .. code:: python
 
-   predictions = predictor.predict(Xs)
+   y_predicted = predictor.predict(Xs)
 
-or if the fit method must be called first,
+which follows a call to ``fit``. One may alternatively perform both in the
+single call
 
 .. code:: python
 
-   predictions = predictor.fit_predict(Xs, y)
+   y_predicted = predictor.fit_predict(Xs, y)
 
 It may be more efficient in some cases to compute the latter example
 rather than call ``fit`` and ``predict`` separately.
+
+Mergers
+^^^^^^^
+
+In some cases, it is helpful to extract a single view representation of
+multiple views, as when one is integrating mvlearn estimators with an
+sklearn pipeline. A ``merger`` object implements a ``transform`` method
+which takes in multiview data and returns a single view representation, i.e.
+
+.. code:: python
+
+   X_merged = merger.transform(Xs)
+
+which follows a call to ``fit`` and as above, one can perform both functions
+in the single, potentially more efficient call
+
+.. code:: python
+
+   X_merged = merger.fit_transform(Xs)
