@@ -5,6 +5,9 @@ import mvlearn.semi_supervised
 import mvlearn.datasets
 import mvlearn.utils
 import mvlearn.decomposition
+import mvlearn.preprocessing
+import mvlearn.merge
 import mvlearn.plotting  # noqa
+
 
 __version__ = "0.3.0"

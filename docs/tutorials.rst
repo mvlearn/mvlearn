@@ -63,6 +63,15 @@ The following tutorials show how to use multi-view decomposition algorithms.
    tutorials/decomposition/mv_ica_tutorial
    tutorials/decomposition/group_ica_tutorial
 
+Pipeline
+========
+The following tutorials showcase how mvlearn tools can integrate with one another and into an sklearn pipeline.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/pipeline/Scikit-learn integration
+
 Plotting
 ========
 Methods build on top of Matplotlib and Seaborn have been implemented for convenient plotting of multiview data. See examples of such plots on simulated data.
