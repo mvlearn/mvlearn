@@ -105,7 +105,7 @@ jobs:
             name: Deploy docs
             command: |
               set -e;
-              if [ "${CIRCLE_BRANCH}" == "circleci" ]; then
+              if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 git config --global user.email "circle@mvlearn.com";
                 git config --global user.name "Circle CI";
                 cd ~/mvlearn.github.io;
@@ -136,5 +136,4 @@ workflows:
           filters:
             branches:
               only:
-                - circleci
-                # - master
+                - master
