@@ -23,8 +23,8 @@ from scipy.spatial.distance import cdist
 
 
 class MultiviewKMeans(BaseCluster):
+    r'''This class implements multi-view k-means.
 
-    r'''
     This class implements multi-view k-means using the co-EM framework
     as described in [#2Clu]_. This algorithm is most suitable for cases
     in which the different views of data are conditionally independent.
@@ -86,16 +86,15 @@ class MultiviewKMeans(BaseCluster):
         Cluster labels for each sample in the fitted data.
 
     centroids_ : list of array-likes
-        - centroids_ length: n_views
-        - centroids_[i] shape: (n_clusters, n_features_i)
+        ``centroids_`` length: n_views
+        ``centroids_[i]`` shape: (n_clusters, n_features_i)
 
-        The cluster centroids for each of the two views. centroids_[0]
-        corresponds to the centroids of view 1 and centroids_[1] corresponds
-        to the centroids of view 2.
+        The cluster centroids for each of the two views. ``centroids_[0]``
+        corresponds to the centroids of view 1 and ``centroids_[1]``
+        corresponds to the centroids of view 2.
 
     Notes
     -----
-
     Multi-view k-means clustering adapts the traditional k-means clustering
     algorithm to handle two views of data. This algorithm requires that a
     conditional independence assumption between views holds true. In cases
@@ -116,26 +115,27 @@ class MultiviewKMeans(BaseCluster):
 
     Input: Unlabeled data D with 2 views
 
-        #. Initialize :math:`\Theta_0^{(2)}`, T, :math:`t = 0`.
+    #. Initialize :math:`\Theta_0^{(2)}`, T, :math:`t = 0`.
 
-        #. E step for view 2: compute expectation for hidden variables given
+    #. E step for view 2: compute expectation for hidden variables given
 
-        #. Loop until stopping criterion is true:
+    #. Loop until stopping criterion is true:
 
-            a. For v = 1 ... 2:
+        a. For v = 1 ... 2:
 
-                i. :math:`t = t + 1`
+           i. :math:`t = t + 1`
 
-                ii. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
-                   that maximize the likelihood for the data given the expected
-                   values for hidden variables of view :math:`\overline{v}` of
-                   iteration :math:`t` - 1
+           ii. M step view v: Find model parameters :math:`\Theta_t^{(v)}`
+               that maximize the likelihood for the data given the expected
+               values for hidden variables of view :math:`\overline{v}` of
+               iteration :math:`t` - 1
 
-                iii. E step view :math:`v`: compute expectation for hidden
-                   variables given the model parameters :math:`\Theta_t^{(v)}`
+           iii. E step view :math:`v`: compute expectation for hidden
+                variables given the model parameters :math:`\Theta_t^{(v)}`
 
-        #. return combined :math:`\hat{\Theta} = \Theta_{t-1}^{(1)} \cup
-           \Theta_t^{(2)}`
+
+    #. return combined :math:`\hat{\Theta} = \Theta_{t-1}^{(1)} \cup
+       \Theta_t^{(2)}`
 
     The final assignment of examples to partitions is performed by assigning
     each example to the cluster with the largest averaged posterior
