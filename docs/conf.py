@@ -14,17 +14,20 @@
 #
 import os
 import sys
-import shutil
+from distutils.version import LooseVersion
+
+import matplotlib
 
 # Use RTD Theme
 import sphinx_rtd_theme
+import sphinx_gallery
 
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
 project = "mvlearn"
-copyright = "2019"
+copyright = "2019-2020"
 authors = u"Richard Guo, Ronan Perry, Gavin Mischler, Theo Lee, " \
     "Alexander Chang, Arman Koul, Cameron Franz"
 
@@ -48,9 +51,16 @@ extensions = [
     "numpydoc",
     "sphinx.ext.ifconfig",
     "sphinx.ext.githubpages",
-    "nbsphinx",
+    # "nbsphinx",
     "sphinx.ext.intersphinx",
+    'sphinx_gallery.gen_gallery',
 ]
+
+if LooseVersion(sphinx_gallery.__version__) < LooseVersion('0.2'):
+    raise ImportError('Must have at least version 0.2 of sphinx-gallery, got '
+                      '%s' % (sphinx_gallery.__version__,))
+
+matplotlib.use('agg')
 
 # -- sphinxcontrib.rawfiles
 #rawfiles = ["CNAME"]
@@ -127,6 +137,7 @@ htmlhelp_basename = "mvlearndoc"
 
 # -- Options for LaTeX output ------------------------------------------------
 
+
 def setup(app):
     # to hide/show the prompt in code examples:
     app.add_javascript("js/copybutton.js")
@@ -175,3 +186,18 @@ texinfo_documents = [
         "Miscellaneous",
     )
 ]
+
+
+sphinx_gallery_conf = {
+    'doc_module': ('mvlearn',),
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
+    'reference_url': {
+        'mvlearn': None,
+        'python': ('https://docs.python.org/3', None),
+        'numpy': ('https://numpy.org/devdocs', None),
+        'scipy': ('https://scipy.github.io/devdocs', None),
+        'matplotlib': ('https://matplotlib.org', None),
+        'sklearn': ('https://scikit-learn.org/stable', None),
+    }
+}
