@@ -28,10 +28,9 @@ data, labels = load_UCImultifeature(select_labeled = list(range(n_class)))
 m_data = data[:2]
 
 
-
 # Helper function to display data and the results of clustering
 def display_plots(pre_title, data, labels):
-   
+
     # plot the views
     plt.figure()
     fig, ax = plt.subplots(1,2, figsize=(14,5))
@@ -62,7 +61,7 @@ def display_plots(pre_title, data, labels):
 # clustering the two views concatenated together.
 
 
-#################Single-view kmeans clustering#####################
+# ################Single-view kmeans clustering#####################
 # Cluster each view separately
 s_kmeans = KMeans(n_clusters=n_class, random_state=RANDOM_SEED)
 s_clusters_v1 = s_kmeans.fit_predict(m_data[0])
@@ -80,7 +79,7 @@ print('Single-view View 1 NMI Score: {0:.3f}\n'.format(s_nmi_v1))
 print('Single-view View 2 NMI Score: {0:.3f}\n'.format(s_nmi_v2))
 print('Single-view Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
 
-#################Multi-view kmeans clustering######################
+# ################Multi-view kmeans clustering######################
 
 # Use the MultiviewKMeans instance to cluster the data
 m_kmeans = MultiviewKMeans(n_clusters=n_class, random_state=RANDOM_SEED)
@@ -102,8 +101,6 @@ tsne = TSNE()
 new_data_1 = tsne.fit_transform(m_data[0])
 new_data_2 = tsne.fit_transform(m_data[1])
 
-
-
 display_plots('Multi-view KMeans Clusters', m_data, m_clusters)
 display_plots('True Labels', m_data, labels)
 
@@ -120,7 +117,7 @@ display_plots('True Labels', m_data, labels)
 # clustering the two views concatenated together.
 
 
-#################Single-view kmeans clustering#####################
+# ################Single-view kmeans clustering#####################
 # Cluster each view separately
 s_kmeans = KMeans(n_clusters=n_class, random_state=RANDOM_SEED)
 s_clusters_v1 = s_kmeans.fit_predict(m_data[0])
@@ -138,14 +135,14 @@ print('Single-view View 1 NMI Score: {0:.3f}\n'.format(s_nmi_v1))
 print('Single-view View 2 NMI Score: {0:.3f}\n'.format(s_nmi_v2))
 print('Single-view Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
 
-#################Multi-view kmeans clustering######################
+# ################Multi-view kmeans clustering######################
 
 # Use the MultiviewKMeans instance to cluster the data
 m_kmeans = MultiviewKMeans(n_clusters=n_class,
-        n_init=10, max_iter=6, patience=2, random_state=RANDOM_SEED)
+                           n_init=10, max_iter=6, patience=2,
+                           random_state=RANDOM_SEED)
 m_clusters = m_kmeans.fit_predict(m_data)
 
 # Compute nmi between true class labels and multi-view cluster labels
 m_nmi = nmi_score(labels, m_clusters)
 print('Multi-view NMI Score: {0:.3f}\n'.format(m_nmi))
-

@@ -6,18 +6,21 @@ In the following experiments, we will perform single-view kmeans clustering on t
 
 """
 
+import warnings
+
 import numpy as np
-from numpy.random import multivariate_normal
-import scipy as scp
-from mvlearn.cluster.mv_k_means import MultiviewKMeans
+from scipy import special
+import matplotlib.pyplot as plt
+
 from sklearn.metrics import normalized_mutual_info_score as nmi_score
 from sklearn.cluster import KMeans
 from sklearn.datasets import fetch_covtype
-import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-import warnings
+
+from mvlearn.cluster import MultiviewKMeans
+
 warnings.filterwarnings("ignore")
-RANDOM_SEED=10
+RANDOM_SEED = 10
 
 ###############################################################################
 # Artificial dataset with conditionally independent views
@@ -42,30 +45,30 @@ def get_ci_data(num_samples=500):
     cov = fetch_covtype()
     all_data = np.array(cov.data)
     all_targets = np.array(cov.target)
-   
+
     #Set class pairings as described in the multiview clustering paper
     view1_classes = [1, 2, 3]
     view2_classes = [4, 5, 6]
-   
+
     #Create lists to hold data and labels for each of the classes across 2 different views
     labels =  [num for num in range(len(view1_classes)) for _ in range(num_samples)]
     labels = np.array(labels)
     view1_data = list()
     view2_data = list()
-   
+
     #Randomly sample items from each of the selected classes in view1
     for class_num in view1_classes:
         class_data = all_data[(all_targets == class_num)]
         indices = np.random.choice(class_data.shape[0], num_samples)
         view1_data.append(class_data[indices])
     view1_data = np.concatenate(view1_data)
-  
-       
+
+
     #Randomly sample items from each of the selected classes in view2
     for class_num in view2_classes:
         class_data = all_data[(all_targets == class_num)]
         indices = np.random.choice(class_data.shape[0], num_samples)
-        view2_data.append(class_data[indices]) 
+        view2_data.append(class_data[indices])
     view2_data = np.concatenate(view2_data)
 
     #Shuffle and normalize vectors
@@ -115,13 +118,12 @@ def perform_clustering(seed, m_data, labels, n_clusters):
     # Compute nmi between true class labels and multi-view cluster labels
     m_nmi = nmi_score(labels, m_clusters)
     print('Multi-view NMI Score: {0:.3f}\n'.format(m_nmi))
-   
+
     return m_clusters
 
 
-
 def display_plots(pre_title, data, labels):
-   
+
     # plot the views
     plt.figure()
     fig, ax = plt.subplots(1,2, figsize=(14,5))
@@ -187,39 +189,39 @@ display_plots('Multi-view Clustering Results', new_data, m_clusters)
 
 
 def get_cd_data(num_samples=500):
-   
+
     #Load in the vectorized news group data from scikit-learn package
     cov = fetch_covtype()
     all_data = np.array(cov.data)
     all_targets = np.array(cov.target)
-   
+
     #Set class pairings as described in the multiview clustering paper
     view1_classes = [1, 2, 3]
     view2_classes = [4, 5, 6]
-   
+
     #Create lists to hold data and labels for each of the classes across 2 different views
     labels =  [num for num in range(len(view1_classes)) for _ in range(num_samples)]
     labels = np.array(labels)
     view1_data = list()
     view2_data = list()
-   
+
     #Randomly sample 500 items from each of the selected classes in view1
     for class_num in view1_classes:
         class_data = all_data[(all_targets == class_num)]
         indices = np.random.choice(class_data.shape[0], num_samples)
         view1_data.append(class_data[indices])
     view1_data = np.concatenate(view1_data)
-  
-       
+
+
     #Construct view 2 by applying a nonlinear transformation
     #to data from view 1 comprised of a linear transformation
     #and a logistic nonlinearity
-    t_mat =  np.random.random((view1_data.shape[1], 50))
+    t_mat = np.random.random((view1_data.shape[1], 50))
     noise = 0.005 - 0.01*np.random.random((view1_data.shape[1], 50))
     t_mat *= noise
     transformed = view1_data @ t_mat
-    view2_data = scp.special.expit(transformed)
-   
+    view2_data = special.expit(transformed)
+
     #Shuffle and normalize vectors
     shuffled_inds = np.random.permutation(num_samples * len(view1_classes))
     view1_data = np.vstack(view1_data)
@@ -274,4 +276,3 @@ display_plots('Multi-view Clustering Results', new_data, m_clusters)
 # see that multi-view kmeans clustering produces clusters with higher purity
 # than the single-view analogs when given informative views of data, even if
 # conditional independence is not strictly enforced.
-
