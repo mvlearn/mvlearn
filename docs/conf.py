@@ -186,6 +186,17 @@ texinfo_documents = [
     )
 ]
 
+# intersphinx configuration
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/{.major}'.format(
+        sys.version_info), None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest/', None),
+    'seaborn': ('https://seaborn.pydata.org/', None),
+}
 
 sphinx_gallery_conf = {
     'doc_module': ('mvlearn',),
@@ -193,10 +204,5 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'auto_examples',
     'reference_url': {
         'mvlearn': None,
-        'python': ('https://docs.python.org/3', None),
-        'numpy': ('https://numpy.org/devdocs', None),
-        'scipy': ('https://scipy.github.io/devdocs', None),
-        'matplotlib': ('https://matplotlib.org', None),
-        'sklearn': ('https://scikit-learn.org/stable', None),
     }
 }
