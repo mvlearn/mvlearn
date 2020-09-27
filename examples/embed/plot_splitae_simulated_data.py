@@ -8,9 +8,7 @@ import numpy as np
 import torch
 from mvlearn.embed import SplitAE
 import matplotlib.pyplot as plt
-import sklearn.cross_decomposition
 plt.style.use("ggplot")
-
 
 
 # cca, previously validated against sklearn CCA
@@ -19,8 +17,10 @@ def cca(X, Y, regularizationλ=0):
     X = X - X.mean(axis=0)
     Y = Y - Y.mean(axis=0)
     k = min(X.shape[1], Y.shape[1])
-    covXX = (X.t() @ X) / X.shape[0] + regularizationλ*torch.eye(X.shape[1], device=X.device)
-    covYY = (Y.t() @ Y) / X.shape[0] + regularizationλ*torch.eye(Y.shape[1], device=X.device)
+    covXX = ((X.t() @ X) / X.shape[0] +
+             regularizationλ*torch.eye(X.shape[1], device=X.device))
+    covYY = ((Y.t() @ Y) / X.shape[0] +
+             regularizationλ*torch.eye(Y.shape[1], device=X.device))
     covXY = (X.t() @ Y) / X.shape[0]
 
     U_x, S_x, V_x = covXX.svd()
@@ -50,13 +50,14 @@ view2 = view1 ** 2
 view1Train = view1[:5000]
 view2Train = view2[:5000]
 view1Test = view1[5000:]
-view2Test = view2[5000:] # these are what we're trying to predict
+view2Test = view2[5000:]  # these are what we're trying to predict
 
 # Let's try and predict view2Test with CCA
 U, V, S = cca(torch.FloatTensor(view1Train), torch.FloatTensor(view2Train))
 view1CCs = view1Train @ U.t().numpy()
 view2CCs = view2Train @ V.t().numpy()
-covariance = np.mean((view1CCs - view1CCs.mean(axis=0)) * (view2CCs - view2CCs.mean(axis=0)), axis=0)
+covariance = np.mean((view1CCs - view1CCs.mean(axis=0)) *
+                     (view2CCs - view2CCs.mean(axis=0)), axis=0)
 stdprod = np.std(view1CCs, axis=0) * np.std(view2CCs, axis=0)
 correlations = covariance / stdprod
 
@@ -70,8 +71,6 @@ correlations = covariance / stdprod
 plt.plot(correlations)
 plt.title("Canonical Correlations")
 plt.show()
-
-
 
 # This is how we predict our training data given the canonical variables
 view1TrainPred = view1CCs @ np.linalg.inv(U.t().numpy())
@@ -110,8 +109,10 @@ print("MSE Loss is ", np.mean((view2TestPred - view2Test)**2))
 
 
 # Now lets try the same thing with SplitAE!
-splitae = SplitAE(hidden_size=32, num_hidden_layers=1, embed_size=20, training_epochs=50, batch_size=32, learning_rate=0.01, print_info=False, print_graph=True)
-splitae.fit([view1Train, view2Train], validationXs=[view1Test, view2Test])
+splitae = SplitAE(hidden_size=32, num_hidden_layers=1, embed_size=20,
+                  training_epochs=50, batch_size=32, learning_rate=0.01,
+                  print_info=False, print_graph=True)
+splitae.fit([view1Train, view2Train], validation_Xs=[view1Test, view2Test])
 
 # (I'm using the test data to see validation loss, in a real case the
 # validation set is held out data and the test set is unknown / not used until
@@ -136,8 +137,8 @@ print("MSE Loss is ", np.mean((predictedView2 - view2Test)**2))
 # right amount of time.
 
 ###############################################################################
-# Predicting a held out view with CCA, linear relationship between views, few data points
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Predicting a held out view with CCA
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 # Lets say instead of 5000 input points we only have 50 train points and 50
@@ -149,7 +150,7 @@ view2 = view1 @ np.random.randn(10, 10)
 view1Train = view1[:50]
 view2Train = view2[:50]
 view1Test = view1[50:]
-view2Test = view2[50:] # these are what we're trying to predict
+view2Test = view2[50:]  # these are what we're trying to predict
 
 U, V, S = cca(torch.FloatTensor(view1Train), torch.FloatTensor(view2Train))
 view1TestCCs = view1Test @ U.t().numpy()
@@ -159,16 +160,19 @@ print("MSE Loss is ", np.mean((view2TestPred - view2Test)**2))
 # CCA achieves a loss of ~0. Can splitAE achieve the same?
 
 ###############################################################################
-# Predicting a held out view with SplitAE, linear relationship between views, few data points
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Predicting a held out view with SplitAE
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-splitae = SplitAE(hidden_size=32, num_hidden_layers=2, embed_size=20, training_epochs=500, batch_size=10, learning_rate=0.01, print_info=False, print_graph=True)
-splitae.fit([view1Train, view2Train], validationXs=[view1Test, view2Test])
-embeddings, reconstructedView1, predictedView2 = splitae.transform([view1Test]) # using test data
+splitae = SplitAE(hidden_size=32, num_hidden_layers=2, embed_size=20,
+                  training_epochs=500, batch_size=10, learning_rate=0.01,
+                  print_info=False, print_graph=True)
+splitae.fit([view1Train, view2Train], validation_Xs=[view1Test, view2Test])
+embeddings, reconstructedView1, predictedView2 = \
+    splitae.transform([view1Test])  # using test data
 
 print("MSE Loss for test data ", np.mean((predictedView2 - view2Test)**2))
-embeddings, reconstructedView1, predictedView2 = splitae.transform([view1Train]) # using training data
+embeddings, reconstructedView1, predictedView2 = \
+    splitae.transform([view1Train])  # using training data
 print("MSE Loss for train data ", np.mean((predictedView2 - view2Train)**2))
 print("MSE Loss when predicting mean", np.mean((0 - view2Train)**2))
 
@@ -178,11 +182,12 @@ print("MSE Loss when predicting mean", np.mean((0 - view2Train)**2))
 # tuning the parameters s.t.
 # we don't overfit allow us to match CCA performance?
 
-
-
-splitae = SplitAE(hidden_size=32, num_hidden_layers=0, embed_size=20, training_epochs=500, batch_size=10, learning_rate=0.01, print_info=False, print_graph=True)
-splitae.fit([view1Train, view2Train], validationXs=[view1Test, view2Test])
-embeddings, reconstructedView1, predictedView2 = splitae.transform([view1Test]) # using test data
+splitae = SplitAE(hidden_size=32, num_hidden_layers=0, embed_size=20,
+                  training_epochs=500, batch_size=10, learning_rate=0.01,
+                  print_info=False, print_graph=True)
+splitae.fit([view1Train, view2Train], validation_Xs=[view1Test, view2Test])
+embeddings, reconstructedView1, predictedView2 = \
+    splitae.transform([view1Test])  # using test data
 print("MSE Loss for test data ", np.mean((predictedView2 - view2Test)**2))
 
 # Luckily, by converting our model to a linear one (i.e. numHiddenLayers=0, so
@@ -194,4 +199,3 @@ print("MSE Loss for test data ", np.mean((predictedView2 - view2Test)**2))
 # Using %%timeit,
 # - CCA takes ~600us to predict view2Test.
 # - SplitAE takes ~4.5s (7,000x slower) to predict view2Test
-

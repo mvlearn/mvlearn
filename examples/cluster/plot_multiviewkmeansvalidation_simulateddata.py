@@ -4,15 +4,18 @@ vs. Single-view KMeans
 
 """
 
+import warnings
+
 import numpy as np
-from numpy.random import multivariate_normal
-from mvlearn.cluster.mv_k_means import MultiviewKMeans
+import matplotlib.pyplot as plt
+
 from sklearn.cluster import KMeans
 from sklearn.metrics import normalized_mutual_info_score as nmi_score
-import matplotlib.pyplot as plt
-import warnings
+
+from mvlearn.cluster import MultiviewKMeans
+
 warnings.filterwarnings("ignore")
-RANDOM_SEED=10
+RANDOM_SEED = 10
 
 ###############################################################################
 # A function to generate 2 views of data for 2 classes
@@ -24,24 +27,27 @@ RANDOM_SEED=10
 
 
 def create_data(seed, vmeans, vvars, num_per_class=500):
-   
+
     np.random.seed(seed)
     data = [[],[]]
-   
+
     for view in range(2):
         for comp in range(len(vmeans[0])):
             cov = np.eye(2) * vvars[view][comp]
-            comp_samples = np.random.multivariate_normal(vmeans[view][comp], cov, size=num_per_class)
+            comp_samples = np.random.multivariate_normal(vmeans[view][comp],
+                                                         cov,
+                                                         size=num_per_class)
             data[view].append(comp_samples)
+
     for view in range(2):
         data[view] = np.vstack(data[view])
-   
+
     labels = list()
     for ind in range(len(vmeans[0])):
         labels.append(ind * np.ones(num_per_class,))
-   
+
     labels = np.concatenate(labels)
-   
+
     return data, labels
 
 ###############################################################################
@@ -53,17 +59,17 @@ def create_data(seed, vmeans, vvars, num_per_class=500):
 
 
 def display_plots(pre_title, data, labels):
-   
+
     # plot the views
     plt.figure()
-    fig, ax = plt.subplots(1,2, figsize=(14,5))
+    fig, ax = plt.subplots(1, 2, figsize=(14, 5))
     dot_size=10
-    ax[0].scatter(data[0][:, 0], data[0][:, 1],c=labels,s=dot_size)
+    ax[0].scatter(data[0][:, 0], data[0][:, 1], c=labels, s=dot_size)
     ax[0].set_title(pre_title + ' View 1')
     ax[0].axes.get_xaxis().set_visible(False)
     ax[0].axes.get_yaxis().set_visible(False)
 
-    ax[1].scatter(data[1][:, 0], data[1][:, 1],c=labels,s=dot_size)
+    ax[1].scatter(data[1][:, 0], data[1][:, 1], c=labels, s=dot_size)
     ax[1].set_title(pre_title + ' View 2')
     ax[1].axes.get_xaxis().set_visible(False)
     ax[1].axes.get_yaxis().set_visible(False)
@@ -71,8 +77,8 @@ def display_plots(pre_title, data, labels):
     plt.show()
 
 ###############################################################################
-# Creating a function to perform both single-view and multi-view kmeans clustering
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Creating a function to perform both single-view and multi-view kmeans
+# clustering
 #
 
 
@@ -104,7 +110,7 @@ def perform_clustering(seed, m_data, labels, n_clusters):
     # Compute nmi between true class labels and multi-view cluster labels
     m_nmi = nmi_score(labels, m_clusters)
     print('Multi-view NMI Score: {0:.3f}\n'.format(m_nmi))
-   
+
     return m_clusters
 
 ###############################################################################
@@ -151,8 +157,8 @@ display_plots('Ground Truth' ,data, labels)
 display_plots('Multi-view Clustering' ,data, m_clusters)
 
 ###############################################################################
-# Performance when cluster components are relatively inseparable (highly overlapping) in both views
-# -------------------------------------------------------------------------------------------------
+# Performance when cluster components are relatively inseparable (highly
+# overlapping) in both views
 #
 # Cluster components 1:
 # * Mean: [0.5, 0.5] (both views)
@@ -176,12 +182,12 @@ vvars = [v1_vars, v2_vars]
 
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
-display_plots('Ground Truth' ,data, labels)
-display_plots('Multi-view Clustering' ,data, m_clusters)
+display_plots('Ground Truth', data, labels)
+display_plots('Multi-view Clustering', data, m_clusters)
 
 ###############################################################################
-# Performance when cluster components are somewhat separable (somewhat overlapping) in both views
-# -----------------------------------------------------------------------------------------------
+# Performance when cluster components are somewhat separable (somewhat
+# overlapping) in both views
 #
 # Cluster components 1:
 # * Mean: [1.5, 1.5] (both views)
@@ -206,8 +212,8 @@ vvars = [v1_vars, v2_vars]
 
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
-display_plots('Ground Truth' ,data, labels)
-display_plots('Multi-view Clustering' ,data, m_clusters)
+display_plots('Ground Truth', data, labels)
+display_plots('Multi-view Clustering', data, m_clusters)
 
 ###############################################################################
 # Performance when cluster components are highly overlapping in one view
@@ -247,7 +253,6 @@ display_plots('Multi-view Clustering' ,data, m_clusters)
 # performs equally as well or worse than single-view kmeans clustering on
 # concatenated data when views are informative but the data is fairly simple
 # (i.e. only has 2 features per view). However, it is clear that the multi-view
-# kmeans algorithm does perform better on well separated cluster components than
-# it does on highly overlapping cluster components, which does validate it's
-# basic functionality as a clustering algorithm.
-
+# kmeans algorithm does perform better on well separated cluster components
+# than it does on highly overlapping cluster components, which does validate
+# it's basic functionality as a clustering algorithm.

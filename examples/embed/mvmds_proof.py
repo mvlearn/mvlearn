@@ -2,7 +2,11 @@
 vs PCA
 ======
 
-MVMDS is a useful multiview dimensionaltiy reduction algorithm that allows the user to perform Multidimensional Scaling on multiple views at the same time. In this notebook, we see how MVMDS performs in clustering randomly generated data and compare this to single-view classical multidimensional scaling which is equivalent to Principal Component Analysis (PCA).
+MVMDS is a useful multiview dimensionaltiy reduction algorithm that allows
+the user to perform Multidimensional Scaling on multiple views at the same
+time. In this notebook, we see how MVMDS performs in clustering randomly
+generated data and compare this to single-view classical multidimensional
+scaling which is equivalent to Principal Component Analysis (PCA).
 
 """
 ###############################################################################
@@ -13,7 +17,6 @@ MVMDS is a useful multiview dimensionaltiy reduction algorithm that allows the u
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.embed import MVMDS
 
-import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -35,38 +38,33 @@ from sklearn.metrics.cluster import adjusted_rand_score
 
 
 def data():
-   
     N = 50
     D1 = 5
     D2 = 7
     D3 = 4
-   
+
     np.random.seed(seed=5)
-    first = np.random.rand(N,D1)
-    second = np.random.rand(N,D2)
-    third = np.random.rand(N,D3)
+    first = np.random.rand(N, D1)
+    second = np.random.rand(N, D2)
+    third = np.random.rand(N, D3)
     random_views = [first, second, third]
-    samp_views = [np.array([[1,4,0,6,2,3],
-                        [2,5,7,1,4,3],
-                        [9,8,5,4,5,6]]),            
-                    np.array([[2,6,2,6],
-                        [9,2,7,3],
-                        [9,6,5,2]])]
-   
+    samp_views = [np.array([[1, 4, 0, 6, 2, 3],
+                            [2, 5, 7, 1, 4, 3],
+                            [9, 8, 5, 4, 5, 6]]),
+                  np.array([[2, 6, 2, 6],
+                            [9, 2, 7, 3],
+                            [9, 6, 5, 2]])]
+
     first_wrong = np.random.rand(N,D1)
     second_wrong = np.random.rand(N-1,D1)
     wrong_views = [first_wrong, second_wrong]
-   
-    dep_views = [np.array([[1,2,3],[1,2,3],[1,2,3]]),
-                 np.array([[1,2,3],[1,2,3],[1,2,3]])]
-   
-    return {'wrong_views' : wrong_views, 'dep_views' : dep_views,
-            'random_views' : random_views,
+
+    dep_views = [np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
+                 np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])]
+
+    return {'wrong_views': wrong_views, 'dep_views' : dep_views,
+            'random_views': random_views,
             'samp_views': samp_views}
-
-
-
-data = data
 
 
 
@@ -93,7 +91,7 @@ comp = mvmds.fit_transform(data()['samp_views'])
 comp2 = np.array([[-0.81330129,  0.07216426,  0.17407766],
        [0.34415456, -0.74042171,  0.69631062],
        [0.46914673,  0.66825745, -0.69631062]])
-   
+
 for i in range(comp.shape[0]):
     for j in range(comp.shape[1]):
         assert comp[i,j]-comp2[i,j] < .000001
@@ -130,8 +128,8 @@ for i in [j,k,l,m,n]:
     df = df.sort_values(by = ['Class'])
     y = np.array(df['Class'])
     df = df.drop(['Class'],axis = 1)
-    arrays.append(np.array(df))   
-   
+    arrays.append(np.array(df))
+
 Views = arrays
 
 Views_concat = np.hstack((arrays[0],arrays[1],arrays[2],arrays[3],arrays[4]))

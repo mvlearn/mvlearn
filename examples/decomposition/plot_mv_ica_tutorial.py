@@ -2,22 +2,27 @@
 Independent Component Analysis (ICA) Tutorial
 =============================================
 
-Adopted from the code at [https://github.com/hugorichard/multiviewica](https://github.com/hugorichard/multiviewica) and their tutorial written by:
+Adopted from the code at
+`https://github.com/hugorichard/multiviewica`_
+and their tutorial written by:
 
 Authors: Hugo Richard, Pierre Ablin
 
 License: BSD 3 clause
 
-Three multiview ICA algorithms are compared. GroupICA concatenates the individual views prior to dimensionality reduction and running ICA over the result. PermICA is more sensitive to individual discrepencies, and computes ICA on each view before aligning the reuslts using the hungarian algorithm. Lastly, MultiviewICA performs the best by optimizing the set of mixing matrices relative to the average source signal.
+Three multiview ICA algorithms are compared. GroupICA concatenates
+the individual views prior to dimensionality reduction and running
+ICA over the result. PermICA is more sensitive to individual
+discrepencies, and computes ICA on each view before aligning the reuslts
+using the hungarian algorithm. Lastly, MultiviewICA performs the best by
+optimizing the set of mixing matrices relative to the average source signal.
 
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mvlearn.decomposition import MultiviewICA, PermICA, GroupICA
-
-
+from mvlearn.decomposition.mv_ica import MultiviewICA, PermICA, GroupICA
 
 # sigmas: data noise
 # m: number of subjects
@@ -34,6 +39,7 @@ algos = [
     ("GroupICA", cm(6), GroupICA),
 ]
 
+
 def amari_d(W, A):
     P = np.dot(A, W)
 
@@ -41,6 +47,7 @@ def amari_d(W, A):
         return np.sum(np.sum(r ** 2, axis=1) / np.max(r ** 2, axis=1) - 1)
 
     return (s(np.abs(P.T)) + s(np.abs(P))) / (2 * P.shape[1])
+
 
 plots = []
 for name, color, algo in algos:
@@ -73,7 +80,6 @@ for name, color, algo in algos:
     plots.append((highs, lows, means))
 
 
-
 fig = plt.figure(figsize=(5, 3))
 for i, (name, color, algo) in enumerate(algos):
     highs, lows, means = plots[i]
@@ -90,4 +96,3 @@ fig.tight_layout()
 plt.show()
 
 # MultiviewICA has the best performance (lowest Amari distance).
-

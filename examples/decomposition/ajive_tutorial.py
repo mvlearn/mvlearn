@@ -34,9 +34,8 @@ import matplotlib.pyplot as plt
 # The two views are created with shared joint variation, unique individual
 # variation, and independent noise. A representation of what the implementation
 # of this algorithm does can be seen in the cell below.
-
-# <img src="https://ars.els-
-# cdn.com/content/image/1-s2.0-S0047259X1730204X-gr1.jpg">
+#
+# .. image:: https://ars.els-cdn.com/content/image/1-s2.0-S0047259X1730204X-gr1.jpg
 #
 
 

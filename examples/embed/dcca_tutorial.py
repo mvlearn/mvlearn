@@ -10,7 +10,6 @@ from mvlearn.embed import DCCA
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot
 import numpy as np
-import matplotlib.pyplot as plt
 
 ###############################################################################
 # Polynomial-Transformed Latent Correlation
@@ -24,15 +23,16 @@ import matplotlib.pyplot as plt
 n_samples = 2000
 centers = [[0,1], [0,-1]]
 covariances = [np.eye(2), np.eye(2)]
-GM = GaussianMixture(n_samples, centers, covariances, random_state=42,
+gm = GaussianMixture(n_samples, centers, covariances, random_state=42,
                      shuffle=True, shuffle_random_state=42)
-GM = GM.sample_views(transform='poly', n_noise=2)
+gm = gm.sample_views(transform='poly', n_noise=2)
 
 # The latent data is plotted against itself to reveal the underlying
 # distribtution.
 
 
-crossviews_plot([GM.latent, GM.latent], labels=GM.y, title='Latent Variable', equal_axes=True)
+crossviews_plot([gm.latent_, gm.latent_], labels=gm.y, title='Latent Variable',
+                equal_axes=True)
 
 # The noisy latent variable (view 1) is plotted against the transformed latent
 # variable (view 2), an example of a dataset with two views.
@@ -41,8 +41,8 @@ crossviews_plot([GM.latent, GM.latent], labels=GM.y, title='Latent Variable', eq
 # Split data into train and test segments
 Xs_train = []
 Xs_test = []
-max_row = int(GM.Xs[0].shape[0] * .7)
-Xs, y = GM.get_Xy(latents=False)
+max_row = int(gm.Xs[0].shape[0] * .7)
+Xs, y = gm.get_Xy(latents=False)
 for X in Xs:
     Xs_train.append(X[:max_row, :])
     Xs_test.append(X[max_row:, :])
@@ -50,8 +50,9 @@ y_train = y[:max_row]
 y_test = y[max_row:]
 
 
-
-crossviews_plot(Xs_test, labels=y_test, title='Testing Data View 1 vs. View 2 (Polynomial Transform + noise)', equal_axes=True)
+crossviews_plot(Xs_test, labels=y_test,
+                title='Testing Data View 1 vs. View 2 (Polynomial Transform + noise)',
+                equal_axes=True)
 
 ###############################################################################
 # Fit DCCA model to uncover latent distribution
@@ -61,9 +62,9 @@ crossviews_plot(Xs_test, labels=y_test, title='Testing Data View 1 vs. View 2 (P
 
 
 # Define parameters and layers for deep model
-features1 = Xs_train[0].shape[1] # Feature sizes
+features1 = Xs_train[0].shape[1]  # Feature sizes
 features2 = Xs_train[1].shape[1]
-layers1 = [1024, 512, 4] # nodes in each hidden layer and the output size
+layers1 = [1024, 512, 4]  # nodes in each hidden layer and the output size
 layers2 = [1024, 512, 4]
 
 dcca = DCCA(input_size1=features1, input_size2=features2, n_components=4,
@@ -78,7 +79,9 @@ Xs_transformed = dcca.transform(Xs_test)
 # We can see that it has uncovered the latent correlation between views.
 
 
-crossviews_plot(Xs_transformed, labels=y_test, title='Transformed Testing Data View 1 vs. View 2 (Polynomial Transform + noise)', equal_axes=True)
+crossviews_plot(Xs_transformed, labels=y_test,
+                title='Transformed Testing Data View 1 vs. View 2 (Polynomial Transform + noise)',
+                equal_axes=True)
 
 ###############################################################################
 # Sinusoidal-Transformed Latent Correlation
@@ -94,25 +97,24 @@ n = 2000
 mu = [[0,1], [0,-1]]
 sigma = [np.eye(2), np.eye(2)]
 class_probs = [0.5, 0.5]
-GM = GaussianMixture(mu,sigma,n,class_probs=class_probs, random_state=42,
+gm = GaussianMixture(mu,sigma,n,class_probs=class_probs, random_state=42,
                      shuffle=True, shuffle_random_state=42)
-GM = GM.sample_views(transform='sin', n_noise=2)
-
-
+gm = gm.sample_views(transform='sin', n_noise=2)
 
 # Split data into train and test segments
 Xs_train = []
 Xs_test = []
-max_row = int(GM.Xs[0].shape[0] * .7)
-for X in GM.Xs:
+max_row = int(gm.Xs[0].shape[0] * .7)
+for X in gm.Xs:
     Xs_train.append(X[:max_row, :])
     Xs_test.append(X[max_row:, :])
-y_train = GM.y[:max_row]
-y_test = GM.y[max_row:]
 
+y_train = gm.y[:max_row]
+y_test = gm.y[max_row:]
 
-
-crossviews_plot(Xs_test, labels=y_test, title='Testing Data View 1 vs. View 2 (Polynomial Transform + noise)', equal_axes=True)
+crossviews_plot(Xs_test, labels=y_test,
+                title='Testing Data View 1 vs. View 2 (Polynomial Transform + noise)',
+                equal_axes=True)
 
 ###############################################################################
 # Fit DCCA model to uncover latent distribution
@@ -122,9 +124,9 @@ crossviews_plot(Xs_test, labels=y_test, title='Testing Data View 1 vs. View 2 (P
 
 
 # Define parameters and layers for deep model
-features1 = Xs_train[0].shape[1] # Feature sizes
+features1 = Xs_train[0].shape[1]  # Feature sizes
 features2 = Xs_train[1].shape[1]
-layers1 = [1024, 512, 4] # nodes in each hidden layer and the output size
+layers1 = [1024, 512, 4]  # nodes in each hidden layer and the output size
 layers2 = [1024, 512, 4]
 
 dcca = DCCA(input_size1=features1, input_size2=features2, n_components=4,
@@ -138,6 +140,6 @@ Xs_transformed = dcca.transform(Xs_test)
 #
 # We can see that it has uncovered the latent correlation between views.
 
-
-crossviews_plot(Xs_transformed, labels=y_test, title='Transformed Testing Data View 1 vs. View 2 (Sinusoidal Transform + noise)', equal_axes=True)
-
+crossviews_plot(Xs_transformed, labels=y_test,
+                title='Transformed Testing Data View 1 vs. View 2 (Sinusoidal Transform + noise)',
+                equal_axes=True)

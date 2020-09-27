@@ -2,19 +2,21 @@
 Multi-view Spectral Clustering
 ==============================
 
-Here we will validate our implementation of multi-view spectral clustering by comparing clustering results with those produced by the code associated with the paper *A Co-training Approach for Multi-view Spectral Clustering* by Kumar and Daumé.
+Here we will validate our implementation of multi-view spectral clustering
+by comparing clustering results with those produced by the code associated
+with the paper *A Co-training Approach for Multi-view Spectral Clustering*
+by Kumar and Daumé.
 
 """
 
-import numpy as np
-from numpy.random import multivariate_normal
-from mvlearn.cluster.mv_spectral import MultiviewSpectralClustering
-from sklearn.cluster import SpectralClustering
-from sklearn.datasets import make_moons
-from sklearn.metrics import normalized_mutual_info_score as nmi_score
-import matplotlib.pyplot as plt
-from scipy.io import savemat
 import warnings
+import numpy as np
+from scipy.io import savemat
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import make_moons
+
+from mvlearn.cluster.mv_spectral import MultiviewSpectralClustering
 
 warnings.filterwarnings('ignore')
 RANDOM_SEED=10
@@ -29,24 +31,26 @@ RANDOM_SEED=10
 
 
 def create_data(seed, vmeans, vvars, num_per_class=500):
-   
     np.random.seed(seed)
-    data = [[],[]]
-   
+    data = [[], []]
+
     for view in range(2):
         for comp in range(len(vmeans[0])):
             cov = np.eye(2) * vvars[view][comp]
-            comp_samples = np.random.multivariate_normal(vmeans[view][comp], cov, size=num_per_class)
+            comp_samples = np.random.multivariate_normal(vmeans[view][comp],
+                                                         cov,
+                                                         size=num_per_class)
             data[view].append(comp_samples)
+
     for view in range(2):
         data[view] = np.vstack(data[view])
-   
+
     labels = list()
     for ind in range(len(vmeans[0])):
         labels.append(ind * np.ones(num_per_class,))
-   
+
     labels = np.concatenate(labels)
-   
+
     return data, labels
 
 ###############################################################################
@@ -58,17 +62,17 @@ def create_data(seed, vmeans, vvars, num_per_class=500):
 
 
 def display_plots(pre_title, data, labels):
-   
+
     # plot the views
     plt.figure()
     fig, ax = plt.subplots(1,2, figsize=(14,5))
-    dot_size=10
-    ax[0].scatter(data[0][:, 0], data[0][:, 1],c=labels,s=dot_size)
+    dot_size = 10
+    ax[0].scatter(data[0][:, 0], data[0][:, 1], c=labels, s=dot_size)
     ax[0].set_title(pre_title + ' View 1')
     ax[0].axes.get_xaxis().set_visible(False)
     ax[0].axes.get_yaxis().set_visible(False)
 
-    ax[1].scatter(data[1][:, 0], data[1][:, 1],c=labels,s=dot_size)
+    ax[1].scatter(data[1][:, 0], data[1][:, 1], c=labels, s=dot_size)
     ax[1].set_title(pre_title + ' View 2')
     ax[1].axes.get_xaxis().set_visible(False)
     ax[1].axes.get_yaxis().set_visible(False)
@@ -170,22 +174,22 @@ display_plots('Matlab Implementation' ,data, matlab_labels)
 
 
 def create_moons(seed, num_per_class=500):
-   
+
     np.random.seed(seed)
     data = []
     labels = []
-   
+
     for view in range(2):
         v_dat, v_labs = make_moons(num_per_class*2,
                 random_state=seed + view, noise=0.05, shuffle=False)
         if view == 1:
             v_dat = v_dat[:, ::-1]
-       
+
         data.append(v_dat)
     for ind in range(len(data)):
         labels.append(ind * np.ones(num_per_class,))
     labels = np.concatenate(labels)
-   
+
     return data, labels
 
 ###############################################################################
