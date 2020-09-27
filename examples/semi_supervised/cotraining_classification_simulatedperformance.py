@@ -149,36 +149,37 @@ def scatterplot_classes(not_removed, labels_train, labels_train_full, View1_trai
 # Performance on simulated data
 # -----------------------------
 #
-###############################################################################
 # General Experimental Setup
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 
 # - Below are the results from simulated data testing of the cotraining
-# classifier with different classification problems (class distributions)
+#   classifier with different classification problems (class distributions)
 # - Results are averaged over 20 randomizations, where a single randomization
-# means using a new seed to generate examples from 2 class distributions and
-# then randomly selecting about 1% of the training data as labeled and leaving
-# the rest unlabeled
+#   means using a new seed to generate examples from 2 class distributions and
+#   then randomly selecting about 1% of the training data as labeled and
+#   leaving the rest unlabeled
 # - 500 examples per class, with 70% used for training and 30% for testing
 # - For a randomization, train 4 classifiers
 #     1. Classifier trained on view 1 labeled data only
 #     2. Classifier trained on view 2 labeled data only
 #     3. Classifier trained on concatenation of labeled features from views 1
-# and 2
+#        and 2
 #     4. multivew CTClassifier trained on views 1 and 2
 #         - For this, test classification accuracy after different numbers of
-# cotraining iterations to see trajectory of classification accuracy
+#           cotraining iterations to see trajectory of classification accuracy
 # - Classification Method:
 #     - Logistic Regression
 #         - 'l2' penalty for view 1 and 'l1' penalty for view 2 to ensure
-# independence between the classifiers in the views. This is important because a
-# key aspect of cotraining is view independence, which can either be enforced by
-# completely independent data, or by using an independent classifier for each
-# view, such as using different parameters with the same type of classifier, or
-# two different classification algorithms.
+#           independence between the classifiers in the views. This is important
+#           because a key aspect of cotraining is view independence, which can
+#           either be enforced by completely independent data, or by using an
+#           independent classifier for each view, such as using different
+#           parameters with the same type of classifier, or two different
+#           classification algorithms.
 
 ###############################################################################
-# Performance when classes are well separated and labeled examples are randomly chosen
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Performance when classes are well separated and labeled examples are randomly
+# chosen
 #
 # Here, the 2 class distributions are the following
 # - Class 0 mean: [0, 0]

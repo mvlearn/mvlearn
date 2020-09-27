@@ -46,7 +46,6 @@ mvlearn is a Python package of multiview learning tools.
    :maxdepth: 1
 
    install
-   .. tutorials
    auto_examples/index
    references/index
    contributing

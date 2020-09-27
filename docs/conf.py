@@ -51,7 +51,6 @@ extensions = [
     "numpydoc",
     "sphinx.ext.ifconfig",
     "sphinx.ext.githubpages",
-    # "nbsphinx",
     "sphinx.ext.intersphinx",
     'sphinx_gallery.gen_gallery',
 ]
