@@ -1,7 +1,7 @@
-Merge
-=====
+Compose
+=======
 
-.. currentmodule:: mvlearn.merge
+.. currentmodule:: mvlearn.compose
 
 AverageMerger
 -------------
@@ -13,4 +13,10 @@ ConcatMerger
 ------------
 
 .. autoclass:: ConcatMerger
+    :exclude-members: get_params, set_params
+
+SimpleSplitter
+--------------
+
+.. autoclass:: SimpleSplitter
     :exclude-members: get_params, set_params

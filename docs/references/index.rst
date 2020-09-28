@@ -13,7 +13,8 @@ The package is split up into submodules.
     embed
     decomposition
     construct
-    merge
+    model_selection
+    compose
     preprocessing
     datasets
     plotting
