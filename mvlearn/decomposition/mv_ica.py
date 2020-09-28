@@ -36,6 +36,7 @@ from joblib import Parallel, delayed
 from picard import picard
 
 from .base import BaseDecomposer
+from .groupica import GroupICA
 
 
 class BaseICA(BaseDecomposer):
@@ -223,15 +224,18 @@ class MultiviewICA(BaseICA):
             if self.init not in ["permica", "groupica"]:
                 raise ValueError("init should either be permica or groupica")
             if self.init == "permica":
-                algo = PermICA
+                ica = PermICA(
+                        max_iter=self.max_iter,
+                        random_state=self.random_state,
+                        tol=self.tol
+                    ).fit(Xs)
+                W = ica.unmixings_
             else:
-                algo = GroupICA
-            ica = algo(
-                    max_iter=self.max_iter,
-                    random_state=self.random_state,
-                    tol=self.tol
-                ).fit(Xs)
-            W = ica.unmixings_
+                ica = GroupICA(n_components=self.n_components,
+                               n_individual_components=self.n_components,
+                               random_state=self.random_state).fit(Xs)
+                W = np.array(ica.individual_components_)
+
         else:
             if type(self.init) is not np.ndarray:
                 raise TypeError("init should be a numpy array")
@@ -381,124 +385,6 @@ class PermICA(BaseICA):
         Wi = np.dot(Wi, Ki) / scale[:, None]
 
         return Si, Wi
-
-
-class GroupICA(BaseICA):
-    r"""
-    Performs PCA on concatenated data across groups (ex: subjects)
-    and apply ICA on reduced data.
-
-    Parameters
-    ----------
-    n_components : int, optional
-        Number of components to extract. If None, no dimension reduction is
-        performed and all views must have the same number of features.
-    max_iter : int, default=1000
-        Maximum number of iterations to perform
-    random_state : int, RandomState instance or None, default=None
-        Used to perform a random initialization. If int, random_state is
-        the seed used by the random number generator; If RandomState
-        instance, random_state is the random number generator; If
-        None, the random number generator is the RandomState instance
-        used by np.random.
-    tol : float, default=1e-3
-        A positive scalar giving the tolerance at which
-        the un-mixing matrices are considered to have converged.
-    n_jobs : int (positive), default=None
-        The number of jobs to run in parallel. `None` means 1 job, `-1`
-        means using all processors.
-
-    Attributes
-    ----------
-    components_ : np array of shape (n_groups, n_features, n_components)
-        The projection matrices that project group data in reduced space.
-        Has value None if n_components is None
-    unmixings_ : np array of shape (n_groups, n_components, n_components)
-        Estimated un-mixing matrices
-    source_ : np array of shape (n_samples, n_components)
-        Estimated source matrix
-
-    See also
-    --------
-    permica
-    multiviewica
-
-    References
-    ----------
-    .. [#1groupica] Vince D Calhoun, Tülay Adali, Godfrey D Pearlson,
-        and James J Pekar. A method for making group inferences from
-        functional MRI data using independent component analysis. Human brain
-        mapping, 14(3):140–151, 2001.
-
-    Examples
-    --------
-    >>> from mvlearn.datasets import load_UCImultifeature
-    >>> from mvlearn.decomposition import GroupICA
-    >>> Xs, _ = load_UCImultifeature()
-    >>> ica = GroupICA(n_components=3)
-    >>> sources = ica.fit_transform(Xs)
-    >>> print(sources.shape)
-    (6, 2000, 3)
-    """
-
-    def __init__(
-        self,
-        n_components=None,
-        max_iter=1000,
-        random_state=None,
-        tol=1e-7,
-        n_jobs=None,
-    ):
-        self.n_components = n_components
-        self.max_iter = max_iter
-        self.random_state = random_state
-        self.tol = tol
-        self.n_jobs = n_jobs
-
-    def fit(self, Xs, y=None):
-        r"""
-        Fits the model to the views Xs.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            Training data to recover a source and unmixing matrices from.
-        y : ignored
-
-        Returns
-        -------
-        self : returns an instance of itself.
-        """
-        P, Xs = _reduce_data(
-            Xs, self.n_components, self.n_jobs
-        )
-        Xs = np.asarray([X.T for X in Xs])
-        n_pb, p, n = Xs.shape
-        Xs_concat = np.vstack(Xs)
-        U, S, V = np.linalg.svd(Xs_concat, full_matrices=False)
-        U = U[:, :p]
-        S = S[:p]
-        V = V[:p]
-        Xs_reduced = np.diag(S).dot(V)
-        K, W, S = picard(
-            Xs_reduced,
-            ortho=False,
-            extended=False,
-            centering=False,
-            max_iter=self.max_iter,
-            tol=self.tol,
-            random_state=self.random_state,
-        )
-        scale = np.linalg.norm(S, axis=1)
-        S = S / scale[:, None]
-        W = np.array([S.dot(np.linalg.pinv(X)) for X in Xs])
-        self.components_ = P
-        self.unmixings_ = np.swapaxes(W, 1, 2)
-        self.source_ = S.T
-
-        return self
 
 
 def _reduce_data(Xs, n_components, n_jobs=None):
