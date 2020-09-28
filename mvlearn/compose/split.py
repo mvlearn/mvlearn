@@ -103,7 +103,6 @@ class SimpleSplitter(TransformerMixin):
         X = check_array(X)
         return np.split(X, np.cumsum(self.n_features)[:-1], axis=1)
 
-
     def fit_transform(self, X, y=None):
         r"""Fit to the data and split
 
@@ -121,7 +120,6 @@ class SimpleSplitter(TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
         """
         return self.fit(X, y).transform(X)
-
 
     def inverse_transform(self, Xs):
         r"""Take a multiview dataset and merge it in a single view
