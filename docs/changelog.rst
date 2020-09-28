@@ -34,22 +34,27 @@ Version 0.4.0
 
 Updates in this release:
 
+`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/compose>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Major Feature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+
 `mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
+- |Feature| Adds ``GroupICA`` and ``GroupPCA``. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
-`mvlearn.merge <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/merge>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |MajorFeature| Introduces Merger objects to create single views from multiviews: ConcatMerger and AverageMerger. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
 
 `mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |MajorFeature| Adds a preprocessing module with ViewTransformer to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``mvlearn.preprocessing`` module with ``ViewTransformer`` to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_.
 
-- |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin`_.
 
 Version 0.3.0
 -------------
@@ -123,3 +128,7 @@ or
     .. code-block:: python
 
         pip3 install --upgrade mvlearn
+
+
+
+.. _Pierre Ablin: https://pierreablin.com/
