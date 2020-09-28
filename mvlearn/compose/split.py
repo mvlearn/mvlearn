@@ -25,97 +25,7 @@ from sklearn.utils.validation import check_is_fitted
 from ..utils.utils import check_Xs
 
 
-class BaseSplitter(TransformerMixin):
-    """A base class for splitting single view datasets into multiview datasets
-
-    The .transform function should return a multiview dataset
-
-    Parameters
-    ----------
-    Attributes
-    ----------
-    See Also
-    --------
-    """
-    def __init__(self):
-        pass  # pragma: no cover
-
-    @abstractmethod
-    def fit(self, X, y=None):
-        r"""Fit model to multiview data.
-
-        Parameters
-        ----------
-        X: array of shape (n_samples, n_features)
-            Input data
-
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        self: returns an instance of self.
-        """
-
-        return self  # pragma: no cover
-
-    @abstractmethod
-    def transform(self, X, y=None):
-        r"""Split singleview dataset into multiple views
-
-        Parameters
-        ----------
-        X: array of shape (n_samples, n_features)
-            Input data
-
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        Xs_transformed : list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        """
-        pass  # pragma: no cover
-
-    def fit_transform(self, X, y=None):
-        r"""Fit to the data and split
-
-        Parameters
-        ----------
-        X: array of shape (n_samples, n_features)
-            Input data
-
-        y : array, shape (n_samples,), optional
-
-        Returns
-        -------
-        Xs_transformed : list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
-        """
-        return self.fit(X, y).transform(X)
-
-    @abstractmethod
-    def inverse_transform(self, Xs):
-        r"""Take a multiview dataset and merge it into a single view dataset
-
-        Parameters
-        ----------
-        Xs : list of numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-
-        Returns
-        -------
-        X : numpy.ndarray, shape (n_total_features, n_samples)
-            The input dataset
-
-        """
-
-        pass  # pragma: no cover
-
-
-class SimpleSplitter(BaseSplitter):
+class SimpleSplitter(TransformerMixin):
     r"""A transformer that splits the features of a single dataset.
 
     Take a singleview dataset and transform it in a multiview dataset
@@ -192,6 +102,26 @@ class SimpleSplitter(BaseSplitter):
         check_is_fitted(self)
         X = check_array(X)
         return np.split(X, np.cumsum(self.n_features)[:-1], axis=1)
+
+
+    def fit_transform(self, X, y=None):
+        r"""Fit to the data and split
+
+        Parameters
+        ----------
+        X: array of shape (n_samples, n_features)
+            Input data
+
+        y : array, shape (n_samples,), optional
+
+        Returns
+        -------
+        Xs_transformed : list of array-likes
+            - Xs shape: (n_views,)
+            - Xs[i] shape: (n_samples, n_features_i)
+        """
+        return self.fit(X, y).transform(X)
+
 
     def inverse_transform(self, Xs):
         r"""Take a multiview dataset and merge it in a single view
