@@ -43,76 +43,39 @@ def _data_block_heatmaps(blocks):
         plt.title("View: {}".format(bn))
 
 
-def _ajive_full_estimate_heatmaps(blocks, full_block_estimates, names=None):
-    """
-    Plots the full AJIVE estimates: X, J, I, E
+# def _ajive_full_estimate_heatmaps(blocks, names=None):
+#     """
+#     Plots the full AJIVE estimates: X, J, I, E
 
-    """
-    num_blocks = len(full_block_estimates)
+#     """
+#     num_blocks = len(blocks)
 
-    if names is None:
-        names = np.arange(num_blocks)
+#     if names is None:
+#         names = np.arange(num_blocks)
 
-    status = isinstance(full_block_estimates, dict)
+#     for i in range(len(blocks[0])):
+#         X = blocks[k]
+#         J = full_block_estimates[k]
+#         I_mat = full_block_estimates[k]
+#         E = full_block_estimates[k]
 
-    if status:
-        block_names = list(full_block_estimates.keys())
+#         # observed data
+#         plt.subplot(num_blocks, num_blocks, k + 1)
+#         sns.heatmap(X, xticklabels=False, yticklabels=False, cmap="RdBu")
+#         plt.title("View: {} observed data".format(bn))
 
-    elif not status:
-        block_names = names
+#         # full joint estimate
+#         plt.subplot(, num_blocks, k + num_blocks + 1)
+#         sns.heatmap(J, xticklabels=False, yticklabels=False, cmap="RdBu")
+#         plt.title("View: {} joint".format(bn))
 
-    for k, bn in enumerate(block_names):
+#         # full individual estimate
+#         plt.subplot(4, num_blocks, k + 2 * num_blocks + 1)
+#         sns.heatmap(I_mat, xticklabels=False, yticklabels=False,
+#                     cmap="RdBu")
+#         plt.title("View: {} individual".format(bn))
 
-        if not status:        # plotting for list
-            X = blocks[k]
-            J = full_block_estimates[k][0]
-            I_mat = full_block_estimates[k][1]
-            E = full_block_estimates[k][2]
-
-            # observed data
-            plt.subplot(4, num_blocks, k + 1)
-            sns.heatmap(X, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} observed data".format(bn))
-
-            # full joint estimate
-            plt.subplot(4, num_blocks, k + num_blocks + 1)
-            sns.heatmap(J, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} joint".format(bn))
-
-            # full individual estimate
-            plt.subplot(4, num_blocks, k + 2 * num_blocks + 1)
-            sns.heatmap(I_mat, xticklabels=False, yticklabels=False,
-                        cmap="RdBu")
-            plt.title("View: {} individual".format(bn))
-
-            # full noise estimate
-            plt.subplot(4, num_blocks, k + 3 * num_blocks + 1)
-            sns.heatmap(E, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} noise ".format(bn))
-
-        if status:        # plotting for dict
-            X = blocks[bn]
-            J = full_block_estimates[bn]["joint"]
-            I_mat = full_block_estimates[bn]["individual"]
-            E = full_block_estimates[bn]["noise"]
-
-            # observed data
-            plt.subplot(4, num_blocks, k + 1)
-            sns.heatmap(X, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} observed data".format(bn))
-
-            # full joint estimate
-            plt.subplot(4, num_blocks, k + num_blocks + 1)
-            sns.heatmap(J, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} joint".format(bn))
-
-            # full individual estimate
-            plt.subplot(4, num_blocks, k + 2 * num_blocks + 1)
-            sns.heatmap(I_mat, xticklabels=False, yticklabels=False,
-                        cmap="RdBu")
-            plt.title("View: {} individual".format(bn))
-
-            # full noise estimate
-            plt.subplot(4, num_blocks, k + 3 * num_blocks + 1)
-            sns.heatmap(E, xticklabels=False, yticklabels=False, cmap="RdBu")
-            plt.title("View: {} noise ".format(bn))
+#         # full noise estimate
+#         plt.subplot(4, num_blocks, k + 3 * num_blocks + 1)
+#         sns.heatmap(E, xticklabels=False, yticklabels=False, cmap="RdBu")
+#         plt.title("View: {} noise ".format(bn))

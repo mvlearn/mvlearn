@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 from scipy.sparse import issparse
-from .utils import svd_wrapper, centering
+from .utils import _svd_wrapper, _centering
 
 
 class pca(object):
@@ -37,9 +37,9 @@ class pca(object):
     n_components: int, default = None
         rank of the decomposition. If None, will compute full PCA.
 
-    center: str, default = None
-        How to center the columns of X. If None, will not center the
-        columns (i.e. just computes the SVD).
+    center: {"mean", None}, default = "mean"
+        How to center the columns of X prior to PCA. If None, will not
+        center the columns.
 
 
     Attributes
@@ -68,19 +68,12 @@ class pca(object):
         The shape of the original data matrix.
     """
     def __init__(self, n_components=None, center='mean'):
-        self.n_components = n_components
+        self.n_components_ = n_components
         self.center = center
 
     def get_params(self):
-        return {'n_components': self.n_components,
+        return {'n_components': self.n_components_,
                 'center': self.center}
-
-    def __repr__(self):
-        if not hasattr(self, 'scores_'):
-            return 'pca object, nothing has been computed yet'
-        else:
-            return 'Rank {} pca of a {} matrix'.format(self.n_components,
-                                                       self.shape_)
 
     def fit(self, X):
         """
@@ -88,28 +81,31 @@ class pca(object):
 
         Parameters
         ----------
-        X: array-like or sparse matrix
-            - X.shape = (n_samples, n_features)
+        X: array-like or sparse matrix, shape (n_samples, n_features)
+
+        Returns
+        -------
+        self : the instance of this object
         """
-        self.shape_, obs_names, var_names, self.n_components, \
-            = _arg_checker(X, self.n_components)
+        self.shape_, obs_names, var_names, self.n_components_, \
+            = _arg_checker(X, self.n_components_)
 
         # possibly mean center X
-        X, self.m_ = centering(X, self.center)
+        X, self.m_ = _centering(X, self.center)
 
         # compute SVD
-        U, D, V = svd_wrapper(X, self.n_components)
+        U, D, V = _svd_wrapper(X, self.n_components_)
 
         # compute variance explained
-        if self.n_components == min(X.shape):
+        if self.n_components_ == min(X.shape):
             self.frob_norm_ = np.sqrt(sum(D ** 2))
         else:
             self.frob_norm_ = _safe_frob_norm(X)
         self.var_expl_prop_ = D ** 2 / self.frob_norm_ ** 2
         self.var_expl_cum_ = np.cumsum(self.var_expl_prop_)
 
-        if self.n_components is None:
-            self.n_components = self.scores_.shape[1]
+        if self.n_components_ is None:
+            self.n_components_ = self.scores_.shape[1]
 
         self.scores_, self.svals_, self.loadings_ = \
             svd2pd(U, D, V, obs_names=obs_names, var_names=var_names)
@@ -135,7 +131,7 @@ class pca(object):
         x = cls()
         if n_components is None and scores is not None:
             n_components = scores.shape[1]
-        x.n_components = n_components
+        x.n_components_ = n_components
 
         if shape is not None:
             shape = shape
@@ -194,7 +190,7 @@ class pca(object):
 
         """
 
-        return self.n_components
+        return self.n_components_
 
     def obs_names(self):
         """
@@ -377,39 +373,6 @@ def _arg_checker(X, n_components):
 
     return shape, obs_names, var_names, n_components
 
-
-def _default_obs_names(n_samples):
-    return [i for i in range(n_samples)]
-
-
-def _default_var_names(n_features):
-    return ['feat_{}'.format(i) for i in range(n_features)]
-
-
-def _default_comp_names(n_components):
-    return ['comp_{}'.format(i) for i in range(n_components)]
-
-
-def svd2pd(U, D, V, obs_names=None, var_names=None, comp_names=None):
-    """
-    Converts SVD output from numpy arrays to pandas.
-    """
-    if obs_names is None:
-        obs_names = _default_obs_names(U.shape[0])
-
-    if var_names is None:
-        var_names = _default_var_names(V.shape[0])
-
-    if comp_names is None:
-        comp_names = _default_comp_names(U.shape[1])
-
-    U = pd.DataFrame(U, index=obs_names, columns=comp_names)
-    D = pd.Series(D, index=comp_names)
-    V = pd.DataFrame(V, index=var_names, columns=comp_names)
-
-    return U, D, V
-
-
 def _unnorm_scores(U, D):
     """
     Returns the unnormalized scores.
@@ -479,126 +442,3 @@ def _safe_frob_norm(X):
         return np.sqrt(sum(X.data ** 2))
     else:
         return norm(np.array(X), ord='fro')
-
-
-class ViewSpecificResults(object):
-    """
-    Contains the view specific results.
-
-    Parameters
-    ----------
-    joint: dict
-        The view specific joint PCA.
-
-    individual: dict
-        The view specific individual PCA.
-
-    noise: array-like
-        The noise matrix estimate.
-
-    obs_names: array-like, default = None
-        Observation names.
-
-    var_names: array-like, default = None
-        Variable names for this view.
-
-    block_name: str, default = None
-        Name of this view.
-
-    m: array-like, default = None
-        The vector used to column mean center this view.
-
-
-    Attributes
-    ----------
-    joint: mvlearn.ajive.pca.pca
-        View specific joint PCA.
-        Has an extra attribute joint.full_ which contains the full view
-        joint estimate.
-
-    individual: mvlearn.ajive.pca.pca
-        View specific individual PCA.
-        Has an extra attribute individual.full_ which contains the full view
-        joint estimate.
-
-    noise: array-like
-        The full noise view estimate.
-
-    block_name:
-        Name of this view.
-
-    """
-
-    def __init__(
-        self,
-        joint,
-        individual,
-        noise,
-        obs_names=None,
-        var_names=None,
-        block_name=None,
-        m=None,
-        shape=None,
-    ):
-
-        self.joint = pca.from_precomputed(
-            n_components=joint["rank"],
-            scores=joint["scores"],
-            loadings=joint["loadings"],
-            svals=joint["svals"],
-            obs_names=obs_names,
-            var_names=var_names,
-            m=m,
-            shape=shape,
-        )
-
-        if joint["rank"] != 0:
-            self.joint.set_comp_names(
-                ["joint_comp_{}".format(i) for i in range(self.joint.rank)]
-            )
-
-        if joint["full"] is not None:
-            self.joint.full_ = pd.DataFrame(
-                joint["full"], index=obs_names, columns=var_names
-            )
-        else:
-            self.joint.full_ = None
-
-        self.individual = pca.from_precomputed(
-            n_components=individual["rank"],
-            scores=individual["scores"],
-            loadings=individual["loadings"],
-            svals=individual["svals"],
-            obs_names=obs_names,
-            var_names=var_names,
-            m=m,
-            shape=shape,
-        )
-        if individual["rank"] != 0:
-            self.individual.set_comp_names(
-                [
-                    "indiv_comp_{}".format(i)
-                    for i in range(self.individual.rank)
-                ]
-            )
-
-        if individual["full"] is not None:
-            self.individual.full_ = pd.DataFrame(
-                individual["full"], index=obs_names, columns=var_names
-            )
-        else:
-            self.individual.full_ = None
-
-        if noise is not None:
-            self.noise_ = pd.DataFrame(
-                noise, index=obs_names, columns=var_names
-            )
-        else:
-            self.noise_ = None
-
-        self.block_name = block_name
-
-    def __repr__(self):
-        return "Block: {}, individual rank: {}, joint rank: {}".format(
-            self.block_name, self.individual.rank, self.joint.rank
-        )

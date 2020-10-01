@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 import numpy as np
-from .utils import svd_wrapper
+from .utils import _svd_wrapper
 
 
 def sample_randdir(num_obs, signal_ranks, R=1000):
@@ -64,6 +64,6 @@ def _get_sample(num_obs, signal_ranks):
 
     # compute largest sing val of random joint matrix
     M = np.bmat(M)
-    _, svs, __ = svd_wrapper(M, rank=1)
+    _, svs, __ = _svd_wrapper(M, rank=1)
 
     return max(svs) ** 2

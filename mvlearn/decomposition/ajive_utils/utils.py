@@ -26,31 +26,27 @@ from scipy.sparse.linalg import svds
 from scipy.linalg import svd as full_svd
 
 
-def svd_wrapper(X, rank=None):
+def _svd_wrapper(X, rank=None):
     r"""
     Computes the full or partial SVD of a matrix. Handles the case where
     X is either dense or sparse.
 
     Parameters
     ----------
-    X: array-like
-        - X shape: shape(N, D)
+    X : array-like, shape (N, D)
 
-    rank: int
-        rank of the desired SVD
+    rank : int
+        rank of the desired SVD. If `None`, the full SVD is used.
 
     Returns
     -------
-    U: array-like
-        - U shape: shape(N, rank)
+    U : array-like, shape (N, rank)
         Orthonormal matrix of left singular vectors.
 
-    D: list
-        - (rank,)
+    D : list, shape (rank,)
         Singular values in decreasing order
 
-    V: array-like
-        - V shape: (D, rank)
+    V : array-like, shape (D, rank)
         Orthonormal matrix of right singular vectors
 
     """
@@ -60,67 +56,43 @@ def svd_wrapper(X, rank=None):
 
     if issparse(X) or not full:
         assert rank <= min(X.shape) - 1  # svds cannot compute the full svd
-        scipy_svds = svds(X, rank)
-        U, D, V = fix_scipy_svds(scipy_svds)
+        U, D, V  = svds(X, rank)
+
+        # Sort in decreasing order
+        sv_reordering = np.argsort(-D)
+        U = U[:, sv_reordering]
+        D = D[sv_reordering]
+        V = V.T[:, sv_reordering]
 
     else:
         U, D, V = full_svd(X, full_matrices=False)
-        V = V.T
 
         if rank:
             U = U[:, :rank]
             D = D[:rank]
-            V = V[:, :rank]
+            V = V.T[:, :rank]
 
     return U, D, V
 
 
-def fix_scipy_svds(scipy_svds):
-    r"""
-    scipy.sparse.linalg.svds orders the singular values in increasing order.
-    This function flips this order.
-
-    Parameters
-    ----------
-    scipy_svds: scipy.sparse.linalg.svds
-
-    Returns
-    -------
-    U, D, V
-    ordered in decreasing singular values
-    """
-    U, D, V = scipy_svds
-
-    sv_reordering = np.argsort(-D)
-
-    U = U[:, sv_reordering]
-    D = D[sv_reordering]
-    V = V.T[:, sv_reordering]
-
-    return U, D, V
-
-
-def centering(X, method="mean"):
+def _centering(X, method="mean"):
     r"""
     Mean centers columns of a matrix.
 
     Parameters
     ----------
-    X: array-like
-        - X shape: (n_samples, n_features)
+    X : array-like, shape (n_samples, n_features)
         The input matrix.
 
-    method: str, None
-        How to center.
+    method : str
+        Centering method
 
     Returns
     -------
-    X_centered: array-like
-        - X_centered shape: (n_samples, n_features)
-        The centered version of X whose columns have mean zero.
+    X_centered : array-like, shape (n_samples, n_features)
+        The centered X
 
-    center: array-like
-        - center shape: (n_features, )
+    center : array-like, shape (n_features, )
         The column means of X.
     """
 

@@ -30,7 +30,7 @@ from mvlearn.decomposition.ajive import (
     ajive_full_estimate_heatmaps,
     data_block_heatmaps,
 )
-from mvlearn.decomposition.ajive_utils.utils import svd_wrapper
+from mvlearn.decomposition.ajive_utils.utils import _svd_wrapper
 from scipy.sparse import csr_matrix
 from scipy.linalg import orth
 from pandas.testing import assert_frame_equal, assert_series_equal
@@ -470,7 +470,7 @@ def test_precomp_init_svd(data):
     dat = data["same_views"]
     precomp = []
     for i in dat:
-        precomp.append(svd_wrapper(i))
+        precomp.append(_svd_wrapper(i))
     ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
     ajive.fit(dat, precomp_init_svd=precomp)
     p = 3
@@ -498,7 +498,7 @@ def test_results_dict(data):
     dat = data["same_views"]
     precomp = []
     for i in dat:
-        precomp.append(svd_wrapper(i))
+        precomp.append(_svd_wrapper(i))
     ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
     ajive.fit(dat, precomp_init_svd=precomp)
     results = ajive.results_dict()
@@ -528,7 +528,7 @@ def test_get_ranks(data):
     dat = data["same_views"]
     precomp = []
     for i in dat:
-        precomp.append(svd_wrapper(i))
+        precomp.append(_svd_wrapper(i))
     ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=1)
     ajive.fit(dat, precomp_init_svd=precomp)
     joint_rank, indiv_ranks = ajive.get_ranks()

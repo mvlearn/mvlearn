@@ -23,35 +23,37 @@
 import numpy as np
 
 
-def get_wedin_samples(X, U, D, V, rank, R=1000):
+def _get_wedin_samples(X, U, D, V, rank, R=1000):
     r"""
     Computes the wedin bound using the sample-project procedure. This method
     does not require the full SVD.
 
     Parameters
     ----------
-    X: array-like
-        - X shape =  (n_samples, n_features)
-        The data block.
+    X : array-like, shape (n_samples, n_features)
+        The data
 
-    U, D, V:
-        The partial SVD of X
+    U, D, V : array-likes
+        The partial SVD of X=UDV^T
 
-    rank: int
+    rank : int
         The rank of the signal space
 
-    R: int
+    R : int
         Number of samples for resampling procedure
 
+    Returns
+    -------
+    wedin_bound_samples : array of resampled wedin bounds
     """
 
     # resample for U and V
-    U_norm_samples = norms_sample_project(
-        X=X.T, basis=U[:, 0:rank], R=R
+    U_norm_samples = _norms_sample_project(
+        X=X.T, basis=U[:, :rank], R=R
     )
 
-    V_norm_samples = norms_sample_project(
-        X=X, basis=V[:, 0:rank], R=R
+    V_norm_samples = _norms_sample_project(
+        X=X, basis=V[:, :rank], R=R
     )
 
     sigma_min = D[rank - 1]  # TODO: double check -1
@@ -63,7 +65,7 @@ def get_wedin_samples(X, U, D, V, rank, R=1000):
     return wedin_bound_samples
 
 
-def norms_sample_project(X, basis, R=1000):
+def _norms_sample_project(X, basis, R=1000):
     r"""
     Samples vectors from space orthogonal to signal space as follows
     - sample random vector from isotropic distribution
@@ -71,8 +73,7 @@ def norms_sample_project(X, basis, R=1000):
 
     Parameters
     ---------
-    X: array-like
-        - X shape: shape(N, D)
+    X: array-like, shape (N, D)
         The observed data
 
     B: array-like
@@ -87,7 +88,7 @@ def norms_sample_project(X, basis, R=1000):
 
     Returns
     -------
-    Array of the resampled norms
+    samples : Array of the resampled norms
     """
     samples = [_get_sample(X, basis) for r in range(R)]
 
@@ -95,6 +96,9 @@ def norms_sample_project(X, basis, R=1000):
 
 
 def _get_sample(X, basis):
+    """
+    Estimates magnitude of noise matrix projected onto signal matrix.
+    """
     dim, rank = basis.shape
 
     # sample from isotropic distribution
@@ -107,5 +111,5 @@ def _get_sample(X, basis):
     # orthonormalize
     vecs, _ = np.linalg.qr(vecs)
 
-    # compute  operator L2 norm
+    # compute operator L2 norm
     return np.linalg.norm(X.dot(vecs), ord=2)
