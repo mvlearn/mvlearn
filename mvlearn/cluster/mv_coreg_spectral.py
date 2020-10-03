@@ -18,12 +18,8 @@
 
 import numpy as np
 import scipy as sp
-from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
-from ..utils.utils import check_Xs
-from sklearn.exceptions import NotFittedError
-from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
-from sklearn.neighbors import NearestNeighbors
+
 from .mv_spectral import MultiviewSpectralClustering
 
 AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']

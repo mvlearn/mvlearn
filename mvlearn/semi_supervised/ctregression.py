@@ -120,9 +120,7 @@ class CTRegressor(BaseCoTrainEstimator):
     The regressor needs to be KNeighborsRegressor,
     as described in the [#1CTR]_.
 
-    Algorithm
-    ---------
-    Given:
+    Algorithm: Given
 
         * a set *L1*, *L2* having labeled training
         samples of each view respectively
