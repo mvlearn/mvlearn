@@ -21,6 +21,12 @@ Group ICA
 .. autoclass:: GroupICA
     :exclude-members: is_fit, get_params, set_params
 
+Group PCA
+---------
+
+.. autoclass:: GroupPCA
+    :exclude-members: is_fit, get_params, set_params
+
 Angle-Based Joint and Individual Variation Explained (AJIVE)
 ------------------------------------------------------------
 

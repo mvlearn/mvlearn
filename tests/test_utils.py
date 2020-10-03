@@ -30,12 +30,28 @@ def test_good_input():
         assert_equal(len(Xs), 1)
 
     def multi_view_nan_allowed():
-        Xs, y = check_Xs_y_nan_allowed(test_Xs2, test_y2, multiview=True,
-                                       enforce_views=2, num_classes=2)
+        Xs, y = check_Xs_y_nan_allowed(
+            test_Xs2, test_y2, multiview=True, enforce_views=2, num_classes=2
+        )
 
     single_view_X()
     single_view_y()
     single_view_y_nan_allowed()
+    n_features = [2, 3, 4]
+    Xs = [np.random.randn(10, n) for n in n_features]
+    Xs_converted, n_views, n_samples, n_features_ = check_Xs(
+        Xs, return_dimensions=True
+    )
+    assert n_views == 3
+    assert n_samples == 10
+    assert n_features_ == n_features
+    Xs_converted, y_converted, n_views, n_samples, n_features_ = check_Xs_y(
+        Xs, np.random.randint(2, size=10), return_dimensions=True
+    )
+    assert n_views == 3
+    assert n_samples == 10
+    assert n_features_ == n_features
+
 
 def test_bad_inputs():
     np.random.seed(1)
@@ -51,7 +67,7 @@ def test_bad_inputs():
 
     with pytest.raises(ValueError):
         "Nonlist input"
-        check_Xs('wrong', multiview=True)
+        check_Xs("wrong", multiview=True)
 
     with pytest.raises(ValueError):
         "Test empty input"
@@ -67,29 +83,45 @@ def test_bad_inputs():
 
     with pytest.raises(ValueError):
         "Bad label length on nan_allowed"
-        check_Xs_y_nan_allowed([test_Xs, [[1, 2], [4, 5]]], bad_y, multiview=True)
+        check_Xs_y_nan_allowed(
+            [test_Xs, [[1, 2], [4, 5]]], bad_y, multiview=True
+        )
 
     with pytest.raises(ValueError):
         "Enforce wrong number of views"
-        check_Xs([test_Xs, [[1, 2], [4, 5]]], multiview=True,
-                 enforce_views=3)
+        check_Xs([test_Xs, [[1, 2], [4, 5]]], multiview=True, enforce_views=3)
 
     with pytest.raises(ValueError):
         "Enforce wrong number of views"
-        check_Xs([test_Xs, [[1, 2], [4, 5]]], multiview=True,
-                 enforce_views=3)
+        check_Xs([test_Xs, [[1, 2], [4, 5]]], multiview=True, enforce_views=3)
 
     with pytest.raises(ValueError):
         "Enforce wrong number of classes"
-        check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
-                 enforce_views=2, num_classes=3)
+        check_Xs_y_nan_allowed(
+            [test_Xs2, [[1, 2], [4, 5]]],
+            bad_y2,
+            multiview=True,
+            enforce_views=2,
+            num_classes=3,
+        )
 
     with pytest.raises(ValueError):
         "Enforce min number of classes"
-        check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
-                 enforce_views=2, min_classes=2)
+        check_Xs_y_nan_allowed(
+            [test_Xs2, [[1, 2], [4, 5]]],
+            bad_y2,
+            multiview=True,
+            enforce_views=2,
+            min_classes=2,
+        )
 
     with pytest.raises(ValueError):
         "Enforce min number of classes"
-        check_Xs_y_nan_allowed([test_Xs2, [[1, 2], [4, 5]]], bad_y2, multiview=True,
-                 enforce_views=2, num_classes=1, max_classes=0)
+        check_Xs_y_nan_allowed(
+            [test_Xs2, [[1, 2], [4, 5]]],
+            bad_y2,
+            multiview=True,
+            enforce_views=2,
+            num_classes=1,
+            max_classes=0,
+        )

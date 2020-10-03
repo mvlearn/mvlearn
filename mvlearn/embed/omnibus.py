@@ -16,13 +16,12 @@
 # Code from the https://github.com/neurodata/graspy package,
 # reproduced and shared with permission.
 
-from .base import BaseEmbed
-from ..utils.utils import check_Xs
-
-import numpy as np
 from graspy.embed import OmnibusEmbed
 from sklearn.metrics import pairwise_distances
 from sklearn.preprocessing import normalize
+
+from .base import BaseEmbed
+from ..utils.utils import check_Xs
 
 
 class Omnibus(BaseEmbed):

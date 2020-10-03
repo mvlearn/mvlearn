@@ -21,8 +21,8 @@ from sklearn.preprocessing import normalize
 
 
 class MultiviewSphericalKMeans(MultiviewKMeans):
+    r'''An implementation of multi-view spherical K-Means.
 
-    r'''
     An implementation of multi-view spherical K-Means using the
     co-EM framework as described in [#2Clu]_. This algorithm is
     most suitable for cases in which the different views of data
@@ -85,16 +85,15 @@ class MultiviewSphericalKMeans(MultiviewKMeans):
         Cluster labels for each sample in the fitted data.
 
     centroids_ : list of array-likes
-        - centroids_ length: n_views
-        - centroids_[i] shape: (n_clusters, n_features_i)
+        ``centroids_`` length: n_views
+        ``centroids_[i]`` shape: (n_clusters, n_features_i)
 
-        The cluster centroids for each of the two views. centroids_[0]
-        corresponds to the centroids of view 1 and centroids_[1] corresponds
-        to the centroids of view 2.
+        The cluster centroids for each of the two views. ``centroids_[0]``
+        corresponds to the centroids of view 1 and ``centroids_[1]``
+        corresponds to the centroids of view 2.
 
     Notes
     -----
-
     Multi-view spherical k-means clustering adapts the traditional spherical
     kmeans clustering algorithm to handle two views of data. This algorithm
     is similar to the mult-view k-means algorithm, except it uses cosine

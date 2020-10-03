@@ -14,7 +14,6 @@
 
 import numpy as np
 from scipy.stats import ortho_group
-import collections
 
 
 def _add_noise(X, n_noise, random_state=None):

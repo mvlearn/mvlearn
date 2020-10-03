@@ -9,15 +9,15 @@ an issue if you have found a bug or wish to see a feature implemented.
 
 In case you experience issues using this package, do not hesitate to submit a
 ticket to the
-`Bug Tracker <https://github.com/neurodata/mvlearn/issues>`_. You are
+`Bug Tracker <https://github.com/mvlearn/mvlearn/issues>`_. You are
 also welcome to post feature requests or pull requests.
 
 It is recommended to check that your issue complies with the
 following rules before submitting:
 
 -  Verify that your issue is not being currently addressed by other
-   `issues <https://github.com/neurodata/mvlearn/issues?q=>`_
-   or `pull requests <https://github.com/neurodata/mvlearn/pulls?q=>`_.
+   `issues <https://github.com/mvlearn/mvlearn/issues?q=>`_
+   or `pull requests <https://github.com/mvlearn/mvlearn/pulls?q=>`_.
 
 -  If you are submitting a bug report, we strongly encourage you to follow the guidelines in
    :ref:`filing_bugs`.
@@ -27,7 +27,7 @@ following rules before submitting:
 ### How to make a good bug report
 
 When you submit an issue to `Github
-<https://github.com/neurodata/mvlearn/issues>`__, please do your best to
+<https://github.com/mvlearn/mvlearn/issues>`__, please do your best to
 follow these guidelines! This will make it a lot easier to provide you with good
 feedback:
 
@@ -60,7 +60,7 @@ feedback:
 The preferred workflow for contributing to mvlearn is to fork the main
 repository on GitHub, clone, and develop on a branch. Steps: 
 
-1. Fork the `project repository <https://github.com/neurodata/mvlearn>`__ by clicking
+1. Fork the `project repository <https://github.com/mvlearn/mvlearn>`__ by clicking
    on the ‘Fork’ button near the top right of the page. This creates a copy
    of the code under your GitHub user account. For more details on how to
    fork a repository see `this

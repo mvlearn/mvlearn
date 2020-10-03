@@ -1,7 +1,7 @@
 import os
 import sys
 from setuptools import setup, find_packages
-from sys import platform
+
 
 PACKAGE_NAME = "mvlearn"
 DESCRIPTION = "A set of python modules for multiview learning"
@@ -17,14 +17,14 @@ AUTHOR = (
     "Cameron Franz",
 )
 AUTHOR_EMAIL = "rflperry@gmail.com"
-URL = "https://github.com/NeuroDataDesign/mvlearn"
+URL = "https://github.com/mvlearn/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 with open("requirements.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
 with open("requirements_torch.txt", "r") as f:
     torch_extras = f.read()
 EXTRA_PACKAGES = {
-    'torch':torch_extras
+    'torch': torch_extras
 }
 
 # Find mvlearn version.

@@ -19,19 +19,20 @@
 import numpy as np
 import scipy as sp
 from scipy.spatial.distance import cdist
+
 from sklearn.cluster import KMeans
-from ..utils.utils import check_Xs
-from .base import BaseCluster
-from sklearn.exceptions import NotFittedError
 from sklearn.metrics.pairwise import rbf_kernel, polynomial_kernel
 from sklearn.neighbors import NearestNeighbors
+
+from ..utils.utils import check_Xs
+from .base import BaseCluster
 
 AFFINITY_METRICS = ['rbf', 'nearest_neighbors', 'poly']
 
 
 class MultiviewSpectralClustering(BaseCluster):
+    r'''An implementation of multi-view spectral clustering.
 
-    r'''
     An implementation of multi-view spectral clustering using the
     basic co-training framework as described in [#1Clu]_.
     Additionally, this can be effective when the dataset naturally
@@ -115,34 +116,34 @@ class MultiviewSpectralClustering(BaseCluster):
 
     Output: Assignments to k clusters
 
-        #. Initialize: :math:`\mathbf{L}_v = \mathbf{D}_v^{-1/2}
-           \mathbf{K}_v\mathbf{D}_v^{-1/2}` for :math:`v = 1, 2`
-            :math:`\mathbf{U}_v^0` is an :math:`n \times k` matrix with the
-            top k eigenvectors of :math:`\mathbf{L}_v` for :math:`v = 1, 2`
+    #. Initialize: :math:`\mathbf{L}_v = \mathbf{D}_v^{-1/2}
+       \mathbf{K}_v\mathbf{D}_v^{-1/2}` for :math:`v = 1, 2`
+       :math:`\mathbf{U}_v^0` is an :math:`n \times k` matrix with the
+       top k eigenvectors of :math:`\mathbf{L}_v` for :math:`v = 1, 2`
 
-        #. For :math:`i = 1` to iter:
+    #. For :math:`i = 1` to iter:
 
-            a. :math:`\mathbf{S}_1 = sym(\mathbf{U}_2^{i-1}
-               {\mathbf{U}_2^{i-1}}^T\mathbf{K}_1)`
+        a. :math:`\mathbf{S}_1 = sym(\mathbf{U}_2^{i-1}
+           {\mathbf{U}_2^{i-1}}^T\mathbf{K}_1)`
 
-            b. :math:`\mathbf{S}_2 = sym(\mathbf{U}_1^{i-1}
-               {\mathbf{U}_1^{i-1}}^T\mathbf{K}_2)`
+        b. :math:`\mathbf{S}_2 = sym(\mathbf{U}_1^{i-1}
+           {\mathbf{U}_1^{i-1}}^T\mathbf{K}_2)`
 
-            c. Use :math:`\mathbf{S}_1` and :math:`\mathbf{S}_2` as the new
-               graph similarities and compute the Laplacians. Solve for the
-               largest k eigenvectors to obtain :math:`\mathbf{U}_1^i` and
-               :math:`\mathbf{U}_2^i`.
+        c. Use :math:`\mathbf{S}_1` and :math:`\mathbf{S}_2` as the new
+           graph similarities and compute the Laplacians. Solve for the
+           largest k eigenvectors to obtain :math:`\mathbf{U}_1^i` and
+           :math:`\mathbf{U}_2^i`.
 
-        #. Row-normalize :math:`\mathbf{U}_1^i` and :math:`\mathbf{U}_2^i`.
+    #. Row-normalize :math:`\mathbf{U}_1^i` and :math:`\mathbf{U}_2^i`.
 
-        #. Form matrix :math:`\mathbf{V} = \mathbf{U}_v^i`, where :math:`v` is
-           believed to be the most informative view a priori. If there is no
-           prior knowledge on the view informativeness, matrix
-           :math:`\mathbf{V}` can also be set to the column-wise concatenation
-           of the two :math:`\mathbf{U}_v^i` s.
+    #. Form matrix :math:`\mathbf{V} = \mathbf{U}_v^i`, where :math:`v` is
+       believed to be the most informative view a priori. If there is no
+       prior knowledge on the view informativeness, matrix
+       :math:`\mathbf{V}` can also be set to the column-wise concatenation
+       of the two :math:`\mathbf{U}_v^i` s.
 
-        #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
-           is assigned to cluster c by the k-means algorithm.
+    #. Assign example j to cluster c if the j-th row of :math:`\mathbf{V}`
+       is assigned to cluster c by the k-means algorithm.
 
     References
     ----------

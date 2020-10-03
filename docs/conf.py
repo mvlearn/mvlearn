@@ -96,7 +96,9 @@ html_theme_options = {
     # 'includehidden': False,
     "collapse_navigation": False,
     "navigation_depth": 3,
+    "logo_only": True,
 }
+html_logo = "./figures/mvlearn-logo-transparent-white.png"
 
 html_context = {
     # Enable the "Edit in GitHub link within the header of each page.

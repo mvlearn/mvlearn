@@ -14,9 +14,10 @@
 #
 # Implements multi-view co-training classification for 2-view data.
 
-from .base import BaseCoTrainEstimator
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
+
+from .base import BaseCoTrainEstimator
 from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
 
 
@@ -176,8 +177,7 @@ class CTClassifier(BaseCoTrainEstimator):
 
     """
 
-    def __init__(
-                 self,
+    def __init__(self,
                  estimator1=None,
                  estimator2=None,
                  p=None,
@@ -329,10 +329,6 @@ class CTClassifier(BaseCoTrainEstimator):
                                  predict_proba(X2[unlabeled_pool]) + eps)
 
                 n, p = [], []
-                accurate_guesses_estimator1 = 0
-                accurate_guesses_estimator2 = 0
-                wrong_guesses_estimator1 = 0
-                wrong_guesses_estimator2 = 0
 
                 # take the most confident labeled examples from the
                 # unlabeled pool in each category and put them in L
@@ -409,8 +405,6 @@ class CTClassifier(BaseCoTrainEstimator):
 
         # initialize
         y_pred = np.zeros(X1.shape[0],)
-        num_disagree = 0
-        num_agree = 0
 
         # predict samples based on trained classifiers
         for i, (y1_i, y2_i) in enumerate(zip(y1, y2)):
@@ -452,7 +446,6 @@ class CTClassifier(BaseCoTrainEstimator):
         X1 = Xs[0]
         X2 = Xs[1]
 
-        y_proba = np.full((X1.shape[0], self.n_classes), -1)
         # predict each probability independently
         y1_proba = self.estimator1_.predict_proba(X1)
         y2_proba = self.estimator2_.predict_proba(X2)

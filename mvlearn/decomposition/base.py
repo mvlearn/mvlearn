@@ -14,7 +14,6 @@
 
 from abc import abstractmethod
 
-import numpy as np
 from sklearn.base import BaseEstimator
 
 
