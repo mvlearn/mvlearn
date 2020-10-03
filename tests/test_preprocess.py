@@ -19,47 +19,39 @@ def r_data():
 def test_Xs_not_valid():
     with pytest.raises(ValueError):
         data = 10
-        _, _, _, _ = train_test_split(data, random_state=RANDOM_SEED)
+        splits = train_test_split(data, random_state=RANDOM_SEED)
 
 def test_y_not_valid(r_data):
     with pytest.raises(ValueError):
         labels = 4
-        _, _, _, _ = train_test_split(r_data[0], labels, random_state=RANDOM_SEED)
+        splits = train_test_split(r_data[0], labels, random_state=RANDOM_SEED)
 
         
 # Function testing
 
 def test_split(r_data):
-    train_Xs, test_Xs, train_y, test_y = train_test_split(r_data[0], random_state=RANDOM_SEED)
+    train_Xs, test_Xs = train_test_split(r_data[0], random_state=RANDOM_SEED)
     assert len(train_Xs) == 3
     assert len(test_Xs) == 3
-    
+
     for X in train_Xs:
         assert X.shape == (15, 10)
     for X in test_Xs:
         assert X.shape == (5, 10)
 
-    assert train_y is None
-    assert test_y is None
-
-        
 def test_split_params(r_data):
     
-    train_Xs, test_Xs, train_y, test_y = train_test_split(r_data[0], test_size=0.2,
+    train_Xs, test_Xs = train_test_split(r_data[0], test_size=0.2,
                                         train_size=None, random_state=RANDOM_SEED,
                                         shuffle=True, stratify=None)
     assert len(train_Xs) == 3
     assert len(test_Xs) == 3
-    
+
     for X in train_Xs:
         assert X.shape == (16, 10)
     for X in test_Xs:
         assert X.shape == (4, 10)
 
-    assert train_y is None
-    assert test_y is None
-
-    
 def test_split_y(r_data):
     train_Xs, test_Xs, train_y, test_y = train_test_split(r_data[0], r_data[1],
                                                           random_state=RANDOM_SEED)
@@ -77,10 +69,11 @@ def test_split_y(r_data):
         
 def test_data_split_params_y(r_data):
     
-    train_Xs, test_Xs, train_y, test_y = train_test_split(r_data[0], r_data[1],
-                                        test_size=0.2, train_size=None,
-                                        random_state=RANDOM_SEED, shuffle=True,
-                                        stratify=None)
+    splits = train_test_split(r_data[0], r_data[1],
+                              test_size=0.2, train_size=None,
+                              random_state=RANDOM_SEED, shuffle=True,
+                              stratify=None)
+    train_Xs, test_Xs, train_y, test_y = tuple(splits)
     
     assert len(train_Xs) == 3
     assert len(test_Xs) == 3
@@ -90,6 +83,5 @@ def test_data_split_params_y(r_data):
     for X in test_Xs:
         assert X.shape == (4, 10)
 
-    
     assert train_y.shape == (16,)
     assert test_y.shape == (4,)
