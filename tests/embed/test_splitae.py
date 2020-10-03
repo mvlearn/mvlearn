@@ -10,7 +10,7 @@ import torch
 # that's a valid backprop update step but probably not what the user wants.
 # In fact there are many ways in which the data/params could be "invalid" --
 # i.e. not suited for the method, feature and sample dimension mixed up,
-  # too few rows in data so model will overfit, batch size too low
+# too few rows in data so model will overfit, batch size too low
 # so model won't train at non-glacial rate, not enough epochs specified
 # for the model to converge, etc, that this test cannot hope to check.
 # For the time being. Maybe there is some way to comprehensively advise the
