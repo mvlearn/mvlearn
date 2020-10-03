@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from mvlearn.preprocessing import train_test_split
+from mvlearn.model_selection import train_test_split
 
 RANDOM_SEED = 10
 np.random.seed(RANDOM_SEED)
@@ -17,12 +17,12 @@ def r_data():
 
 # Exception testing
 def test_Xs_not_valid():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         data = 10
         splits = train_test_split(data, random_state=RANDOM_SEED)
 
 def test_y_not_valid(r_data):
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         labels = 4
         splits = train_test_split(r_data[0], labels, random_state=RANDOM_SEED)
 

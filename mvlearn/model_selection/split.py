@@ -19,7 +19,7 @@ from itertools import chain
 from ..utils.utils import check_Xs_y, check_Xs
 
 
-def train_test_split(Xs, y=None, test_size=None, train_size=None,
+def train_test_split(*inputs, test_size=None, train_size=None,
                      random_state=None, shuffle=True, stratify=None):
     r'''
     Splits multi-view data into random train and test subsets. This
@@ -28,13 +28,9 @@ def train_test_split(Xs, y=None, test_size=None, train_size=None,
 
     Parameters
     ----------
-    Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The input data.
-
-    y : array, shape (n_samples,), default=None
-        The target values of the data.
+    inputs : sequence of indexables
+        Allowed inputs are lists of numpy arrays, numpy arrays, lists,
+        scipy-sparse matrices or pandas dataframes.
 
     test_size : float or int, default=None
         If float, should be between 0.0 and 1.0 and represent the
@@ -65,7 +61,7 @@ def train_test_split(Xs, y=None, test_size=None, train_size=None,
 
     Returns
     -------
-    splitting : list, length=2*n_views or length=2*n_views+2
+    splitting : list, length=2*len(arrays)
         List containing the training and testing datasets, and the
         training and testing targets if y was provided.
         - Xs_train : list of array-likes, training data.
@@ -78,7 +74,7 @@ def train_test_split(Xs, y=None, test_size=None, train_size=None,
     >>> from mvlearn.preprocessing import train_test_split
     >>> import numpy as np
     >>> RANDOM_STATE=10
-    >>> np.random.seed(RANDOM_STATE)
+    >>> np.random.RandomState(RANDOM_STATE)
     >>> Xs = np.arange(18).reshape((3, 3, 2))
     >>> y = np.arange(3)
     >>> # Print the data
@@ -130,29 +126,27 @@ def train_test_split(Xs, y=None, test_size=None, train_size=None,
     [0]
     '''
 
-    if y is None:
-        Xs = check_Xs(Xs)
-        splits = model_selection.train_test_split(*Xs,
+    splitting = []
+    for a in inputs:
+        splits = None
+        if isinstance(a, list) or (type(a).__module__ == np.__name__ and
+                len(a.shape) > 2):
+            splits = model_selection.train_test_split(*a,
                                                   test_size=test_size,
                                                   train_size=train_size,
                                                   random_state=random_state,
                                                   shuffle=shuffle,
                                                   stratify=stratify)
-    else:
-        Xs, y = check_Xs_y(Xs, y)
-        splits = model_selection.train_test_split(*Xs, y,
+            splits = (splits[::2], splits[1::2])
+        else:
+            splits = model_selection.train_test_split(a,
                                                   test_size=test_size,
                                                   train_size=train_size,
                                                   random_state=random_state,
                                                   shuffle=shuffle,
                                                   stratify=stratify)
 
-    Xs_train = splits[::2]
-    Xs_test = splits[1::2]
+        for split in splits:
+            splitting.append(split)
 
-    if y is None:
-        return [Xs_train, Xs_test]
-    else:
-        y_train = Xs_train.pop()
-        y_test = Xs_test.pop()
-        return [Xs_train, Xs_test, y_train, y_test]
+    return splitting
