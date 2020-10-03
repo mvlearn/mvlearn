@@ -14,9 +14,7 @@
 # Authors: Alexander Chang, Gavin Mischler
 
 import numpy as np
-from sklearn import model_selection
-from itertools import chain
-from ..utils.utils import check_Xs_y, check_Xs
+from sklearn import model_selection as ms
 
 
 def train_test_split(*inputs, test_size=None, train_size=None,
@@ -74,7 +72,6 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     >>> from mvlearn.preprocessing import train_test_split
     >>> import numpy as np
     >>> RANDOM_STATE=10
-    >>> np.random.RandomState(RANDOM_STATE)
     >>> Xs = np.arange(18).reshape((3, 3, 2))
     >>> y = np.arange(3)
     >>> # Print the data
@@ -130,21 +127,21 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     for a in inputs:
         splits = None
         if isinstance(a, list) or (type(a).__module__ == np.__name__ and
-                len(a.shape) > 2):
-            splits = model_selection.train_test_split(*a,
-                                                  test_size=test_size,
-                                                  train_size=train_size,
-                                                  random_state=random_state,
-                                                  shuffle=shuffle,
-                                                  stratify=stratify)
+                                   len(a.shape) > 2):
+            splits = ms.train_test_split(*a,
+                                         test_size=test_size,
+                                         train_size=train_size,
+                                         random_state=random_state,
+                                         shuffle=shuffle,
+                                         stratify=stratify)
             splits = (splits[::2], splits[1::2])
         else:
-            splits = model_selection.train_test_split(a,
-                                                  test_size=test_size,
-                                                  train_size=train_size,
-                                                  random_state=random_state,
-                                                  shuffle=shuffle,
-                                                  stratify=stratify)
+            splits = ms.train_test_split(a,
+                                         test_size=test_size,
+                                         train_size=train_size,
+                                         random_state=random_state,
+                                         shuffle=shuffle,
+                                         stratify=stratify)
 
         for split in splits:
             splitting.append(split)
