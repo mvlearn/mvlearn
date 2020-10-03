@@ -147,17 +147,12 @@ def train_test_split(Xs, y=None, test_size=None, train_size=None,
                                                   shuffle=shuffle,
                                                   stratify=stratify)
 
-    Xs_train = list()
-    Xs_test = list()
-    for i in range(len(splits)):
-        if i % 2 == 0:
-            Xs_train.append(splits[i])
-        else:
-            Xs_test.append(splits[i])
+    Xs_train = splits[::2]
+    Xs_test = splits[1::2]
 
-    if y is not None:
+    if y is None:
+        return [Xs_train, Xs_test]
+    else:
         y_train = Xs_train.pop()
         y_test = Xs_test.pop()
         return [Xs_train, Xs_test, y_train, y_test]
-    else:
-        return [Xs_train, Xs_test]
