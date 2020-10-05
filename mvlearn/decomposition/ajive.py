@@ -21,17 +21,15 @@
 # SOFTWARE.
 
 import numpy as np
-from scipy.sparse import issparse
 from copy import deepcopy
-import pandas as pd
+import warnings
 from sklearn.utils.validation import check_is_fitted
+from scipy.sparse.linalg import svds
+from scipy.linalg import svd
 from .base import BaseDecomposer
 from ..utils.utils import check_Xs
 from ..embed.utils import select_dimension
-from .ajive_utils.block_visualization import _data_block_heatmaps#, _ajive_full_estimate_heatmaps
-from .ajive_utils.utils import _svd_wrapper, _centering
-from .ajive_utils.wedin_bound import _get_wedin_samples
-from .ajive_utils.random_direction import sample_randdir
+from joblib import Parallel, delayed
 
 
 class AJIVE(BaseDecomposer):
@@ -39,8 +37,8 @@ class AJIVE(BaseDecomposer):
     An implementation of Angle-based Joint and Individual Variation Explained
     [#1ajive]_. This algorithm takes multiple views and decomposes them into 3
     distinct matrices representing:
-        - Low rank approximation of individual variation within each view
         - Low rank approximation of joint variation between views
+        - Low rank approximation of individual variation within each view
         - Residual noise
     AJIVE can handle any number of views, not just two.
 
@@ -51,22 +49,19 @@ class AJIVE(BaseDecomposer):
 
     joint_rank : int, default = None
         Rank of the joint variation matrix. If None, will estimate the
-        joint rank. Otherwise, will use provided joint rank.
+        joint rank.
 
-    indiv_ranks : list, default = None
+    individual_ranks : list, default = None
         Ranks of individual variation matrices. If None, will estimate the
         individual ranks. Otherwise, will use provided individual ranks.
 
-    n_elbows : int, optional, default: 2
-        If ``init_signal_ranks=None``, then computes the initial signal rank
+    n_elbows : int, optional, default = 2
+        If `init_signal_ranks=None`, then computes the initial signal rank
         guess using :func:`mvlearn.embed.utils.select_dimension` with
         n_elbows for each view.
 
-    center : bool, default = True
-        Boolean for centering matrices.
-
-    reconsider_joint_components : bool, default = True
-        Triggers _reconsider_joint_components function to run and removes
+    reconsider_joint_components : boolean, default = True
+        Triggers `_reconsider_joint_components` function to run and removes
         columns of joint scores according to identifiability constraint.
 
     wedin_percentile : int, default = 5
@@ -76,9 +71,6 @@ class AJIVE(BaseDecomposer):
     n_wedin_samples : int, default = 1000
         Number of wedin bound samples to draw.
 
-    precomp_wedin_samples : list of array-like
-        Wedin samples that are precomputed for each view.
-
     randdir_percentile : int, default = 95
         Percentile for random direction (lower) bound cutoff for squared
         singular values used to estimate joint rank.
@@ -86,35 +78,37 @@ class AJIVE(BaseDecomposer):
     n_randdir_samples : int, default = 1000
         Number of random direction samples to draw.
 
-    precomp_randdir_samples : array-like, default = None
-        Precomputed random direction samples.
+    verbose : boolean, default = False
+        Prints information during runtime if True.
+
+    n_jobs : int (positive) or None, default=None
+        The number of jobs to run in parallel. `None` will run 1 job, `-1`
+        uses all processors.
+
+    random_state : int, RandomState instance or None, default=None
+        Used to seed a random initialization for reproducible results.
+        If None, a random initialization is used.
 
     Attributes
     ----------
 
-    common_ : The class mvlearn.factorization.ajive_utils.pca.pca
-        The common joint space found using pca class in same directory
+    means_ : numpy.ndarray
+        The means of each view.
 
-    blocks_ : dict
-        The block-specific results.
+    sv_thresholds_ : list of floats
+        The singular value thresholds for each view based on
+        initial SVD. Used to estimate the individual ranks.
 
-    centers_ : dict
-        The the centering vectors computed for each matrix.
-
-    sv_thresholds_ : dict
-        The singular value thresholds computed for each block based on
-        initial SVD. Eventually used to estimate the individual ranks.
-
-    all_joint_svals_ : list
+    all_joint_svals_ : list of floats
         All singular values from the concatenated joint matrix.
 
-    random_sv_samples_ : list
+    random_sv_samples_ : list of floats
         Random singular value samples from random direction bound.
 
     rand_cutoff_ : float
         Singular value squared cutoff for the random direction bound.
 
-    wedin_samples_ : dict
+    wedin_samples_ : list of numpy.ndarray
         The wedin samples for each view.
 
     wedin_cutoff_ : float
@@ -124,22 +118,31 @@ class AJIVE(BaseDecomposer):
         max(rand_cutoff_, wedin_cutoff_)
 
     joint_rank_wedin_est_ : int
-        The joint rank estimated using the wedin/random direction bound.
+        The joint rank estimated using the wedin/random direction bound
 
-    init_signal_rank_ : dict
-        init_signal_rank in a dictionary of items for each view.
+    init_signal_ranks_ : list of ints
+        Provided or estimated init_signal_ranks
 
     joint_rank_ : int
         The rank of the joint matrix
 
-    indiv_ranks_ : dict of ints
+    joints_scores_ : numpy.ndarray
+        Left singular vectors of the joint matrix
+
+    individual_ranks_ : list of ints
         Ranks of the individual matrices for each view.
 
-    center_ : dict
-        Center in a dict of items for each view.
+    individual_scores_ : list of numpy.ndarrays
+        Left singular vectors of each view after joint matrix is removed
 
-    is_fit_ : bool, default = False
-        Returns whether data has been fit yet
+    individual_svals_ = list of numpy.ndarrays
+        Singular values of each view after joint matrix is removed
+
+    individual_loadings_ : list of numpy.ndarrays
+        Right singular vectors of each view after joint matrix is removed
+
+    individual_mats_ : list of numpy.ndarrays
+        Individual matrices for each view, reconstructed from the SVD
 
     Notes
     -----
@@ -219,20 +222,14 @@ class AJIVE(BaseDecomposer):
     >>> from mvlearn.factorization.ajive import AJIVE
     >>> from mvlearn.datasets import load_UCImultifeature
     >>> Xs, _ = load_UCImultifeature()
-    >>> print(len(Xs)) # number of samples in each view
+    >>> print(len(Xs)) # number of views
     6
     >>> print(Xs[0].shape, Xs[1].shape) # number of samples in each view
     (2000, 76) (2000, 216)
-    >>> ajive = AJIVE(init_signal_ranks=[2,2])
-    >>> b = ajive.fit(Xs).predict()
-    >>> print(b)
-    6
-    >>> print(b[0][0].shape,b[1][0].shape)  # (V1 joint mat, V2 joint mat)
-    (2000, 76) (2000, 216)
-    >>> print(b[0][1].shape,b[1][1].shape)  # (V1 indiv mat, V2 indiv mat)
-    (2000, 76) (2000, 216)
-    >>> print(b[0][2].shape,b[1][2].shape)  # (V1 noise mat, V2 noise mat)
-    (2000, 76) (2000, 216)
+    >>> ajive = AJIVE()
+    >>> Xs_transformed = ajive.fit_transform(Xs)
+    >>> print(Xs_transformed[0].shape)
+    (2000, 76)
 
     References
     ----------
@@ -245,71 +242,59 @@ class AJIVE(BaseDecomposer):
     def __init__(self,
                  init_signal_ranks=None,
                  joint_rank=None,
-                 indiv_ranks=None,
-                 n_elbows=None,
-                 center=True,
+                 individual_ranks=None,
+                 n_elbows=2,
                  reconsider_joint_components=True,
                  wedin_percentile=5,
                  n_wedin_samples=1000,
-                 precomp_wedin_samples=None,
                  randdir_percentile=95,
                  n_randdir_samples=1000,
-                 precomp_randdir_samples=None,
-                 store_full=True
+                 verbose=False,
+                 n_jobs=None,
+                 random_state=None,
                  ):
 
         self.init_signal_ranks = init_signal_ranks
         self.joint_rank = joint_rank
-        self.indiv_ranks = indiv_ranks
+        self.individual_ranks = individual_ranks
         self.n_elbows = n_elbows
-        self.center = center
-
         self.wedin_percentile = wedin_percentile
-        self.precomp_wedin_samples = precomp_wedin_samples
-        if precomp_wedin_samples is not None:
-            self.n_wedin_samples = len(precomp_wedin_samples[0])
-        else:
-            self.n_wedin_samples = n_wedin_samples
-
+        self.n_wedin_samples = n_wedin_samples
         self.randdir_percentile = randdir_percentile
-        self.precomp_randdir_samples = precomp_randdir_samples
-        if precomp_randdir_samples is not None:
-            self.n_randdir_samples = len(precomp_randdir_samples)
-        else:
-            self.n_randdir_samples = n_randdir_samples
-
+        self.n_randdir_samples = n_randdir_samples
         self.reconsider_joint_components = reconsider_joint_components
-        self.store_full = store_full
+        self.verbose = verbose
+        self.n_jobs = n_jobs
+        self.random_state = random_state
 
-
-    def fit(self, Xs, precomp_init_svds=None):
+    def fit(self, Xs, y=None):
         r"""
-        Learns a decomposition of the views.
+        Learns a decomposition of the views into joint and individual
+        matrices.
 
         Parameters
         ----------
-        Xs: list of array-likes
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            The different views that are input. Input as data matrices.
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to.
 
-        precomp_init_svds: dict or list
-            Precomputed initial SVD. Must have one entry for each view.
-            The SVD should be an ordered list of 3 matrices (scores, svals,
-            loadings), see output of `ajive_utils/utils/svd_wrapper`
-            for formatting details.
+        y : None
+            Ignored variable.
 
         Returns
         -------
-        self : returns the object instance.
+        self : object
+            Returns the instance itself.
         """
         # Check data
         Xs, n_views, n_samples, n_features = check_Xs(
             Xs, return_dimensions=True
         )
+        self.view_shapes_ = [(n_samples, f) for f in n_features]
 
         # Check parameters
-        self._check_params(n_samples, n_features)
+        self._check_params(n_views, n_samples, n_features)
 
         # Estimate signal ranks if not given
         if self.init_signal_ranks is None:
@@ -319,27 +304,27 @@ class AJIVE(BaseDecomposer):
                 self.init_signal_ranks_.append(elbows[-1])
         else:
             self.init_signal_ranks_ = self.init_signal_ranks
-        
-        # Check individual ranks
-        # TODO
 
-        # TODO Center
+        # Center columns and store
+        self.means_ = [np.mean(X, axis=0) for X in Xs]
+        Xs = [X - mean for X, mean in zip(Xs, self.means_)]
 
         # SVD to extract signal on each view
         self.sv_thresholds_ = []
         score_matrices = []
         sval_matrices = []
         loading_matrices = []
-        for i, (X, signal_rank) in enumerate(zip(
-                Xs, self.init_signal_ranks_
-            )):
-            # compute SVD with rank init_signal_rank + 1 for view
-            if precomp_init_svds is None:
-                # signal rank + 1 to get individual rank sv threshold
-                U, D, V = _svd_wrapper(X, signal_rank + 1)
-            # If precomputed return values already found
-            else:
-                U, D, V = precomp_init_svds[i]
+        for i, (X, signal_rank) in enumerate(
+            zip(Xs, self.init_signal_ranks_)
+        ):
+            if signal_rank >= min(X.shape):
+                warnings.warn(f"Given rank {signal_rank} greater or equal to \
+                    maximum possible full rank {min(X.shape)}. Using \
+                    1 minus full instead", RuntimeWarning)
+                signal_rank = min(X.shape) - 1
+                self.init_signal_ranks_[i] = signal_rank
+            # signal rank + 1 to get individual rank sv threshold
+            U, D, V = _svd_wrapper(X, signal_rank + 1)
 
             # The SV threshold is halfway between the signal_rank
             # and signal_rank + 1 singular value.
@@ -361,37 +346,28 @@ class AJIVE(BaseDecomposer):
 
         # estimate joint rank using wedin bound and random direction if a
         # joint rank estimate has not already been provided
-
         if self.joint_rank is None:
+            # Calculate sv samples
+            np.random.seed(self.random_state)
+            self.random_sv_samples_ = \
+                _sample_randdir(n_samples, self.init_signal_ranks_,
+                                self.n_randdir_samples, self.n_jobs)
 
-            # Calculating sv samples if not provided
-            if self.precomp_randdir_samples is None:
-                init_rank_list = list(self.init_signal_ranks_)
-                self.random_sv_samples_ = \
-                    sample_randdir(n_views,
-                                   signal_ranks=init_rank_list,
-                                   R=self.n_randdir_samples)
-            else:
-                self.random_sv_samples_ = self.precomp_randdir_samples
-
-            # if the wedin samples are not already provided compute them
-            if self.precomp_wedin_samples is None:
-                self.wedin_samples_ = [
-                    _get_wedin_samples( #TODO add parallel n_jobs
-                        X=X, U=U,D=D,V=V,rank=rank,R=self.n_wedin_samples
-                        )
-                    for X,U,D,V,rank in zip(
-                        Xs, score_matrices, sval_matrices, loading_matrices,
-                        self.init_signal_ranks_)
-                    ]
-            else:
-                self.wedin_samples_ = precomp_wedin_samples
+            # Compute wedin samples
+            np.random.seed(self.random_state)
+            self.wedin_samples_ = [
+                _get_wedin_samples(
+                    X, U, D, V, rank, self.n_wedin_samples, self.n_jobs
+                    )
+                for X, U, D, V, rank in zip(
+                    Xs, score_matrices, sval_matrices, loading_matrices,
+                    self.init_signal_ranks_)
+                ]
 
             # Joint singular value lower bounds (Lemma 3)
             self.wedin_sv_samples_ = n_views - \
                 np.array([sum([w[i]**2 for w in self.wedin_samples_])
-                    for i in range(self.n_wedin_samples)]
-                )
+                         for i in range(self.n_wedin_samples)])
 
             # Now calculate joint matrix rank
 
@@ -408,56 +384,44 @@ class AJIVE(BaseDecomposer):
 
         # check identifiability constraint
         if self.reconsider_joint_components:
-            joint_scores, joint_svals, joint_loadings, self.joint_rank_ = \
-                _reconsider_joint_components(Xs,
-                                             self.sv_thresholds_,
-                                             joint_scores,
-                                             joint_svals,
-                                             joint_loadings,
-                                             self.joint_rank_)
+            self.joint_scores_, _, _, self.joint_rank_ = \
+                _reconsider_joint_components(Xs, self.sv_thresholds_,
+                                             joint_scores, joint_svals,
+                                             joint_loadings, self.joint_rank_,
+                                             self.verbose)
         # Joint basis
-        self.joint_scores_ = joint_scores[:, :self.joint_rank_]
-        self.joint_svals_ = joint_svals[:self.joint_rank_]
-        self.joint_loadings_ = joint_loadings[:, :self.joint_rank_]
+        self.joint_scores_ = self.joint_scores_[:, :self.joint_rank_]
 
         # view estimates
-        self.indiv_scores_ = []
-        self.indiv_svals_ = []
-        self.indiv_loadings_ = []
-        if self.indiv_ranks is None:
-            self.indiv_ranks_ = []
+        self.individual_scores_ = []
+        self.individual_svals_ = []
+        self.individual_loadings_ = []
+        if self.individual_ranks is None:
+            self.individual_ranks_ = []
+        else:
+            self.individual_ranks_ = self.individual_ranks
 
         for i, (X, sv_threshold) in enumerate(zip(Xs, self.sv_thresholds_)):
             # View specific joint space creation
             # projecting X onto the joint space then compute SVD
+            # Then find the orthogonal complement to the joint matrix
             if self.joint_rank_ != 0:
                 J = np.array(np.dot(self.joint_scores_,
                                     np.dot(self.joint_scores_.T, X)))
                 U, D, V = _svd_wrapper(J, self.joint_rank_)
-                if not self.store_full:
-                    J = None  # kill J matrix to save memory
-
+                X_orthog = X - J
             else:
                 U, D, V = None, None, None
-                if self.store_full:
-                    J = np.zeros(shape=X.shape)
-                else:
-                    J = None
-
-            # Here we are creating the individual representations for
-            # each view.
-
-            # Finding the orthogonal complement to the joint matrix
-            if self.joint_rank_ == 0:
                 X_orthog = X
-            else:
-                X_orthog = X - np.dot(self.joint_scores_, np.dot(self.joint_scores_.T, X))
 
             # estimate individual rank using sv threshold, then compute SVD
-            if self.indiv_ranks is None:
-                max_rank = min(X.shape) - self.joint_rank_  # saves computation
-                U, D, V = _svd_wrapper(X_orthog, max_rank)
-                rank = sum(D > sv_threshold)
+            if self.individual_ranks is None:
+                max_rank = min(X.shape) - self.joint_rank_
+                if max_rank == 0:
+                    rank = 0
+                else:
+                    U, D, V = _svd_wrapper(X_orthog, max_rank)
+                    rank = sum(D > sv_threshold)
 
                 if rank == 0:
                     U, D, V = None, None, None
@@ -466,27 +430,24 @@ class AJIVE(BaseDecomposer):
                     D = D[:rank]
                     V = V[:, :rank]
 
-                self.indiv_ranks_.append(rank)
-
-            # SVD on the orthogonal complement
+                self.individual_ranks_.append(rank)
             else:  # if user inputs rank list for individual matrices
-                rank = self.indiv_ranks[i]
+                rank = self.individual_ranks_[i]
                 if rank == 0:
                     U, D, V = None, None, None
                 else:
                     U, D, V = _svd_wrapper(X_orthog, rank)
 
-            self.indiv_scores_.append(U)
-            self.indiv_svals_.append(D)
-            self.indiv_loadings_.append(V)
+            self.individual_scores_.append(U)
+            self.individual_svals_.append(D)
+            self.individual_loadings_.append(V)
 
         return self
 
     def transform(self, Xs):
         r"""
 
-        Returns the joint, individual, and noise components of each view from
-        the fitted decomposition. Only works on the data inputted in `fit`.
+        Returns the joint matrices from each view.
 
         Parameters
         ----------
@@ -499,19 +460,22 @@ class AJIVE(BaseDecomposer):
         Returns
         -------
 
-        Is : list of array-likes or numpy.ndarray
-            Individual portions of each inputted view.
-            TODO `multiview_output` is False
+        Js : list of numpy.ndarray
+            Joint matrices of each inputted view.
 
         """
         check_is_fitted(self)
-
         Xs = check_Xs(Xs)
-        
-        Js = [self.joint_scores_ @ self.joint_scores_.T @ X for X in Xs]
 
+        if self.joint_rank_ == 0:
+            Js = [np.zeros(s) for s in self.view_shapes_]
+            warnings.warn(
+                "Joint rank is 0, returning zero matrix.", RuntimeWarning
+                )
+        else:
+            Js = [self.joint_scores_ @ self.joint_scores_.T @ (X - mean)
+                  for X, mean in zip(Xs, self.means_)]
         return Js
-
 
     def inverse_transform(self, Xs_transformed):
         r"""Recover original data from transformed data.
@@ -526,100 +490,98 @@ class AJIVE(BaseDecomposer):
         Returns
         -------
         Xs : list of arrays
-            The summed individual and joint blocks
+            The summed individual and joint blocks and mean
         """
         check_is_fitted(self)
+        Xs_transformed = check_Xs(Xs_transformed)
 
-        return [X + I for X, I in zip(Xs_transformed, self.indiv_mats_)]
+        return [X + I + mean for X, I, mean in zip(
+            Xs_transformed, self.individual_mats_, self.means_)]
 
-
-    def _check_params(self, n_samples, n_features):
+    def _check_params(self, n_views, n_samples, n_features):
         max_ranks = np.minimum(n_samples, n_features)
 
-        if self.init_signal_ranks is not None and \
-            not np.all(1 <= np.asarray(self.init_signal_ranks)) or \
-            not np.all(self.init_signal_ranks <= max_ranks):
+        if self.joint_rank is not None and (
+                (self.init_signal_ranks is not None and
+                    self.joint_rank > sum(self.init_signal_ranks)) or
+                self.joint_rank < 0):
             raise ValueError(
-                "init_signal_ranks must all be between 1 and the minimum of \
-                the number of rows and columns for each view"
+                "joint_rank must be between 0 and the sum of the \
+                init_signal_ranks"
             )
 
+        if self.init_signal_ranks is None and self.n_elbows is None:
+            raise ValueError("Either init_signal_ranks must be provided a \
+                list or n_elbows must be a positive integer")
 
-        if self.joint_rank is not None and \
-            self.joint_rank > sum(self.init_signal_ranks):
-            raise ValueError(
-                "joint_rank must be smaller than the sum of the \
-                initial_signal_ranks"
-            )
+        if not isinstance(self.n_wedin_samples, int) or \
+                self.n_wedin_samples < 1:
+            raise ValueError("n_wedin_samples must be a positive integer")
 
+        if not isinstance(self.n_randdir_samples, int) or \
+                self.n_randdir_samples < 1:
+            raise ValueError("n_randdir_samples must be a positive integer")
+
+        if self.init_signal_ranks is not None:
+            if not isinstance(self.init_signal_ranks, (list, np.ndarray)):
+                raise ValueError("init_signal_ranks must be of type list if \
+                    not None")
+            elif len(self.init_signal_ranks) != n_views:
+                raise ValueError("init_signal_ranks must be of length \
+                    n_views")
+            elif not np.all(1 <= np.asarray(self.init_signal_ranks)) or not\
+                    np.all(np.asarray(self.init_signal_ranks) <= max_ranks):
+                raise ValueError(
+                    "init_signal_ranks must all be between 1 and the minimum \
+                    of the number of rows and columns for each view")
+
+        if self.individual_ranks is not None:
+            if not isinstance(self.individual_ranks, (list, np.ndarray)):
+                raise ValueError("individual_ranks must be of type list if \
+                    not None")
+            elif len(self.individual_ranks) != n_views:
+                raise ValueError("individual_ranks must be of length \
+                    n_views")
 
     @property
-    def indiv_mats_(self):
-        Is = [
-            U @ np.diag(D) @ V.T for U,D,V in zip(
-                self.indiv_scores_, self.indiv_svals_, self.indiv_loadings_)
-        ]
+    def individual_mats_(self):
+        """Computes full individual matrices from saved decompositions"""
+        check_is_fitted(self)
+        Is = []
+        for i, r in enumerate(self.individual_ranks_):
+            if r == 0:
+                Is.append(np.zeros(self.view_shapes_[i]))
+            else:
+                Is.append(
+                    self.individual_scores_[i] @
+                    np.diag(self.individual_svals_[i]) @
+                    self.individual_loadings_[i].T
+                )
         return Is
-           
-
-def data_block_heatmaps(Xs): # TODO refactor plotting utilities
-    r"""
-    Plots n_views heatmaps in a singular row. It is recommended to set
-    a figure size as is shown in the tutorial.
-
-    Parameters
-    ----------
-    Xs : dict or list of array-likes
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_features_i)
-        The different views to plot.
-    """
-    _data_block_heatmaps(Xs)
-
-
-def ajive_full_estimate_heatmaps(Xs, full_block_estimates, names=None): # TODO refactor plotting utilities
-    r"""
-    Plots four heatmaps for each of the views:
-        - Full initial data
-        - Full joint signal estimate
-        - Full individual signal estimate
-        - Full noise estimate
-    It is recommended to set a figure size as shown in the tutorial.
-
-    Parameters
-    ----------
-    Xs: list of array-likes
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_features_i)
-        The different views that are input. Input as data matrices.
-
-    full_block_estimates: dict
-        Dict that is returned from the `ajive.predict()` function
-
-    names: list
-        The names of the views.
-    """
-    _ajive_full_estimate_heatmaps(Xs, full_block_estimates, names)
 
 
 def _reconsider_joint_components(
-    Xs, sv_thresholds, joint_scores, joint_svals, joint_loadings, joint_rank
+    Xs, sv_thresholds, joint_scores, joint_svals, joint_loadings, joint_rank,
+    verbose
 ):
     """
-    Checks the identifiability constraint on the joint singular values
+    Checks the identifiability constraint on the joint singular values and
+    removes columns that fail. Set `verbose=True` to print removed columns.
     """
 
     # check identifiability constraint
     to_keep = set(range(joint_rank))
     for X, sv_threshold in zip(Xs, sv_thresholds):
-        for j in range(joint_rank):
+        for j in to_keep:
             # This might be joint_sv
             score = X.T @ joint_scores[:, j]
             sv = np.linalg.norm(score)
 
             # if sv is below the threshold for any data block remove j
             if sv < sv_threshold:
-                # print("removing column " + str(j)) # TODO verbose option
+                if verbose:
+                    print(f"Excluding column {j}, below identifiability \
+                        threshold")
                 to_keep.remove(j)
                 break
 
@@ -628,4 +590,203 @@ def _reconsider_joint_components(
     joint_scores = joint_scores[:, list(to_keep)]
     joint_loadings = joint_loadings[:, list(to_keep)]
     joint_svals = joint_svals[list(to_keep)]
+
     return joint_scores, joint_svals, joint_loadings, joint_rank
+
+
+def _sample_randdir(num_obs, signal_ranks, R=1000, n_jobs=None):
+    r"""
+    Draws samples for the random direction bound.
+
+    Parameters
+    ----------
+
+    num_obs: int
+        Number of observations.
+
+    signal_ranks: list of ints
+        The initial signal ranks for each block.
+
+    R: int
+        Number of samples to draw.
+
+    n_jobs: int, None
+        Number of jobs for parallel processing using
+        sklearn.externals.joblib.Parallel. If None, will not use parallel
+        processing.
+
+    Returns
+    -------
+    random_sv_samples: numpy.ndarray, shape (R,)
+    """
+    random_sv_samples = Parallel(n_jobs=n_jobs)(
+        delayed(_get_randdir_sample)(num_obs, signal_ranks) for i in range(R)
+        )
+
+    return np.array(random_sv_samples)
+
+
+def _get_randdir_sample(num_obs, signal_ranks):
+    """
+    Computes squared largest singular value of random joint matrix
+    """
+    M = [None for _ in range(len(signal_ranks))]
+    for k in range(len(signal_ranks)):
+        # sample random orthonormal basis
+        Z = np.random.normal(size=(num_obs, signal_ranks[k]))
+        M[k] = np.linalg.qr(Z)[0]
+
+    M = np.bmat(M)
+    _, svs, __ = _svd_wrapper(M, rank=1)
+
+    return max(svs) ** 2
+
+
+def _get_wedin_samples(X, U, D, V, rank, R=1000, n_jobs=None):
+    r"""
+    Computes the wedin bound using the sample-project procedure. This method
+    does not require the full SVD.
+
+    Parameters
+    ----------
+    X : array-like, shape (n_samples, n_features)
+        The data
+
+    U, D, V : array-likes
+        The partial SVD of X=UDV^T
+
+    rank : int
+        The rank of the signal space
+
+    R : int
+        Number of samples for resampling procedure
+
+    n_jobs: int, None
+        Number of jobs for parallel processing using
+        sklearn.externals.joblib.Parallel. If None, will not use parallel
+        processing.
+
+    Returns
+    -------
+    wedin_bound_samples : list of resampled wedin bounds
+    """
+
+    # resample for U and V
+    U_norm_samples = _norms_sample_project(
+        X.T, U[:, :rank], R, n_jobs
+    )
+
+    V_norm_samples = _norms_sample_project(
+        X, V[:, :rank], R, n_jobs
+    )
+
+    sigma_min = D[rank - 1]
+    wedin_bound_samples = [
+        min(max(U_norm_samples[r], V_norm_samples[r]) / sigma_min, 1)
+        for r in range(R)
+    ]
+
+    return wedin_bound_samples
+
+
+def _norms_sample_project(X, basis, R=1000, n_jobs=None):
+    r"""
+    Samples vectors from space orthogonal to signal space as follows
+    - sample random vector from isotropic distribution
+    - project onto orthogonal complement of signal space and normalize
+
+    Parameters
+    ---------
+    X: array-like, shape (N, D)
+        The observed data
+
+    B: array-like
+        The basis for the signal col/rows space (e.g. the left/right singular\
+        vectors)
+
+    rank: int
+        Number of columns to resample
+
+    R: int
+        Number of samples
+
+    n_jobs: int, None
+        Number of jobs for parallel processing.
+
+    Returns
+    -------
+    samples : list of the resampled noise norms
+    """
+
+    samples = Parallel(n_jobs=n_jobs)(
+        delayed(_get_noise_sample)(X, basis) for i in range(R)
+        )
+
+    return np.array(samples)
+
+
+def _get_noise_sample(X, basis):
+    """
+    Estimates magnitude of noise matrix projected onto signal matrix.
+    """
+    # sample from isotropic distribution
+    vecs = np.random.normal(size=basis.shape)
+
+    # project onto space orthogonal to cols of B
+    # vecs = (np.eye(dim) - np.dot(basis, basis.T)).dot(vecs)
+    vecs = vecs - np.dot(basis, np.dot(basis.T, vecs))
+
+    # orthonormalize
+    vecs, _ = np.linalg.qr(vecs)
+
+    # compute operator L2 norm
+    return np.linalg.norm(X.dot(vecs), ord=2)
+
+
+def _svd_wrapper(X, rank=None):
+    r"""
+    Computes the full or partial SVD of a matrix. Handles the case where
+    X is either dense or sparse.
+
+    Parameters
+    ----------
+    X : array-like, shape (N, D)
+
+    rank : int
+        rank of the desired SVD. If `None`, the full SVD is used.
+
+    Returns
+    -------
+    U : array-like, shape (N, rank)
+        Orthonormal matrix of left singular vectors.
+
+    D : list, shape (rank,)
+        Singular values in decreasing order
+
+    V : array-like, shape (D, rank)
+        Orthonormal matrix of right singular vectors
+
+    """
+    full = False
+    if rank is None or rank == min(X.shape):
+        full = True
+
+    if not full:
+        assert rank <= min(X.shape) - 1  # svds cannot compute the full svd
+        U, D, V = svds(X, rank)
+
+        # Sort in decreasing order
+        sv_reordering = np.argsort(-D)
+        U = U[:, sv_reordering]
+        D = D[sv_reordering]
+        V = V.T[:, sv_reordering]
+
+    else:
+        U, D, V = svd(X, full_matrices=False)
+
+        if rank:
+            U = U[:, :rank]
+            D = D[:rank]
+            V = V.T[:, :rank]
+
+    return U, D, V
