@@ -93,7 +93,7 @@ def data():
 
 @pytest.fixture(scope='module')
 def ajive(data):
-    aj = AJIVE(init_signal_ranks=[2, 3])
+    aj = AJIVE(init_signal_ranks=[3, 2], random_state=0)
     joint_mats = aj.fit_transform(Xs=data['diff_views'])
     aj.joint_mats = joint_mats
 
@@ -110,7 +110,7 @@ def test_correct_estimates(ajive):
     Check AJIVE found correct rank estimates
     """
     assert_equal(ajive.joint_rank_, 1)
-    assert_equal(ajive.individual_ranks_, [1, 3])
+    assert_equal(ajive.individual_ranks_, [2, 1])
 
 
 def test_joint_SVDs(ajive):
@@ -147,7 +147,7 @@ def test_indiv_SVDs(ajive):
 
 def test_centering(data, ajive):
     """
-    check X_centered = I + J
+    check stored means
     """
     Xs = data['diff_views']
     col_means = [np.mean(X, axis=0) for X in Xs]
@@ -171,7 +171,7 @@ def test_same_joint(data, init_signal_ranks, individual_ranks, joint_rank):
     ajive = AJIVE(
         init_signal_ranks=init_signal_ranks,
         joint_rank=joint_rank,
-        individual_ranks=individual_ranks
+        individual_ranks=individual_ranks,
         )
     Js = ajive.fit_transform(Xs=dat)
     for i in np.arange(20):
@@ -188,7 +188,7 @@ def test_same_indiv(data, init_signal_ranks, individual_ranks, joint_rank):
     ajive = AJIVE(
         init_signal_ranks=init_signal_ranks,
         joint_rank=joint_rank,
-        individual_ranks=individual_ranks
+        individual_ranks=individual_ranks,
         )
     ajive = ajive.fit(Xs=dat)
     Is = ajive.individual_mats_
@@ -266,62 +266,52 @@ TESTS (Errors, warnings)
 def test_wrong_signal_ranks(data):
     # rank < 0
     dat = data["diff_views"]
-    ajive = AJIVE(init_signal_ranks=[-1, -4])
     with pytest.raises(ValueError):
-        ajive.fit(Xs=dat)
-    ajive = AJIVE(init_signal_ranks=[max(dat[0].shape)+1, -4])
+        _ = AJIVE(init_signal_ranks=[-1, -4]).fit_transform(dat)
     with pytest.raises(ValueError):
-        ajive.fit(Xs=dat)
+        _ = AJIVE(init_signal_ranks=[max(dat[0].shape)+1, -4]).fit_transform(
+            dat)
 
 
-def test_check_joint_rank_large(data):
+def test_check_joint_rank_large():
     # Joint rank < sum(init_signal_ranks)
     with pytest.raises(ValueError):
-        dat = data["same_views"]
-        ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=5)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(init_signal_ranks=[2, 2], joint_rank=5)
 
 
 def test_zero_rank_warn(data):
-    # warn returing rank 0 joint
+    # warn returning rank 0 joint
     dat = data["diff_views"]
     ajive = AJIVE(init_signal_ranks=[2, 2], joint_rank=0)
     with pytest.warns(RuntimeWarning):
         _ = ajive.fit_transform(dat)
 
 
-def test_signal_ranks_None(data):
+def test_signal_ranks_None():
     # Both init rank inputs are None
-    dat = data["same_views"]
     with pytest.raises(ValueError):
-        ajive = AJIVE(init_signal_ranks=None, n_elbows=None)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(init_signal_ranks=None, n_elbows=None)
 
 
 @pytest.mark.parametrize("n_wedin_samples", [None, 0, -1])
 @pytest.mark.parametrize("n_randdir_samples", [None, 0, -1])
-def test_invalid_samples(data, n_wedin_samples, n_randdir_samples):
+def test_invalid_samples(n_wedin_samples, n_randdir_samples):
     # invalid number of samples
-    dat = data["same_views"]
     with pytest.raises(ValueError):
-        ajive = AJIVE(n_wedin_samples=n_wedin_samples)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(n_wedin_samples=n_wedin_samples)
     with pytest.raises(ValueError):
-        ajive = AJIVE(n_randdir_samples=n_randdir_samples)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(n_randdir_samples=n_randdir_samples)
 
 
 @pytest.mark.parametrize("init_signal_ranks", [dict, 0, [1], [1, 2, 3]])
 @pytest.mark.parametrize("individual_ranks", [dict, 0, [1], [1, 2, 3]])
 def test_invalid_ranks(data, init_signal_ranks, individual_ranks):
     # invalid number of samples
-    dat = data["same_views"]
+    dat = data["diff_views"]
     with pytest.raises(ValueError):
-        ajive = AJIVE(init_signal_ranks=init_signal_ranks)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(init_signal_ranks=init_signal_ranks).fit_transform(dat)
     with pytest.raises(ValueError):
-        ajive = AJIVE(individual_ranks=individual_ranks)
-        ajive = ajive.fit(Xs=dat)
+        _ = AJIVE(individual_ranks=individual_ranks).fit_transform(dat)
 
 
 def test_signal_rank_warning():

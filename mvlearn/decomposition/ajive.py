@@ -266,6 +266,7 @@ class AJIVE(BaseDecomposer):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.random_state = random_state
+        self._check_params()
 
     def fit(self, Xs, y=None):
         r"""
@@ -293,8 +294,8 @@ class AJIVE(BaseDecomposer):
         )
         self.view_shapes_ = [(n_samples, f) for f in n_features]
 
-        # Check parameters
-        self._check_params(n_views, n_samples, n_features)
+        # Check parameters with data
+        self._check_fit_params(n_views, n_samples, n_features)
 
         # Estimate signal ranks if not given
         if self.init_signal_ranks is None:
@@ -498,9 +499,7 @@ class AJIVE(BaseDecomposer):
         return [X + I + mean for X, I, mean in zip(
             Xs_transformed, self.individual_mats_, self.means_)]
 
-    def _check_params(self, n_views, n_samples, n_features):
-        max_ranks = np.minimum(n_samples, n_features)
-
+    def _check_params(self):
         if self.joint_rank is not None and (
                 (self.init_signal_ranks is not None and
                     self.joint_rank > sum(self.init_signal_ranks)) or
@@ -522,26 +521,35 @@ class AJIVE(BaseDecomposer):
                 self.n_randdir_samples < 1:
             raise ValueError("n_randdir_samples must be a positive integer")
 
-        if self.init_signal_ranks is not None:
-            if not isinstance(self.init_signal_ranks, (list, np.ndarray)):
-                raise ValueError("init_signal_ranks must be of type list if \
-                    not None")
-            elif len(self.init_signal_ranks) != n_views:
-                raise ValueError("init_signal_ranks must be of length \
-                    n_views")
-            elif not np.all(1 <= np.asarray(self.init_signal_ranks)) or not\
-                    np.all(np.asarray(self.init_signal_ranks) <= max_ranks):
-                raise ValueError(
-                    "init_signal_ranks must all be between 1 and the minimum \
-                    of the number of rows and columns for each view")
+        if self.init_signal_ranks is not None and \
+                not isinstance(self.init_signal_ranks, (list, np.ndarray)):
+            raise ValueError("init_signal_ranks must be of type list if \
+                not None")
 
-        if self.individual_ranks is not None:
-            if not isinstance(self.individual_ranks, (list, np.ndarray)):
-                raise ValueError("individual_ranks must be of type list if \
-                    not None")
-            elif len(self.individual_ranks) != n_views:
-                raise ValueError("individual_ranks must be of length \
-                    n_views")
+        if self.individual_ranks is not None and \
+                not isinstance(self.individual_ranks, (list, np.ndarray)):
+            raise ValueError("individual_ranks must be of type list if \
+                not None")
+
+    def _check_fit_params(self, n_views, n_samples, n_features):
+        max_ranks = np.minimum(n_samples, n_features)
+
+        if self.init_signal_ranks is not None and (
+            not np.all(1 <= np.asarray(self.init_signal_ranks)) or not
+                np.all(np.asarray(self.init_signal_ranks) <= max_ranks)):
+            raise ValueError(
+                "init_signal_ranks must all be between 1 and the minimum \
+                of the number of rows and columns for each view")
+
+        if self.individual_ranks is not None and \
+                len(self.individual_ranks) != n_views:
+            raise ValueError("individual_ranks must be of length \
+                n_views")
+
+        if self.init_signal_ranks is not None and \
+                len(self.init_signal_ranks) != n_views:
+            raise ValueError("init_signal_ranks must be of length \
+                n_views")
 
     @property
     def individual_mats_(self):
