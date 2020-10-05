@@ -1,9 +1,22 @@
 Changelog
 =========
 
+.. role:: raw-html(raw)
+   :format: html
+
+.. role:: raw-latex(raw)
+   :format: latex
+
+.. |MajorFeature| replace:: :raw-html:`<span class="badge badge-success">Major Feature</span>` :raw-latex:`{\small\sc [Major Feature]}`
+.. |Feature| replace:: :raw-html:`<span class="badge badge-success">Feature</span>` :raw-latex:`{\small\sc [Feature]}`
+.. |Efficiency| replace:: :raw-html:`<span class="badge badge-info">Efficiency</span>` :raw-latex:`{\small\sc [Efficiency]}`
+.. |Enhancement| replace:: :raw-html:`<span class="badge badge-info">Enhancement</span>` :raw-latex:`{\small\sc [Enhancement]}`
+.. |Fix| replace:: :raw-html:`<span class="badge badge-danger">Fix</span>` :raw-latex:`{\small\sc [Fix]}`
+.. |API| replace:: :raw-html:`<span class="badge badge-warning">API Change</span>` :raw-latex:`{\small\sc [API Change]}`
+
 Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0.23.html>`_):
 
-- |Major Feature| : something big that you couldn’t do before.
+- |MajorFeature| : something big that you couldn’t do before.
 
 - |Feature| : something that you couldn’t do before.
 
@@ -13,7 +26,7 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 
 - |Fix| : something that previously didn’t work as documentated – or according to reasonable expectations – should now work.
 
-- |API Change| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
+- |API| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
 
 Version 0.4.0
 -------------
@@ -21,22 +34,27 @@ Version 0.4.0
 
 Updates in this release:
 
+`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/compose>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Major Feature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+
 `mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Feature| Adds GroupICA and GroupPCA. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin <https://github.com/pierreablin>`_ and `Hugo Richard <https://github.com/hugorichard>`_.
+- |Feature| Adds ``GroupICA`` and ``GroupPCA``. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
-`mvlearn.merge <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/merge>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Introduces Merger objects to create single views from multiviews: ConcatMerger and AverageMerger. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
 
 `mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Adds a preprocessing module with ViewTransformer to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Major Feature| Adds an ``mvlearn.preprocessing`` module with ``ViewTransformer`` to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_.
 
-- |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin <https://github.com/pierreablin>`_.
+- |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin`_.
 
 Version 0.3.0
 -------------
@@ -110,3 +128,7 @@ or
     .. code-block:: python
 
         pip3 install --upgrade mvlearn
+
+
+
+.. _Pierre Ablin: https://pierreablin.com/
