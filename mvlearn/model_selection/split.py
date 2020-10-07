@@ -127,7 +127,7 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     for a in inputs:
         splits = None
         if isinstance(a, list) or (type(a).__module__ == np.__name__ and
-                                   len(a.shape) > 2):
+                                   a.ndim==3):
             splits = ms.train_test_split(*a,
                                          test_size=test_size,
                                          train_size=train_size,
