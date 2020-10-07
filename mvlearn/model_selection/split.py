@@ -71,7 +71,6 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     --------
     >>> from mvlearn.preprocessing import train_test_split
     >>> import numpy as np
-    >>> RANDOM_STATE=10
     >>> Xs = np.arange(18).reshape((3, 3, 2))
     >>> y = np.arange(3)
     >>> # Print the data
@@ -94,7 +93,7 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     [0 1 2]
     >>> Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y,
     ...                                            test_size=0.33,
-    ...                                            random_state=RANDOM_STATE)
+    ...                                            random_state=10)
     >>> # Print train set
     >>> for i in range(len(Xs_train)):
     ...     print('Xs_train[%d]' % i, Xs_train[i], sep='\n')
@@ -123,25 +122,19 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     [0]
     '''
 
+    kwargs = dict(dict(test_size=test_size, train_size=train_size,
+                       random_state=random_state, shuffle=shuffle,
+                       stratify=stratify))
+
     splitting = []
     for a in inputs:
         splits = None
         if isinstance(a, list) or (type(a).__module__ == np.__name__ and
                                    a.ndim == 3):
-            splits = ms.train_test_split(*a,
-                                         test_size=test_size,
-                                         train_size=train_size,
-                                         random_state=random_state,
-                                         shuffle=shuffle,
-                                         stratify=stratify)
+            splits = ms.train_test_split(*a, **kwargs)
             splits = (splits[::2], splits[1::2])
         else:
-            splits = ms.train_test_split(a,
-                                         test_size=test_size,
-                                         train_size=train_size,
-                                         random_state=random_state,
-                                         shuffle=shuffle,
-                                         stratify=stratify)
+            splits = ms.train_test_split(a, **kwargs)
 
         for split in splits:
             splitting.append(split)
