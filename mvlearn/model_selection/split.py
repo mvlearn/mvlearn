@@ -62,10 +62,6 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     splitting : list, length=2*len(arrays)
         List containing the training and testing datasets, and the
         training and testing targets if y was provided.
-        - Xs_train : list of array-likes, training data.
-        - Xs_test : list of array-likes, testing data.
-        - y_train : numpy.ndarray, training targets, only if y provided
-        - y_test : numpy.ndarray, testing targets, only if y provided
 
     Examples
     --------
