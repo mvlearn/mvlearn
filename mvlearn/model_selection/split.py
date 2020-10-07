@@ -127,7 +127,7 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     splitting = []
     for a in inputs:
         splits = None
-        if isinstance(a, list) or (type(a).__module__ == np.__name__ and
+        if isinstance(a, list) or (isinstance(a, np.ndarray) and
                                    a.ndim == 3):
             splits = ms.train_test_split(*a, **kwargs)
             splits = (splits[::2], splits[1::2])
