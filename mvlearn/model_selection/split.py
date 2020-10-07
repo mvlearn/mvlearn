@@ -60,8 +60,10 @@ def train_test_split(*inputs, test_size=None, train_size=None,
     Returns
     -------
     splitting : list, length=2*len(arrays)
-        List containing the training and testing datasets, and the
-        training and testing targets if y was provided.
+        List containing the train-test splits of each of the inputs. If
+        a list of arrays or 3D array is one of the inputs, train_test_split
+        operates on each subarray and puts them together into a list
+        of arrays or 3D array for training and one for testing.
 
     Examples
     --------
