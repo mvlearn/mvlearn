@@ -10,4 +10,5 @@ import mvlearn.compose
 import mvlearn.model_selection
 import mvlearn.plotting  # noqa
 
+
 __version__ = "0.3.0"
