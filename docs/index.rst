@@ -43,11 +43,17 @@ Documentation
 mvlearn is a Python package of multiview learning tools.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :caption: Using mvlearn
 
    install
    auto_examples/index
    references/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Information
+
    contributing
    changelog
    license
