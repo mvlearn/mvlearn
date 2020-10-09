@@ -6,7 +6,8 @@ import mvlearn.datasets
 import mvlearn.utils
 import mvlearn.decomposition
 import mvlearn.preprocessing
-import mvlearn.merge
+import mvlearn.compose
+import mvlearn.model_selection
 import mvlearn.plotting  # noqa
 
 
