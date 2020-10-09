@@ -65,6 +65,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/auto_examples/
 
 # PyBuilder
 target/
@@ -104,5 +105,5 @@ venv.bak/
 .mypy_cache/
 .gitattributes
 
-docs/auto_examples/
-
+# macos
+.DS_Store
