@@ -1,19 +1,21 @@
 """
-In[2]:
+=====================================
+Integrating mvlearn with scikit-learn
+=====================================
+
+`mvlearn` mimics most of `scikit-learn` API, and integrates seamlessly with
+it. In scikit-learn, a dataset is represented as a 2d array `X` of shape
+`(n_samples, n_features)`. In `mvlearn`, datasets `Xs` are lists of views,
+which are themselves 2d arrays of shape `(n_samples, n_features_i)`. The
+number of features does not have to be constant:
 
 """
+# Author: Pierre Ablin
 
 import numpy as np
 
-# Author: Pierre Ablin
-#
-#
-# `mvlearn` mimics most of `scikit-learn` API, and integrates seamlessly with
-# it. In scikit-learn, a dataset is represented as a 2d array `X` of shape
-# `(n_samples, n_features)`. In `mvlearn`, datasets `Xs` are lists of views,
-# which are themselves 2d arrays of shape `(n_samples, n_features_i)`. The
-# number of features does not have to be constant:
-
+###############################################################################
+# Create the data
 
 n_samples = 100
 n_features1 = 20
@@ -32,8 +34,8 @@ Xs = [X1, X2]
 #
 # `mvlearn.preprocessing.ViewTransformer` is a handy tool to apply the same
 # `sklearn` transformer to each view of the multiview dataset. For instance, it
-# is simple to apply PCA to each view. In the following, we reduce the dimension
-# of each view to 3:
+# is simple to apply PCA to each view. In the following, we reduce the
+# dimension of each view to 3:
 
 
 from mvlearn.preprocessing import ViewTransformer
@@ -70,11 +72,11 @@ print([X.shape for X in Xs_transformed])
 # simple.
 #
 # A simple way to transform a multiview dataset in a single view dataset is
-# simply by stacking each features. The class `mvlearn.merge.ConcatMerger`
-# implements this:
+# simply by stacking each features. The class
+# `mvlearn.preprocessing.ConcatMerger` implements this:
 
 
-from mvlearn.merge import ConcatMerger
+from mvlearn.compose import ConcatMerger
 
 merge = ConcatMerger()
 
@@ -126,6 +128,7 @@ print(X_transformed.shape)
 
 
 import matplotlib.pyplot as plt
+
 time = np.linspace(0, 1, 1000)
 source1 = np.cos(20 * time)
 source2 = np.sin(50 * time)
@@ -144,13 +147,8 @@ for x in X1.T:
     plt.plot(time, x)
 plt.title('signals');
 
-
-
 X_transformed = groupica.fit_transform(Xs)
-
-
 
 for x in X_transformed.T:
     plt.plot(time, x)
 plt.title('recovered signals');
-

@@ -1,6 +1,7 @@
 """
-Spectral Clustering
-===================
+=============================
+Multiview Spectral Clustering
+=============================
 
 """
 
@@ -20,17 +21,20 @@ warnings.simplefilter('ignore')  # Ignore warnings
 RANDOM_SEED = 10
 
 ###############################################################################
-# Creating a function to display data and the results of clustering
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Plotting and moon data generating functions
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# For this example, we use the sklearn make_moons function to make two
+# interleaving half circles in two views. We then use spectral clustering to
+# separate the two views. As we can see below, multi-view spectral clustering
+# is capable of effectively clustering non-convex cluster shapes, similarly to
+# its single-view analog.
 #
 # The following function plots both views of data given a dataset and
 # corresponding labels.
 
 
 def display_plots(pre_title, data, labels):
-
     # plot the views
-    plt.figure()
     fig, ax = plt.subplots(1, 2, figsize=(14, 5))
     dot_size = 10
     ax[0].scatter(data[0][:, 0], data[0][:, 1], c=labels, s=dot_size)
@@ -45,19 +49,9 @@ def display_plots(pre_title, data, labels):
 
     plt.show()
 
-###############################################################################
-# Performance on moons dataset
-# ----------------------------
-#
-# For this example, we use the sklearn make_moons function to make two
-# interleaving half circles in two views. We then use spectral clustering to
-# separate the two views. As we can see below, multi-view spectral clustering
-# is capable of effectively clustering non-convex cluster shapes, similarly to
-# its single-view analog.
 
 # A function to generate the moons data
 def create_moons(seed, num_per_class=200):
-
     np.random.seed(seed)
     data = []
     labels = []
@@ -76,16 +70,19 @@ def create_moons(seed, num_per_class=200):
 
     return data, labels
 
+
 # Generating the data
 m_data, labels = create_moons(RANDOM_SEED)
 n_class = 2
 
 ###############################################################################
 # Single-view spectral clustering
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Cluster each view separately
 s_spectral = SpectralClustering(n_clusters=n_class,
                                 affinity='nearest_neighbors',
-                                random_state=RANDOM_SEED, n_init=100)
+                                random_state=RANDOM_SEED, n_init=10)
 s_clusters_v1 = s_spectral.fit_predict(m_data[0])
 s_clusters_v2 = s_spectral.fit_predict(m_data[1])
 
@@ -102,13 +99,14 @@ print('Single-view View 2 NMI Score: {0:.3f}\n'.format(s_nmi_v2))
 print('Single-view Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
 
 ###############################################################################
-# Multi-view spectral clustering
-
+# Multiview spectral clustering
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Use the MultiviewSpectralClustering instance to cluster the data
 m_spectral = MultiviewSpectralClustering(n_clusters=n_class,
                                          affinity='nearest_neighbors',
                                          max_iter=12, random_state=RANDOM_SEED,
-                                         n_init=100)
+                                         n_init=10)
 m_clusters = m_spectral.fit_predict(m_data)
 
 # Compute nmi between true class labels and multi-view cluster labels
@@ -128,12 +126,12 @@ display_plots('Multi-view Clustering', m_data, m_clusters)
 
 ###############################################################################
 # Performance on the UCI Digits Multiple Features data set with 2 views
-# ---------------------------------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Here we will compare the performance of the Multi-view and Single-view
 # versions of spectral clustering. We will evaluate the purity of the resulting
 # clusters from each algorithm with respect to the class labels using the
-# normalized mutual information metric. <br>
+# normalized mutual information metric.
 #
 # As we can see, Multi-view clustering produces clusters with higher purity
 # compared to those produced by Single-view clustering for all 3 input types.
@@ -141,10 +139,13 @@ display_plots('Multi-view Clustering', m_data, m_clusters)
 
 # Load dataset along with labels for digits 0 through 4
 n_class = 5
-Xs, labels = load_UCImultifeature(select_labeled=list(range(n_class)))
+Xs, labels = load_UCImultifeature(
+    select_labeled=list(range(n_class)), views=[0, 1])
 
 ###############################################################################
-# Single-view spectral clustering
+# Singleview spectral clustering
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Cluster each view separately
 s_spectral = SpectralClustering(n_clusters=n_class, random_state=RANDOM_SEED,
                                 n_init=100)
@@ -162,12 +163,13 @@ s_nmi = nmi_score(labels, s_clusters)
 print('Single-view Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
 
 ###############################################################################
-# Multi-view spectral clustering
-
+# Multiview spectral clustering
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Use the MultiviewSpectralClustering instance to cluster the data
 m_spectral1 = MultiviewSpectralClustering(n_clusters=n_class,
                                           random_state=RANDOM_SEED,
-                                          n_init=100)
+                                          n_init=10)
 m_clusters1 = m_spectral1.fit_predict(Xs)
 
 # Compute nmi between true class labels and multi-view cluster labels
@@ -181,7 +183,7 @@ print('Multi-view NMI Score: {0:.3f}\n'.format(m_nmi1))
 # We will display the clustering results of the Multi-view spectral clustering
 # algorithm below, along with the true class labels.
 
-quick_visualize(m_data, labels=labels, title='Ground Truth',
+quick_visualize(Xs, labels=labels, title='Ground Truth',
                 scatter_kwargs={'s': 8})
-quick_visualize(m_data, labels=m_clusters1, title='Multi-view Clustering',
+quick_visualize(Xs, labels=m_clusters1, title='Multi-view Clustering',
                 scatter_kwargs={'s': 8})

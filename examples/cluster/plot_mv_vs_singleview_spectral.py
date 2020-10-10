@@ -1,25 +1,32 @@
 """
-Vs Single-view Visualization and Clustering
-===========================================
+============================================================
+Multiview vs. Singleview Spectral Clustering of the UCI data
+============================================================
+
+Here, we directly compare multiview methods available within *mvlearn* to
+analagous singleview methods. Using the UCI Multiple Features Dataset, we
+first examine the dataset by viewing it after using dimensionality reduction
+techniques, then we perform unsupervised clustering and compare the results to
+the analagous singleview methods.
 
 """
-# Here, we directly compare multi-view methods available within *mvlearn* to
-# analagous single-view methods. Using the UCI Multiple Features Dataset, we
-# first examine the dataset by viewing it after using dimensionality reduction
-# techniques, then we perform unsupervised clustering and compare the results to
-# the analagous single-view methods.
 
 
+from sklearn.cluster import SpectralClustering
+from sklearn.metrics import homogeneity_score
+from mvlearn.cluster import MultiviewSpectralClustering
+from sklearn.decomposition import PCA
+from mvlearn.plotting import quick_visualize
+from sklearn.metrics import confusion_matrix
 from mvlearn.datasets import load_UCImultifeature
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load 6-view, 4-class data from the Multiple Features Dataset. The full 6
+# Load 6view, 4-class data from the Multiple Features Dataset. The full 6
 # views with all features will be used for clustering.
 
-
-# Load 4-class, multi-view data
-Xs, y = load_UCImultifeature(select_labeled=[0,1,2,3])
+# Load 4-class, multiview data
+Xs, y = load_UCImultifeature(select_labeled=[0, 1, 2, 3])
 #     Six views of handwritten digit images
 #     1. 76 Fourier coefficients of the character shapes
 #     2. 216 profile correlations
@@ -27,20 +34,20 @@ Xs, y = load_UCImultifeature(select_labeled=[0,1,2,3])
 #     4. 240 pixel averages of the images from 2x3 windows
 #     5. 47 Zernike moments
 #     6. 6 morphological features
-view_names = ['Fourier\nCoefficients', 'Profile\nCorrelations', 'Karhunen-\nLoeve',
-              'Pixel\nAverages', 'Zernike\nMoments', 'Morphological\nFeatures']
+view_names = ['Fourier\nCoefficients', 'Profile\nCorrelations',
+              'Karhunen-\nLoeve', 'Pixel\nAverages',
+              'Zernike\nMoments', 'Morphological\nFeatures']
 
 order = np.argsort(y)
 sub_samp = np.arange(0, Xs[0].shape[0], step=3)
-set_aspect = 'equal'  # 'equal' or 'auto'
+set_aspect = 'equal'
 set_cmap = 'Spectral'
 
-#row_orders = np.argsort(y)
 for i, view in enumerate(Xs):
-    sorted_view = view[order,:].copy()
-    sorted_view = sorted_view[sub_samp,:]
+    sorted_view = view[order, :].copy()
+    sorted_view = sorted_view[sub_samp, :]
     if set_aspect == 'auto':
-        plt.figure(figsize=(1.5,4.5))
+        plt.figure(figsize=(1.5, 4.5))
     else:
         plt.figure()
 
@@ -48,9 +55,8 @@ for i, view in enumerate(Xs):
     minim = np.min(sorted_view)
     maxim = np.max(sorted_view)
     sorted_view = (sorted_view - minim) / (maxim - minim)
-       
+
     plt.imshow(sorted_view, cmap=set_cmap, aspect=set_aspect)
-    #plt.title('View {}'.format(i+1))
     plt.title(view_names[i], fontsize=14)
     plt.yticks([], "")
     max_dim = view.shape[1]
@@ -68,14 +74,12 @@ for i, view in enumerate(Xs):
 # compared to the true labels.
 
 
-from sklearn.metrics import confusion_matrix
-
 def rearrange_labels(y_true, y_pred):
     conf_mat = confusion_matrix(y_true, y_pred)
     maxes = np.argmax(conf_mat, axis=0)
     y_pred_new = np.zeros_like(y_pred)
     for i, new in enumerate(maxes):
-        y_pred_new[y_pred==i] = new
+        y_pred_new[y_pred == i] = new
     return y_pred_new
 
 ###############################################################################
@@ -83,19 +87,17 @@ def rearrange_labels(y_true, y_pred):
 # ---------------------------------------------
 
 # As one might do with a new dataset, we first visualize the data in 2
-# dimensions. For multi-view data, rather than using PCA, we use Multi-view
+# dimensions. For multiview data, rather than using PCA, we use Multiview
 # Multi-dimensional Scaling (MVMDS) available in the package to capture the
 # common principal components across views. This is performed automatically
-# within the quick_visualize function. From the unlabeled plot, it is clear that
-# there may be 4 underlying clusters, so unsupervised clustering with 4 clusters
-# may be a natural next step in analyzing this data.
+# within the quick_visualize function. From the unlabeled plot, it is clear
+# that there may be 4 underlying clusters, so unsupervised clustering with 4
+# clusters may be a natural next step in analyzing this data.
 
-
-from mvlearn.plotting import quick_visualize
 
 # Use all 6 views available to reduce the dimensionality, since MVMDS is not
 # limited
-sca_kwargs = {'alpha' : 0.7, 's' : 10}
+sca_kwargs = {'alpha': 0.7, 's': 10}
 
 quick_visualize(Xs, title="Unlabeled", ax_ticks=False,
                 ax_labels=False, scatter_kwargs=sca_kwargs)
@@ -108,8 +110,6 @@ quick_visualize(Xs, labels=y, title="True Labels", ax_ticks=False,
 # data if our goal was to determine underlying clusters.
 
 
-from sklearn.decomposition import PCA
-
 # Concatenate views to get naive single view
 X_viewing = np.hstack([Xs[i] for i in range(len(Xs))])
 
@@ -118,7 +118,7 @@ pca = PCA(n_components=2)
 pca_X = pca.fit_transform(X_viewing)
 
 plt.figure(figsize=(5, 5))
-plt.scatter(pca_X[:,0], pca_X[:,1], **sca_kwargs)
+plt.scatter(pca_X[:, 0], pca_X[:, 1], **sca_kwargs)
 plt.xticks([], [])
 plt.yticks([], [])
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -126,7 +126,7 @@ plt.title("Unlabeled")
 plt.show()
 
 plt.figure(figsize=(5, 5))
-plt.scatter(pca_X[:,0], pca_X[:,1], c=y, **sca_kwargs)
+plt.scatter(pca_X[:, 0], pca_X[:, 1], c=y, **sca_kwargs)
 plt.xticks([], [])
 plt.yticks([], [])
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -139,26 +139,24 @@ plt.show()
 
 # Now, assuming we are trying to group the samples into 4 clusters (as was
 # much more obvious after using *mvlearn*'s dimensionality reduction viewing
-# method), we compare multi-view clustering techniques to single-view
-# counterparts. Specifically, we compare 6-view spectral clustering in *mvlearn*
-# with single view spectral clustering from *scikit-learn*. For multi-view
+# method), we compare multiview clustering techniques to singleview
+# counterparts. Specifically, we compare 6view spectral clustering in *mvlearn*
+# with single view spectral clustering from *scikit-learn*. For multiview
 # clustering, all 6 full views of data (not the dimensionality-reduced data).
-# For single-view comparison, we concatenate these 6 full views into a single
+# For singleview comparison, we concatenate these 6 full views into a single
 # large matrix, the same as what we did before for PCA.
 #
 # Since we have the true class labels, we assess the clustering accuracy with
 # a homogeneity score.
 
 
-from mvlearn.cluster import MultiviewSpectralClustering
-
-mv_clust = MultiviewSpectralClustering(n_clusters=4, affinity='nearest_neighbors')
+mv_clust = MultiviewSpectralClustering(
+    n_clusters=4, affinity='nearest_neighbors')
 mvlearn_cluster_labels = mv_clust.fit_predict(Xs)
 
 # Test the accuracy of the clustering
-from sklearn.metrics import homogeneity_score
 mv_score = homogeneity_score(y, mvlearn_cluster_labels)
-print('Multi-view homogeneity score: {0:.3f}'.format(mv_score))
+print('Multiview homogeneity score: {0:.3f}'.format(mv_score))
 
 # Use function defined at beginning of notebook to rearrange the labels
 # for easier visual comparison to true labeled plot
@@ -168,14 +166,12 @@ mvlearn_cluster_labels = rearrange_labels(y, mvlearn_cluster_labels)
 quick_visualize(Xs, labels=mvlearn_cluster_labels, title="Predicted Clusters",
                 ax_ticks=False, ax_labels=False, scatter_kwargs=sca_kwargs)
 
-# To compare to single-view methods, we concatenate the 6 views we used for
-# co-clustering into one data matrix, and then perform spectral clustering using
-# the *scikit-learn* library. From the figure and cluster scores that are
-# produced, we can see that single-view spectral clustering is unable to perform
-# as well as the multi-view version.
+# To compare to singleview methods, we concatenate the 6 views we used for
+# co-clustering into one data matrix, and then perform spectral clustering
+# using the *scikit-learn* library. From the figure and cluster scores that are
+# produced, we can see that singleview spectral clustering is unable to perform
+# as well as the multiview version.
 
-
-from sklearn.cluster import SpectralClustering
 
 # Concatenate views and cluster
 X_clustering = X_viewing
@@ -184,7 +180,7 @@ sklearn_cluster_labels = clust.fit_predict(X_clustering)
 
 # Test the accuracy of the clustering
 sk_score = homogeneity_score(y, sklearn_cluster_labels)
-print('Single-view homogeneity score: {0:.3f}'.format(sk_score))
+print('Singleview homogeneity score: {0:.3f}'.format(sk_score))
 
 # Rearrange for easier visual comparison to true label plot
 sklearn_cluster_labels = rearrange_labels(y, sklearn_cluster_labels)
@@ -194,10 +190,9 @@ pca = PCA(n_components=2)
 pca_X = pca.fit_transform(X_viewing)
 
 plt.figure(figsize=(5, 5))
-plt.scatter(pca_X[:,0], pca_X[:,1], c=sklearn_cluster_labels, **sca_kwargs)
+plt.scatter(pca_X[:, 0], pca_X[:, 1], c=sklearn_cluster_labels, **sca_kwargs)
 plt.xticks([], [])
 plt.yticks([], [])
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.title("Predicted Clusters")
 plt.show()
-

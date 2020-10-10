@@ -1,5 +1,7 @@
 """
+=============================================================
 Angle-based Joint and Individual Variation Explained  (AJIVE)
+=============================================================
 
 Adopted from the code at https://github.com/idc9/py_jive and tutorial
 written by:
@@ -32,15 +34,12 @@ import matplotlib.pyplot as plt
 
 ##############################################################################
 # ## Data Creation
-# 
-# Here we create data in the same way detailed in the initial JIVE paper:
-# 
-# The two views are created with shared joint variation, unique individual
-# variation, and independent noise. A representation of what the implementation
-# of this algorithm does can be seen in the cell below.
 #
-# .. image:: https://ars.els-cdn.com/content/image/1-s2.0-S0047259X1730204X-gr1.jpg
-# 
+# Here we create data in the same way detailed in the initial JIVE paper:
+#
+# The two views are created with shared joint variation, unique individual
+# variation, and independent noise.
+#
 
 np.random.seed(12)
 
@@ -75,8 +74,8 @@ X2_noise = 5000 * np.random.normal(loc=0, scale=1, size=(20, 20))
 X1 = X1_indiv_tot + X1_joint + X1_noise
 X2 = X2_indiv + X2_joint + X2_noise
 
-Xs_same = [V1, V1]
-Xs_diff = [V1, V2]
+Xs_same = [X1, X1]
+Xs_diff = [X1, X2]
 
 ###############################################################################
 # Scree Plots
@@ -85,7 +84,7 @@ Xs_diff = [V1, V2]
 # Scree plots allow us to observe variation and determine an appropriate
 # initial signal rank for each view.
 
-fig, axes = plt.subplots(1,2, figsize=(10,5), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
 U, S, V = np.linalg.svd(X1)
 vars1 = S**2 / np.sum(S**2)
 U, S, V = np.linalg.svd(X2)
@@ -103,21 +102,22 @@ plt.show()
 # 2.
 
 
-ajive1 = AJIVE(init_signal_ranks=[2,2])
-Js_1 = ajive1.fit_transform(Xs=[V1,V1])
+ajive1 = AJIVE(init_signal_ranks=[2, 2])
+Js_1 = ajive1.fit_transform(Xs_same)
 
-ajive2 = AJIVE(init_signal_ranks=[2,2])
-Js_2 = ajive2.fit_transform(Xs=[V1,V2])
+ajive2 = AJIVE(init_signal_ranks=[2, 2])
+Js_2 = ajive2.fit_transform(Xs_diff)
 
 ###############################################################################
 # Heatmap Visualizations
 # ----------------------
 #
 # Here we are using heatmaps to visualize the decomposition of our views. As we
-# can see when we use two of the same views there is no Individualized Variation
-# displayed. When we create two different views, the algorithm finds different
-# decompositions where common and individual structural artifacts can be seen in
-# their corresponding heatmaps.
+# can see when we use two of the same views there is no Individualized
+# Variation displayed. When we create two different views, the algorithm finds
+# different decompositions where common and individual structural artifacts
+# can be seen in their corresponding heatmaps.
+
 
 def plot_blocks(blocks, names):
     n_views = len(blocks[0])
@@ -125,25 +125,30 @@ def plot_blocks(blocks, names):
     for i in range(n_views):
         for j in range(n_blocks):
             plt.subplot(n_blocks, n_views, j*n_views+i+1)
-            sns.heatmap(blocks[j][i], xticklabels=False, yticklabels=False, cmap="RdBu")
+            sns.heatmap(blocks[j][i], xticklabels=False, yticklabels=False,
+                        cmap="RdBu")
             plt.title(f"View {i}: {names[j]}")
 
 ###############################################################################
 # Same Views
 # ^^^^^^^^^^
 
+
 plt.figure(figsize=[20, 10])
-residuals = [v1 - X for v1,X in zip(Views_1, ajive1.inverse_transform(Js_1))]
+residuals = [v1 - X for v1, X in zip(Xs_same, ajive1.inverse_transform(Js_1))]
 individual_mats = ajive1.individual_mats_
-plot_blocks([Views_1, Js_1, individual_mats, residuals], ["Raw Data", "Joint", "Individual", "Noise"])
+plot_blocks([Xs_same, Js_1, individual_mats, residuals],
+            ["Raw Data", "Joint", "Individual", "Noise"])
 
 ###############################################################################
 # Different Views
 # ^^^^^^^^^^^^^^^
 
+
 plt.figure(figsize=[20, 10])
 plt.title('Different Views')
 individual_mats = ajive2.individual_mats_
 Xs_inv = ajive2.inverse_transform(Js_2)
-residuals = [v - X for v, X in zip(Views_2, Xs_inv)]
-plot_blocks([Views_2, Js_2, individual_mats, residuals], ["Raw Data", "Joint", "Individual", "Noise"])
+residuals = [v - X for v, X in zip(Xs_diff, Xs_inv)]
+plot_blocks([Xs_diff, Js_2, individual_mats, residuals],
+            ["Raw Data", "Joint", "Individual", "Noise"])

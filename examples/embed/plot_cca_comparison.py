@@ -1,6 +1,7 @@
 """
-Variants Comparison
-===================
+======================
+Comparing CCA Variants
+======================
 
 A comparison of Kernel Canonical Correlation Analysis (KCCA) with three
 different types of kernel to Deep Canonical Correlation Analysis (DCCA).

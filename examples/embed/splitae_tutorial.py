@@ -1,13 +1,10 @@
 """
-Embeddings on multiview MNIST data
-==================================
+==========================================
+SplitAE embeddings on multiview MNIST data
+==========================================
 
 """
 
-
-
-
-import matplotlib.pyplot
 import torch
 import torchvision
 from torch.utils.data import Dataset, DataLoader
@@ -16,23 +13,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import PIL
 
-#tsnecuda is a bit harder to install, if you want to use MulticoreTSNE instead
+# tsnecuda is a bit harder to install, if you want to use MulticoreTSNE instead
 # (sklearn is too slow)
-#then uncomment the below MulticoreTSNE line, comment out the tsnecuda line,
+# then uncomment the below MulticoreTSNE line, comment out the tsnecuda line,
 # and replace
-#all TSNE() lines with TSNE(n_jobs=12), where 12 is replaced with the number
+# all TSNE() lines with TSNE(n_jobs=12), where 12 is replaced with the number
 # of cores on your machine
 
-#from MulticoreTSNE import MulticoreTSNE as TSNE
+# from MulticoreTSNE import MulticoreTSNE as TSNE
 from tsnecuda import TSNE
 from mvlearn.embed import SplitAE
 
-
-
-# Setup plotting
-
 plt.style.use("default")
 
+###############################################################################
+# Setup the multiview MNIST data
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Let's make a simple two view dataset based on MNIST as described in
 # http://proceedings.mlr.press/v37/wangb15.pdf .
 #
@@ -50,8 +47,6 @@ plt.style.use("default")
 #
 # - view1: an MNIST image with the label "9"
 # - view2: a different MNIST image with the label "9" with noise added.
-#
-#
 
 
 class NoisyMnist(Dataset):
@@ -60,31 +55,34 @@ class NoisyMnist(Dataset):
 
     def __init__(self, train=True):
         super().__init__()
-        self.mnistDataset = datasets.MNIST("./mnist", train=train, download=True)
+        self.mnistDataset = datasets.MNIST(
+            "./mnist", train=train, download=True)
 
     def __len__(self):
         return len(self.mnistDataset)
 
     def __getitem__(self, idx):
-        randomIndex = lambda: np.random.randint(len(self.mnistDataset))
+        def randomIndex(): return np.random.randint(len(self.mnistDataset))
         image1, label1 = self.mnistDataset[idx]
         image2, label2 = self.mnistDataset[randomIndex()]
         while not label1 == label2:
             image2, label2 = self.mnistDataset[randomIndex()]
 
-        image1 = torchvision.transforms.RandomRotation((-45, 45), resample=PIL.Image.BICUBIC)(image1)
-        #image2 = torchvision.transforms.RandomRotation((-45, 45), resample=PIL.Image.BICUBIC)(image2)
+        image1 = torchvision.transforms.RandomRotation(
+            (-45, 45), resample=PIL.Image.BICUBIC)(image1)
         image1 = np.array(image1) / 255
         image2 = np.array(image2) / 255
 
-        image2 = np.clip(image2 + np.random.uniform(0, 1, size=image2.shape), 0, 1) # add noise to the view2 image
+        # add noise to the view2 image
+        image2 = np.clip(image2 +
+                         np.random.uniform(0, 1, size=image2.shape), 0, 1)
 
         # standardize both images
         image1 = (image1 - self.MNIST_MEAN) / self.MNIST_STD
         image2 = (image2 - (self.MNIST_MEAN+0.447)) / self.MNIST_STD
 
-        image1 = torch.FloatTensor(image1).unsqueeze(0) # image1 is view1
-        image2 = torch.FloatTensor(image2).unsqueeze(0) # image2 is view2
+        image1 = torch.FloatTensor(image1).unsqueeze(0)  # image1 is view1
+        image2 = torch.FloatTensor(image2).unsqueeze(0)  # image2 is view2
 
         return (image1, image2, label1)
 
@@ -100,38 +98,47 @@ view1, view2, labels = next(iter(dataloader))
 view1Row = torch.cat([*view1.squeeze()], dim=1)
 view2Row = torch.cat([*view2.squeeze()], dim=1)
 # make between 0 and 1 again:
-view1Row = (view1Row - torch.min(view1Row)) / (torch.max(view1Row) - torch.min(view1Row))
-view2Row = (view2Row - torch.min(view2Row)) / (torch.max(view2Row) - torch.min(view2Row))
+view1Row = (view1Row - torch.min(view1Row)) / \
+    (torch.max(view1Row) - torch.min(view1Row))
+view2Row = (view2Row - torch.min(view2Row)) / \
+    (torch.max(view2Row) - torch.min(view2Row))
 plt.imshow(torch.cat([view1Row, view2Row], dim=0))
 
-# Sklearn API doesn't use Dataloaders (which hampers data augmentation :(  )
+# Sklearn API doesn't use Dataloaders
 # so let's get our dataset into a different format. Each view will be an array
 # of the shape (nSamples, nFeatures). We will do the same for the test dataset.
 
 
 # since batch_size=len(dataset), we get the full dataset with one
 # next(iter(dataset)) call
-dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=True, num_workers=8)
+dataloader = DataLoader(dataset, batch_size=len(
+    dataset), shuffle=True, num_workers=8)
 view1, view2, labels = next(iter(dataloader))
 view1 = view1.view(view1.shape[0], -1)
 view2 = view2.view(view2.shape[0], -1)
 
 testDataset = NoisyMnist(train=False)
 print("Test dataset length is", len(testDataset))
-testDataloader = DataLoader(testDataset, batch_size=10000, shuffle=True, num_workers=8)
+testDataloader = DataLoader(
+    testDataset, batch_size=10000, shuffle=True, num_workers=8)
 testView1, testView2, testLabels = next(iter(testDataloader))
 testView1 = testView1.view(testView1.shape[0], -1)
 testView2 = testView2.view(testView2.shape[0], -1)
 
+###############################################################################
+# Run SplitAE
+# ^^^^^^^^^^^
+#
 # SplitAE does two things. It creates a shared embedding for view1 and view2.
 # And it allows predicting view2 from view1. The autoencoder network takes in
 # view1 as input, squeezes it into a low-dimensional representation, and then
-# from that low-dimensional representation (the embedding), it tries to recreate
-# view1 and predict view2. Let's see that:
+# from that low-dimensional representation (the embedding), it tries to
+# recreate view1 and predict view2. Let's see that:
 
 
-splitae = SplitAE(hidden_size=1024, num_hidden_layers=2, embed_size=10, training_epochs=10, batch_size=128,
-                  learning_rate=0.001, print_info=False, print_graph=True)
+splitae = SplitAE(hidden_size=1024, num_hidden_layers=2, embed_size=10,
+                  training_epochs=10, batch_size=128, learning_rate=0.001,
+                  print_info=False, print_graph=True)
 splitae.fit([view1, view2], validation_Xs=[testView1, testView2])
 # if the named parameter validationXs is passed with held-out data, then .fit
 # will print validation error as well.
@@ -142,16 +149,23 @@ splitae.fit([view1, view2], validation_Xs=[testView1, testView2])
 
 
 MNIST_MEAN, MNIST_STD = (0.1307, 0.3081)
-testEmbed, testView1Reconstruction, testView2Prediction = splitae.transform([testView1, testView2])
+testEmbed, testView1Reconstruction, testView2Prediction = \
+    splitae.transform([testView1, testView2])
+
 numImages = 8
-randIndices = np.random.choice(range(len(testDataset)), numImages, replace=False)
+randIndices = np.random.choice(
+    range(len(testDataset)), numImages, replace=False)
+
+
 def plotRow(title, view):
     samples = view[randIndices].reshape(-1, 28, 28)
     row = np.concatenate([*samples], axis=1)
-    row = np.clip(row * MNIST_STD + MNIST_MEAN, 0, 1) #denormalize
+    row = np.clip(row * MNIST_STD + MNIST_MEAN, 0, 1)  # denormalize
     plt.imshow(row)
     plt.title(title)
     plt.show()
+
+
 plotRow("view 1", testView1)
 plotRow("reconstructed view 1", testView1Reconstruction)
 plotRow("predicted view 2", testView2Prediction)
@@ -171,40 +185,42 @@ plotRow("predicted view 2", testView2Prediction)
 # vectors corresponding to the same digits to be closer together.
 
 
-
 tsne = TSNE()
 tsneEmbeddings = tsne.fit_transform(testEmbed)
 
+
 def plot2DEmbeddings(embeddings, labels):
     pointColors = []
-    origColors = [[55, 55, 55], [255, 34, 34], [38, 255, 38], [10, 10, 255], [255, 12, 255], [250, 200, 160], [120, 210, 180], [150, 180, 205], [210, 160, 210], [190, 190, 110]]
+    origColors = [
+        [55, 55, 55], [255, 34, 34], [38, 255, 38],
+        [10, 10, 255], [255, 12, 255], [250, 200, 160],
+        [120, 210, 180], [150, 180, 205], [210, 160, 210],
+        [190, 190, 110]
+        ]
     origColors = (np.array(origColors)) / 255
     for l in labels.cpu().numpy():
         pointColors.append(tuple(origColors[l].tolist()))
 
     fig, ax = plt.subplots()
-    #scatter = ax.scatter(*tsneEmbeddings.transpose(), c=pointColors, s=5)
     for i, label in enumerate(np.unique(labels)):
         idxs = np.where(testLabels == label)
-        ax.scatter(embeddings[idxs][:, 0], embeddings[idxs][:, 1], c=[origColors[i]], label=i, s=5)
+        ax.scatter(embeddings[idxs][:, 0], embeddings[idxs]
+                   [:, 1], c=[origColors[i]], label=i, s=5)
 
     legend = plt.legend(loc="lower left")
     for handle in legend.legendHandles:
         handle.set_sizes([30.0])
     plt.show()
 
+
 plot2DEmbeddings(tsneEmbeddings, testLabels)
 
-# This is the image we're trying to reproduce:
-#
-# ![image](https://raw.githubusercontent.com/NeuroDataDesign/multiview/cameron
-# franz/Screen%20Shot%202019-12-08%20at%209.59.45%20PM.png)
-#
-
+###############################################################################
+# Check reconstruction with tSNE
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Lets check the variability of multiple TSNE runs:
 
-
-for i in range(10):
+for i in range(3):
     tsneEmbeddings = tsne.fit_transform(testEmbed)
     plot2DEmbeddings(tsneEmbeddings, testLabels)
 
@@ -212,15 +228,15 @@ for i in range(10):
 # test embeddings.
 
 
-for i in range(10):
+for i in range(3):
 
-    splitae = SplitAE(hidden_size=1024, num_hidden_layers=2, embed_size=10, training_epochs=12, batch_size=128,
-                      learning_rate=0.001, print_info=False, print_graph=True)
+    splitae = SplitAE(hidden_size=1024, num_hidden_layers=2, embed_size=10,
+                      training_epochs=12, batch_size=128, learning_rate=0.001,
+                      print_info=False, print_graph=True)
     splitae.fit([view1, view2])
 
-    testEmbed, testView1Reconstruction, testView2Reconstruction = splitae.transform([testView1, testView2])
+    testEmbed, testView1Reconstruction, testView2Reconstruction = \
+        splitae.transform([testView1, testView2])
 
     tsneEmbeddings = tsne.fit_transform(testEmbed)
     plot2DEmbeddings(tsneEmbeddings, testLabels)
-
-

@@ -1,17 +1,15 @@
 """
-vs. Single-view KMeans
-======================
+================================
+Multiview vs. Singleview KMeans
+================================
 
 """
 
 import warnings
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 from sklearn.cluster import KMeans
 from sklearn.metrics import normalized_mutual_info_score as nmi_score
-
 from mvlearn.cluster import MultiviewKMeans
 
 warnings.filterwarnings("ignore")
@@ -29,7 +27,7 @@ RANDOM_SEED = 10
 def create_data(seed, vmeans, vvars, num_per_class=500):
 
     np.random.seed(seed)
-    data = [[],[]]
+    data = [[], []]
 
     for view in range(2):
         for comp in range(len(vmeans[0])):
@@ -61,9 +59,8 @@ def create_data(seed, vmeans, vvars, num_per_class=500):
 def display_plots(pre_title, data, labels):
 
     # plot the views
-    plt.figure()
     fig, ax = plt.subplots(1, 2, figsize=(14, 5))
-    dot_size=10
+    dot_size = 10
     ax[0].scatter(data[0][:, 0], data[0][:, 1], c=labels, s=dot_size)
     ax[0].set_title(pre_title + ' View 1')
     ax[0].axes.get_xaxis().set_visible(False)
@@ -77,13 +74,13 @@ def display_plots(pre_title, data, labels):
     plt.show()
 
 ###############################################################################
-# Creating a function to perform both single-view and multi-view kmeans
+# Creating a function to perform both singleview and multiview kmeans
 # clustering
 #
 
 
 def perform_clustering(seed, m_data, labels, n_clusters):
-    #################Single-view kmeans clustering#####################
+    # Singleview kmeans clustering
     # Cluster each view separately
     s_kmeans = KMeans(n_clusters=n_clusters, random_state=seed, n_init=100)
     s_clusters_v1 = s_kmeans.fit_predict(m_data[0])
@@ -93,23 +90,24 @@ def perform_clustering(seed, m_data, labels, n_clusters):
     s_data = np.hstack(m_data)
     s_clusters = s_kmeans.fit_predict(s_data)
 
-    # Compute nmi between true class labels and single-view cluster labels
+    # Compute nmi between true class labels and singleview cluster labels
     s_nmi_v1 = nmi_score(labels, s_clusters_v1)
     s_nmi_v2 = nmi_score(labels, s_clusters_v2)
     s_nmi = nmi_score(labels, s_clusters)
-    print('Single-view View 1 NMI Score: {0:.3f}\n'.format(s_nmi_v1))
-    print('Single-view View 2 NMI Score: {0:.3f}\n'.format(s_nmi_v2))
-    print('Single-view Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
+    print('Singleview View 1 NMI Score: {0:.3f}\n'.format(s_nmi_v1))
+    print('Singleview View 2 NMI Score: {0:.3f}\n'.format(s_nmi_v2))
+    print('Singleview Concatenated NMI Score: {0:.3f}\n'.format(s_nmi))
 
-    #################Multi-view kmeans clustering######################
+    # Multiview kmeans clustering
 
     # Use the MultiviewKMeans instance to cluster the data
-    m_kmeans = MultiviewKMeans(n_clusters=n_clusters, n_init=100, random_state=seed)
+    m_kmeans = MultiviewKMeans(n_clusters=n_clusters,
+                               n_init=100, random_state=seed)
     m_clusters = m_kmeans.fit_predict(m_data)
 
-    # Compute nmi between true class labels and multi-view cluster labels
+    # Compute nmi between true class labels and multiview cluster labels
     m_nmi = nmi_score(labels, m_clusters)
-    print('Multi-view NMI Score: {0:.3f}\n'.format(m_nmi))
+    print('Multiview NMI Score: {0:.3f}\n'.format(m_nmi))
 
     return m_clusters
 
@@ -117,8 +115,8 @@ def perform_clustering(seed, m_data, labels, n_clusters):
 # General experimentation procedures
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# For each of the experiments below, we run both single-view kmeans clustering
-# and multi-view kmeans clustering. For evaluating single-view performance, we
+# For each of the experiments below, we run both singleview kmeans clustering
+# and multiview kmeans clustering. For evaluating singleview performance, we
 # run the algorithm on each view separately as well as all views concatenated
 # together. We evalaute performance using normalized mutual information, which
 # is a measure of cluster purity with respect to the true labels. For both
@@ -129,7 +127,7 @@ def perform_clustering(seed, m_data, labels, n_clusters):
 
 ###############################################################################
 # Performance when cluster components in both views are well separated
-# --------------------------------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Cluster components 1:
 # * Mean: [3, 3] (both views)
@@ -139,9 +137,9 @@ def perform_clustering(seed, m_data, labels, n_clusters):
 # * Mean = [0, 0] (both views)
 # * Covariance = I (both views)
 #
-# As we can see, multi-view kmeans clustering performs about as well as
-# single-view kmeans clustering for the concatenated views, and both of these
-# perform better than on single-view clustering for just one view.
+# As we can see, multiview kmeans clustering performs about as well as
+# singleview kmeans clustering for the concatenated views, and both of these
+# perform better than on singleview clustering for just one view.
 
 
 v1_means = [[3, 3], [0, 0]]
@@ -153,8 +151,8 @@ vvars = [v1_vars, v2_vars]
 
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
-display_plots('Ground Truth' ,data, labels)
-display_plots('Multi-view Clustering' ,data, m_clusters)
+display_plots('Ground Truth', data, labels)
+display_plots('Multiview Clustering', data, m_clusters)
 
 ###############################################################################
 # Performance when cluster components are relatively inseparable (highly
@@ -168,8 +166,8 @@ display_plots('Multi-view Clustering' ,data, m_clusters)
 # * Mean = [0, 0] (both views)
 # * Covariance = I (both views)
 #
-# As we can see, multi-view kmeans clustering performs about as poorly as
-# single-view kmeans clustering across both individual views and concatenated
+# As we can see, multiview kmeans clustering performs about as poorly as
+# singleview kmeans clustering across both individual views and concatenated
 # views as inputs.
 
 
@@ -183,7 +181,7 @@ vvars = [v1_vars, v2_vars]
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
 display_plots('Ground Truth', data, labels)
-display_plots('Multi-view Clustering', data, m_clusters)
+display_plots('Multiview Clustering', data, m_clusters)
 
 ###############################################################################
 # Performance when cluster components are somewhat separable (somewhat
@@ -198,9 +196,9 @@ display_plots('Multi-view Clustering', data, m_clusters)
 # * Covariance = I (both views)
 #
 #
-# Again we can see that multi-view kmeans clustering performs about as well as
-# single-view kmeans clustering for the concatenated views, and both of these
-# perform better than on single-view clustering for just one view.
+# Again we can see that multiview kmeans clustering performs about as well as
+# singleview kmeans clustering for the concatenated views, and both of these
+# perform better than on singleview clustering for just one view.
 
 
 v1_means = [[1.5, 1.5], [0, 0]]
@@ -213,11 +211,11 @@ vvars = [v1_vars, v2_vars]
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
 display_plots('Ground Truth', data, labels)
-display_plots('Multi-view Clustering', data, m_clusters)
+display_plots('Multiview Clustering', data, m_clusters)
 
 ###############################################################################
 # Performance when cluster components are highly overlapping in one view
-# ----------------------------------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Cluster components 1:
 # * Mean: View 1 = [0.5, 0.5], View 2 = [2, 2]
@@ -227,7 +225,7 @@ display_plots('Multi-view Clustering', data, m_clusters)
 # * Mean = [0, 0] (both views)
 # * Covariance = I (both views)
 #
-# As we can see, multi-view kmeans clustering performs worse than single-view
+# As we can see, multiview kmeans clustering performs worse than singleview
 # kmeans clustering with concatenated views as inputs and with the best view as
 # the input.
 
@@ -241,18 +239,18 @@ vvars = [v1_vars, v2_vars]
 
 data, labels = create_data(RANDOM_SEED, vmeans, vvars)
 m_clusters = perform_clustering(RANDOM_SEED, data, labels, 2)
-display_plots('Ground Truth' ,data, labels)
-display_plots('Multi-view Clustering' ,data, m_clusters)
+display_plots('Ground Truth', data, labels)
+display_plots('Multiview Clustering', data, m_clusters)
 
 ###############################################################################
 # Conclusions
-# -----------
+# ^^^^^^^^^^^
 #
-# Here, we have seen some of the limitations of multi-view kmeans clustering.
-# From the experiments above, it is apparent that multi-view kmeans clustering
-# performs equally as well or worse than single-view kmeans clustering on
+# Here, we have seen some of the limitations of multiview kmeans clustering.
+# From the experiments above, it is apparent that multiview kmeans clustering
+# performs equally as well or worse than singleview kmeans clustering on
 # concatenated data when views are informative but the data is fairly simple
-# (i.e. only has 2 features per view). However, it is clear that the multi-view
+# (i.e. only has 2 features per view). However, it is clear that the multiview
 # kmeans algorithm does perform better on well separated cluster components
 # than it does on highly overlapping cluster components, which does validate
 # it's basic functionality as a clustering algorithm.

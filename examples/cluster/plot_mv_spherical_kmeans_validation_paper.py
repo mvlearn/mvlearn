@@ -1,6 +1,7 @@
 """
-Multi-View Spherical KMeans by Replicating Paper Results
-========================================================
+===================================================
+Multiview Spherical KMeans on the Newsgroup dataset
+===================================================
 
 Here we will validate the implementation of multi-view spherical kmeans by
 replicating the right side of figure 3 from the Multi-View Clustering paper
@@ -11,15 +12,15 @@ from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 from scipy import sparse
-from mvlearn.cluster.mv_spherical_kmeans import MultiviewSphericalKMeans
+from mvlearn.cluster import MultiviewSphericalKMeans
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 import warnings
 warnings.simplefilter('ignore')  # Ignore warnings
 
 ###############################################################################
-# A function to recreate the artificial dataset from the paper
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Recreating the artificial dataset from the paper
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # The experiment in the paper used the 20 Newsgroup dataset, which consists of
 # around 18000 newsgroups posts on 20 topics. This dataset can be obtained from
@@ -43,11 +44,16 @@ class_names = news.target_names
 # A function to get the 20 newsgroup data
 def get_data():
     # Set class pairings as described in the multiview clustering paper
-    view1_classes = ['comp.graphics','rec.motorcycles', 'sci.space', 'rec.sport.hockey', 'comp.sys.ibm.pc.hardware']
-    view2_classes = ['rec.autos', 'sci.med','misc.forsale', 'soc.religion.christian','comp.os.ms-windows.misc']
+    view1_classes = ['comp.graphics', 'rec.motorcycles',
+                     'sci.space', 'rec.sport.hockey',
+                     'comp.sys.ibm.pc.hardware']
+    view2_classes = ['rec.autos', 'sci.med', 'misc.forsale',
+                     'soc.religion.christian', 'comp.os.ms-windows.misc']
 
-    # Create lists to hold data and labels for each of the 5 classes across 2 different views
-    labels = [num for num in range(len(view1_classes)) for _ in range(NUM_SAMPLES)]
+    # Create lists to hold data and labels for each of the 5 classes across
+    # 2 different views
+    labels = [num for num in range(len(view1_classes))
+              for _ in range(NUM_SAMPLES)]
     labels = np.array(labels)
     view1_data = list()
     view2_data = list()
@@ -92,15 +98,11 @@ def get_data():
     return view1_data, view2_data, labels
 
 ###############################################################################
-#  Function to compute cluster entropy
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# The function below is used to calculate the total clustering entropy using
-# the formula described in the paper.
+# Function to compute cluster entropy
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 def compute_entropy(partitions, labels, k, num_classes):
-
     total_entropy = 0
     num_examples = partitions.shape[0]
     for part in range(k):
@@ -137,7 +139,6 @@ def randSpherical(n_clusters, n_feat1, n_feat2):
 
 
 def getEntropies():
-
     v1_data, v2_data, labels = get_data()
 
     entropies = list()

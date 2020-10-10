@@ -1,4 +1,5 @@
 """
+===========================
 Data from Gaussian Mixtures
 ===========================
 
@@ -14,7 +15,6 @@ import numpy as np
 # Latent variables are sampled from two multivariate Gaussians with equal
 # prior probability. Then a polynomial transformation is applied and noise is
 # added independently to both the transformed and untransformed latents.
-
 
 n_samples = 100
 centers = [[0, 1], [0, -1]]
