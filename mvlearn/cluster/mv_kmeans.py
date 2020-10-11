@@ -20,6 +20,7 @@ from .base import BaseCluster
 from ..utils.utils import check_Xs
 from sklearn.exceptions import NotFittedError, ConvergenceWarning
 from scipy.spatial.distance import cdist
+import warnings
 
 
 class MultiviewKMeans(BaseCluster):
@@ -328,7 +329,7 @@ class MultiviewKMeans(BaseCluster):
         self.centroids_ = [None, None]
         if (len(v1_consensus) == 0):
             msg = 'No distinct cluster centroids have been found.'
-            raise ConvergenceWarning(msg)
+            warnings.warn(msg, ConvergenceWarning)
         else:
             self.centroids_[0] = np.vstack(v1_consensus)
             self.centroids_[1] = np.vstack(v2_consensus)
@@ -340,7 +341,7 @@ class MultiviewKMeans(BaseCluster):
                        + ') found is smaller than n_clusters ('
                        + str(self.n_clusters)
                        + ').')
-                raise ConvergenceWarning(msg)
+                warnings.warn(msg, ConvergenceWarning)
 
             # Updates k if number of consensus clusters less than original
             # n_clusters value

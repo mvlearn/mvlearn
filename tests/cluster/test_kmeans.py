@@ -86,7 +86,7 @@ def test_n_init_not_positive_int():
         kmeans.fit(data_small)
         
 def test_final_centroids_no_consensus():
-    with pytest.raises(ConvergenceWarning):
+    with pytest.warns(ConvergenceWarning):
         kmeans = MultiviewKMeans(random_state=RANDOM_SEED)
         view1 = np.array([[0, 1], [1, 0]])
         view2 = np.array([[1, 0], [0, 1]])
@@ -96,7 +96,7 @@ def test_final_centroids_no_consensus():
         kmeans._final_centroids([view1, view2], centroids)
 
 def test_final_centroids_less_than_n_clusters():
-    with pytest.raises(ConvergenceWarning):
+    with pytest.warns(ConvergenceWarning):
         kmeans = MultiviewKMeans(n_clusters=3, random_state=RANDOM_SEED)
         view1 = np.random.random((2,5))
         view2 = np.random.random((2,6))
@@ -106,7 +106,7 @@ def test_final_centroids_less_than_n_clusters():
         kmeans._final_centroids([view1, view2], centroids)
 
 def test_final_centroids_less_than_n_clusters():
-    with pytest.raises(ConvergenceWarning):
+    with pytest.warns(ConvergenceWarning):
         kmeans = MultiviewKMeans(n_clusters=3, random_state=RANDOM_SEED)
         view1 = np.random.random((2,11))
         view2 = np.random.random((2,10))
@@ -131,7 +131,7 @@ def test_predict_no_centroids1():
 def test_predict_no_centroids2():
     kmeans = MultiviewKMeans()
     
-    with pytest.raises(ConvergenceWarning):
+    with pytest.warns(ConvergenceWarning):
         view1 = np.array([[0, 1], [1, 0]])
         view2 = np.array([[1, 0], [0, 1]])
         v1_centroids = np.array([[0, 1],[1, 0]])
