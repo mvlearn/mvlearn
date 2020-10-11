@@ -134,6 +134,7 @@ kcca_p = KCCA(ktype="poly", degree=2.0, n_components=4, reg=0.001)
 kcca_p.fit(Xsp_train)
 polykcca = kcca_p.transform(Xsp_test)
 
+
 ###############################################################################
 # Original Data Plotted
 # ^^^^^^^^^^^^^^^^^^^^^

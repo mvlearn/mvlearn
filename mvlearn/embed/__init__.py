@@ -10,7 +10,7 @@ try:
     import torch.nn as nn  # noqa
     from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler  # noqa
     from .dcca import DCCA, linear_cca, cca_loss, MlpNet, DeepPairedNetworks  # noqa
-    from .splitae import SplitAE
+    from .splitae import SplitAE  # noqa
 except ModuleNotFoundError:
     pass
 
@@ -22,4 +22,8 @@ __all__ = [
         "select_dimension",
         "DCCA",
         "SplitAE",
+        "linear_cca",
+        "cca_loss",
+        "MlpNet",
+        "DeepPairedNetworks",
     ]
