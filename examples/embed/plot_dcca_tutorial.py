@@ -26,14 +26,9 @@ gm = GaussianMixture(n_samples, means, covariances, random_state=42,
                      shuffle=True, shuffle_random_state=42)
 latent, y = gm.get_Xy(latents=True)
 
-# The latent data is plotted against itself to reveal the underlying
-# distribtution.
-
+# Plot latent data against itself to reveal the underlying distribtution.
 crossviews_plot([latent, latent], labels=y,
                 title='Latent Variable', equal_axes=True)
-
-# The noisy latent variable (view 1) is plotted against the transformed latent
-# variable (view 2), an example of a dataset with two views.
 
 
 # Split data into train and test sets
@@ -125,6 +120,7 @@ Xs_transformed = dcca.transform(Xs_test)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We can see that it has uncovered the latent correlation between views.
+
 
 crossviews_plot(Xs_transformed, labels=y_test,
                 title='Transformed Testing Data View 1 vs. View 2 '
