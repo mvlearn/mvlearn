@@ -90,7 +90,7 @@ def make_data(kernel, N):
 
 np.random.seed(1)
 Xs = make_data('linear', 250)
-Xs_train, Xs_test = train_test_split(Xs, test_size=0.3)
+Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
 kcca_l = KCCA(n_components=4, reg=0.01)
 kcca_l.fit(Xs_train)
@@ -128,7 +128,7 @@ print(stats['pF'])
 
 
 Xsp = make_data("poly", 250)
-Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3)
+Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3, random_state=42)
 
 kcca_p = KCCA(ktype="poly", degree=2.0, n_components=4, reg=0.001)
 kcca_p.fit(Xsp_train)
@@ -165,7 +165,7 @@ print(stats['r'])
 
 
 Xsg = make_data("gaussian", 250)
-Xsg_train, Xsg_test = train_test_split(Xsg, test_size=0.3)
+Xsg_train, Xsg_test = train_test_split(Xsg, test_size=0.3, random_state=42)
 
 kcca_g = KCCA(ktype="gaussian", sigma=1.0, n_components=4, reg=0.01)
 kcca_g.fit(Xsg_train)
