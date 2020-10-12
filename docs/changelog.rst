@@ -49,6 +49,8 @@ Updates in this release:
 
 - |Major Feature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
 
+- |Feature| Adds the function ``model_selection.train_test_split`` to wrap that of `sklearn <scikit-learn <https://scikit-learn.org/>`_ for multiview data or items. `#174 <https://github.com/mvlearn/mvlearn/pull/174>`_ by `Alexander Chang <https://github.com/achang63>`_ and `Gavin Mischler <https://gavinmischler.github.io/>`_.
+
 `mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

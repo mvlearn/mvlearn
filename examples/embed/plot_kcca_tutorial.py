@@ -22,10 +22,11 @@ performance. The only method as of now is 'kettenring-like'.
 """
 
 
-from scipy import stats
-from mvlearn.plotting import crossviews_plot
-from mvlearn.embed import KCCA
 import numpy as np
+from scipy import stats
+from mvlearn.embed import KCCA
+from mvlearn.model_selection import train_test_split
+from mvlearn.plotting import crossviews_plot
 
 
 # Function creates Xs, a list of two views of data with a linear relationship,
@@ -88,9 +89,8 @@ def make_data(kernel, N):
 
 
 np.random.seed(1)
-Xs = make_data('linear', 100)
-Xs_train = [Xs[0][:80], Xs[1][:80]]
-Xs_test = [Xs[0][80:], Xs[1][80:]]
+Xs = make_data('linear', 250)
+Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
 kcca_l = KCCA(n_components=4, reg=0.01)
 kcca_l.fit(Xs_train)
@@ -104,20 +104,17 @@ linearkcca = kcca_l.transform(Xs_test)
 crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True)
 
 ###############################################################################
-# Transformed Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^
+# Transformed Test Data Plotted
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 crossviews_plot(linearkcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 
 # Now, we assess the canonical correlations achieved on the testing data, and
-# the p-values for significance using a Wilk's Lambda test
+# their significance using the p-values from a Wilk's Lambda test
 
 
 stats = kcca_l.get_stats()
-
-print("Below are the canonical correlations and the p-values of a Wilk's \
-    Lambda test for each components:")
 print(stats['r'])
 print(stats['pF'])
 
@@ -130,9 +127,13 @@ print(stats['pF'])
 # polynomial relationship, and then transform the data into that latent space.
 
 
-Xsp = make_data("poly", 150)
+Xsp = make_data("poly", 250)
+Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3, random_state=42)
+
 kcca_p = KCCA(ktype="poly", degree=2.0, n_components=4, reg=0.001)
-polykcca = kcca_p.fit_transform(Xsp)
+kcca_p.fit(Xsp_train)
+polykcca = kcca_p.transform(Xsp_test)
+
 
 ###############################################################################
 # Original Data Plotted
@@ -142,18 +143,17 @@ polykcca = kcca_p.fit_transform(Xsp)
 crossviews_plot(Xsp, ax_ticks=False, ax_labels=True, equal_axes=True)
 
 ###############################################################################
-# Transformed Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^
+# Transformed Test Data Plotted
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 crossviews_plot(polykcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 
-# Now, we assess the canonical correlations achieved on the testing data
+# Now, we assess the canonical correlations achieved on the testing data by
+# printing the canonical correlations for each component
 
 
 stats = kcca_p.get_stats()
-
-print("Below are the canonical correlations for each components:")
 print(stats['r'])
 
 ###############################################################################
@@ -165,14 +165,12 @@ print(stats['r'])
 # sinusoidal relationship, and then transform the data into that latent space.
 
 
-Xsg = make_data("gaussian", 100)
-Xsg_train = [Xsg[0][:20], Xsg[1][:20]]
-Xsg_test = [Xsg[0][20:], Xsg[1][20:]]
+Xsg = make_data("gaussian", 250)
+Xsg_train, Xsg_test = train_test_split(Xsg, test_size=0.3, random_state=42)
 
-
-kcca_g = KCCA(ktype="gaussian", sigma=1.0, n_components=2, reg=0.01)
-kcca_g.fit(Xsg)
-gausskcca = kcca_g.transform(Xsg)
+kcca_g = KCCA(ktype="gaussian", sigma=1.0, n_components=4, reg=0.01)
+kcca_g.fit(Xsg_train)
+gausskcca = kcca_g.transform(Xsg_test)
 
 ###############################################################################
 # Original Data Plotted
@@ -182,16 +180,15 @@ gausskcca = kcca_g.transform(Xsg)
 crossviews_plot(Xsg, ax_ticks=False, ax_labels=True, equal_axes=True)
 
 ###############################################################################
-# Transformed Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^
+# Transformed Test Data Plotted
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 crossviews_plot(gausskcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 
-# Now, we assess the canonical correlations achieved on the testing data
+# Now, we assess the canonical correlations achieved on the testing data by
+# printing the canonical correlations for each component
 
 
 stats = kcca_g.get_stats()
-
-print("Below are the canonical correlations for each components:")
 print(stats['r'])

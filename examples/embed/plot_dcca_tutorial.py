@@ -4,10 +4,13 @@ Deep CCA (DCCA)
 ===============
 """
 
+
+import numpy as np
 from mvlearn.embed import DCCA
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot
-import numpy as np
+from mvlearn.model_selection import train_test_split
+
 
 ###############################################################################
 # Polynomial-Transformed Latent Correlation
@@ -25,28 +28,18 @@ gm = GaussianMixture(n_samples, means, covariances, random_state=42,
                      shuffle=True, shuffle_random_state=42)
 latent, y = gm.get_Xy(latents=True)
 
-# The latent data is plotted against itself to reveal the underlying
-# distribtution.
-
+# Plot latent data against itself to reveal the underlying distribtution.
 crossviews_plot([latent, latent], labels=y,
                 title='Latent Variable', equal_axes=True)
 
-# The noisy latent variable (view 1) is plotted against the transformed latent
-# variable (view 2), an example of a dataset with two views.
 
-
-# Split data into train and test segments
+# Split data into train and test sets
 Xs, y = gm.sample_views(transform='poly', n_noise=2).get_Xy()
-Xs_train = []
-Xs_test = []
-max_row = int(Xs[0].shape[0] * .7)
-for X in Xs:
-    Xs_train.append(X[:max_row, :])
-    Xs_test.append(X[max_row:, :])
-y_train = y[:max_row]
-y_test = y[max_row:]
+Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
+                                                      random_state=42)
 
 
+# Plot the testing data after polynomial transformation
 crossviews_plot(Xs_test, labels=y_test,
                 title='Testing Data View 1 vs. View 2 '
                       '(Polynomial Transform + noise)',
@@ -62,11 +55,11 @@ crossviews_plot(Xs_test, labels=y_test,
 # Define parameters and layers for deep model
 features1 = Xs_train[0].shape[1]  # Feature sizes
 features2 = Xs_train[1].shape[1]
-layers1 = [1024, 512, 4]  # nodes in each hidden layer and the output size
-layers2 = [1024, 512, 4]
+layers1 = [256, 256, 4]  # nodes in each hidden layer and the output size
+layers2 = [256, 256, 4]
 
 dcca = DCCA(input_size1=features1, input_size2=features2, n_components=4,
-            layer_sizes1=layers1, layer_sizes2=layers2)
+            layer_sizes1=layers1, layer_sizes2=layers2, epoch_num=500)
 dcca.fit(Xs_train)
 Xs_transformed = dcca.transform(Xs_test)
 
@@ -100,16 +93,10 @@ gm = GaussianMixture(n_samples, means, covariances, random_state=42,
 
 # Split data into train and test segments
 Xs, y = gm.sample_views(transform='sin', n_noise=2).get_Xy()
-Xs_train = []
-Xs_test = []
-max_row = int(Xs[0].shape[0] * .7)
-for X in Xs:
-    Xs_train.append(X[:max_row, :])
-    Xs_test.append(X[max_row:, :])
+Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
+                                                      random_state=42)
 
-y_train = y[:max_row]
-y_test = y[max_row:]
-
+# Plot the testing data against itself after polynomial transformation
 crossviews_plot(Xs_test, labels=y_test,
                 title='Testing Data View 1 vs. View 2 '
                       '(Polynomial Transform + noise)',
@@ -125,11 +112,11 @@ crossviews_plot(Xs_test, labels=y_test,
 # Define parameters and layers for deep model
 features1 = Xs_train[0].shape[1]  # Feature sizes
 features2 = Xs_train[1].shape[1]
-layers1 = [1024, 512, 4]  # nodes in each hidden layer and the output size
-layers2 = [1024, 512, 4]
+layers1 = [256, 256, 4]  # nodes in each hidden layer and the output size
+layers2 = [256, 256, 4]
 
 dcca = DCCA(input_size1=features1, input_size2=features2, n_components=4,
-            layer_sizes1=layers1, layer_sizes2=layers2)
+            layer_sizes1=layers1, layer_sizes2=layers2, epoch_num=500)
 dcca.fit(Xs_train)
 Xs_transformed = dcca.transform(Xs_test)
 
@@ -138,6 +125,7 @@ Xs_transformed = dcca.transform(Xs_test)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We can see that it has uncovered the latent correlation between views.
+
 
 crossviews_plot(Xs_transformed, labels=y_test,
                 title='Transformed Testing Data View 1 vs. View 2 '
