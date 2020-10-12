@@ -17,8 +17,7 @@ import numpy as np
 from sklearn import model_selection as ms
 
 
-def train_test_split(*inputs, *, test_size=None, train_size=None,
-                     random_state=None, shuffle=True, stratify=None):
+def train_test_split(*inputs, **options):
     r'''
     Splits multi-view data into random train and test subsets. This
     utility wraps the train_test_split function from
@@ -120,19 +119,15 @@ def train_test_split(*inputs, *, test_size=None, train_size=None,
     [0]
     '''
 
-    kwargs = dict(dict(test_size=test_size, train_size=train_size,
-                       random_state=random_state, shuffle=shuffle,
-                       stratify=stratify))
-
     splitting = []
     for a in inputs:
         splits = None
         if isinstance(a, list) or (isinstance(a, np.ndarray) and
                                    a.ndim == 3):
-            splits = ms.train_test_split(*a, **kwargs)
+            splits = ms.train_test_split(*a, **options)
             splits = (splits[::2], splits[1::2])
         else:
-            splits = ms.train_test_split(a, **kwargs)
+            splits = ms.train_test_split(a, **options)
 
         for split in splits:
             splitting.append(split)
