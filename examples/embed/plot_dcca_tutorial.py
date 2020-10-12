@@ -34,6 +34,7 @@ crossviews_plot([latent, latent], labels=y,
 # Split data into train and test sets
 Xs, y = gm.sample_views(transform='poly', n_noise=2).get_Xy()
 Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
+                                                      random_state=42)
 
 
 crossviews_plot(Xs_test, labels=y_test,
