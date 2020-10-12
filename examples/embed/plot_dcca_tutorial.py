@@ -37,6 +37,7 @@ Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
                                                       random_state=42)
 
 
+# Plot the testing data after polynomial transformation
 crossviews_plot(Xs_test, labels=y_test,
                 title='Testing Data View 1 vs. View 2 '
                       '(Polynomial Transform + noise)',
