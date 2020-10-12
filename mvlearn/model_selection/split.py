@@ -17,7 +17,7 @@ import numpy as np
 from sklearn import model_selection as ms
 
 
-def train_test_split(*inputs, test_size=None, train_size=None,
+def train_test_split(*inputs, *, test_size=None, train_size=None,
                      random_state=None, shuffle=True, stratify=None):
     r'''
     Splits multi-view data into random train and test subsets. This

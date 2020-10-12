@@ -22,11 +22,11 @@ performance. The only method as of now is 'kettenring-like'.
 """
 
 
+import numpy as np
+from scipy import stats
 from mvlearn.embed import KCCA
 from mvlearn.model_selection import train_test_split
 from mvlearn.plotting import crossviews_plot
-import numpy as np
-from scipy import stats
 
 
 # Function creates Xs, a list of two views of data with a linear relationship,

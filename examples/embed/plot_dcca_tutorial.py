@@ -4,11 +4,13 @@ Deep CCA (DCCA)
 ===============
 """
 
+
+import numpy as np
 from mvlearn.embed import DCCA
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot
 from mvlearn.model_selection import train_test_split
-import numpy as np
+
 
 ###############################################################################
 # Polynomial-Transformed Latent Correlation
