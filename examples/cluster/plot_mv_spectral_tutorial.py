@@ -3,6 +3,10 @@
 Multiview Spectral Clustering
 =============================
 
+This tutorial demonstrates how to use multiview spectral clustering
+to cluster multiview datasets, showing results on both synthetic data
+and the UCI multiview digits dataset.
+
 """
 
 import warnings

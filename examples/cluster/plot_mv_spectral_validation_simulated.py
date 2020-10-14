@@ -1,7 +1,12 @@
 """
 ============================================
-Multiview vs. singleview Spectral Clustering
+Multiview vs. Singleview Spectral Clustering
 ============================================
+
+This tutorial compares multiview and singleview spectral clustering on
+synthetic multiview data. By adjusting the distributions of the data we
+build intuition about scenarios in which multiview learning provides
+advantages.
 
 """
 

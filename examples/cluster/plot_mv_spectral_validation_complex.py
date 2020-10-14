@@ -1,10 +1,17 @@
 """
-========================================================================\
+=========================================================\
 ===================
-Assessing the Conditionally independence views requirement of Multiview \
+Impact of Conditional Independence of Views on Multiview \
 Spectral Clustering
-========================================================================\
+=========================================================\
 ===================
+
+The co-training framework relies on the fundamental assumption that data
+views are conditionally independent. In this tutorial we test that
+assumption by examining the multiview spectral clustering algorithm,
+which is based on the co-training framework, on synthetic multiview
+datasets under different conditions related to independence
+between the views conditioned on true class labels.
 
 """
 

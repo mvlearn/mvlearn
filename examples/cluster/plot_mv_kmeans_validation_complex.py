@@ -1,10 +1,17 @@
 """
-==============================================================================
-Assessing the conditionally independence views requirement of Multiview KMeans
-==============================================================================
+==========================================================================
+Impact of Conditional Independence of Views on Multiview KMeans Clustering
+==========================================================================
+
+The co-Expectation Maximization framework (and co-training), relies on the
+fundamental assumption that data views are conditionally independent.
+In this tutorial we test that assumption by examining the multiview
+k-means clustering algorithm on synthetic multiview
+datasets under different conditions related to independence
+between the views conditioned on true class labels.
 
 In the following experiments, we will perform singleview kmeans clustering
-on the two views separately and on them concatenated together. We also
+on two views separately and on them concatenated together. We also
 perform multiview clustering using the multiview algorithm. We will also
 compare the performance of multiview and singleview versions of kmeans
 clustering. We will evaluate the purity of the resulting clusters from each

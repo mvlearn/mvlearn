@@ -3,6 +3,9 @@
 Multiview Spherical KMeans
 ==========================
 
+This tutorial demonstrates the multiview spherical k-means algorithm
+on 2 views of the UCI multiview digits dataset.
+
 """
 
 
