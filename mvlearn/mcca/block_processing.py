@@ -79,39 +79,32 @@ def initial_svds(
     reduced = [None for b in range(n_blocks)]
     for b in range(n_blocks):
 
-        # if signal_ranks[b] is None and we want unnormalized scores
-        # then we don't bother with the SVD -- TODO: is this the
-        # right behavior we want
-        if signal_ranks[b] is None and not normalized_scores:
-            reduced[b] = Xs[b]
-
+        if precomp_svds[b] is None:
+            U_b, D_b, V_b = svd_wrapper(Xs[b], rank=signal_ranks[b])
         else:
-            if precomp_svds[b] is None:
-                U_b, D_b, V_b = svd_wrapper(Xs[b], rank=signal_ranks[b])
-            else:
-                U_b, D_b, V_b = precomp_svds[b]
+            U_b, D_b, V_b = precomp_svds[b]
 
-            # possibly threshold SVD components
-            if sval_thresh[b] is not None:
-                to_keep = D_b >= sval_thresh[b]
-                if sum(to_keep) == 0:
-                    raise ValueError(
-                        "all singular values of block {}"
-                        "where thresholded at {}. Either this"
-                        "block is zero or you should try a"
-                        " smaller threshold value".format(b, sval_thresh[b])
-                    )
+        # possibly threshold SVD components
+        if sval_thresh[b] is not None:
+            to_keep = D_b >= sval_thresh[b]
+            if sum(to_keep) == 0:
+                raise ValueError(
+                    "all singular values of block {}"
+                    "where thresholded at {}. Either this"
+                    "block is zero or you should try a"
+                    " smaller threshold value".format(b, sval_thresh[b])
+                )
 
-                U_b = U_b[:, to_keep]
-                D_b = D_b[to_keep]
-                V_b = V_b[:, to_keep]
+            U_b = U_b[:, to_keep]
+            D_b = D_b[to_keep]
+            V_b = V_b[:, to_keep]
 
-            svds[b] = U_b, D_b, V_b
+        svds[b] = U_b, D_b, V_b
 
-            if normalized_scores:
-                reduced[b] = U_b
-            else:
-                reduced[b] = U_b * D_b
+        if normalized_scores:
+            reduced[b] = U_b
+        else:
+            reduced[b] = U_b * D_b
 
     return reduced, svds, centerers
 
