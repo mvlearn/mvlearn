@@ -129,6 +129,9 @@ workflows:
   default:
     jobs:
       - build_docs
+      - add_ssh_keys:
+          fingerprints:
+            - "0f:02:d7:6c:c2:20:94:c9:3f:49:40:4c:46:39:5a:81"
       - deploy:
           requires:
             - build_docs
