@@ -5,7 +5,7 @@ Benchmarking Multiview vs. Singlview Spherical KMeans
 
 In this tutorial we benchmark multiview spherical kmeans compared to
 the singleview version of the same algorithm. We analyze what data
-distributions lead to better performance by each model. 
+distributions lead to better performance by each model.
 
 Note, this tutorial compares performance against the SphericalKMeans
 function from the spherecluster package which is not a installed dependency

@@ -10,7 +10,8 @@ graphs. The embedded latent positions live in the same canonical space allowing
 us to easily compare the embedded graphs to each other without aligning
 results. You can read more about both the implementation of Omnibus embedding
 used and the algorithm itself from the
-`graspologic <https://github.com/microsoft/graspologic/blob/dev/graspologic/embed/omni.py>`_
+`graspologic <https://github.com/microsoft/graspologic/blob/dev/\
+graspologic/embed/omni.py>`_
 package.
 
 Unlike graphs however, multiview data can consist of arbitrary arrays of

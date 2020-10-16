@@ -19,6 +19,7 @@ script:
   - pytest tests/ --cov=./mvlearn/
   - pycodestyle mvlearn/
   - flake8 mvlearn
+  - flake8 examples
 
 after_success:
   - codecov

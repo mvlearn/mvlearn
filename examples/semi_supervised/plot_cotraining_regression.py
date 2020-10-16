@@ -60,7 +60,7 @@ not_null = [i for i in range(len(y_train)) if not np.isnan(y_train[i])]
 
 
 fig = plt.figure()
-ax = plt.axes(projection="3d")
+ax = plt.axes(projection=Axes3D.name)
 
 z_points = y[lab_samples]
 x_points = X[lab_samples, 0]

@@ -14,7 +14,6 @@ run-time from O(n^3) to O(nm^2).
 """
 
 
-
 import time
 import matplotlib.cbook
 import warnings

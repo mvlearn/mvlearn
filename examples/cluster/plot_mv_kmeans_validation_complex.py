@@ -1,7 +1,7 @@
 """
-==========================================================================
-Impact of Conditional Independence of Views on Multiview KMeans Clustering
-==========================================================================
+================================================================
+Conditional Independence of Views on Multiview KMeans Clustering
+================================================================
 
 The co-Expectation Maximization framework (and co-training), relies on the
 fundamental assumption that data views are conditionally independent.
@@ -205,7 +205,6 @@ def get_cd_data(num_samples=500):
 
     # Set class pairings as described in the multiview clustering paper
     view1_classes = [1, 2, 3]
-    view2_classes = [4, 5, 6]
 
     # Create lists to hold data and labels for each of the classes across
     # 2 different views

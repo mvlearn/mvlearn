@@ -209,8 +209,8 @@ def plot2DEmbeddings(embeddings, labels):
         [190, 190, 110]
         ]
     origColors = (np.array(origColors)) / 255
-    for l in labels.cpu().numpy():
-        pointColors.append(tuple(origColors[l].tolist()))
+    for lab_l in labels.cpu().numpy():
+        pointColors.append(tuple(origColors[lab_l].tolist()))
 
     fig, ax = plt.subplots()
     for i, label in enumerate(np.unique(labels)):

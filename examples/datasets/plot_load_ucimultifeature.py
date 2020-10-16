@@ -41,7 +41,7 @@ quick_visualize(full_data, labels=full_labels, title="10-class data")
 # -------------------------------
 #
 # If we want only a binary classification setup, we can choose to only load
-# 2 of the classes. Also, we can shuffle the data and set the seed for 
+# 2 of the classes. Also, we can shuffle the data and set the seed for
 # reproducibility. Then, we visualize in 2D.
 
 
