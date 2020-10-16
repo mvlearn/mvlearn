@@ -205,6 +205,5 @@ sphinx_gallery_conf = {
     'reference_url': {
         'mvlearn': None,
     },
-    # 'filename_pattern': '/plot_',
     'ignore_pattern': r'noinclude\.py'
 }
