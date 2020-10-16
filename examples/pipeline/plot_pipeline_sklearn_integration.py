@@ -16,6 +16,7 @@ import numpy as np
 
 ###############################################################################
 # Create the data
+# ---------------
 
 n_samples = 100
 n_features1 = 20
@@ -30,7 +31,7 @@ Xs = [X1, X2]
 
 ###############################################################################
 # ViewTransformer
-# ===============
+# ---------------
 #
 # `mvlearn.preprocessing.ViewTransformer` is a handy tool to apply the same
 # `sklearn` transformer to each view of the multiview dataset. For instance, it
@@ -64,7 +65,7 @@ print([X.shape for X in Xs_transformed])
 
 ###############################################################################
 # Mergers
-# =======
+# -------
 #
 # At the end of a multiview machine learning pipeline, it is sometimes needed
 # to transform the multiview dataset in a single view dataset. All `sklearn`
@@ -86,8 +87,8 @@ print(X_transformed.shape)
 # This allows for simple integration in scikit-learn pipelines.
 
 ###############################################################################
-# Pipeline example: group-ICA
-# ===========================
+# Pipeline Example: group-ICA
+# ---------------------------
 #
 # As a simple illustration, we now show how easy it is to code group
 # independent component analysis (groupICA) from scratch using `mvlearn`.

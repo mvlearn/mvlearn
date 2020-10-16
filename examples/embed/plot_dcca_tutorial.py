@@ -1,7 +1,18 @@
 """
-===============
-Deep CCA (DCCA)
-===============
+========================
+Deep CCA (DCCA) Tutorial
+========================
+
+Deep CCA is an extension of Canonical Correlation Analysis which uses 2
+Deep Neural Networks to transform each view into a lower dimensional space
+which is highly correlated with the other. This can be used to uncover
+latent nonlinear relations between views and is often used for feature
+learning.
+
+This tutorial uses a synthetic multiview dataset which contains
+latent information shared between the views, and DCCA is used to uncover
+this information in a low dimensional embedding.
+
 """
 
 
@@ -46,7 +57,7 @@ crossviews_plot(Xs_test, labels=y_test,
                 equal_axes=True)
 
 ###############################################################################
-# Fit DCCA model to uncover latent distribution
+# Fit DCCA Model to Uncover Latent Distribution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # The output dimensionality is still 4.
@@ -64,7 +75,7 @@ dcca.fit(Xs_train)
 Xs_transformed = dcca.transform(Xs_test)
 
 ###############################################################################
-# Visualize the transformed data
+# Visualize the Transformed Data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We can see that it has uncovered the latent correlation between views.
@@ -103,7 +114,7 @@ crossviews_plot(Xs_test, labels=y_test,
                 equal_axes=True)
 
 ###############################################################################
-# Fit DCCA model to uncover latent distribution
+# Fit DCCA Model to Uncover Latent Distribution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # The output dimensionality is still 4.
@@ -121,7 +132,7 @@ dcca.fit(Xs_train)
 Xs_transformed = dcca.transform(Xs_test)
 
 ###############################################################################
-# Visualize the transformed data
+# Visualize the Transformed Data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We can see that it has uncovered the latent correlation between views.

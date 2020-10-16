@@ -3,11 +3,12 @@
 Comparing CCA Variants
 ======================
 
-A comparison of Kernel Canonical Correlation Analysis (KCCA) with three
-different types of kernel to Deep Canonical Correlation Analysis (DCCA).
-Each learns and computes kernels suitable for different situations. The point
-of this tutorial is to illustrate, in toy examples, the rough intuition as to
-when such methods work well and generate linearly correlated projections.
+This tutorial shows a comparison of Kernel Canonical Correlation Analysis
+(KCCA) with three different types of kernel to Deep Canonical Correlation
+Analysis (DCCA). Each learns and computes kernels suitable for different
+situations. The point of this tutorial is to illustrate, in toy examples,
+the rough intuition as to when such methods work well and generate
+linearly correlated projections.
 
 The simulated latent data has two signal dimensions draw from independent
 Gaussians. Two views of data were derived from this.

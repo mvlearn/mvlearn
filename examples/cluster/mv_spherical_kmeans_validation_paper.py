@@ -1,6 +1,6 @@
 """
 ===================================================
-Multiview Spherical KMeans on the Newsgroup dataset
+Multiview Spherical KMeans on the Newsgroup Dataset
 ===================================================
 
 Here we will validate the implementation of multi-view spherical kmeans by
@@ -8,7 +8,7 @@ replicating the right side of figure 3 from the Multi-View Clustering paper
 by Bickel and Scheffer [1].
 
 [1] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings of the 4th
-    IEEE International Conference on Data Mining, pp. 19–26)
+IEEE International Conference on Data Mining, pp. 19–26)
 
 """
 

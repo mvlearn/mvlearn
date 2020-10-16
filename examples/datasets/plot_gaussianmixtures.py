@@ -1,20 +1,20 @@
 """
-===========================
-Data from Gaussian Mixtures
-===========================
+================================================
+Generating Multiview Data from Gaussian Mixtures
+================================================
 
 In this example we show how to simulate multiview data from Gaussian
-mixtures and plot them using a crossviews plot.
+mixtures and plot the views against each other using a crossviews plot.
 
 """
 
+import numpy as np
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot
-import numpy as np
 
 # Latent variables are sampled from two multivariate Gaussians with equal
-# prior probability. Then a polynomial transformation is applied and noise is
-# added independently to both the transformed and untransformed latents.
+# prior probability. Then a polynomial transformation is applied and noise
+# is added independently to both the transformed and untransformed latents.
 
 n_samples = 100
 centers = [[0, 1], [0, -1]]

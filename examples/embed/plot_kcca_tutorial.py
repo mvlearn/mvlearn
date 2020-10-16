@@ -1,9 +1,14 @@
 """
-=================
-Kernel CCA (KCCA)
-=================
+==========================
+Kernel CCA (KCCA) Tutorial
+==========================
 
-This algorithm runs KCCA on two views of data. The kernel implementations,
+KCCA is a variant of Canonical Correlation Analysis that can use a
+nonlinear kernel to uncover nonlinear correlations between views of data
+and thereby transform data into a lower dimensional space which captures
+the correlated information between views.
+
+This tutorial runs KCCA on two views of data. The kernel implementations,
 parameter 'ktype', are linear, polynomial and gaussian. Polynomial kernel has
 two parameters: 'constant', 'degree'. Gaussian kernel has one parameter:
 'sigma'.
@@ -12,7 +17,7 @@ Useful information, like canonical correlations between transformed data and
 statistical tests for significance of these correlations can be computed using
 the get_stats() function of the KCCA object.
 
-When initializing KCCA, you can also initialize the following parameters:
+When initializing KCCA, you can also set the following parameters:
 the number of canonical components 'n_components', the regularization
 parameter 'reg', the decomposition type 'decomposition', and the decomposition
 method 'method'. There are two decomposition types: 'full' and 'icd'. In some
@@ -78,7 +83,7 @@ def make_data(kernel, N):
 ###############################################################################
 # Linear kernel implementation
 # ----------------------------
-
+#
 # Here we show how KCCA with a linear kernel can uncover the highly correlated
 # latent distribution of the 2 views which are related with a linear
 # relationship, and then transform the data into that latent space. We use an

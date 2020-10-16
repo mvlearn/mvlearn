@@ -1,7 +1,7 @@
 """
-=======================================================================
+======================================================
 Multiview Coregularized Spectral Clustering Comparison
-=======================================================================
+======================================================
 
 Here we will compare the performance of the Co-Regularized multiview and
 singleview spectral clustering. We will evaluate the purity of

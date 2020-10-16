@@ -1,7 +1,7 @@
 """
-================
-Multiview KMeans
-================
+=========================
+Multiview KMeans Tutorial
+=========================
 
 In this tutorial we demonstrate how to use multiview k-means clustering
 in *mvlearn* by clustering a 5-class dataset from the UCI multiview

@@ -1,7 +1,12 @@
 """
-==========================================
-SplitAE embeddings on multiview MNIST data
-==========================================
+====================================================
+Learning Embeddings on Multiview MNIST with SplitAE
+====================================================
+
+In this example we demonstrate how to learn low dimensional embeddings
+of a 2-view dataset constructed by taking MNIST and either rotating
+the images or adding noise. We use the Split Autoencoder model
+to learn a latent embedding of the data.
 
 """
 
@@ -27,7 +32,7 @@ from mvlearn.embed import SplitAE
 plt.style.use("default")
 
 ###############################################################################
-# Setup the multiview MNIST data
+# Setup the Multiview MNIST Data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Let's make a simple two view dataset based on MNIST as described in
@@ -140,8 +145,6 @@ splitae = SplitAE(hidden_size=1024, num_hidden_layers=2, embed_size=10,
                   training_epochs=10, batch_size=128, learning_rate=0.001,
                   print_info=False, print_graph=True)
 splitae.fit([view1, view2], validation_Xs=[testView1, testView2])
-# if the named parameter validationXs is passed with held-out data, then .fit
-# will print validation error as well.
 
 # We can see from the graph that test error did not diverge from train error,
 # which means we're not overfitting, which is good! Let's see the actual view1
@@ -165,17 +168,25 @@ def plotRow(title, view):
     plt.title(title)
     plt.show()
 
-
-plotRow("view 1", testView1)
-plotRow("reconstructed view 1", testView1Reconstruction)
-plotRow("predicted view 2", testView2Prediction)
-
+###############################################################################
+# Plot the Outputs of SplitAE
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Notice the view 2 predictions. Had our view2 images been randomly rotated,
 # the predictions would have a hazy circle, since the best guess would be the
 # mean of all the rotated digits. Since we don't rotate our view2 images, we
 # instead get something that's only a bit hazy around the edges -- corresonding
 # to the mean of all the non-rotated digits.
 
+
+plotRow("view 1", testView1)
+plotRow("reconstructed view 1", testView1Reconstruction)
+plotRow("predicted view 2", testView2Prediction)
+
+###############################################################################
+# Visualize Test Embeddings
+# ^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Next let's visualize our 20d test embeddings with T-SNE and see if they
 # represent our original underlying representation -- the digits from 0-9 -- of
 # which we made two views of. In the perfect scenario, each of the 10,000
@@ -216,8 +227,9 @@ def plot2DEmbeddings(embeddings, labels):
 plot2DEmbeddings(tsneEmbeddings, testLabels)
 
 ###############################################################################
-# Check reconstruction with tSNE
+# Check Reconstruction with tSNE
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Lets check the variability of multiple TSNE runs:
 
 for i in range(3):

@@ -2,6 +2,12 @@
 =====================================
 2-View Semi-Supervised Classification
 =====================================
+
+In this tutorial, we use the co-training classifier to do semi-supervised
+binary classification on a 2-view dataset. Only 2% of the data is labeled,
+but by using semi-supervised co-training, we still achieve good accuracy
+and we do much better than using single-view methods trained on only the
+labeled samples.
 """
 
 import numpy as np
@@ -48,7 +54,6 @@ print("Remaining labeled sample labels: " + str(labels_train[not_removed]))
 # learning.
 
 # Single view semi-supervised learning
-
 gnb0 = GaussianNB()
 gnb1 = GaussianNB()
 gnb2 = GaussianNB()
@@ -75,7 +80,6 @@ print("Naive Concatenated View Accuracy: {0:.3f}\n".format(
 
 # Multi-view co-training semi-supervised learning
 # Train a CTClassifier on all the labeled and unlabeled training data
-
 ctc = CTClassifier()
 ctc.fit([View0_train, View1_train], labels_train)
 y_pred_ct = ctc.predict([View0_test, View1_test])
@@ -120,7 +124,6 @@ print("Naive Concatenated View Accuracy: {0:.3f}\n".format(
     accuracy_score(labels_test, y_pred2)))
 
 # Multi-view co-training semi-supervised learning
-
 rfc0 = RandomForestClassifier(n_estimators=100, bootstrap=True)
 rfc1 = RandomForestClassifier(n_estimators=6, bootstrap=False)
 ctc = CTClassifier(rfc0, rfc1, p=2, n=2, unlabeled_pool_size=20, num_iter=100)
@@ -131,7 +134,6 @@ print(f"Co-Training Accuracy: \
     {accuracy_score(labels_test, y_pred_ct):.3f}")
 
 # Get the prediction probabilities for all the examples
-
 y_pred_proba = ctc.predict_proba([View0_test, View1_test])
 print("Full y_proba shape = " + str(y_pred_proba.shape))
 print("\nFirst 10 class probabilities:\n")

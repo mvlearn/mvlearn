@@ -1,6 +1,6 @@
 """
 =======================
-Omnbius Graph embedding
+Omnbius Graph Embedding
 =======================
 
 This demo shows you how to run Omnibus Embedding on multiview data. Omnibus
@@ -10,8 +10,9 @@ graphs. The embedded latent positions live in the same canonical space allowing
 us to easily compare the embedded graphs to each other without aligning
 results. You can read more about both the implementation of Omnibus embedding
 used and the algorithm itself from the
-[graspologic](https://github.com/microsoft/graspologic/blob/dev/graspologic/\
-    embed/omni.py) package.
+`graspologic <https://github.com/microsoft/graspologic/blob/dev/graspologic/embed/omni.py>`_
+package.
+
 Unlike graphs however, multiview data can consist of arbitrary arrays of
 different dimensions. This represents an additional challenge of comparing the
 information contained in each view. An effective solution is to first compute
@@ -34,7 +35,7 @@ from matplotlib import pyplot as plt
 from mvlearn.embed import omnibus
 
 ###############################################################################
-# Case 1: two identical views
+# Case 1: Two Identical Views
 # ---------------------------
 # For this setting, we generate two identical numpy matrices as our views.
 # Since the information is identical in each view, the resulting embedded views
@@ -52,7 +53,7 @@ embedder = omnibus.Omnibus()
 embeddings = embedder.fit_transform(Xs)
 
 ###############################################################################
-# Visualizing the results
+# Visualizing the Results
 # ^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -65,7 +66,8 @@ ax.scatter(Xhat2[:, 0], Xhat2[:, 1], marker='.',
            label='View 2', cmap="tab10", s=100)
 plt.legend(fontsize=20)
 
-# Plot lines between matched pairs of points
+# Plot lines between matched pairs of points.
+# As expected, the embeddings are identical since the views are the same.
 for i in range(50):
     idx = np.random.randint(len(Xhat1), size=1)
     ax.plot([Xhat1[idx, 0], Xhat2[idx, 0]], [
@@ -76,11 +78,10 @@ plt.tight_layout()
 ax.set_title('Latent Positions from Omnibus Embedding', fontsize=20)
 plt.show()
 
-# As expected, the embeddings are identical since the views are the same.
-
 ###############################################################################
-# Case 2: two unidentical views
+# Case 2: Two Unidentical Views
 # -----------------------------
+#
 # Now let's see what happens when the views are not identical.
 
 
@@ -95,8 +96,12 @@ embedder = omnibus.Omnibus()
 embeddings = embedder.fit_transform(Xs)
 
 ###############################################################################
-# Visualizing the results
+# Visualizing the Results
 # ^^^^^^^^^^^^^^^^^^^^^^^
+#
+# This time, when we view the embeddings, we see that the views are clearly
+# separated suggeseting the views represent different information.
+# Lines are drawn between corresponding samples in the two views.
 
 
 Xhat1, Xhat2 = embeddings
@@ -119,17 +124,13 @@ plt.tight_layout()
 ax.set_title('Latent Positions from Omnibus Embedding', fontsize=20)
 plt.show()
 
-# Here, we see that the views are clearly separated suggeseting the views
-# represent different information. Lines are drawn between corresponding
-# samples in the two views.
-
 ###############################################################################
 # UCI Digits Dataset
 # ------------------
-# Finally, we run Omnibus on the [UCI Multiple Features Digits
-# Dataset](https://archive.ics.uci.edu/ml/datasets/Multiple+Features). We use
-# the Fourier coefficient and profile correlation views (View 1 and 2
-# respectively).
+#
+# Finally, we run Omnibus on the UCI Multiple Features Digits
+# Dataset. We use the Fourier coefficient and profile correlation
+# views (View 1 and 2 respectively) as a 2-view dataset.
 
 
 full_data, full_labels = load_UCImultifeature()
@@ -143,8 +144,9 @@ embedder = omnibus.Omnibus()
 embeddings = embedder.fit_transform(Xs)
 
 ###############################################################################
-# Visualizing the results
+# Visualizing the Results
 # ^^^^^^^^^^^^^^^^^^^^^^^
+#
 # This time, the points in the plot are colored by digit (0-9). The marker
 # symbols denote which view each sample is from. We randomly plot 500 samples
 # to make the plot more readable.
@@ -166,7 +168,6 @@ ax.scatter(Xhat2[:, 0], Xhat2[:, 1], marker='o',
            label='View 2 (216 profile correlations)', c=labels,
            cmap="tab10", s=100)
 plt.legend(fontsize=20)
-# fig.colorbar(ct)
 
 # Plot lines between matched pairs of points
 for i in range(50):

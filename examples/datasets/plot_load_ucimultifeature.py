@@ -3,6 +3,17 @@
 Loading and Viewing the UCI Multiple Features Dataset
 =====================================================
 
+In this tutorial we demonstrate how to load and quickly visualize the
+Multiple Features Dataset [1] from the UCI repository, which is available
+in mvlearn. This dataset can be a good tool for analyzing the
+effectiveness of multiview algorithms. It contains 6 views of handwritten
+digit images, thus allowing for analysis of multiview algorithms in
+multiclass or unsupervised tasks.
+
+[1] M. van Breukelen, R.P.W. Duin, D.M.J. Tax, and J.E. den Hartog,
+Handwritten digit recognition by combined classifiers,
+Kybernetika, vol. 34, no. 4, 1998, 381-386
+
 """
 
 from mvlearn.datasets import load_UCImultifeature
@@ -10,9 +21,10 @@ from mvlearn.plotting import quick_visualize
 
 ###############################################################################
 # Load the data and labels
-# ^^^^^^^^^^^^^^^^^^^^^^^^
-# We can either load the entire dataset (all 10 digits) or select certain
-# digits. Then, visualize in 2D.
+# ------------------------
+#
+# Here We can load the entire dataset (all 10 digits). Then, visualize in 2D.
+
 
 # Load entire dataset
 full_data, full_labels = load_UCImultifeature()
@@ -25,14 +37,14 @@ print("Labels shape = " + str(full_labels.shape))
 quick_visualize(full_data, labels=full_labels, title="10-class data")
 
 ###############################################################################
-# Load only 2 classes of the data
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Load only 2 Classes of the Data
+# -------------------------------
 #
-# Also, shuffle the data and set the seed for reproducibility. Then, visualize
-# in 2D.
+# If we want only a binary classification setup, we can choose to only load
+# 2 of the classes. Also, we can shuffle the data and set the seed for 
+# reproducibility. Then, we visualize in 2D.
 
-# Load only the examples labeled 0 or 1, and shuffle them,
-# but set the random_state for reproducibility
+
 partial_data, partial_labels = load_UCImultifeature(
     select_labeled=[0, 1], shuffle=True, random_state=42)
 

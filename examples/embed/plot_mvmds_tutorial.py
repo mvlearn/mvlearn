@@ -1,7 +1,7 @@
 """
-================================
-Multidimensional Scaling (MVMDS)
-================================
+=========================================
+Multidimensional Scaling (MVMDS) Tutorial
+=========================================
 
 MVMDS is a useful multiview dimensionaltiy reduction algorithm that allows
 the user to perform Multidimensional Scaling on multiple views at the same
@@ -102,19 +102,14 @@ plt.show()
 # by MVMDS to create a strong representation of the data *(Note MVMDS only uses
 # the fit_transform function to properly return the correct components)*
 #
-#
 # *Note: Each color represents a unique number class*
-#
-#
 
 
 # perform mvmds
 mvmds = MVMDS(n_components=5)
 Components = mvmds.fit_transform(Xs)
 
-
 # Plot MVMDS images
-
 plt.style.use('seaborn')
 
 color_map = [sns.color_palette("Set2", 10)[int(i)] for i in y]
@@ -138,7 +133,6 @@ ax.set_title('First 4 MVMDS Components Computed With 6 Views (No Noise)')
 
 
 # PCA Plots
-
 pca = PCA(n_components=6)
 pca_Components = pca.fit_transform(Xs[0])
 
