@@ -100,6 +100,9 @@ jobs:
               if [ ! -d ~/mvlearn.github.io ]; then
                 git clone git@github.com:/mvlearn/mvlearn.github.io.git ~/mvlearn.github.io --depth=1
               fi
+        - add_ssh_keys:
+            fingerprints:
+              - "0f:02:d7:6c:c2:20:94:c9:3f:49:40:4c:46:39:5a:81"
         - run:
             name: Deploy docs
             command: |
