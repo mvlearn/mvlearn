@@ -1,7 +1,7 @@
 """
-======================================
-Plotting multiview data with crossplot
-======================================
+==============================================
+Plotting Multiview Data with a Cross-view Plot
+==============================================
 
 In many cases with multi-view data, especially after use of an embedding
 algorithm, one is interested in visualizing two views across dimensions.

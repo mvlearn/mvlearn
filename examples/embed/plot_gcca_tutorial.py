@@ -1,7 +1,12 @@
 """
-=================================================
-Generalized Canonical Correlation Analysis (GCCA)
-=================================================
+==========================================================
+Generalized Canonical Correlation Analysis (GCCA) Tutorial
+==========================================================
+
+In this tutorial we demonstrate the use of GCCA to uncover latent correlated
+information across views when we have more than 2 views. In this case, we
+use 3 views from the UCI Multiple Features Dataset.
+
 """
 
 from mvlearn.datasets import load_UCImultifeature
@@ -11,17 +16,16 @@ from mvlearn.plotting import crossviews_plot
 ###############################################################################
 # Load Data
 # ---------
+#
 # We load three views from the UCI handwritten digits multi-view data set.
 # Specificallym the Profile correlations, Karhunen-Love coefficients, and pixel
 # averages from 2x3 windows.
 
 
-# Load full dataset, labels not needed
-Xs, y = load_UCImultifeature()
-Xs = [Xs[1], Xs[2], Xs[3]]
+# Load the data
+Xs, y = load_UCImultifeature(views=[1, 2, 3])
 
-
-# Check data
+# Inspect the dataset
 print(f'There are {len(Xs)} views.')
 print(f'There are {Xs[0].shape[0]} observations')
 print(f'The feature sizes are: {[X.shape[1] for X in Xs]}')

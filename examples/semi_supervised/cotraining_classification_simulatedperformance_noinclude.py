@@ -1,31 +1,35 @@
 """
-======================================================
-Co-training performance in various simulated scenarios
-======================================================
+==============================================
+Co-training Performance in Simulated Scenarios
+==============================================
 
-Multiview vs. singleview classifier performance:
+In this tutorial we explore the performance of the co-training classifier
+in different simulated scenarios to understand how the data distributions
+affect the utility of co-training in semi-supervised learning.
+
+Specifically, we explore multiview vs. singleview classifier performance:
 - when one view is totally redundant
 - when one view is inseparable
 - when labeled data is excellent
 - when labeled data is not very separable
-- when data is overlapping](#Performance-when-data-is-overlapping)
-- as labeled data proportion (essentially sample size) is varied
+- when data is overlapping
+- as labeled data proportion (labeld sample size) is varied
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
 from mvlearn.semi_supervised import CTClassifier
 from mvlearn.datasets import load_UCImultifeature
-from sklearn.linear_model import LogisticRegression
 
 ###############################################################################
-# Function to create 2 class data
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Function to Create 2-Class Synthetic Data
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # This function is used to generate examples for 2 classes from multivariate
 # normal distributions. Once the examples are generated, it splits them into
@@ -186,9 +190,10 @@ def scatterplot_classes(not_removed, labels_train, labels_train_full,
 #           parameters with the same type of classifier, or two different
 #           classification algorithms.
 
+
 ###############################################################################
-# Performance when classes are well separated and labeled examples are randomly
-# chosen
+# Performance when classes are separated and labeled examples are random
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Here, the 2 class distributions are the following
 # - Class 0 mean: [0, 0]
@@ -626,8 +631,8 @@ plt.title('When Labeled Data is Extremely Clean\nCoTraining Outperforms \
 plt.show()
 
 ###############################################################################
-# Performance when labeled data is not very separable
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Performance when labeled samples are not very separable
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Here, the 2 class distributions are the following
 # - Class 0 mean: [0, 0]
@@ -883,8 +888,8 @@ plt.title('When Both Views Have Overlapping Data\n\
 plt.show()
 
 ###############################################################################
-# Performance as labeled data proportion (essentially sample size) is varied
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Performance as labeled data proportion is varied
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 data, labels = load_UCImultifeature(select_labeled=[0, 1])
 

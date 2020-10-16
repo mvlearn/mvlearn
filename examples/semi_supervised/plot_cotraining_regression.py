@@ -19,6 +19,7 @@ alone in this semi-supervised case.
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error
 from mvlearn.semi_supervised import CTRegressor
@@ -34,7 +35,6 @@ labeled_portion = .2
 seed = 42
 np.random.seed(seed)
 
-# Generating the 3D Mexican Hat data
 X = np.random.uniform(-4*np.pi, 4*np.pi, size=(N_samples, 2))
 y = ((np.sin(np.linalg.norm(X, axis=1)))/np.linalg.norm(X, axis=1)).squeeze()
 X_test = np.random.uniform(-4*np.pi, 4*np.pi, size=(N_test, 2))
@@ -60,7 +60,7 @@ not_null = [i for i in range(len(y_train)) if not np.isnan(y_train[i])]
 
 
 fig = plt.figure()
-ax = plt.axes(projection="3d")
+ax = plt.axes(projection=Axes3D.name)
 
 z_points = y[lab_samples]
 x_points = X[lab_samples, 0]
@@ -77,12 +77,12 @@ plt.show()
 # order to make the estimators independent.
 # The same p values are used for training the corresponding single view model.
 
-# Single view semi-supervised learning
 
+# Single view semi-supervised learning
 knn1 = KNeighborsRegressor(p=2)
 knn2 = KNeighborsRegressor(p=5)
 
-# Train on only the examples with labels
+# Train single view on only the examples with labels
 knn1.fit(X[not_null], y[not_null])
 pred1 = knn1.predict(X_test)
 error1 = mean_squared_error(y_test, pred1)
@@ -95,7 +95,6 @@ print("MSE of single view with knn1 {}\n".format(error1))
 print("MSE of single view with knn2 {}\n".format(error2))
 
 # Multi-view co-training semi-supervised learning
-
 estimator1 = KNeighborsRegressor(p=2)
 estimator2 = KNeighborsRegressor(p=5)
 knn = CTRegressor(estimator1, estimator2, random_state=26)

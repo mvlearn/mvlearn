@@ -1,7 +1,7 @@
 """
-=============================================================
-Angle-based Joint and Individual Variation Explained  (AJIVE)
-=============================================================
+============================================================
+Angle-based Joint and Individual Variation Explained (AJIVE)
+============================================================
 
 Adopted from the code at https://github.com/idc9/py_jive and tutorial
 written by:
@@ -10,16 +10,16 @@ Author: Iain Carmichael
 
 License: MIT License
 
-<blockquote>
-    [1] Lock, Eric F., et al. “Joint and Individual Variation Explained (JIVE)
-    for Integrated Analysis of Multiple Data Types.” The Annals of Applied
-    Statistics, vol. 7, no. 1, 2013, pp. 523–542., doi:10.1214/12-aoas597.
-</blockquote>
+[1] Lock, Eric F., et al. “Joint and Individual Variation Explained (JIVE)
+for Integrated Analysis of Multiple Data Types.” The Annals of Applied
+Statistics, vol. 7, no. 1, 2013, pp. 523–542., doi:10.1214/12-aoas597.
 
 
 AJIVE is a useful algorithm that decomposes multiple views of data into two
 main pieces
+
 - Joint Variation
+
 - Individual Variation
 
 whose sum is the original data minus noise. This notebook will demonstrate the
@@ -33,13 +33,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 ##############################################################################
-# ## Data Creation
+# Data Creation
+# -------------
 #
 # Here we create data in the same way detailed in the initial JIVE paper:
 #
 # The two views are created with shared joint variation, unique individual
 # variation, and independent noise.
-#
+
 
 np.random.seed(12)
 
@@ -83,6 +84,7 @@ Xs_diff = [X1, X2]
 #
 # Scree plots allow us to observe variation and determine an appropriate
 # initial signal rank for each view.
+
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
 U, S, V = np.linalg.svd(X1)
@@ -130,8 +132,8 @@ def plot_blocks(blocks, names):
             plt.title(f"View {i}: {names[j]}")
 
 ###############################################################################
-# Same Views
-# ^^^^^^^^^^
+# When Both Views are the Same
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 plt.figure(figsize=[20, 10])
@@ -141,8 +143,8 @@ plot_blocks([Xs_same, Js_1, individual_mats, residuals],
             ["Raw Data", "Joint", "Individual", "Noise"])
 
 ###############################################################################
-# Different Views
-# ^^^^^^^^^^^^^^^
+# When the Views are Different
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 plt.figure(figsize=[20, 10])

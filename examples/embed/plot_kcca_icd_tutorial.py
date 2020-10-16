@@ -1,7 +1,7 @@
 """
-===============================================
-Incomplete Cholesky Decomposition (ICA) for CCA
-===============================================
+================================================
+Incomplete Cholesky Decomposition (ICD) for KCCA
+================================================
 
 Kernel matrices grow exponentially with the size of the data. There are
 immense storage and run-time constraints that arise when working with large
@@ -12,7 +12,6 @@ subjects (rows) and m is the rank of the kernel matrix. This also reduces the
 run-time from O(n^3) to O(nm^2).
 
 """
-
 
 
 import time
@@ -75,7 +74,7 @@ def make_data(kernel, N):
 ###############################################################################
 # Full Decomposition vs ICD on Sample Data
 # ----------------------------------------
-
+#
 # ICD is run on two views of data that each have two dimensions that are
 # sinuisoidally related. The data has 100 samples and thus the fully decomposed
 # kernel matrix would have dimensions (100, 100). Instead we implement ICD with
@@ -131,9 +130,12 @@ print(icdr1, icdr2)
 ###############################################################################
 # ICD Kernel Rank vs. Canonical Correlation
 # -----------------------------------------
-
+#
 # We can observe the relationship between the ICD kernel rank and canonical
 # correlation of the first canonical component.
+#
+# We observe that around rank=10-15 we achieve the same canonical correlation
+# as the fully decomposed kernel matrix (rank=100).
 
 
 can_corrs = []
@@ -152,16 +154,19 @@ plt.plot(rank, can_corrs)
 plt.xlabel('Rank')
 plt.ylabel('Canonical Correlation')
 
-# We observe that around rank=10-15 we achieve the same canonical correlation
-# as the fully decomposed kernel matrix (rank=100).
-
 ###############################################################################
 # ICD Kernel Rank vs Run-Time
 # ---------------------------
-
+#
 # We can observe the relationship between the ICD kernel rank and run-time to
 # fit and transform the two views. We average the run-time of each rank over 5
 # trials.
+#
+# From the rank vs canonical correlation analysis in the previous section, we
+# discovered that a rank of 10-15 will preserve the canonical correlation
+# (accuracy). We can see that at a rank of 10-15, we can get an order of
+# magnitude decrease in run-time compared to a rank of 100
+# (full decomposition).
 
 
 run_time = []
@@ -180,9 +185,3 @@ for i in rank:
 plt.plot(rank, run_time)
 plt.xlabel('Rank')
 plt.ylabel('Run-Time')
-
-# From the rank vs canonical correlation analysis in the previous section, we
-# discovered that a rank of 10-15 will preserve the canonical correlation
-# (accuracy). We can see that at a rank of 10-15, we can get an order of
-# magnitude decrease in run-time compared to a rank of 100
-# (full decomposition).

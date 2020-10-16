@@ -13,9 +13,16 @@ number of features does not have to be constant:
 # Author: Pierre Ablin
 
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.decomposition import FastICA
+from sklearn.pipeline import Pipeline
+from mvlearn.preprocessing import ViewTransformer
+from mvlearn.compose import ConcatMerger
 
 ###############################################################################
 # Create the data
+# ---------------
 
 n_samples = 100
 n_features1 = 20
@@ -30,16 +37,13 @@ Xs = [X1, X2]
 
 ###############################################################################
 # ViewTransformer
-# ===============
+# ---------------
 #
 # `mvlearn.preprocessing.ViewTransformer` is a handy tool to apply the same
 # `sklearn` transformer to each view of the multiview dataset. For instance, it
 # is simple to apply PCA to each view. In the following, we reduce the
 # dimension of each view to 3:
 
-
-from mvlearn.preprocessing import ViewTransformer
-from sklearn.decomposition import PCA
 
 pca = PCA(n_components=3)
 mvpca = ViewTransformer(pca)
@@ -64,7 +68,7 @@ print([X.shape for X in Xs_transformed])
 
 ###############################################################################
 # Mergers
-# =======
+# -------
 #
 # At the end of a multiview machine learning pipeline, it is sometimes needed
 # to transform the multiview dataset in a single view dataset. All `sklearn`
@@ -76,8 +80,6 @@ print([X.shape for X in Xs_transformed])
 # `mvlearn.preprocessing.ConcatMerger` implements this:
 
 
-from mvlearn.compose import ConcatMerger
-
 merge = ConcatMerger()
 
 X_transformed = merge.fit_transform(Xs)
@@ -86,8 +88,8 @@ print(X_transformed.shape)
 # This allows for simple integration in scikit-learn pipelines.
 
 ###############################################################################
-# Pipeline example: group-ICA
-# ===========================
+# Pipeline Example: group-ICA
+# ---------------------------
 #
 # As a simple illustration, we now show how easy it is to code group
 # independent component analysis (groupICA) from scratch using `mvlearn`.
@@ -107,9 +109,6 @@ print(X_transformed.shape)
 # This is easily implemented using `mvlearn` and scikit-learn pipelines:
 
 
-from sklearn.decomposition import FastICA
-from sklearn.pipeline import Pipeline
-
 n_components = 2
 individual_pca = ViewTransformer(PCA(n_components=n_components))
 merge = ConcatMerger()
@@ -127,8 +126,6 @@ print(X_transformed.shape)
 # sources, it works as intended:
 
 
-import matplotlib.pyplot as plt
-
 time = np.linspace(0, 1, 1000)
 source1 = np.cos(20 * time)
 source2 = np.sin(50 * time)
@@ -145,10 +142,10 @@ plt.title('Sources')
 plt.figure()
 for x in X1.T:
     plt.plot(time, x)
-plt.title('signals');
+plt.title('signals')
 
 X_transformed = groupica.fit_transform(Xs)
 
 for x in X_transformed.T:
     plt.plot(time, x)
-plt.title('recovered signals');
+plt.title('recovered signals')
