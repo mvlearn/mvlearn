@@ -15,12 +15,12 @@
 
 `mvlearn` is an open-source Python software package for multiview learning tools.
 
-- [**Installation Guide**](https://mvlearn.neurodata.io/install.html)
-- [**Documentation**](https://mvlearn.neurodata.io/index.html)
-- [**Tutorials**](https://mvlearn.neurodata.io/tutorials.html)
+- [**Installation Guide**](https://mvlearn.github.io/install.html)
+- [**Documentation**](https://mvlearn.github.io/)
+- [**Examples**](https://mvlearn.github.io/auto_examples/index.html)
 - [**Source Code**](https://github.com/mvlearn/mvlearn/tree/master/mvlearn)
 - [**Issues**](https://github.com/mvlearn/mvlearn/issues)
-- [**Contribution Guide**](https://mvlearn.neurodata.io/contributing.html)
-- [**Changelog**](https://mvlearn.neurodata.io/changelog.html)
+- [**Contribution Guide**](https://mvlearn.github.io/contributing.html)
+- [**Changelog**](https://mvlearn.github.io/changelog.html)
 
-`mvlearn` aims to serve as a community-driven open-source software package that offers reference implementations for algorithms and methods related to multiview learning (machine learning in settings where there are multiple incommensurate views or feature sets for each sample). It brings together the most widely-used tools in this setting with a standardized scikit-learn like API, well tested code and high-quality documentation. Doing so we aim to facilitate application, extension, comparison of methods, and offer a foundation for research into new multiview algorithms. We welcome new contributors and the addition of methods with proven efficacy and current use.
+`mvlearn` aims to serve as a community-driven open-source software package that offers reference implementations for algorithms and methods related to multiview learning (machine learning in settings where there are multiple incommensurate views or feature sets for each sample). It brings together the most widely-used tools in this setting with a standardized scikit-learn like API, well tested code and high-quality documentation. Doing so, we aim to facilitate application, extension, and comparison of methods, and offer a foundation for research into new multiview algorithms. We welcome new contributors and the addition of methods with proven efficacy and current use.
