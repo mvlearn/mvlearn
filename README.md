@@ -1,5 +1,4 @@
 
-
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/mvlearn/mvlearn.svg?branch=master)](https://travis-ci.com/mvlearn/mvlearn)
 [![Documentation Status](https://readthedocs.org/projects/mvlearn/badge/?version=latest)](https://mvlearn.readthedocs.io/en/latest/?badge=latest)
