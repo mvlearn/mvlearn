@@ -14,28 +14,25 @@ def svd_wrapper(X, rank=None):
 
     Parameters
     ----------
-    X: array-like,  shape (N, D)
+    X: array-like,  shape (n, d)
 
     rank: int, None
-        rank of the desired SVD.
-        If None, will compute the largest min(X.shape) singular value/vectors.
+        rank of the desired SVD. If None, is set to min(X.shape)
 
     Output
     ------
     U, D, V
 
-    U: array-like, shape (N, rank)
+    U: array-like, shape (n, rank)
         Orthonormal matrix of left singular vectors.
 
     D: list, shape (rank, )
         Singular values in non-increasing order (e.g. D[0] is the largest).
 
-    V: array-like, shape (D, rank)
+    V: array-like, shape (d, rank)
         Orthonormal matrix of right singular vectors
 
     """
-    # TODO: give user option to compute randomized SVD
-
     if rank is None:
         rank = min(X.shape)
 
@@ -43,8 +40,8 @@ def svd_wrapper(X, rank=None):
     assert 1 <= rank and rank <= min(X.shape)
 
     if rank <= min(X.shape) - 1:
-        scipy_svds = svds(X, rank)
-        U, D, V = fix_scipy_svds(scipy_svds)
+        U, D, V = svds(X, rank)
+        U, D, V = sort_svds(U, D, V)
 
     else:
         assert not issparse(X)
@@ -57,30 +54,27 @@ def svd_wrapper(X, rank=None):
             D = D[:rank]
             V = V[:, :rank]
 
-    # enfoce deterministic output
+    # enforce deterministic output
     U, V = svd_flip(U, V.T)
     V = V.T
 
     return U, D, V
 
 
-def fix_scipy_svds(scipy_svds):
+def sort_svds(U, D, V):
     """
     scipy.sparse.linalg.svds orders the singular values backwards,
-    this function fixes this insanity and returns the singular values
-    in decreasing order
+    this function returns the singular values in decreasing order.
 
     Parameters
     ----------
-    scipy_svds: the out put from scipy.sparse.linalg.svds
+    U, D, V : the outputs from scipy.sparse.linalg.svds
 
     Output
     ------
     U, D, V
-    ordered in decreasing singular values
+        Input ordered by decreasing singular values
     """
-    U, D, V = scipy_svds
-
     sv_reordering = np.argsort(-D)
 
     U = U[:, sv_reordering]
@@ -91,14 +85,16 @@ def fix_scipy_svds(scipy_svds):
 
 
 def eigh_wrapper(A, B=None, rank=None, eval_descending=True):
-    """
-    Symmetrics eigenvector or genealized eigenvector problem.
+    r"""
+    Solves a symmetric eigenvector or genealized eigenvector problem.
 
-    A v = lambda v
+        .. math:
+            A v = \lambda v
 
     or
 
-    A v = labmda B v
+        .. math:
+            A v = \labmda B v
 
     where A (and B) are symmetric (hermetian).
 
@@ -121,7 +117,11 @@ def eigh_wrapper(A, B=None, rank=None, eval_descending=True):
 
     Output
     ------
-    evals, evecs
+    evals : numpy.ndarray, shape (rank,)
+        Solution eigenvalues
+
+    evecs : numpy.ndarray, shape (n, rank)
+        Solution eigenvectors
     """
 
     if rank is not None:
@@ -134,7 +134,7 @@ def eigh_wrapper(A, B=None, rank=None, eval_descending=True):
     else:
         eigvals_idxs = None
 
-    evals, evecs = eigh(a=A, b=B, eigvals=eigvals_idxs)
+    evals, evecs = eigh(a=A, b=B, subset_by_index=eigvals_idxs)
 
     if eval_descending:
         ev_reordering = np.argsort(-evals)
@@ -149,12 +149,26 @@ def eigh_wrapper(A, B=None, rank=None, eval_descending=True):
 def rand_orthog(n, K, random_state=None):
     """
     Samples a random orthonormal matrix.
-    See Section A.1.1 of https://arxiv.org/pdf/0909.3052.pdf
 
-    Output
-    ------
+    Parameters
+    ----------
+    n : int, positive
+        Number of rows in the matrix
+
+    K : int, positive
+        Number of columns in the matrix
+
+    random_state : None | int | instance of RandomState, optional
+        Seed to set randomization for reproducible results
+
+    Returns
+    -------
     A: array-like, (n, K)
         A random, column orthonormal matrix.
+
+    Notes
+    -----
+    See Section A.1.1 of https://arxiv.org/pdf/0909.3052.pdf
     """
     rng = check_random_state(random_state)
 
@@ -166,25 +180,3 @@ def rand_orthog(n, K, random_state=None):
     s[neg_mask] = -1
 
     return Q * s
-
-
-def normalize_cols(X):
-    """
-    Normalizes the columns of a matrix and returns the col norms.
-
-    Parameters
-    ----------
-    X: array-like, (n_rows, n_cols)
-        The matrix to normalize.
-
-    Output
-    ------
-    X_norm: array-like, (n_rows, n_cols)
-        A copy of X whose columns have been scaled to have unit norm.
-
-    col_norms: array-like, (n_cols, )
-        Euclidean norm of each column.
-    """
-    assert X.ndim == 2
-    col_norms = np.linalg.norm(X, axis=0)
-    return X * (1.0 / col_norms), col_norms
