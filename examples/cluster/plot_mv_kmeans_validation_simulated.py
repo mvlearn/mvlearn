@@ -1,7 +1,11 @@
 """
-================================
+===============================
 Multiview vs. Singleview KMeans
-================================
+===============================
+
+This tutorial compares the multiview and singleview k-means algorithms on
+synthetic data to build intuition about what types of data distributions
+allow the multiview version of the algorithm to perform well.
 
 """
 

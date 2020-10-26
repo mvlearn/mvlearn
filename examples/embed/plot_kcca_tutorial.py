@@ -1,9 +1,14 @@
 """
-=================
-Kernel CCA (KCCA)
-=================
+==========================
+Kernel CCA (KCCA) Tutorial
+==========================
 
-This algorithm runs KCCA on two views of data. The kernel implementations,
+KCCA is a variant of Canonical Correlation Analysis that can use a
+nonlinear kernel to uncover nonlinear correlations between views of data
+and thereby transform data into a lower dimensional space which captures
+the correlated information between views.
+
+This tutorial runs KCCA on two views of data. The kernel implementations,
 parameter 'ktype', are linear, polynomial and gaussian. Polynomial kernel has
 two parameters: 'constant', 'degree'. Gaussian kernel has one parameter:
 'sigma'.
@@ -12,7 +17,7 @@ Useful information, like canonical correlations between transformed data and
 statistical tests for significance of these correlations can be computed using
 the get_stats() function of the KCCA object.
 
-When initializing KCCA, you can also initialize the following parameters:
+When initializing KCCA, you can also set the following parameters:
 the number of canonical components 'n_components', the regularization
 parameter 'reg', the decomposition type 'decomposition', and the decomposition
 method 'method'. There are two decomposition types: 'full' and 'icd'. In some
@@ -23,7 +28,6 @@ performance. The only method as of now is 'kettenring-like'.
 
 
 import numpy as np
-from scipy import stats
 from mvlearn.embed import KCCA
 from mvlearn.model_selection import train_test_split
 from mvlearn.plotting import crossviews_plot
@@ -78,7 +82,7 @@ def make_data(kernel, N):
 ###############################################################################
 # Linear kernel implementation
 # ----------------------------
-
+#
 # Here we show how KCCA with a linear kernel can uncover the highly correlated
 # latent distribution of the 2 views which are related with a linear
 # relationship, and then transform the data into that latent space. We use an
@@ -114,9 +118,9 @@ crossviews_plot(linearkcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # their significance using the p-values from a Wilk's Lambda test
 
 
-stats = kcca_l.get_stats()
-print(stats['r'])
-print(stats['pF'])
+cca_stats = kcca_l.get_stats()
+print(cca_stats['r'])
+print(cca_stats['pF'])
 
 ###############################################################################
 # Polynomial kernel implementation
@@ -153,8 +157,8 @@ crossviews_plot(polykcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # printing the canonical correlations for each component
 
 
-stats = kcca_p.get_stats()
-print(stats['r'])
+kcca_stats = kcca_p.get_stats()
+print(kcca_stats['r'])
 
 ###############################################################################
 # Gaussian Kernel Implementation
@@ -190,5 +194,5 @@ crossviews_plot(gausskcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # printing the canonical correlations for each component
 
 
-stats = kcca_g.get_stats()
-print(stats['r'])
+kcca_stats = kcca_g.get_stats()
+print(kcca_stats['r'])

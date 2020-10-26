@@ -199,10 +199,11 @@ intersphinx_mapping = {
 }
 
 sphinx_gallery_conf = {
-    'doc_module': ('mvlearn',),
+    'doc_module': 'mvlearn',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'reference_url': {
         'mvlearn': None,
-    }
+    },
+    'ignore_pattern': r'noinclude\.py'
 }

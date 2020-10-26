@@ -1,7 +1,7 @@
 """
-============================================================
-Multiview vs. Singleview Spectral Clustering of the UCI data
-============================================================
+====================================================================
+Multiview vs. Singleview Spectral Clustering of UCI Multiview Digits
+====================================================================
 
 Here, we directly compare multiview methods available within *mvlearn* to
 analagous singleview methods. Using the UCI Multiple Features Dataset, we
@@ -22,7 +22,7 @@ from mvlearn.datasets import load_UCImultifeature
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load 6view, 4-class data from the Multiple Features Dataset. The full 6
+# Load 6-view, 4-class data from the Multiple Features Dataset. The full 6
 # views with all features will be used for clustering.
 
 # Load 4-class, multiview data

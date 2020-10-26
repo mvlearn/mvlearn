@@ -1,16 +1,16 @@
 """
-=============================================
-Independent Component Analysis (ICA) Tutorial
-=============================================
+=========================================================
+Multiview Independent Component Analysis (ICA) Comparison
+=========================================================
 
 Adopted from the code at
 `https://github.com/hugorichard/multiviewica`_
-and their tutorial written by:
+and their tutorial written by Hugo Richard and Pierre Ablin.
 
 Three multiview ICA algorithms are compared. GroupICA concatenates
 the individual views prior to dimensionality reduction and running
 ICA over the result. PermICA is more sensitive to individual
-discrepencies, and computes ICA on each view before aligning the reuslts
+discrepencies, and computes ICA on each view before aligning the results
 using the hungarian algorithm. Lastly, MultiviewICA performs the best by
 optimizing the set of mixing matrices relative to the average source signal.
 
