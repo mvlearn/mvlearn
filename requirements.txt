@@ -8,3 +8,4 @@ seaborn>=0.9.0
 joblib>=0.11
 python-picard >= 0.4
 memory_profiler
+multiviewica >= 0.0.0
