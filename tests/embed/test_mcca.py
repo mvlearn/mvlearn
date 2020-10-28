@@ -100,7 +100,7 @@ def check_mcca_gevp(Xs, loadings, evals, regs):
 def check_mcca_class(mcca, Xs):
     np.testing.assert_array_almost_equal(
         mcca.common_scores_normed_,
-        sum(mcca.scores_) / mcca.common_norms_)
+        sum(mcca.scores_) / mcca.common_score_norms_)
     for b in range(len(Xs)):
         np.testing.assert_array_almost_equal(
             mcca.scores_[b], mcca.transform_view(Xs[b], view=b))
@@ -114,7 +114,7 @@ def check_kmcca_class(kmcca, Xs):
     kmcca_scores = kmcca.transform(Xs)
     np.testing.assert_array_almost_equal(
         kmcca.common_scores_normed_,
-        sum(kmcca_scores) / kmcca.common_norms_)
+        sum(kmcca_scores) / kmcca.common_score_norms_)
 
 
 def compare_kmcca_to_mcca(Xs, mcca, kmcca):

@@ -38,12 +38,12 @@ class MCCA(BaseCCA):
 
     Parameters
     ----------
-    n_components : None | int | 'min' | 'max' (default 1)
+    n_components : int | 'min' | 'max' | None (default 1)
         Number of final components to compute. If `int`, will compute that
         many. If None, will compute as many as possible. 'min' and 'max' will
         respectively use the minimum/maximum number of features among views.
 
-    regs : None | float | 'lw' | 'oas', or list (default None)
+    regs : float | 'lw' | 'oas' | None, or list, optional (default None)
         MCCA regularization for each data view, which can be important
         for high dimensional data. A list will specify for each view
         separately.
@@ -51,13 +51,13 @@ class MCCA(BaseCCA):
         - 0 | None: corresponds to SUMCORR-AVGVAR MCCA.
 
         - 1: partial least squares SVD in the case of 2 views and a natural
-        generalization of this method for more than two views.
+             generalization of this method for more than two views.
 
         - 'lw': Default `sklearn.covariance.ledoit_wolf` regularization
 
         - 'oas': Default `sklearn.covariance.oas` regularization
 
-    signal_ranks : None, int, or list (default None)
+    signal_ranks : int, None or list, optional (default None)
         The initial signal rank to compute. If None, will compute the full SVD.
         A list will specify for each view separately.
 
@@ -69,6 +69,10 @@ class MCCA(BaseCCA):
         Whether or not to use the SVD based method (only works with no
         regularization) or the gevp based method for informative MCCA.
 
+    multiview_output : bool, optional (default True)
+        If True, the `.transform` method returns one dataset per view.
+        Otherwise, it returns one dataset, of shape (n_samples, n_components)
+
     Attributes
     ----------
     means_ : list of numpy.ndarray
@@ -78,21 +82,21 @@ class MCCA(BaseCCA):
         The loadings for each view used to project new data,
         each of shape (n_features_b, n_components).
 
-    scores_ : numpy.ndarray, shape (n_views, n_samples, n_components)
-        Projections of each data view.
-
-    common_scores_normed_ : numpy.ndarray, shape (n_samples, n_components)
-        Normalized sum of the view scores.
-
-    common_norms_ : numpy.ndarray, shape (n_components,)
-        Column norms of the sum of the view scores.
-        Useful for projecting new data
+    common_score_norms_ : numpy.ndarray, shape (n_components,)
+        Column norms of the sum of the fitted view scores.
+        Used for projecting new data
 
     evals_ : numpy.ndarray, shape (n_components,)
         The generalized eigenvalue problem eigenvalues.
 
     n_views_ : int
         The number of views
+
+    n_features_ : list
+        The number of features in each fitted view
+
+    n_components_ : int
+        The number of components in each transformed view
 
     See also
     --------
@@ -124,6 +128,7 @@ class MCCA(BaseCCA):
         signal_ranks=None,
         center=True,
         i_mcca_method="auto",
+        multiview_output=True,
     ):
 
         self.n_components = n_components
@@ -131,28 +136,11 @@ class MCCA(BaseCCA):
         self.regs = regs
         self.signal_ranks = signal_ranks
         self.i_mcca_method = i_mcca_method
+        self.multiview_output = multiview_output
 
-    def fit(self, Xs, y=None):
-        r"""
-        Learns decompositions of the views.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to.
-
-        y : None
-            Ignored variable.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-
-        Xs, self.n_views_, _, _ = check_Xs(
+    def _fit(self, Xs):
+        """Helper function for the `.fit` function"""
+        Xs, self.n_views_, _, self.n_features_ = check_Xs(
             Xs, return_dimensions=True
         )
         centers = param_as_list(self.center, self.n_views_)
@@ -161,8 +149,8 @@ class MCCA(BaseCCA):
         Xs = [X - m if m is not None else X for X, m in zip(Xs, self.means_)]
 
         if self.signal_ranks is not None:
-            self.loadings_, self.scores_, self.common_scores_normed_, \
-                self.common_norms_, self.evals_ = _i_mcca(
+            self.loadings_, scores, common_scores_normed, \
+                self.common_score_norms_, self.evals_ = _i_mcca(
                     Xs,
                     signal_ranks=self.signal_ranks,
                     n_components=self.n_components,
@@ -170,20 +158,13 @@ class MCCA(BaseCCA):
                     method=self.i_mcca_method,
                 )
         else:
-            self.loadings_, self.scores_, self.common_scores_normed_, \
-                self.common_norms_, self.evals_ = _mcca_gevp(
+            self.loadings_, scores, common_scores_normed, \
+                self.common_score_norms_, self.evals_ = _mcca_gevp(
                     Xs,
                     n_components=self.n_components,
                     regs=self.regs
                 )
-
-        return self
-
-    @property
-    def n_components_(self):
-        check_is_fitted(self)
-        if hasattr(self, "loadings_"):
-            return self.loadings_.shape[1]
+        return scores, common_scores_normed
 
     def inverse_transform(self, scores):
         """
@@ -193,10 +174,6 @@ class MCCA(BaseCCA):
         ----------
         scores: array-like, shape (n_samples, n_components)
             The CCA scores.
-
-        view : None, int (default None)
-            The numeric index of the single view Xs with respect to the fitted
-            views. If None, then Xs is ist of all views.
 
         Returns
         -------
@@ -258,12 +235,17 @@ class MCCA(BaseCCA):
         Returns
         -------
         scores : numpy.ndarray, shape (n_views,)
-            Reconstruction scores
+            Reconstruction scores. If `self.multiview_output` is True,
+            then the mean score is returned.
         """
         Xs_hat = self.transform(Xs)
         Xs_hat = self.inverse_transform(Xs_hat)
-        return [np.linalg.norm(X - X_hat) ** 2
-                for X, X_hat in zip(Xs, Xs_hat)]
+        scores = [np.linalg.norm(X - X_hat) ** 2
+                  for X, X_hat in zip(Xs, Xs_hat)]
+        if self.multiview_output:
+            return scores
+        else:
+            return np.mean(scores)
 
     def score_view(self, X, view):
         """
@@ -289,6 +271,13 @@ class MCCA(BaseCCA):
         X_hat = self.transform_view(X, view=view)
         X_hat = self.inverse_transform_view(X_hat, view=view)
         return np.linalg.norm(X - X_hat) ** 2
+
+    @property
+    def n_components_(self):
+        if hasattr(self, "loadings_"):
+            return self.loadings_[0].shape[1]
+        else:
+            raise AttributeError("Model has not been fitted properly yet")
 
 
 def _mcca_gevp(Xs, n_components=None, regs=None):

@@ -40,16 +40,16 @@ class KMCCA(BaseCCA):
         `sklearn.metrics.pairwise.pairwise_kernels`. A list will
         specify for each view separately.
 
-    kernel_params : dict, or list
+    kernel_params : dict, or list (default {})
         Key word arguments to `sklearn.metrics.pairwise.pairwise_kernels`.
         A list will specify for each view separately.
 
-    regs : float, None, or list
+    regs : float, None, or list, optional (default None)
         None equates to 0. Floats are nonnegative. The value is used to
         regularize singular values in each view based on `diag_mode`
         A list will specify the method for each view separately.
 
-    signal_ranks : int, None, or list
+    signal_ranks : int, None, or list, optional (default None)
         Largest SVD rank to compute for each view. If None, the full rank
         decomposition will be used. A list will specify for each view
         separately.
@@ -74,12 +74,16 @@ class KMCCA(BaseCCA):
         Whether or not to initially mean center the data. A list will
         specify for each view separately.
 
-    filter_params : bool
+    filter_params : bool (default False)
         See `sklearn.metrics.pairwise.pairwise_kernels` documentation.
 
-    n_jobs : int, None
+    n_jobs : int, None, optional (default None)
         Number of jobs to run in parallel when computing kernel matrices.
         See `sklearn.metrics.pairwise.pairwise_kernels` documentation.
+
+    multiview_output : bool, optional (default True)
+        If True, the `.transform` method returns one dataset per view.
+        Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
     Attributes
     ----------
@@ -92,13 +96,7 @@ class KMCCA(BaseCCA):
     dual_vars_ : numpy.ndarray, shape (n_views, n_samples, n_components)
         The loadings for the gram matrix of each view
 
-    scores_ : numpy.ndarray, shape (n_views, n_samples, n_components)
-        Projections of each gram matrix
-
-    common_scores_normed_ : numpy.ndarray, shape (n_samples, n_components)
-        Normalized sum of the view scores.
-
-    common_norms_ : numpy.ndarray, shape (n_components,)
+    common_score_norms_ : numpy.ndarray, shape (n_components,)
         Column norms of the sum of the view scores.
         Useful for projecting new data
 
@@ -109,6 +107,15 @@ class KMCCA(BaseCCA):
         - Xs[i] shape (n_samples, n_features_i)
         The original data matrices for use in gram matrix computation
         during calls to `transform`.
+
+    n_views_ : int
+        The number of views
+
+    n_features_ : list
+        The number of features in each fitted view
+
+    n_components_ : int
+        The number of components in each transformed view
 
     See also
     --------
@@ -149,6 +156,7 @@ class KMCCA(BaseCCA):
         center=True,
         filter_params=False,
         n_jobs=None,
+        multiview_output=True,
     ):
 
         self.n_components = n_components
@@ -161,27 +169,11 @@ class KMCCA(BaseCCA):
         self.diag_mode = diag_mode
         self.filter_params = filter_params
         self.n_jobs = n_jobs
+        self.multiview_output = multiview_output
 
-    def fit(self, Xs, y=None):
-        """
-        Fits the regularized kernel MCCA model.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-            The data to fit to.
-
-        y : None
-            Ignored variable.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-        Xs, self.n_views_, n_samples, n_features = check_Xs(
+    def _fit(self, Xs):
+        """Helper method for `.fit` function"""
+        Xs, self.n_views_, _, self.n_features_ = check_Xs(
             Xs, multiview=True, return_dimensions=True)
 
         centers = param_as_list(self.center, self.n_views_)
@@ -199,8 +191,8 @@ class KMCCA(BaseCCA):
                 self.kernel_mat_means_[b] = mat_mean
             Ks.append(K)
 
-        self.dual_vars_, self.scores_, self.common_scores_normed_, \
-            self.common_norms_, self.evals_ = _kmcca_gevp(
+        self.dual_vars_, scores, common_scores_normed, \
+            self.common_score_norms_, self.evals_ = _kmcca_gevp(
                 Ks,
                 signal_ranks=param_as_list(self.signal_ranks, self.n_views_),
                 sval_thresh=self.sval_thresh,
@@ -212,7 +204,7 @@ class KMCCA(BaseCCA):
         del Ks
         self.Xs_ = Xs  # stored for `transform` step
 
-        return self
+        return scores, common_scores_normed
 
     def transform_view(self, X, view):
         """
@@ -275,6 +267,13 @@ class KMCCA(BaseCCA):
         return pairwise_kernels(
             X, Y, metric=kernel, filter_params=True, n_jobs=self.n_jobs,
             **kernel_params)
+
+    @property
+    def n_components_(self):
+        if hasattr(self, "loadings_"):
+            return self.dual_vars_[0].shape[1]
+        else:
+            raise AttributeError("Model has not been fitted properly yet")
 
 
 def _kmcca_gevp(

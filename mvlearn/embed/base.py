@@ -96,28 +96,26 @@ class BaseCCA(BaseEstimator, TransformerMixin):
     A base class for multiview CCA methods.
     """
 
-    @abstractmethod
-    def fit(self, Xs, y=None, **fit_params):
-        """
-        A method to fit model to multiview data.
+    def fit(self, Xs, y=None):
+        r"""
+        Learns decompositions of the views.
 
         Parameters
         ----------
-        Xs : list of array-likes
-            - Xs shape: (n_views,)
-            - Xs[i] shape: (n_samples, n_features_i)
+        Xs : list of array-likes or numpy.ndarray
+             - Xs length: n_views
+             - Xs[i] shape: (n_samples, n_features_i)
+            The data to fit to.
 
         y : None
             Ignored variable.
 
-        **fit_params : dict
-            Additional fit parameters.
-
         Returns
         -------
-        self : returns an instance of self.
+        self : object
+            Returns the instance itself.
         """
-
+        _, _ = self._fit(Xs)
         return self
 
     def transform(self, Xs):
@@ -134,15 +132,20 @@ class BaseCCA(BaseEstimator, TransformerMixin):
         -------
         Xs_transformed : numpy.ndarray, shape (n_views, n_samples,
                                                n_components)
-            If view is not None, then shape (n_samples, n_components)
+            If `multiview_output`, returns the normed sum of transformed views
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         if len(Xs) != self.n_views_:
             msg = f"Supplied data must have {self.n_views_} views"
             raise ValueError(msg)
-        return np.asarray([self.transform_view(X, i)
-                           for i, X in enumerate(Xs)])
+        scores = np.asarray([self.transform_view(X, i)
+                             for i, X in enumerate(Xs)])
+        if self.multiview_output:
+            return scores
+        else:
+            common_scores = sum(scores)
+            return common_scores / self.common_score_norms_
 
     def transform_view(self, X, view):
         """
@@ -167,9 +170,9 @@ class BaseCCA(BaseEstimator, TransformerMixin):
             X = X - self.means_[view]
         return X @ self.loadings_[view]
 
-    def fit_transform(self, Xs, y=None, **fit_params):
+    def fit_transform(self, Xs, y=None):
         """
-        Fit an embedder to the data and transform the data
+        Fit KMCCA to the data and transforms the data.
 
         Parameters
         ----------
@@ -180,15 +183,17 @@ class BaseCCA(BaseEstimator, TransformerMixin):
         y : None
             Ignored variable.
 
-        **fit_params : dict
-            Additional fit parameters.
-
         Returns
         -------
         Xs_transformed : numpy.ndarray, shape (n_views, n_samples,
                                                n_components)
+            If `multiview_output`, returns the normed sum of transformed views
         """
-        return self.fit(Xs, y, **fit_params).transform(Xs)
+        scores, common_scores_normed = self._fit(Xs)
+        if self.multiview_output:
+            return scores
+        else:
+            return common_scores_normed
 
 
 def _check_regs(regs, n_views):
