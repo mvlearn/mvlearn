@@ -7,7 +7,7 @@ def sample_joint_factor_model(
     n_views,
     n_samples,
     n_features,
-    joint_rank,
+    joint_rank=1,
     noise_std=1,
     m=1.5,
     random_state=None,
@@ -29,13 +29,13 @@ def sample_joint_factor_model(
         Number of features in each view. A list specifies a different number
         of features for each view.
 
-    joint_rank : int
+    joint_rank : int (default 1)
         Rank of the common signal across views.
 
-    noise_std : float
+    noise_std : float (default 1)
         Scale of noise distribution.
 
-    m : float
+    m : float (default 1.5)
         Signal strength.
 
     Returns
@@ -72,7 +72,9 @@ def sample_joint_factor_model(
     U = rng.normal(size=(n_samples, joint_rank))
     U = np.linalg.qr(U)[0]
 
-    Es = [noise_std * rng.normal(size=(n_samples, d)) for d in n_features]
+    # Random noise for each view
+    Es = [noise_std * np.random.RandomState(seed).normal(size=(n_samples, d))
+          for d, seed in zip(n_features, rng.permutation(np.arange(n_views)))]
     Xs = [(U * svals) @ view_loadings[b].T + Es[b] for b in range(n_views)]
 
     if return_decomp:
