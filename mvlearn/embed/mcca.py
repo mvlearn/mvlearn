@@ -53,9 +53,9 @@ class MCCA(BaseCCA):
         - 1: partial least squares SVD in the case of 2 views and a natural
              generalization of this method for more than two views.
 
-        - 'lw': Default `sklearn.covariance.ledoit_wolf` regularization
+        - 'lw': Default ``sklearn.covariance.ledoit_wolf`` regularization
 
-        - 'oas': Default `sklearn.covariance.oas` regularization
+        - 'oas': Default ``sklearn.covariance.oas`` regularization
 
     signal_ranks : int, None or list, optional (default None)
         The initial signal rank to compute. If None, will compute the full SVD.
@@ -70,7 +70,7 @@ class MCCA(BaseCCA):
         regularization) or the gevp based method for informative MCCA.
 
     multiview_output : bool, optional (default True)
-        If True, the `.transform` method returns one dataset per view.
+        If True, the ``.transform`` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
     Attributes
@@ -106,7 +106,6 @@ class MCCA(BaseCCA):
     ----------
     .. [#1mcca] Kettenring, J. R., "Canonical Analysis of Several Sets of
                 Variables." Biometrika, 58 (1971), pp. 433-451
-
     .. [#2mcca] Tenenhaus, A., et al. "Regularized generalized canonical
                 correlation analysis." Psychometrika, 76(2):257.
 
@@ -235,7 +234,7 @@ class MCCA(BaseCCA):
         Returns
         -------
         scores : numpy.ndarray, shape (n_views,)
-            Reconstruction scores. If `self.multiview_output` is True,
+            Reconstruction scores. If ``self.multiview_output`` is True,
             then the mean score is returned.
         """
         Xs_hat = self.transform(Xs)

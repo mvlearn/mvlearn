@@ -26,7 +26,7 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class KMCCA(BaseCCA):
-    """
+    r"""
     Kernel multi-view canonical correlation analysis.
 
     Parameters
@@ -37,11 +37,11 @@ class KMCCA(BaseCCA):
 
     kernel : str, callable, or list (default 'linear')
         The kernel function to use. This is the metric argument to
-        `sklearn.metrics.pairwise.pairwise_kernels`. A list will
+        ``sklearn.metrics.pairwise.pairwise_kernels``. A list will
         specify for each view separately.
 
     kernel_params : dict, or list (default {})
-        Key word arguments to `sklearn.metrics.pairwise.pairwise_kernels`.
+        Key word arguments to ``sklearn.metrics.pairwise.pairwise_kernels``.
         A list will specify for each view separately.
 
     regs : float, None, or list, optional (default None)
@@ -63,26 +63,26 @@ class KMCCA(BaseCCA):
         Method of regularizing singular values `s` with regularization
         parameter `r`
 
-        - 'A' : (1 - r) * K^2 + r * K [#1kmcca]_
+        - 'A' : :math:`(1 - r) * K^2 + r * K` [#1kmcca]_
 
-        - 'B' : (1-r) (K + n/2 kappa * I)^2 where kappa = r / (1 - r)
-          [#2kmcca]_
+        - 'B' : :math:`(1-r) (K + n/2 \kappa * I)^2` where
+          :math:`\kappa = r / (1 - r)` [#2kmcca]_
 
-        - 'C' : (1 - r) K^2 + r * I [#3kmcca]_
+        - 'C' : :math:`(1 - r) K^2 + r * I_n` [#3kmcca]_
 
     center : bool, or list (default True)
         Whether or not to initially mean center the data. A list will
         specify for each view separately.
 
     filter_params : bool (default False)
-        See `sklearn.metrics.pairwise.pairwise_kernels` documentation.
+        See ``sklearn.metrics.pairwise.pairwise_kernels`` documentation.
 
     n_jobs : int, None, optional (default None)
         Number of jobs to run in parallel when computing kernel matrices.
-        See `sklearn.metrics.pairwise.pairwise_kernels` documentation.
+        See ``sklearn.metrics.pairwise.pairwise_kernels`` documentation.
 
     multiview_output : bool, optional (default True)
-        If True, the `.transform` method returns one dataset per view.
+        If True, the ``.transform`` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
     Attributes
@@ -106,7 +106,7 @@ class KMCCA(BaseCCA):
     Xs : list of numpy.ndarray, length (n_views,)
         - Xs[i] shape (n_samples, n_features_i)
         The original data matrices for use in gram matrix computation
-        during calls to `transform`.
+        during calls to ``.transform``.
 
     n_views_ : int
         The number of views
@@ -126,10 +126,8 @@ class KMCCA(BaseCCA):
     .. [#1kmcca] Hardoon D., et al. "Canonical Correlation Analysis: An
                  Overview with Application to Learning Methods", Neural
                  Computation, Volume 16 (12), pp 2639-2664, 2004.
-
     .. [#2kmcca] Bach, F. and Jordan, M. "Kernel Independent Component
                  Analysis." JMLR, 3(Jul):1-48, 2002.
-
     .. [#3kmcca] Kuss, M. and Graepel, T.. "The Geometry of Kernel Canonical
                  Correlation Analysis." MPI Technical Report, 108. (2003).
 
