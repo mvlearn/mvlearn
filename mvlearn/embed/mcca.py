@@ -463,7 +463,7 @@ def _construct_mcca_gevp(Xs, regs=None, as_lists=False):
         The list of data matrices
 
     regs : None | float | 'lw' | 'oas' or list of them, shape (n_views)
-        As described in `mvlearn.mcca.mcca.MCCA`
+        As described in ``mvlearn.mcca.mcca.MCCA``
 
     as_lists : bool
         If True, returns LHS and RHS as lists of composing blocks instead
