@@ -11,6 +11,7 @@ regularization as well as the use of a kernel to compute the distance
 """
 
 # Authors: Iain Carmichael, Ronan Perry
+# License: MIT
 
 from mvlearn.datasets import sample_joint_factor_model
 from mvlearn.embed import MCCA, KMCCA

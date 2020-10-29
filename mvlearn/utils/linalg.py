@@ -1,3 +1,5 @@
+# License: MIT
+
 from scipy.linalg import eigh
 from scipy.linalg import svd as full_svd
 from sklearn.utils.extmath import svd_flip
