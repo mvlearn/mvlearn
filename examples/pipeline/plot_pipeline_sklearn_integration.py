@@ -10,7 +10,9 @@ which are themselves 2d arrays of shape `(n_samples, n_features_i)`. The
 number of features does not have to be constant:
 
 """
+
 # Author: Pierre Ablin
+# License: MIT
 
 import numpy as np
 import matplotlib.pyplot as plt

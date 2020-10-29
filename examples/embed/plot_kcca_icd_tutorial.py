@@ -13,6 +13,7 @@ run-time from O(n^3) to O(nm^2).
 
 """
 
+# License: MIT
 
 import time
 import matplotlib.cbook

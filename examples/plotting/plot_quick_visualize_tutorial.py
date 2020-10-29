@@ -13,6 +13,8 @@ views of varying dimensionality.
 
 """
 
+# License: MIT
+
 from mvlearn.plotting import quick_visualize
 from mvlearn.datasets import load_UCImultifeature
 
