@@ -26,6 +26,8 @@ allows to extract signals that are comon across views.
 
 """
 
+# License: MIT
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mvlearn.decomposition import GroupICA

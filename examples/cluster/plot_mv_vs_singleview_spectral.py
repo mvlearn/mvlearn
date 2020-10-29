@@ -11,6 +11,7 @@ the analagous singleview methods.
 
 """
 
+# License: MIT
 
 from sklearn.cluster import SpectralClustering
 from sklearn.metrics import homogeneity_score

@@ -8,8 +8,6 @@ written by:
 
 Author: Iain Carmichael
 
-License: MIT License
-
 [1] Lock, Eric F., et al. “Joint and Individual Variation Explained (JIVE)
 for Integrated Analysis of Multiple Data Types.” The Annals of Applied
 Statistics, vol. 7, no. 1, 2013, pp. 523–542., doi:10.1214/12-aoas597.
@@ -26,6 +24,8 @@ whose sum is the original data minus noise. This notebook will demonstrate the
 functionality of AJIVE and show some examples of the algorithm's usefulness.
 
 """
+
+# License: MIT
 
 import numpy as np
 from mvlearn.decomposition import AJIVE

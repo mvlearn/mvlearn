@@ -13,6 +13,8 @@ of *mvlearn*.
 
 """
 
+# License: MIT
+
 import numpy as np
 from mvlearn.cluster.mv_spherical_kmeans import MultiviewSphericalKMeans
 from spherecluster import SphericalKMeans, sample_vMF

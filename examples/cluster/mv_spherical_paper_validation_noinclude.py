@@ -12,6 +12,8 @@ IEEE International Conference on Data Mining, pp. 19–26)
 
 """
 
+# License: MIT
+
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
