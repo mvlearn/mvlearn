@@ -5,7 +5,8 @@ from mvlearn.utils import check_Xs
 from mvlearn.embed.mcca import _i_mcca, _mcca_gevp, MCCA, \
     _construct_mcca_gevp
 from mvlearn.embed.kmcca import KMCCA
-from mvlearn.embed.base import _check_regs, _deterministic_decomp, _initial_svds
+from mvlearn.embed.base import _check_regs, _deterministic_decomp, \
+    _initial_svds
 from mvlearn.utils import rand_orthog
 import pytest
 
@@ -339,7 +340,7 @@ def test_mcca_params(signal_ranks, n_components, regs,
 @pytest.mark.parametrize("center", [True, False])
 @pytest.mark.parametrize("multiview_output", [True, False])
 def test_kmcca_params(diag_mode, signal_ranks, n_components, regs, sval_thresh,
-                     center, multiview_output):
+                      center, multiview_output):
     kmcca = KMCCA(
         diag_mode=diag_mode, signal_ranks=signal_ranks,
         n_components=n_components, regs=regs, sval_thresh=sval_thresh,
