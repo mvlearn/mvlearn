@@ -43,11 +43,12 @@ crossviews_plot(mcca_scores[[0, 1]],
                 equal_axes=True,
                 scatter_kwargs={'alpha': 0.4, 's': 2.0})
 
-# MCCA with regularization
+###############################################################################
+# Regularized MCCA
+# ^^^^^^^^^^^^^^^^
 #
 # We can add regularization with the `regs` argument
 # to handle high-dimensional data.
-
 
 # regularization value of .1 for each view
 mcca = MCCA(n_components=joint_rank, regs=.5).fit(Xs)
