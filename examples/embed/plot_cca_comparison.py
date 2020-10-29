@@ -29,6 +29,8 @@ views.
 
 """
 
+# License: MIT
+
 from mvlearn.embed import KCCA, DCCA
 from mvlearn.datasets import GaussianMixture
 import numpy as np

@@ -16,6 +16,8 @@ Specifically, we explore multiview vs. singleview classifier performance:
 - as labeled data proportion (labeld sample size) is varied
 """
 
+# License: MIT
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib

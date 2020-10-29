@@ -15,6 +15,7 @@ this information in a low dimensional embedding.
 
 """
 
+# License: MIT
 
 import numpy as np
 from mvlearn.embed import DCCA

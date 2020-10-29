@@ -10,6 +10,8 @@ advantages.
 
 """
 
+# License: MIT
+
 import numpy as np
 from mvlearn.cluster import MultiviewSpectralClustering
 from sklearn.cluster import SpectralClustering

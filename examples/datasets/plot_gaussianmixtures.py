@@ -8,6 +8,8 @@ mixtures and plot the views against each other using a crossviews plot.
 
 """
 
+# License: MIT
+
 import numpy as np
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot

@@ -9,6 +9,8 @@ use 3 views from the UCI Multiple Features Dataset.
 
 """
 
+# License: MIT
+
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.embed import GCCA
 from mvlearn.plotting import crossviews_plot

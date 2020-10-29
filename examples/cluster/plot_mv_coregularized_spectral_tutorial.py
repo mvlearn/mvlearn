@@ -14,6 +14,8 @@ input types.
 
 """
 
+# License: MIT
+
 import warnings
 import numpy as np
 from sklearn.cluster import SpectralClustering

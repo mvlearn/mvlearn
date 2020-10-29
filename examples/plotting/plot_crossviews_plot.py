@@ -11,6 +11,8 @@ simulated from transformations of multi-variant gaussians.
 
 """
 
+# License: MIT
+
 from mvlearn.datasets import GaussianMixture
 from mvlearn.plotting import crossviews_plot
 import numpy as np
