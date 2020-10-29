@@ -1,18 +1,7 @@
 """Kernel Multiview Canonical Correlation Analysis"""
-# Copyright 2019 NeuroData (http://neurodata.io)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
 # Authors: Iain Carmichael, Ronan Perry
+# License: MIT
 
 import numpy as np
 from itertools import combinations
@@ -268,7 +257,7 @@ class KMCCA(BaseCCA):
 
     @property
     def n_components_(self):
-        if hasattr(self, "loadings_"):
+        if hasattr(self, "dual_vars_"):
             return self.dual_vars_[0].shape[1]
         else:
             raise AttributeError("Model has not been fitted properly yet")

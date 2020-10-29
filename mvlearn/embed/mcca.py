@@ -1,18 +1,7 @@
 """Multiview Canonical Correlation Analysis"""
-# Copyright 2019 NeuroData (http://neurodata.io)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
 # Authors: Iain Carmichael, Ronan Perry
+# License: MIT
 
 from numbers import Number
 import numpy as np
@@ -526,7 +515,7 @@ def _get_n_components(n_components, n_features):
     return n_components
 
 
-def _flag_mean(bases, n_components=None, weights=None):
+def _flag_mean(bases, n_components=None):
     """
     Computes the subspace flag mean.
 
@@ -537,9 +526,6 @@ def _flag_mean(bases, n_components=None, weights=None):
 
     n_components: None, int
         Number of components to compute.
-
-    weights: None, or list
-        Weights to put on the subspaces
 
     Returns
     -------
@@ -574,13 +560,6 @@ def _flag_mean(bases, n_components=None, weights=None):
     bases, n_views, ambient_dim, subspace_dims = check_Xs(
         bases, multiview=True, return_dimensions=True
     )
-
-    # optionally add weights to each subspace
-    if weights is not None:
-        assert len(weights) == n_views
-        for b in range(n_views):
-            assert weights[b] > 0
-            bases[b] = bases[b] * weights[b]
 
     # compte SVD of concatenated basis matrix
     flag_mean, svals, loadings = svd_wrapper(

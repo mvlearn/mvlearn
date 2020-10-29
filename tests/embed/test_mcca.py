@@ -175,6 +175,52 @@ def test_check_regs(regs):
     assert len(regs) == 4
 
 
+def test_transform_fail():
+    Xs = next(generate_mcca_test_data())
+    mcca = MCCA().fit(Xs)
+    with pytest.raises(ValueError):
+        mcca.transform([Xs[0]])
+
+
+def test_inverse_transform_fail():
+    Xs = next(generate_mcca_test_data())
+    mcca = MCCA().fit(Xs)
+    with pytest.raises(ValueError):
+        mcca.inverse_transform([Xs[0]])
+
+
+def test_svd_reg_fail():
+    mcca = MCCA(i_mcca_method='svd', regs=0.5, signal_ranks=1)
+    with pytest.raises(AssertionError):
+        mcca.fit(Xs=next(generate_mcca_test_data()))
+
+
+def test_mcca_n_components():
+    Xs = next(generate_mcca_test_data())
+    n_features = sum([X.shape[1] for X in Xs])
+    mcca = MCCA(n_components=n_features+1)
+    with pytest.raises(AttributeError):
+        mcca.n_components_
+    with pytest.warns(None):
+        mcca.fit(Xs)
+    assert mcca.n_components_ == n_features
+    for load in mcca.loadings_:
+        assert mcca.n_components_ == load.shape[1]
+
+
+def test_kmcca_n_components():
+    Xs = next(generate_mcca_test_data())
+    n_features = sum([X.shape[1] for X in Xs])
+    kmcca = KMCCA(n_components=n_features+1)
+    with pytest.raises(AttributeError):
+        kmcca.n_components_
+    with pytest.warns(None):
+        kmcca.fit(Xs)
+    assert kmcca.n_components_ == n_features
+    for load in kmcca.dual_vars_:
+        assert kmcca.n_components_ == load.shape[1]
+
+
 def test_mcca_all():
     for Xs in generate_mcca_test_data():
         for params in generate_mcca_test_settings():
@@ -249,13 +295,15 @@ def test_mcca_all():
             check_mcca_means(mcca, Xs)
 
 
-def test_mcca_reconstruction_score():
+@pytest.mark.parametrize("multiview_output", [True, False])
+def test_mcca_reconstruction_score(multiview_output):
     Xs = next(generate_mcca_test_data())
     prior_recon_score = None
     for rank in [1, 2, 3]:
         mcca = MCCA(n_components=rank).fit(Xs)
         recon_score = mcca.score(Xs)
-        assert recon_score[0] == mcca.score_view(Xs[0], view=0)
+        if multiview_output:
+            assert recon_score[0] == mcca.score_view(Xs[0], view=0)
         if prior_recon_score is None:
             prior_recon_score = recon_score
         else:
@@ -307,12 +355,6 @@ def test_kmcca(diag_mode):
                 kmcca.transform(Xs), mcca.transform(Xs), decimal=2)
 
 
-def test_svd_reg_fail():
-    mcca = MCCA(i_mcca_method='svd', regs=0.5, signal_ranks=1)
-    with pytest.raises(AssertionError):
-        mcca.fit(Xs=next(generate_mcca_test_data()))
-
-
 @pytest.mark.parametrize("signal_ranks", [None, 2])
 @pytest.mark.parametrize("n_components", [None, 2, 'min', 'max'])
 @pytest.mark.parametrize("regs", [None, 0.5, 'lw', 'oas'])
@@ -329,21 +371,34 @@ def test_mcca_params(signal_ranks, n_components, regs,
         n_components=n_components, regs=regs,
         center=center, multiview_output=multiview_output)
     Xs = next(generate_mcca_test_data())
-    _ = mcca.fit_transform(Xs)
+    scores = mcca.fit_transform(Xs)
+    if multiview_output:
+        assert len(scores) == len(Xs)
+    else:
+        assert scores.shape == (Xs[0].shape[0], mcca.n_components_)
 
 
+@pytest.mark.parametrize("kernel_args", [
+    ("linear", {}),
+    (["poly", "rbf"], [{"degree": 2, "coef0": 0}, {"gamma": 4}])])
 @pytest.mark.parametrize("diag_mode", ["A", "B", "C"])
 @pytest.mark.parametrize("signal_ranks", [None, 2])
 @pytest.mark.parametrize("n_components", [None, 2])
-@pytest.mark.parametrize("regs", [0, 1])
+@pytest.mark.parametrize("regs", [None, 0.5, 1])
 @pytest.mark.parametrize("sval_thresh", [0, 0.01])
 @pytest.mark.parametrize("center", [True, False])
 @pytest.mark.parametrize("multiview_output", [True, False])
-def test_kmcca_params(diag_mode, signal_ranks, n_components, regs, sval_thresh,
-                      center, multiview_output):
+def test_kmcca_params(kernel_args, diag_mode, signal_ranks, n_components, regs,
+                      sval_thresh, center, multiview_output):
+    kernel, kernel_params = kernel_args
     kmcca = KMCCA(
+        kernel=kernel, kernel_params=kernel_params,
         diag_mode=diag_mode, signal_ranks=signal_ranks,
         n_components=n_components, regs=regs, sval_thresh=sval_thresh,
         center=center, multiview_output=multiview_output)
     Xs = next(generate_mcca_test_data())
-    _ = kmcca.fit_transform(Xs)
+    scores = kmcca.fit_transform(Xs)
+    if multiview_output:
+        assert len(scores) == len(Xs)
+    else:
+        assert scores.shape == (Xs[0].shape[0], kmcca.n_components_)
