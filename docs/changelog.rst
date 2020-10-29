@@ -44,6 +44,11 @@ Updates in this release:
 
 - |Feature| Adds ``GroupICA`` and ``GroupPCA``. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
+`mvlearn.embed <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/embed>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |Feature| Adds Multi CCA (``MCCA``) and Kernel MCCA (``KMCCA``) for two or more views. `#249 <https://github.com/mvlearn/mvlearn/pull/249>`_ by `Ronan Perry`_ and `Iain Carmichael`_.
+
 `mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -134,3 +139,5 @@ or
 
 
 .. _Pierre Ablin: https://pierreablin.com/
+.. _Ronan Perry: http://rflperry.github.io/
+.. _Iain Carmichael: https://idc9.github.io/
