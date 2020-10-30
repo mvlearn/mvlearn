@@ -195,6 +195,13 @@ def test_svd_reg_fail():
         mcca.fit(Xs=next(generate_mcca_test_data()))
 
 
+def test_mcca_eigh_singular():
+    X = [[1, 1, 1], [2, 3, 3], [2, 3, 3]]
+    mcca = MCCA()
+    with pytest.raises(ValueError, match="Eigenvalue problem"):
+        mcca.fit([X, X])
+
+
 def test_mcca_n_components():
     Xs = next(generate_mcca_test_data())
     n_features = sum([X.shape[1] for X in Xs])

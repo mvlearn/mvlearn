@@ -313,7 +313,16 @@ def _mcca_gevp(Xs, n_components=None, regs=None):
 
     # solve generalized eigenvector problem
     LHS, RHS = _construct_mcca_gevp(Xs=Xs, regs=regs)
-    gevals, ge_loadings = eigh_wrapper(A=LHS, B=RHS, rank=n_components)
+    try:
+        gevals, ge_loadings = eigh_wrapper(A=LHS, B=RHS, rank=n_components)
+    except np.linalg.LinAlgError as e:
+        if 'is not positive definite' in str(e):
+            raise ValueError(
+                "Eigenvalue problem has a singular matrix. Add " +
+                "regularization (set `regs` to nonzero value) or reduce " +
+                "the rank (set `signal_rank` low enough).")
+        else:
+            raise e
 
     # Split rows
     loadings = [load.T for load in SimpleSplitter(n_features).fit_transform(
