@@ -8,6 +8,7 @@ on 2 views of the UCI multiview digits dataset.
 
 """
 
+# License: MIT
 
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.cluster import MultiviewSphericalKMeans

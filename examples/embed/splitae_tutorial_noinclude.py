@@ -10,6 +10,8 @@ to learn a latent embedding of the data.
 
 """
 
+# License: MIT
+
 import torch
 import torchvision
 from torch.utils.data import Dataset, DataLoader

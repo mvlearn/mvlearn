@@ -26,6 +26,7 @@ performance. The only method as of now is 'kettenring-like'.
 
 """
 
+# License: MIT
 
 import numpy as np
 from mvlearn.embed import KCCA
