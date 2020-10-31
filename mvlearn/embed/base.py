@@ -17,6 +17,7 @@ from numbers import Number
 import numpy as np
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array
 from ..utils import check_Xs, param_as_list, svd_wrapper
 
 
@@ -166,6 +167,7 @@ class BaseCCA(BaseEstimator, TransformerMixin):
             Transformed view
         """
         check_is_fitted(self)
+        X = check_array(X)
         if self.means_[view] is not None:
             X = X - self.means_[view]
         return X @ self.loadings_[view]

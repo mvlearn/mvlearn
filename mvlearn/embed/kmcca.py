@@ -12,6 +12,8 @@ from ..compose import SimpleSplitter
 from ..utils import eigh_wrapper
 from .base import BaseCCA, _check_regs, _initial_svds, _deterministic_decomp
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array
+
 
 
 class KMCCA(BaseCCA):
@@ -212,7 +214,8 @@ class KMCCA(BaseCCA):
             Transformed view
         """
         check_is_fitted(self)
-        K = self._get_kernel(self.Xs_[view], X)
+        X = check_array(X)
+        K = self._get_kernel(X, view, self.Xs_[view])
         if self.kernel_col_means_[view] is not None:
             row_means = np.sum(K, axis=1)[:, np.newaxis] / K.shape[0]
             K -= self.kernel_col_means_[view]

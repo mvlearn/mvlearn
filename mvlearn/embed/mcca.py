@@ -10,6 +10,7 @@ from itertools import combinations
 from warnings import warn
 from sklearn.covariance import ledoit_wolf, oas
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array
 
 from ..utils import check_Xs, param_as_list
 
@@ -198,6 +199,7 @@ class MCCA(BaseCCA):
             The reconstructed view
         """
         check_is_fitted(self)
+        scores = check_array(scores)
         reconst = scores @ self.loadings_[view].T
         if self.means_[view] is not None:
             reconst += self.means_[view]
