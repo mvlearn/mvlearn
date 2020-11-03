@@ -36,7 +36,7 @@ class MCCA(BaseCCA):
     regs : float | 'lw' | 'oas' | None, or list, optional (default None)
         MCCA regularization for each data view, which can be important
         for high dimensional data. A list will specify for each view
-        separately.
+        separately. If float, must be between 0 and 1 (inclusive).
 
         - 0 | None: corresponds to SUMCORR-AVGVAR MCCA.
 
@@ -107,7 +107,7 @@ class MCCA(BaseCCA):
     >>> mcca = MCCA()
     >>> mcca.fit([X1, X2])
     MCCA()
-    >>> Xs_transformed = mcca.transform([X1, X2])
+    >>> Xs_scores = mcca.transform([X1, X2])
     """
 
     def __init__(

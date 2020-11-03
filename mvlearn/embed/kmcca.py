@@ -15,7 +15,6 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 
 
-
 class KMCCA(BaseCCA):
     r"""
     Kernel multi-view canonical correlation analysis.
@@ -94,7 +93,7 @@ class KMCCA(BaseCCA):
     evals_ : numpy.ndarray, shape (n_components,)
         The generalized eigenvalue problem eigenvalues.
 
-    Xs : list of numpy.ndarray, length (n_views,)
+    Xs_ : list of numpy.ndarray, length (n_views,)
         - Xs[i] shape (n_samples, n_features_i)
         The original data matrices for use in gram matrix computation
         during calls to ``.transform``.
@@ -130,7 +129,7 @@ class KMCCA(BaseCCA):
     >>> kmcca = KMCCA()
     >>> kmcca.fit([X1, X2])
     KMCCA()
-    >>> Xs_transformed = kmcca.transform([X1, X2])
+    >>> Xs_scores = kmcca.transform([X1, X2])
     """
 
     def __init__(
@@ -210,7 +209,7 @@ class KMCCA(BaseCCA):
 
         Returns
         -------
-        X_transformed : numpy.ndarray, shape (n_samples, n_components)
+        X_scores : numpy.ndarray, shape (n_samples, n_components)
             Transformed view
         """
         check_is_fitted(self)

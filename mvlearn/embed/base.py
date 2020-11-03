@@ -119,8 +119,7 @@ class BaseCCA(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        Xs_transformed : numpy.ndarray, shape (n_views, n_samples,
-                                               n_components)
+        Xs_scores : numpy.ndarray, shape (n_views, n_samples, n_components)
             If `multiview_output`, returns the normed sum of transformed views
         """
         check_is_fitted(self)
@@ -151,7 +150,7 @@ class BaseCCA(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed : numpy.ndarray, shape (n_samples, n_components)
+        X_scores : numpy.ndarray, shape (n_samples, n_components)
             Transformed view
         """
         check_is_fitted(self)
@@ -175,8 +174,7 @@ class BaseCCA(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        Xs_transformed : numpy.ndarray, shape (n_views, n_samples,
-                                               n_components)
+        Xs_scores : numpy.ndarray, shape (n_views, n_samples, n_components)
             If `multiview_output`, returns the normed sum of transformed views
         """
         scores, common_scores_normed = self._fit(Xs)
