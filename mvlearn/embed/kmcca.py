@@ -229,13 +229,13 @@ class KMCCA(BaseCCA):
 
         Parameters
         ----------
-        Xs : numpy.ndarray, shape (n, d)
+        X : numpy.ndarray, shape (n, d)
             The data matrix
 
         view : int
             The view index, for the kernel parameter selection
 
-        Y : numpy.ndarray, shape (m, d) (optional)
+        Y : numpy.ndarray, shape (m, d), optional (default=)
             Second data matrix
 
         Returns

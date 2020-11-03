@@ -46,8 +46,8 @@ class BaseEmbed(BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
 
         Returns
         -------
@@ -65,8 +65,8 @@ class BaseEmbed(BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
 
         y : array, shape (n_samples,), optional
             Targets to be used if fitting the algorithm is supervised.
@@ -92,8 +92,8 @@ class BaseCCA(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to.
 
         y : None
@@ -114,8 +114,9 @@ class BaseCCA(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            The views to transform
 
         Returns
         -------
@@ -161,13 +162,14 @@ class BaseCCA(BaseEstimator, TransformerMixin):
 
     def fit_transform(self, Xs, y=None):
         """
-        Fit KMCCA to the data and transforms the data.
+        Fit CCA to the data and transforms the data.
 
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            The views to fit and transform
 
         y : None
             Ignored variable.
@@ -191,19 +193,18 @@ def _check_regs(regs, n_views):
 
     Parameters
     ----------
-    regs : None | float | 'lw' | 'oas', or list (default None)
+    regs : float | 'lw' | 'oas' | None, or list, optional (default None)
         MCCA regularization for each data view, which can be important
         for high dimensional data. A list will specify for each view
-        separately.
+        separately. If float, must be between 0 and 1 (inclusive).
 
-        - 0 | None: corresponds to SUMCORR-AVGVAR MCCA.
+        - 0 or None : corresponds to SUMCORR-AVGVAR MCCA.
 
-        - 1: partial least squares SVD in the case of 2 views and a natural
-        generalization of this method for more than two views.
+        - 1 : partial least squares SVD (generalizes to more than 2 views)
 
-        - 'lw': Default `sklearn.covariance.ledoit_wolf` regularization
+        - 'lw' : Default ``sklearn.covariance.ledoit_wolf`` regularization
 
-        - 'oas': Default `sklearn.covariance.oas` regularization
+        - 'oas' : Default ``sklearn.covariance.oas`` regularization
 
     n_views : int
         Number of views

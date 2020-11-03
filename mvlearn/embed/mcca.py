@@ -20,11 +20,10 @@ from ..compose import SimpleSplitter
 
 
 class MCCA(BaseCCA):
-    r"""Multiview CCA
-
-    Multiview canonical correlation analysis. Includes options for
-    regularized MCCA and informative MCCA (where a low rank PCA is first
-    computed).
+    r"""
+    Multiview canonical correlation analysis for any number of views. Includes
+    options for regularized MCCA and informative MCCA (where a low rank PCA is
+    first computed).
 
     Parameters
     ----------
@@ -38,14 +37,13 @@ class MCCA(BaseCCA):
         for high dimensional data. A list will specify for each view
         separately. If float, must be between 0 and 1 (inclusive).
 
-        - 0 | None: corresponds to SUMCORR-AVGVAR MCCA.
+        - 0 or None : corresponds to SUMCORR-AVGVAR MCCA.
 
-        - 1: partial least squares SVD in the case of 2 views and a natural
-             generalization of this method for more than two views.
+        - 1 : partial least squares SVD (generalizes to more than 2 views)
 
-        - 'lw': Default ``sklearn.covariance.ledoit_wolf`` regularization
+        - 'lw' : Default ``sklearn.covariance.ledoit_wolf`` regularization
 
-        - 'oas': Default ``sklearn.covariance.oas`` regularization
+        - 'oas' : Default ``sklearn.covariance.oas`` regularization
 
     signal_ranks : int, None or list, optional (default None)
         The initial signal rank to compute. If None, will compute the full SVD.
@@ -166,10 +164,10 @@ class MCCA(BaseCCA):
 
         Returns
         -------
-        Xs_hat : list of array-likes or numpy.ndarray
-             - Xs_hat length: n_views
-             - Xs_hat[i] shape: (n_samples, n_features_i)
-            The reconstructed original data
+        Xs_hat : list of array-likes
+            - Xs_hat length: n_views
+            - Xs_hat[i] shape: (n_samples, n_features_i)
+            The reconstructed views
         """
         check_is_fitted(self)
         scores = check_Xs(scores)
@@ -195,7 +193,7 @@ class MCCA(BaseCCA):
 
         Returns
         -------
-        Xs_hat : numpy.ndarray, shape (n_samples, n_features)
+        X_hat : numpy.ndarray, shape (n_samples, n_features)
             The reconstructed view
         """
         check_is_fitted(self)
@@ -207,7 +205,7 @@ class MCCA(BaseCCA):
 
     def score(self, Xs, y=None):
         """
-        Computes the squared reconstruction errors for all views.
+        Computes the sums of squared reconstruction errors for all views.
 
             .. math::
                 ||X_{hat} - X||_2^2
@@ -215,18 +213,19 @@ class MCCA(BaseCCA):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
-             The data to reconstruct and score against
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            The views to reconstruct and score
 
         y : None
             Ignored variable.
 
         Returns
         -------
-        scores : numpy.ndarray, shape (n_views,)
-            Reconstruction scores. If ``self.multiview_output`` is True,
-            then the mean score is returned.
+        sse : numpy.ndarray, shape (n_views,)
+            Sums of squared reconstruction errors. If
+            ``self.multiview_output`` is True, then the mean score is
+            returned.
         """
         Xs_hat = self.transform(Xs)
         Xs_hat = self.inverse_transform(Xs_hat)
@@ -239,14 +238,15 @@ class MCCA(BaseCCA):
 
     def score_view(self, X, view):
         """
-        Computes the squared reconstruction error for one view.
+        Computes the sum of squared reconstruction error for a view.
 
             .. math::
                 ||X_{hat} - X||_2^2
 
         Parameters
         ----------
-        Xs : numpy.ndarray, shape (n_samples, n_features)
+        X : numpy.ndarray, shape (n_samples, n_features)
+            The view to reconstruct and score
 
         view : int
             The numeric index of the single view Xs with respect to the fitted
@@ -254,8 +254,8 @@ class MCCA(BaseCCA):
 
         Returns
         -------
-        score : float
-            Reconstruction score
+        sse : float
+            Sum of squared reconstruction errors
         """
         check_is_fitted(self)
         X_hat = self.transform_view(X, view=view)
@@ -285,8 +285,18 @@ def _mcca_gevp(Xs, n_components=None, regs=None):
     n_components : None | int | 'min' | 'max'
         Number of final components to compute.
 
-    regs : None | float | 'lw' | 'oas' or list of them, shape (n_views)
-        MCCA regularization for each data view.
+    regs : float | 'lw' | 'oas' | None, or list, optional (default None)
+        MCCA regularization for each data view, which can be important
+        for high dimensional data. A list will specify for each view
+        separately. If float, must be between 0 and 1 (inclusive).
+
+        - 0 or None : corresponds to SUMCORR-AVGVAR MCCA.
+
+        - 1 : partial least squares SVD (generalizes to more than 2 views)
+
+        - 'lw' : Default ``sklearn.covariance.ledoit_wolf`` regularization
+
+        - 'oas' : Default ``sklearn.covariance.oas`` regularization
 
     Returns
     -------
@@ -368,13 +378,22 @@ def _i_mcca(Xs, signal_ranks=None, n_components=None, regs=None,
     n_components : None | int | 'min' | 'max'
         Number of final components to compute.
 
-    regs : None | float | 'lw' | 'oas' or list of them, shape (n_views)
-        MCCA regularization for each data view.
+    regs : float | 'lw' | 'oas' | None, or list, optional (default None)
+        MCCA regularization for each data view, which can be important
+        for high dimensional data. A list will specify for each view
+        separately. If float, must be between 0 and 1 (inclusive).
 
-    method: str, default='auto'
+        - 0 or None : corresponds to SUMCORR-AVGVAR MCCA.
+
+        - 1 : partial least squares SVD (generalizes to more than 2 views)
+
+        - 'lw' : Default ``sklearn.covariance.ledoit_wolf`` regularization
+
+        - 'oas' : Default ``sklearn.covariance.oas`` regularization
+
+    method: 'auto' | 'svd' | 'gevp', optional (default 'auto')
         Whether or not to use the SVD based method (only works with no
-        regularization) or the gevp based method. Must be one of ['auto',
-        'svd', 'gevp'].
+        regularization) or the gevp based method.
 
     Returns
     -------
