@@ -82,18 +82,18 @@ def check_Xs(
             )
             raise ValueError(msg)
 
-    Xs_converted = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
+    Xs = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
 
-    if not len(set([X.shape[0] for X in Xs_converted])) == 1:
+    if not len(set([X.shape[0] for X in Xs])) == 1:
         msg = "All views must have the same number of samples"
         raise ValueError(msg)
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]
         n_features = [X.shape[1] for X in Xs]
-        return Xs_converted, n_views, n_samples, n_features
+        return Xs, n_views, n_samples, n_features
     else:
-        return Xs_converted
+        return Xs
 
 
 def check_Xs_y(
@@ -250,3 +250,21 @@ def check_Xs_y_nan_allowed(
             )
 
     return Xs_converted, y_converted
+
+
+def param_as_list(param, n_views, single_None=False):
+    """
+    Returns a parameter as a list
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    if isinstance(param, list):
+        assert len(param) == n_views, \
+            f"params {param} must be of length n_views={n_views}"
+    elif not (param is None and single_None):
+        param = [param] * n_views
+    return param

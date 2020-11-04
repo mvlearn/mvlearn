@@ -3,6 +3,18 @@ Embedding
 
 .. currentmodule:: mvlearn.embed
 
+Multiview Canonical Correlation Analysis (MCCA)
+-----------------------------------------------
+
+.. autoclass:: MCCA
+    :exclude-members: get_params, set_params
+
+Kernel MCCA
+-----------
+
+.. autoclass:: KMCCA
+    :exclude-members: get_params, set_params
+
 Generalized Canonical Correlation Analysis
 ------------------------------------------
 
