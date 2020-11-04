@@ -27,7 +27,7 @@ import numpy as np
 # The CCAs learn transformations of the Fourier view and Pixel view that
 # maximizes the cross-view correlation between samples. Here, we have a Fourier
 # sample X1 with unknown pixels. We transform X1 based on the fitted model
-# and find the closest transformed X2 among fitted pixels that in order
+# and find the closest transformed X2 among fitted pixels in order
 # to retrieve a guess as to the unknown pixels.
 
 Xs, _ = load_UCImultifeature(views=[3, 0], shuffle=True, random_state=0)
