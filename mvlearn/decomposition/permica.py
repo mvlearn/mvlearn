@@ -80,7 +80,7 @@ class PermICA(BaseICA):
         random_state=None,
         tol=1e-7,
         verbose=False,
-        preproc=None,
+        preproc="pca",
     ):
         super().__init__(
             n_components=n_components,
@@ -108,10 +108,10 @@ class PermICA(BaseICA):
         -------
         self : returns an instance of itself.
         """
-        print(Xs.shape)
-        return permica(
+        _, W, S = permica(
             Xs,
             max_iter=self.max_iter,
             random_state=self.random_state,
             tol=self.tol,
         )
+        return W, S

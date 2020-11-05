@@ -149,7 +149,7 @@ class MultiviewICA(BaseICA):
         tol=1e-3,
         verbose=False,
         n_jobs=30,
-        preproc=None,
+        preproc="pca",
     ):
         super().__init__(
             n_components=n_components,
@@ -179,7 +179,7 @@ class MultiviewICA(BaseICA):
         -------
         self : returns an instance of itself.
         """
-        return multiviewica(
+        _, W, S = multiviewica(
             Xs,
             noise=self.noise,
             max_iter=self.max_iter,
@@ -188,3 +188,4 @@ class MultiviewICA(BaseICA):
             tol=self.tol,
             verbose=self.verbose,
         )
+        return W, S
