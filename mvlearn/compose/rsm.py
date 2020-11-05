@@ -14,26 +14,24 @@ def random_subspace_method(X, n_features=None, n_views=1):
 
     Parameters
     ----------
-    X : array-like matrix, shape = (n_samples, n_cols)
+    X : array-like matrix, shape (n_samples, n_cols)
         The input samples.
 
     n_features : int, float
         Number (or proportion, if float) of features to randomly select.
-            - If int, then consider n_features as number of columns
-              to select.
 
-            - If float, then consider n_features*n_cols as number of columns
-              to select.
+        - If int, then n_features is the number of columns to select.
+
+        - If float, then n_features*n_cols is the number of columns to select.
 
     n_views : strictly positive int, float optional (default = 1)
         Number of views to construct.
 
     Returns
     -------
-    views : list of array-like matrices
-        List of constructed views.
-            - length: n_views
-            - each view has shape (n_samples, n_features)
+    Xs : list of array-likes matrices
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_features)
 
     References
     ----------

@@ -20,7 +20,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Parameters
     ----------
-    X : array-like matrix, shape = (n_samples, n_cols)
+    X : array-like matrix, shape (n_samples, n_features)
         The input samples.
 
     n_views : int, float optional (default = 1)
@@ -36,13 +36,11 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     random_state: int or None (default = None)
         Sets random state using np.random.seed
 
-
     Returns
     -------
-    views : list of array-like matrices
-        List of constructed views.
-            - length: n_views
-            - each view has shape (n_samples, n_features)
+    Xs : list of array-likes matrices
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_components)
 
     Notes
     -----
