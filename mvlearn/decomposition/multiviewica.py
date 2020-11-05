@@ -28,16 +28,7 @@
 #
 # Modified from source package https://github.com/hugorichard/multiviewica
 
-import warnings
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-from sklearn.utils.extmath import randomized_svd
-from joblib import Parallel, delayed
-from picard import picard
 from multiviewica import multiviewica
-from multiviewica import permica
-from ..preprocessing.repeat import ViewTransformer
-from sklearn.decomposition import PCA
 
 from .baseica import BaseICA
 
