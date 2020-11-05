@@ -30,7 +30,7 @@
 
 import pytest
 import numpy as np
-from mvlearn.decomposition.mv_ica import _hungarian
+from multiviewica import _hungarian
 from mvlearn.decomposition import MultiviewICA, PermICA
 
 

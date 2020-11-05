@@ -1,5 +1,6 @@
 from .ajive import AJIVE
-from .mv_ica import MultiviewICA, PermICA
+from .multiviewica import MultiviewICA
+from .permica import PermICA
 from .grouppca import GroupPCA
 from .groupica import GroupICA
 

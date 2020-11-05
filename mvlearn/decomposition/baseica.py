@@ -16,15 +16,16 @@ class BaseICA(BaseDecomposer):
         Number of components to extract. If None, n_components is set to
         the minimum number of features in the dataset.
 
-    preproc: 'pca' or a ViewTransformer-like instance,
+    preproc: None, 'pca' or a ViewTransformer-like instance,
         default='pca'
         Preprocessing method to use to reduce data.
+        If None, no preprocessing is applied.
         If "pca", performs PCA separately on each view to reduce dimension
         of each view.
         Otherwise the preprocessing is performed using the transform
         method of the ViewTransformer-like object ignoring the `n_components`
         parameter. This instance also needs an inverse transform method
-        to recover original data from reduced data. 
+        to recover original data from reduced data.
 
     multiview_output : bool, optional (default True)
         If True, the `.transform` method returns one dataset per view.
@@ -39,6 +40,13 @@ class BaseICA(BaseDecomposer):
 
     verbose : bool, default=False
         Print information
+
+    Attributes
+    ----------
+    preproc : ViewTransformer-like instance
+        The fitted instance used for preprocessing
+    W_list : np array of shape (n_groups, n_components, n_components)
+        The unmixing matrices to apply on preprocessed data
     """
 
     def __init__(
@@ -51,7 +59,9 @@ class BaseICA(BaseDecomposer):
     ):
         self.verbose = verbose
         self.n_components = n_components
-        if preproc == "pca":
+        if preproc is None:
+            self.preproc = None
+        elif preproc == "pca":
             self.preproc = ViewTransformer(PCA(n_components=n_components))
         else:
             if hasattr(preproc, "transform") and hasattr(
@@ -74,14 +84,16 @@ class BaseICA(BaseDecomposer):
         X: list of np arrays of shape (n_voxels, n_samples)
             Input data: X[i] is the data of subject i
         """
-        reduced_X = self.preproc.fit_transform(X)
+        if self.preproc is not None:
+            reduced_X = self.preproc.fit_transform(X)
+        else:
+            reduced_X = X.copy()
         reduced_X = np.array(reduced_X)
-        W_list, Y_avg = self.fit_(reduced_X)
-        self.y_avg = Y_avg
+        W_list, _ = self.fit_(reduced_X.T)
         self.W_list = W_list
         return self
 
-    def transform(self, X, subjects_indexes=None):
+    def transform(self, X):
         r"""
         Recover the sources from each view (apply unmixing matrix).
 
@@ -99,32 +111,25 @@ class BaseICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
-        if not hasattr(self, "source_"):
+        if not hasattr(self, "W_list"):
             raise ValueError("The model has not yet been fitted.")
 
-        if subjects_indexes is None:
-            subjects_indexes = np.arange(len(self.W_list))
-
-        transformed_X = self.preproc.transform(
-            X, subjects_indexes=subjects_indexes
-        )
-        if len(transformed_X[0][0].shape) > 1:
-            # We are in this setting where SRM is fit on
-            # [[X_ij]] list (subject i session j)
-            transformed_X = [
-                np.concatenate(transformed_x, axis=1)
-                for transformed_x in transformed_X
-            ]
-
-        return [
-            self.W_list[k].dot(transformed_X[i])
-            for i, k in enumerate(subjects_indexes)
-        ]
+        if self.preproc is not None:
+            transformed_X = self.preproc.transform(X)
+        else:
+            transformed_X = X.copy()
+        if self.multiview_output:
+            return [w.dot(x.T).T for w, x in zip(self.W_list, transformed_X)]
+        else:
+            return np.mean(
+                [w.dot(x.T).T for w, x in zip(self.W_list, transformed_X)],
+                axis=0,
+            )
 
     def fit_transform(self, X):
         return self.fit(X).transform(X)
 
-    def inverse_transform(self, S, subjects_indexes=None):
+    def inverse_transform(self, S):
         r"""
         Transforms the sources back to the mixed data for each view
         (apply mixing matrix).
@@ -138,14 +143,16 @@ class BaseICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
-        if not hasattr(self, "source_"):
+        if not hasattr(self, "W_list"):
             raise ValueError("The model has not yet been fitted.")
-        if subjects_indexes is None:
-            subjects_indexes = np.arange(len(self.W_list))
 
-        return [
-            self.preproc.inverse_transform(
-                np.linalg.inv(self.W_list[i]).dot(S), subjects_indexes=[i],
-            )[0]
-            for i in subjects_indexes
-        ]
+        if self.multiview_output:
+            S_ = np.mean(S, axis=0)
+        else:
+            S_ = S
+        inv_red = [np.linalg.inv(w).dot(S_.T).T for w in self.W_list]
+
+        if self.preproc is not None:
+            return self.preproc.inverse_transform(inv_red)
+        else:
+            return inv_red

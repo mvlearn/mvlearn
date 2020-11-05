@@ -97,14 +97,10 @@ class MultiviewICA(BaseICA):
 
     Attributes
     ----------
-    components_ : np array of shape (n_groups, n_features, n_components)
-        The projection matrices that project group data in reduced space.
-        Has value None if n_components is None
-
-    unmixings_ : np array of shape (n_groups, n_components, n_components)
-        Estimated un-mixing matrices
-    source_ : np array of shape (n_samples, n_components)
-        Estimated source matrix
+    preproc : ViewTransformer-like instance
+        The fitted instance used for preprocessing
+    W_list : np array of shape (n_groups, n_components, n_components)
+        The unmixing matrices to apply on preprocessed data
 
     See also
     --------
@@ -169,7 +165,7 @@ class MultiviewICA(BaseICA):
         self.verbose = verbose
         self.n_jobs = n_jobs
 
-    def fit(self, Xs, y=None):
+    def fit_(self, Xs, y=None):
         r"""
         Fits the model to the views Xs.
 
@@ -185,48 +181,12 @@ class MultiviewICA(BaseICA):
         -------
         self : returns an instance of itself.
         """
-        # Parallel SVDs
-        P, Xs = _reduce_data(Xs, self.n_components, self.n_jobs)
-        # Initialization
-        if type(self.init) is str:
-            if self.init not in ["permica", "groupica"]:
-                raise ValueError("init should either be permica or groupica")
-            if self.init == "permica":
-                ica = PermICA(
-                    max_iter=self.max_iter,
-                    random_state=self.random_state,
-                    tol=self.tol,
-                ).fit(Xs)
-                W = ica.unmixings_
-            else:
-                ica = GroupICA(
-                    n_components=self.n_components,
-                    n_individual_components=self.n_components,
-                    random_state=self.random_state,
-                ).fit(Xs)
-                W = np.array(ica.individual_components_)
-
-        else:
-            if type(self.init) is not np.ndarray:
-                raise TypeError("init should be a numpy array")
-            W = self.init
-        # Performs multiview ica
-        if Xs.shape[2] > Xs.shape[1]:
-            raise ValueError(
-                f"Solution underdetermined. Please set \
-                `n_components` to be less than or equal to {Xs.shape[1]}"
-            )
-        W, S = _multiview_ica_main(
+        return multiviewica(
             Xs,
             noise=self.noise,
-            n_iter=self.max_iter,
+            max_iter=self.max_iter,
+            init=self.init,
+            random_state=self.random_state,
             tol=self.tol,
-            init=W,
             verbose=self.verbose,
         )
-
-        self.components_ = P
-        self.unmixings_ = W
-        self.source_ = S
-
-        return self
