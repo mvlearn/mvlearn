@@ -1,10 +1,8 @@
 from .base import BaseDecomposer
 import numpy as np
-from fastsrm.identifiable_srm import IdentifiableFastSRM
-from nonlinearsrm.grouppca import GroupPCA
-from nonlinearsrm.groupica import GroupICA
 from ..preprocessing.repeat import ViewTransformer
 from sklearn.decomposition import PCA
+from scipy import linalg
 
 
 class BaseICA(BaseDecomposer):
@@ -45,8 +43,29 @@ class BaseICA(BaseDecomposer):
     ----------
     preproc : ViewTransformer-like instance
         The fitted instance used for preprocessing
-    unmixings_ : np array of shape (n_groups, n_components, n_components)
-        The unmixing matrices to apply on preprocessed data
+
+    mixing_ : array, shape (n_views, n_components, n_components)
+        The square mixing matrices, linking preprocessed data
+        and the independent components.
+
+    pca_components_: array, shape (n_components, n_features)
+        Principal axes in feature space, representing the directions
+        of maximum variance in the data. Only used if preproc == "pca".
+
+    components_ : array, shape (n_views, n_components, n_components)
+        The square unmixing matrices
+
+    individual_components_ : list of array
+        Individual unmixing matrices estimated by least squares.
+        `individual_components_[i]` is an array of shape
+        (n_components, n_features) where n_features is the number of
+        features in the dataset `i`.
+
+    individual_mixing_ : list of array
+        Individual mixing matrices estimated by least squares.
+        `individual_components_[i]` is an array of shape
+        (n_features, n_components) where n_features is the number of
+        features in the dataset `i`.
     """
 
     def __init__(
@@ -92,13 +111,30 @@ class BaseICA(BaseDecomposer):
         else:
             reduced_X = X.copy()
         reduced_X = np.array(reduced_X)
-        unmixings_, _ = self.fit_(np.swapaxes(reduced_X, 1, 2))
+        unmixings_, S = self.fit_(np.swapaxes(reduced_X, 1, 2))
+        mixing_ = np.array([np.linalg.pinv(W) for W in unmixings_])
+        self.components_ = unmixings_
+        self.mixing_ = mixing_
         if self.preproc_name == "pca":
-            self.components_ = [
-                transformer.components_.T
-                for transformer in self.preproc.transformers_
-            ]
-        self.unmixings_ = np.swapaxes(unmixings_, 1, 2)
+            pca_components = []
+            for i, transformer in enumerate(self.preproc.transformers_):
+                K = transformer.components_
+                pca_components.append(K)
+            self.pca_components_ = np.array(pca_components)
+
+        if self.preproc_name == "None":
+            self.individual_components = unmixings_
+            self.individual_mixing_ = mixing_
+        else:
+            self.individual_mixing_ = []
+            self.individual_components_ = []
+            sources_pinv = linalg.pinv(S.T)
+            for x in X:
+                lstq_solution = np.dot(sources_pinv, x)
+                self.individual_components_.append(
+                    linalg.pinv(lstq_solution).T
+                )
+                self.individual_mixing_.append(lstq_solution.T)
         return self
 
     def transform(self, X):
@@ -119,7 +155,7 @@ class BaseICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
-        if not hasattr(self, "unmixings_"):
+        if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
         if self.preproc is not None:
@@ -127,10 +163,12 @@ class BaseICA(BaseDecomposer):
         else:
             transformed_X = X.copy()
         if self.multiview_output:
-            return np.array([x.dot(w) for w, x in zip(self.unmixings_, transformed_X)])
+            return np.array(
+                [x.dot(w.T) for w, x in zip(self.components_, transformed_X)]
+            )
         else:
             return np.mean(
-                [x.dot(w) for w, x in zip(self.unmixings_, transformed_X)],
+                [x.dot(w.T) for w, x in zip(self.components_, transformed_X)],
                 axis=0,
             )
 
@@ -151,14 +189,14 @@ class BaseICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
-        if not hasattr(self, "unmixings_"):
+        if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
         if self.multiview_output:
             S_ = np.mean(S, axis=0)
         else:
             S_ = S
-        inv_red = [S_.dot(np.linalg.inv(w)) for w in self.unmixings_]
+        inv_red = [S_.dot(w.T) for w in self.mixing_]
 
         if self.preproc is not None:
             return self.preproc.inverse_transform(inv_red)

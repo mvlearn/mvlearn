@@ -89,10 +89,15 @@ def test_ica(algo, init):
         algo = algo(
             n_components=5, tol=1e-5, init=init, multiview_output=False
         ).fit(np.swapaxes(Xs, 1, 2))
-    K = np.swapaxes(algo.components_, 1, 2)
-    W = np.swapaxes(algo.unmixings_, 1, 2)
+    K = algo.pca_components_
+    W = algo.components_
     S = algo.transform(np.swapaxes(Xs, 1, 2)).T
-    dist = np.mean([amari_d(W[i].dot(K[i]), A_list[i]) for i in range(n)])
+    dist = np.mean(
+        [
+            amari_d(W[i], np.linalg.pinv(K[i]).T.dot(A_list[i]))
+            for i in range(n)
+        ]
+    )
     S = normalize(S)
     err = np.mean(error(np.abs(S.dot(S_true.T))))
     assert dist < 0.01
@@ -115,8 +120,10 @@ def test_inverse_transform(Xs):
         ica.transform(Xs)
     S = ica.fit_transform(Xs)
     Xs_mixed = ica.inverse_transform(S)
-    avg_mixed = np.mean([X @ C for X, C in zip(Xs, ica.components_)], axis=0)
-    avg_mixed2 = np.mean([X @ C for X, C in zip(Xs_mixed, ica.components_)], axis=0)
+    avg_mixed = np.mean([X @ np.linalg.pinv(C) for X, C in zip(Xs, ica.pca_components_)], axis=0)
+    avg_mixed2 = np.mean(
+        [X @ np.linalg.pinv(C) for X, C in zip(Xs_mixed, ica.pca_components_)], axis=0
+    )
     assert np.linalg.norm(avg_mixed2 - avg_mixed) < 0.2
 
 

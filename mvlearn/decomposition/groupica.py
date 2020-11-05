@@ -77,12 +77,12 @@ class GroupICA(BaseDecomposer):
     grouppca_ : mvlearn.decomposition.GroupPCA instance
         A GroupPCA class for preprocessing and dimension reduction
 
-    unmixing_ : array, shape (n_components, n_components)
-        The square unmixing matrix, linking the output of the group-pca
+    mixing_ : array, shape (n_components, n_components)
+        The square mixing matrix, linking the output of the group-pca
         and the independent components.
 
     components_ : array, shape (n_components, n_components)
-        The square mixing matrix
+        The square unmixing matrix
 
     individual_components_ : list of array
         Individual unmixing matrices estimated by least squares.
