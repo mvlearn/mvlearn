@@ -123,7 +123,7 @@ class BaseICA(BaseDecomposer):
             self.pca_components_ = np.array(pca_components)
 
         if self.preproc_name == "None":
-            self.individual_components = unmixings_
+            self.individual_components_ = unmixings_
             self.individual_mixing_ = mixing_
         else:
             self.individual_mixing_ = []

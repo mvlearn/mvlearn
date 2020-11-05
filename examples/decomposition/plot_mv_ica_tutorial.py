@@ -22,7 +22,9 @@ optimizing the set of mixing matrices relative to the average source signal.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mvlearn.decomposition.mv_ica import MultiviewICA, PermICA, GroupICA
+from mvlearn.decomposition.multiviewica import MultiviewICA
+from mvlearn.decomposition.permica import PermICA
+from mvlearn.decomposition.groupica import GroupICA
 
 # sigmas: data noise
 # m: number of subjects
@@ -67,8 +69,8 @@ for name, color, algo in algos:
                 ica = algo(tol=1e-4, max_iter=1000, random_state=0).fit(Xs)
             elif name == 'GroupICA':
                 ica = algo(ica_kwargs={'tol': 1e-4}, random_state=0).fit(Xs)
-            W = ica.components_
-            dist = np.mean([amari_d(W[i], A_list[i]) for i in range(m)])
+            W = ica.individual_components_
+            dist = np.mean([amari_d(W[i].T, A_list[i]) for i in range(m)])
             dists.append(dist)
         dists = np.array(dists)
         mean = np.mean(dists)
