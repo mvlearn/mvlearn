@@ -4,6 +4,7 @@
 
 import numpy as np
 from sklearn.random_projection import GaussianRandomProjection
+from sklearn.utils import check_array
 from .utils import check_n_views
 
 
@@ -52,7 +53,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Examples
     --------
-    >>> from mvlearn.construct import random_gaussian_projection
+    >>> from mvlearn.compose import random_gaussian_projection
     >>> import numpy as np
     >>> single_view_data = np.random.rand(1000, 50)
     >>> # Project to 10 components
@@ -64,7 +65,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     >>> print(multi_view_data[0].shape)
     (1000, 10)
     """
-
+    check_array(X)
     check_n_views(n_views)
     views = []
     # set function level random state

@@ -2,6 +2,7 @@
 
 import numpy as np
 import random
+from sklearn.utils import check_array
 from .utils import check_n_views, check_n_features
 
 
@@ -42,7 +43,7 @@ def random_subspace_method(X, n_features=None, n_views=1):
 
     Examples
     --------
-    >>> from mvlearn.construct import random_subspace_method
+    >>> from mvlearn.compose import random_subspace_method
     >>> import random
     >>> import numpy as np
     >>> # Random integer data for compressed viewing
@@ -62,6 +63,7 @@ def random_subspace_method(X, n_features=None, n_views=1):
      [6 0 5 3 0]
      [8 0 2 8 0]]
     """
+    X = check_array(X)
     _, cols = X.shape
 
     check_n_views(n_views)
