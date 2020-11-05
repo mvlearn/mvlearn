@@ -91,10 +91,6 @@ class MultiviewICA(BaseICA):
     verbose : bool, default=False
         Print information
 
-    n_jobs : int (positive), default=None
-        The number of jobs to run in parallel. `None` means 1 job, `-1`
-        means using all processors.
-
     Attributes
     ----------
     preproc : ViewTransformer-like instance
@@ -148,22 +144,24 @@ class MultiviewICA(BaseICA):
         noise=1.0,
         max_iter=1000,
         init="permica",
-        dimension_reduction="pca",
         multiview_output=True,
         random_state=None,
         tol=1e-3,
         verbose=False,
         n_jobs=30,
+        preproc=None,
     ):
-        self.n_components = n_components
+        super().__init__(
+            n_components=n_components,
+            preproc=preproc,
+            random_state=random_state,
+            verbose=verbose,
+            multiview_output=multiview_output,
+        )
         self.noise = noise
         self.max_iter = max_iter
-        self.multiview_output = multiview_output
         self.init = init
-        self.random_state = random_state
         self.tol = tol
-        self.verbose = verbose
-        self.n_jobs = n_jobs
 
     def fit_(self, Xs, y=None):
         r"""

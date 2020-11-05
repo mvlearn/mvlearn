@@ -80,13 +80,17 @@ class PermICA(BaseICA):
         random_state=None,
         tol=1e-7,
         verbose=False,
+        preproc=None,
     ):
-        self.n_components = n_components
+        super().__init__(
+            n_components=n_components,
+            preproc=preproc,
+            random_state=random_state,
+            verbose=verbose,
+            multiview_output=multiview_output,
+        )
         self.max_iter = max_iter
-        self.multiview_output = multiview_output
-        self.random_state = random_state
         self.tol = tol
-        self.verbose = verbose
 
     def fit_(self, Xs, y=None):
         r"""
@@ -104,6 +108,7 @@ class PermICA(BaseICA):
         -------
         self : returns an instance of itself.
         """
+        print(Xs.shape)
         return permica(
             Xs,
             max_iter=self.max_iter,

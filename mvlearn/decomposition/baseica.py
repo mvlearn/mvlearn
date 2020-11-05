@@ -89,8 +89,8 @@ class BaseICA(BaseDecomposer):
         else:
             reduced_X = X.copy()
         reduced_X = np.array(reduced_X)
-        W_list, _ = self.fit_(reduced_X.T)
-        self.W_list = W_list
+        W_list, _ = self.fit_(np.swapaxes(reduced_X, 1, 2))
+        self.W_list = W_list.T
         return self
 
     def transform(self, X):
@@ -119,11 +119,10 @@ class BaseICA(BaseDecomposer):
         else:
             transformed_X = X.copy()
         if self.multiview_output:
-            return [w.dot(x.T).T for w, x in zip(self.W_list, transformed_X)]
+            return [x.dot(w) for w, x in zip(self.W_list, transformed_X)]
         else:
             return np.mean(
-                [w.dot(x.T).T for w, x in zip(self.W_list, transformed_X)],
-                axis=0,
+                [x.dot(w) for w, x in zip(self.W_list, transformed_X)], axis=0,
             )
 
     def fit_transform(self, X):
@@ -150,7 +149,7 @@ class BaseICA(BaseDecomposer):
             S_ = np.mean(S, axis=0)
         else:
             S_ = S
-        inv_red = [np.linalg.inv(w).dot(S_.T).T for w in self.W_list]
+        inv_red = [S_.dot(np.linalg.inv(w)) for w in self.W_list]
 
         if self.preproc is not None:
             return self.preproc.inverse_transform(inv_red)
