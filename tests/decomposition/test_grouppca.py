@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from sklearn.utils._testing import assert_allclose
 from mvlearn.decomposition.grouppca import GroupPCA
-import scipy
 
 
 @pytest.mark.parametrize("n_components", [None, 1, 3, 9])
