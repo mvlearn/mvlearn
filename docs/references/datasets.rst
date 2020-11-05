@@ -12,3 +12,8 @@ Data Simulator
 --------------
 
 .. autoclass:: GaussianMixture
+
+Factor Model
+------------
+
+.. autofunction:: sample_joint_factor_model

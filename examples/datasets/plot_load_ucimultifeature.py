@@ -16,6 +16,8 @@ Kybernetika, vol. 34, no. 4, 1998, 381-386
 
 """
 
+# License: MIT
+
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.plotting import quick_visualize
 

@@ -12,6 +12,8 @@ between the views conditioned on true class labels.
 
 """
 
+# License: MIT
+
 import numpy as np
 import scipy as scp
 from mvlearn.cluster.mv_spectral import MultiviewSpectralClustering

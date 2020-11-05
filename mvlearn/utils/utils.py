@@ -1,16 +1,4 @@
-# Copyright 2019 NeuroData (http://neurodata.io)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# License: MIT
 
 import numpy as np
 from sklearn.utils import check_X_y, check_array
@@ -94,18 +82,18 @@ def check_Xs(
             )
             raise ValueError(msg)
 
-    Xs_converted = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
+    Xs = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
 
-    if not len(set([X.shape[0] for X in Xs_converted])) == 1:
+    if not len(set([X.shape[0] for X in Xs])) == 1:
         msg = "All views must have the same number of samples"
         raise ValueError(msg)
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]
         n_features = [X.shape[1] for X in Xs]
-        return Xs_converted, n_views, n_samples, n_features
+        return Xs, n_views, n_samples, n_features
     else:
-        return Xs_converted
+        return Xs
 
 
 def check_Xs_y(
@@ -262,3 +250,21 @@ def check_Xs_y_nan_allowed(
             )
 
     return Xs_converted, y_converted
+
+
+def param_as_list(param, n_views, single_None=False):
+    """
+    Returns a parameter as a list
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    if isinstance(param, list):
+        assert len(param) == n_views, \
+            f"params {param} must be of length n_views={n_views}"
+    elif not (param is None and single_None):
+        param = [param] * n_views
+    return param

@@ -9,6 +9,8 @@ digits dataset.
 
 """
 
+# License: MIT
+
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.cluster import MultiviewKMeans
 from sklearn.cluster import KMeans

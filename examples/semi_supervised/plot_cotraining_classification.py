@@ -10,6 +10,8 @@ and we do much better than using single-view methods trained on only the
 labeled samples.
 """
 
+# License: MIT
+
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split

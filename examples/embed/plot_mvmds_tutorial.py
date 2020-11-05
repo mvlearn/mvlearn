@@ -9,6 +9,8 @@ time.
 
 """
 
+# License: MIT
+
 from mvlearn.datasets import load_UCImultifeature
 from mvlearn.embed import MVMDS
 import seaborn as sns
