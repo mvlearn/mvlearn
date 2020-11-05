@@ -1,11 +1,11 @@
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![Build Status](https://travis-ci.com/mvlearn/mvlearn.svg?branch=master)](https://travis-ci.com/mvlearn/mvlearn)
-[![Documentation Status](https://readthedocs.org/projects/mvlearn/badge/?version=latest)](https://mvlearn.readthedocs.io/en/latest/?badge=latest)
+[![CircleCI](https://circleci.com/gh/mvlearn/mvlearn/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/mvlearn/mvlearn)
 [![codecov](https://codecov.io/gh/mvlearn/mvlearn/branch/master/graph/badge.svg)](https://codecov.io/gh/mvlearn/mvlearn)
 [![PyPI version](https://badge.fury.io/py/mvlearn.svg)](https://badge.fury.io/py/mvlearn)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mvlearn.svg)](https://anaconda.org/conda-forge/mvlearn)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/github/license/mvlearn/mvlearn)](https://opensource.org/licenses/MIT)
 [![arXiv shield](https://img.shields.io/badge/arXiv-2005.11890-red.svg?style=flat)](https://arxiv.org/abs/2005.11890)
 
 <p align="center">
