@@ -29,7 +29,7 @@ performance. The only method as of now is 'kettenring-like'.
 # License: MIT
 
 import numpy as np
-from mvlearn.embed import KCCA
+from mvlearn.embed import KMCCA
 from mvlearn.model_selection import train_test_split
 from mvlearn.plotting import crossviews_plot
 
@@ -97,7 +97,7 @@ np.random.seed(1)
 Xs = make_data('linear', 250)
 Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
-kcca_l = KCCA(n_components=4, reg=0.01)
+kcca_l = KMCCA(n_components=4, regs=0.01)
 kcca_l.fit(Xs_train)
 linearkcca = kcca_l.transform(Xs_test)
 
@@ -135,7 +135,8 @@ print(cca_stats['pF'])
 Xsp = make_data("poly", 250)
 Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3, random_state=42)
 
-kcca_p = KCCA(ktype="poly", degree=2.0, n_components=4, reg=0.001)
+kcca_p = KMCCA(
+    kernel="poly", kernel_params={'degree': 2.0}, n_components=4, regs=0.001)
 kcca_p.fit(Xsp_train)
 polykcca = kcca_p.transform(Xsp_test)
 
