@@ -65,10 +65,9 @@ for name, color, algo in algos:
             Xs += [sigma * N.dot(A) for A, N in zip(A_list, noises)]
             if name == 'MultiViewICA' or name == 'PermICA':
                 ica = algo(tol=1e-4, max_iter=1000, random_state=0).fit(Xs)
-                W = ica.unmixings_
             elif name == 'GroupICA':
                 ica = algo(ica_kwargs={'tol': 1e-4}, random_state=0).fit(Xs)
-                W = ica.individual_components_
+            W = ica.components_
             dist = np.mean([amari_d(W[i], A_list[i]) for i in range(m)])
             dists.append(dist)
         dists = np.array(dists)

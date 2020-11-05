@@ -120,9 +120,13 @@ def test_inverse_transform(Xs):
         ica.transform(Xs)
     S = ica.fit_transform(Xs)
     Xs_mixed = ica.inverse_transform(S)
-    avg_mixed = np.mean([X @ np.linalg.pinv(C) for X, C in zip(Xs, ica.pca_components_)], axis=0)
+    avg_mixed = np.mean(
+        [X @ np.linalg.pinv(C) for X, C in zip(Xs, ica.pca_components_)],
+        axis=0,
+    )
     avg_mixed2 = np.mean(
-        [X @ np.linalg.pinv(C) for X, C in zip(Xs_mixed, ica.pca_components_)], axis=0
+        [X @ np.linalg.pinv(C) for X, C in zip(Xs_mixed, ica.pca_components_)],
+        axis=0,
     )
     assert np.linalg.norm(avg_mixed2 - avg_mixed) < 0.2
 
