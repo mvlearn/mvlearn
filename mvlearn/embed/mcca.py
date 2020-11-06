@@ -159,7 +159,7 @@ class MCCA(BaseCCA):
 
         Parameters
         ----------
-        scores: array-like, shape (n_samples, n_components)
+        scores: array-like, shape (n_views, n_samples, n_components)
             The CCA scores.
 
         Returns

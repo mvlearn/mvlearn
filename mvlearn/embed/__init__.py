@@ -5,6 +5,7 @@ from .kcca import KCCA
 from .mcca import MCCA
 from .kmcca import KMCCA
 from .utils import select_dimension
+from .cca import CCA
 
 try:
     import torch  # noqa
@@ -17,6 +18,7 @@ except ModuleNotFoundError:
     pass
 
 __all__ = [
+        "CCA",
         "GCCA",
         "Omnibus",
         "MVMDS",
