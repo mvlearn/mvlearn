@@ -3,12 +3,12 @@
 Comparing CCA Variants
 ======================
 
-This tutorial shows a comparison of Kernel Canonical Correlation Analysis
-(KCCA) with three different types of kernel to Deep Canonical Correlation
-Analysis (DCCA). Each learns and computes kernels suitable for different
-situations. The point of this tutorial is to illustrate, in toy examples,
-the rough intuition as to when such methods work well and generate
-linearly correlated projections.
+This tutorial shows a comparison of Canonical Correlation Analysis (CCA),
+Kernel CCA (KCCA) with two different types of kernel, and Deep CCA (DCCA).
+CCA is equivalent to KCCA with a linear kernel. Each learns kernels suitable
+for different situations. The point of this tutorial is to illustrate, in toy
+examples, the rough intuition as to when such methods work well and find
+highly correlated projections.
 
 The simulated latent data has two signal dimensions draw from independent
 Gaussians. Two views of data were derived from this.
@@ -31,7 +31,7 @@ views.
 
 # License: MIT
 
-from mvlearn.embed import KCCA, DCCA
+from mvlearn.embed import CCA, KMCCA, DCCA
 from mvlearn.datasets import GaussianMixture
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,7 +69,7 @@ cmap = matplotlib.colors.ListedColormap(
 cmap = 'coolwarm'
 
 method_labels = \
-    ['Raw Views', 'Linear KCCA', 'Polynomial KCCA', 'Gaussian KCCA', 'DCCA']
+    ['Raw Views', 'CCA', 'Polynomial KCCA', 'Gaussian KCCA', 'DCCA']
 transform_labels = \
     ['Linear Transform', 'Polynomial Transform', 'Sinusoidal Transform']
 
@@ -78,9 +78,11 @@ outdim_size = min(Xs_train[0][0].shape[1], 2)
 layer_sizes1 = [256, 256, outdim_size]
 layer_sizes2 = [256, 256, outdim_size]
 methods = [
-    KCCA(ktype='linear', reg=0.1, degree=2.0, constant=0.1, n_components=2),
-    KCCA(ktype='poly', reg=0.1, degree=2.0, constant=0.1, n_components=2),
-    KCCA(ktype='gaussian', reg=1.0, sigma=2.0, n_components=2),
+    CCA(regs=0.1, n_components=2),
+    KMCCA(kernel='poly', regs=0.1, kernel_params={'degree': 2, 'coef0': 0.1},
+          n_components=2),
+    KMCCA(kernel='rbf', regs=0.1, kernel_params={'gamma': 1/4},
+          n_components=2),
     DCCA(input_size1, input_size2, outdim_size, layer_sizes1, layer_sizes2,
          epoch_num=400)
 ]
@@ -132,3 +134,5 @@ for r, transform in enumerate(transforms):
             ax.axis("equal")
             ax.set_xticks([], [])
             ax.set_yticks([], [])
+
+plt.show()

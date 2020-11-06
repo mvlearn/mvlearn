@@ -119,9 +119,9 @@ crossviews_plot(linearkcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # their significance using the p-values from a Wilk's Lambda test
 
 
-cca_stats = kcca_l.get_stats()
-print(cca_stats['r'])
-print(cca_stats['pF'])
+# cca_stats = kcca_l.get_stats()
+# print(cca_stats['r'])
+# print(cca_stats['pF'])
 
 ###############################################################################
 # Polynomial kernel implementation
@@ -136,7 +136,8 @@ Xsp = make_data("poly", 250)
 Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3, random_state=42)
 
 kcca_p = KMCCA(
-    kernel="poly", kernel_params={'degree': 2.0}, n_components=4, regs=0.001)
+    kernel="poly", kernel_params={'degree': 2.0, 'coef0': 0.1},
+    n_components=4, regs=0.001)
 kcca_p.fit(Xsp_train)
 polykcca = kcca_p.transform(Xsp_test)
 
@@ -159,8 +160,8 @@ crossviews_plot(polykcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # printing the canonical correlations for each component
 
 
-kcca_stats = kcca_p.get_stats()
-print(kcca_stats['r'])
+# kcca_stats = kcca_p.get_stats()
+# print(kcca_stats['r'])
 
 ###############################################################################
 # Gaussian Kernel Implementation
@@ -174,7 +175,8 @@ print(kcca_stats['r'])
 Xsg = make_data("gaussian", 250)
 Xsg_train, Xsg_test = train_test_split(Xsg, test_size=0.3, random_state=42)
 
-kcca_g = KCCA(ktype="gaussian", sigma=1.0, n_components=4, reg=0.01)
+kcca_g = KMCCA(
+    kernel="rbf", kernel_params={'gamma': 1}, n_components=4, regs=0.01)
 kcca_g.fit(Xsg_train)
 gausskcca = kcca_g.transform(Xsg_test)
 
@@ -196,5 +198,5 @@ crossviews_plot(gausskcca, ax_ticks=False, ax_labels=True, equal_axes=True)
 # printing the canonical correlations for each component
 
 
-kcca_stats = kcca_g.get_stats()
-print(kcca_stats['r'])
+# kcca_stats = kcca_g.get_stats()
+# print(kcca_stats['r'])
