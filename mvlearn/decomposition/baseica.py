@@ -25,7 +25,7 @@ class BaseICA(BaseDecomposer):
         parameter. This instance also needs an inverse transform method
         to recover original data from reduced data.
 
-    multiview_output : bool, optional (default True)
+    multiview_output : bool, default True
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
