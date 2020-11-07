@@ -14,8 +14,8 @@ class BaseICA(BaseDecomposer):
         Number of components to extract. If None, n_components is set to
         the minimum number of features in the dataset.
 
-    preproc: None, 'pca' or a ViewTransformer-like instance,
-        default='pca'
+    preproc: None, 'pca' or a ViewTransformer-like instance,\
+            default='pca'
         Preprocessing method to use to reduce data.
         If None, no preprocessing is applied.
         If "pca", performs PCA separately on each view to reduce dimension
