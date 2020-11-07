@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 import numpy as np
-from sklearn.decomposition import PCA
 from scipy import linalg
+from sklearn.decomposition import PCA
 
 from .base import BaseDecomposer
 from ..preprocessing.repeat import ViewTransformer
