@@ -154,7 +154,7 @@ class MultiviewICA(BaseICA):
         self.init = init
         self.tol = tol
 
-    def fit_(self, Xs, y=None):
+    def _fit(self, Xs, y=None):
         r"""
         Fits the model to the views Xs.
 

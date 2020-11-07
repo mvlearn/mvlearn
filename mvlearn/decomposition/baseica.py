@@ -136,7 +136,7 @@ class BaseICA(BaseDecomposer):
         else:
             reduced_X = X.copy()
         reduced_X = np.array(reduced_X)
-        unmixings_, S = self.fit_(np.swapaxes(reduced_X, 1, 2))
+        unmixings_, S = self._fit(np.swapaxes(reduced_X, 1, 2))
         mixing_ = np.array([np.linalg.pinv(W) for W in unmixings_])
         self.components_ = unmixings_
         self.mixing_ = mixing_
@@ -164,7 +164,7 @@ class BaseICA(BaseDecomposer):
                 self.individual_mixing_.append(lstq_solution.T)
         return self
 
-    def transform(self, X):
+    def transform(self, X, y):
         r"""
         Recover the sources from each view (apply unmixing matrix).
 
