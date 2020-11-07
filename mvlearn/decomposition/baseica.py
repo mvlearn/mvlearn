@@ -124,8 +124,8 @@ class BaseICA(BaseDecomposer):
         self.multiview_output = multiview_output
 
     def fit(self, X, y=None):
-        """
-        Fits the model
+        """Fits the model.
+
         Parameters
         ----------
         X: list of np arrays of shape (n_voxels, n_samples)
