@@ -32,6 +32,8 @@ import pytest
 import numpy as np
 from multiviewica import _hungarian
 from mvlearn.decomposition import MultiviewICA, PermICA
+from mvlearn.preprocessing import ViewTransformer
+from sklearn.decomposition import PCA
 
 
 def normalize(A):
@@ -65,13 +67,19 @@ def Xs():
 
 
 @pytest.mark.parametrize(
-    ("algo, init"),
-    [(PermICA, None), (MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
+    ("algo", "init", "preproc"),
+    [
+        (PermICA, None, "pca"),
+        (MultiviewICA, "permica", "pca"),
+        (MultiviewICA, "groupica", "custom"),
+    ],
 )
-def test_ica(algo, init):
+def test_ica(algo, init, preproc):
     # Test that all algo can recover the sources
     sigma = 1e-4
     n, v, p, t = 3, 10, 5, 1000
+    if preproc == "custom":
+        preproc = ViewTransformer(PCA(n_components=5))
     # Generate signals
     rng = np.random.RandomState(0)
     S_true = rng.laplace(size=(p, t))
@@ -104,6 +112,15 @@ def test_ica(algo, init):
     assert err < 0.01
 
 
+def test_badpreprocess(Xs):
+    class BadPreprocess:
+        def __init__(self):
+            pass
+
+    with pytest.raises(ValueError):
+        MultiviewICA(preproc=BadPreprocess())
+
+
 def test_transform(Xs):
     ica = MultiviewICA(n_components=2)
     with pytest.raises(ValueError):
@@ -114,10 +131,13 @@ def test_transform(Xs):
     assert ica.fit_transform(Xs).shape == Xs.shape
 
 
-def test_inverse_transform(Xs):
-    ica = MultiviewICA(n_components=2)
+@pytest.mark.parametrize(
+    "multiview_output", [True, False],
+)
+def test_inverse_transform(Xs, multiview_output):
+    ica = MultiviewICA(n_components=2, multiview_output=multiview_output)
     with pytest.raises(ValueError):
-        ica.transform(Xs)
+        ica.inverse_transform(Xs)
     S = ica.fit_transform(Xs)
     Xs_mixed = ica.inverse_transform(S)
     avg_mixed = np.mean(
