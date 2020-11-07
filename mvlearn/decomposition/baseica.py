@@ -130,6 +130,8 @@ class BaseICA(BaseDecomposer):
         ----------
         X: list of np arrays of shape (n_voxels, n_samples)
             Input data: X[i] is the data of subject i
+
+        y : ignored
         """
         if self.preproc_instance is not None:
             reduced_X = self.preproc_instance.fit_transform(X)
@@ -199,7 +201,7 @@ class BaseICA(BaseDecomposer):
                 axis=0,
             )
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, y):
         return self.fit(X).transform(X)
 
     def inverse_transform(self, S):
