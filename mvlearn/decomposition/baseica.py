@@ -28,16 +28,16 @@ from scipy import linalg
 
 
 class BaseICA(BaseDecomposer):
-    """
-    A base class for multiview ICA methods.
+    """A base class for multiview ICA methods.
+
     Parameters
     ----------
     n_components : int, optional
         Number of components to extract. If None, n_components is set to
         the minimum number of features in the dataset.
 
-    preproc: None, 'pca' or a ViewTransformer-like instance,
-        default='pca'
+    preproc: None, 'pca' or a ViewTransformer-like instance,\
+            default='pca'
         Preprocessing method to use to reduce data.
         If None, no preprocessing is applied.
         If "pca", performs PCA separately on each view to reduce dimension
@@ -47,7 +47,7 @@ class BaseICA(BaseDecomposer):
         parameter. This instance also needs an inverse transform method
         to recover original data from reduced data.
 
-    multiview_output : bool, optional (default True)
+    multiview_output : bool, default True
         If True, the `.transform` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
