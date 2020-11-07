@@ -20,11 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .base import BaseDecomposer
-from ..preprocessing.repeat import ViewTransformer
 import numpy as np
 from sklearn.decomposition import PCA
 from scipy import linalg
+
+from .base import BaseDecomposer
+from ..preprocessing.repeat import ViewTransformer
 
 
 class BaseICA(BaseDecomposer):
