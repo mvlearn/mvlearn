@@ -167,7 +167,7 @@ class BaseICA(BaseDecomposer):
                 self.individual_mixing_.append(lstq_solution.T)
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X):
         r"""
         Recover the sources from each view (apply unmixing matrix).
 
