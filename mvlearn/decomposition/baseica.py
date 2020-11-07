@@ -6,8 +6,8 @@ from scipy import linalg
 
 
 class BaseICA(BaseDecomposer):
-    """
-    A base class for multiview ICA methods.
+    """A base class for multiview ICA methods.
+
     Parameters
     ----------
     n_components : int, optional
