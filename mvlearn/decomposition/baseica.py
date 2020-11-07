@@ -1,6 +1,28 @@
+# MIT License
+
+# Copyright (c) [2017] [Pierre Ablin and Hugo Richard]
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from .base import BaseDecomposer
-import numpy as np
 from ..preprocessing.repeat import ViewTransformer
+import numpy as np
 from sklearn.decomposition import PCA
 from scipy import linalg
 
@@ -41,7 +63,7 @@ class BaseICA(BaseDecomposer):
 
     Attributes
     ----------
-    preproc : ViewTransformer-like instance
+    preproc_instance : ViewTransformer-like instance
         The fitted instance used for preprocessing
 
     mixing_ : array, shape (n_views, n_components, n_components)
@@ -78,18 +100,21 @@ class BaseICA(BaseDecomposer):
     ):
         self.verbose = verbose
         self.n_components = n_components
+        self.preproc = preproc
         if preproc is None or preproc == "pca" and n_components is None:
-            self.preproc = None
+            self.preproc_instance = None
             self.preproc_name = "None"
         elif preproc == "pca":
-            self.preproc = ViewTransformer(PCA(n_components=n_components))
             self.preproc_name = "pca"
+            self.preproc_instance = ViewTransformer(
+                PCA(n_components=n_components)
+            )
         else:
             if hasattr(preproc, "transform") and hasattr(
                 preproc, "inverse_transform"
             ):
-                self.preproc = preproc
                 self.preproc_name = "custom"
+                self.preproc_instance = preproc
             else:
                 raise ValueError(
                     "The dimension reduction instance needs"
@@ -106,8 +131,8 @@ class BaseICA(BaseDecomposer):
         X: list of np arrays of shape (n_voxels, n_samples)
             Input data: X[i] is the data of subject i
         """
-        if self.preproc is not None:
-            reduced_X = self.preproc.fit_transform(X)
+        if self.preproc_instance is not None:
+            reduced_X = self.preproc_instance.fit_transform(X)
         else:
             reduced_X = X.copy()
         reduced_X = np.array(reduced_X)
@@ -117,7 +142,9 @@ class BaseICA(BaseDecomposer):
         self.mixing_ = mixing_
         if self.preproc_name == "pca":
             pca_components = []
-            for i, transformer in enumerate(self.preproc.transformers_):
+            for i, transformer in enumerate(
+                self.preproc_instance.transformers_
+            ):
                 K = transformer.components_
                 pca_components.append(K)
             self.pca_components_ = np.array(pca_components)
@@ -158,8 +185,8 @@ class BaseICA(BaseDecomposer):
         if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
-        if self.preproc is not None:
-            transformed_X = self.preproc.transform(X)
+        if self.preproc_instance is not None:
+            transformed_X = self.preproc_instance.transform(X)
         else:
             transformed_X = X.copy()
         if self.multiview_output:
@@ -198,7 +225,7 @@ class BaseICA(BaseDecomposer):
             S_ = S
         inv_red = [S_.dot(w.T) for w in self.mixing_]
 
-        if self.preproc is not None:
-            return self.preproc.inverse_transform(inv_red)
+        if self.preproc_instance is not None:
+            return self.preproc_instance.inverse_transform(inv_red)
         else:
             return inv_red

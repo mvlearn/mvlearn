@@ -67,19 +67,13 @@ def Xs():
 
 
 @pytest.mark.parametrize(
-    ("algo", "init", "preproc"),
-    [
-        (PermICA, None, "pca"),
-        (MultiviewICA, "permica", "pca"),
-        (MultiviewICA, "groupica", "custom"),
-    ],
+    ("algo", "init"),
+    [(PermICA, None), (MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
 )
-def test_ica(algo, init, preproc):
+def test_ica(algo, init):
     # Test that all algo can recover the sources
     sigma = 1e-4
     n, v, p, t = 3, 10, 5, 1000
-    if preproc == "custom":
-        preproc = ViewTransformer(PCA(n_components=5))
     # Generate signals
     rng = np.random.RandomState(0)
     S_true = rng.laplace(size=(p, t))
@@ -112,6 +106,16 @@ def test_ica(algo, init, preproc):
     assert err < 0.01
 
 
+def test_custom_preproc(Xs):
+    ica1 = MultiviewICA(n_components=2, random_state=0)
+    ica2 = MultiviewICA(
+        preproc=ViewTransformer(PCA(n_components=2)), random_state=0
+    )
+    S1 = ica1.fit_transform(Xs)
+    S2 = ica2.fit_transform(Xs)
+    np.testing.assert_array_almost_equal(S1, S2)
+
+
 def test_badpreprocess(Xs):
     class BadPreprocess:
         def __init__(self):
@@ -131,9 +135,7 @@ def test_transform(Xs):
     assert ica.fit_transform(Xs).shape == Xs.shape
 
 
-@pytest.mark.parametrize(
-    "multiview_output", [True, False],
-)
+@pytest.mark.parametrize("multiview_output", [True, False])
 def test_inverse_transform(Xs, multiview_output):
     ica = MultiviewICA(n_components=2, multiview_output=multiview_output)
     with pytest.raises(ValueError):
@@ -149,6 +151,13 @@ def test_inverse_transform(Xs, multiview_output):
         axis=0,
     )
     assert np.linalg.norm(avg_mixed2 - avg_mixed) < 0.2
+
+
+def test_inverse_transform_no_preproc(Xs):
+    ica = MultiviewICA()
+    S = ica.fit_transform(Xs)
+    Xs_mixed = ica.inverse_transform(S)
+    assert np.mean((Xs_mixed - Xs) ** 2) / np.mean(Xs ** 2) < 0.05
 
 
 def test_fit_errors(Xs):
