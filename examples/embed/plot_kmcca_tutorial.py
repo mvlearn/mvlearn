@@ -1,23 +1,23 @@
 """
-==========================
-Kernel CCA (KCCA) Tutorial
-==========================
+============================
+Kernel MCCA (KMCCA) Tutorial
+============================
 
-KCCA is a variant of Canonical Correlation Analysis that can use a
+KMCCA is a variant of Canonical Correlation Analysis that can use a
 nonlinear kernel to uncover nonlinear correlations between views of data
 and thereby transform data into a lower dimensional space which captures
 the correlated information between views.
 
-This tutorial runs KCCA on two views of data. The kernel implementations,
+This tutorial runs KMCCA on two views of data. The kernel implementations,
 parameter 'ktype', are linear, polynomial and gaussian. Polynomial kernel has
 two parameters: 'constant', 'degree'. Gaussian kernel has one parameter:
 'sigma'.
 
 Useful information, like canonical correlations between transformed data and
 statistical tests for significance of these correlations can be computed using
-the get_stats() function of the KCCA object.
+the get_stats() function of the KMCCA object.
 
-When initializing KCCA, you can also set the following parameters:
+When initializing KMCCA, you can also set the following parameters:
 the number of canonical components 'n_components', the regularization
 parameter 'reg', the decomposition type 'decomposition', and the decomposition
 method 'method'. There are two decomposition types: 'full' and 'icd'. In some
@@ -26,13 +26,15 @@ performance. The only method as of now is 'kettenring-like'.
 
 """
 
+# Authors: Theodore Lee, Ronan Perry
 # License: MIT
 
 import numpy as np
 from mvlearn.embed import KMCCA
 from mvlearn.model_selection import train_test_split
 from mvlearn.plotting import crossviews_plot
-
+import warnings
+warnings.filterwarnings("ignore")
 
 # Function creates Xs, a list of two views of data with a linear relationship,
 # polynomial relationship (2nd degree) and a gaussian (sinusoidal)
@@ -81,10 +83,10 @@ def make_data(kernel, N):
         return [x, y]
 
 ###############################################################################
-# Linear kernel implementation
-# ----------------------------
+# Linear Kernel
+# -------------
 #
-# Here we show how KCCA with a linear kernel can uncover the highly correlated
+# Here we show how KMCCA with a linear kernel can uncover the highly correlated
 # latent distribution of the 2 views which are related with a linear
 # relationship, and then transform the data into that latent space. We use an
 # 80-20, train-test data split to develop the embedding.
@@ -97,106 +99,68 @@ np.random.seed(1)
 Xs = make_data('linear', 250)
 Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
-kcca_l = KMCCA(n_components=4, regs=0.01)
-kcca_l.fit(Xs_train)
-linearkcca = kcca_l.transform(Xs_test)
+kmcca = KMCCA(n_components=2, regs=0.01)
+scores = kmcca.fit(Xs_train).transform(Xs_test)
+
+crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Simulated data crossplot: linear setting')
+
+crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Scores crossplot: linear KMCCA')
+
+# Now, we assess the canonical correlations achieved on the testing data
+
+print(kmcca.canon_corrs(scores))
 
 ###############################################################################
-# Original Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^
+# Polynomial Kernel
+# -----------------
 
-
-crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True)
-
-###############################################################################
-# Transformed Test Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-crossviews_plot(linearkcca, ax_ticks=False, ax_labels=True, equal_axes=True)
-
-# Now, we assess the canonical correlations achieved on the testing data, and
-# their significance using the p-values from a Wilk's Lambda test
-
-
-# cca_stats = kcca_l.get_stats()
-# print(cca_stats['r'])
-# print(cca_stats['pF'])
-
-###############################################################################
-# Polynomial kernel implementation
-# --------------------------------
-
-# Here we show how KCCA with a polynomial kernel can uncover the highly
+# Here we show how KMCCA with a polynomial kernel can uncover the highly
 # correlated latent distribution of the 2 views which are related with a
 # polynomial relationship, and then transform the data into that latent space.
 
 
-Xsp = make_data("poly", 250)
-Xsp_train, Xsp_test = train_test_split(Xsp, test_size=0.3, random_state=42)
+Xs = make_data("poly", 250)
+Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
-kcca_p = KMCCA(
+kmcca = KMCCA(
     kernel="poly", kernel_params={'degree': 2.0, 'coef0': 0.1},
     n_components=4, regs=0.001)
-kcca_p.fit(Xsp_train)
-polykcca = kcca_p.transform(Xsp_test)
+scores = kmcca.fit(Xs_train).transform(Xs_test)
 
+crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Simulated data crossplot: polynomial setting')
 
-###############################################################################
-# Original Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^
+crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Scores crossplot: polynomial KMCCA')
 
+# Now, we assess the canonical correlations achieved on the testing data
 
-crossviews_plot(Xsp, ax_ticks=False, ax_labels=True, equal_axes=True)
-
-###############################################################################
-# Transformed Test Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-crossviews_plot(polykcca, ax_ticks=False, ax_labels=True, equal_axes=True)
-
-# Now, we assess the canonical correlations achieved on the testing data by
-# printing the canonical correlations for each component
-
-
-# kcca_stats = kcca_p.get_stats()
-# print(kcca_stats['r'])
+print(kmcca.canon_corrs(scores))
 
 ###############################################################################
-# Gaussian Kernel Implementation
-# ------------------------------
+# Gaussian Kernel
+# ---------------
 
-# Here we show how KCCA with a gaussian kernel can uncover the highly
+# Here we show how KMCCA with a gaussian kernel can uncover the highly
 # correlated latent distribution of the 2 views which are related with a
 # sinusoidal relationship, and then transform the data into that latent space.
 
 
-Xsg = make_data("gaussian", 250)
-Xsg_train, Xsg_test = train_test_split(Xsg, test_size=0.3, random_state=42)
+Xs = make_data("gaussian", 250)
+Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
-kcca_g = KMCCA(
+kmcca = KMCCA(
     kernel="rbf", kernel_params={'gamma': 1}, n_components=4, regs=0.01)
-kcca_g.fit(Xsg_train)
-gausskcca = kcca_g.transform(Xsg_test)
+scores = kmcca.fit(Xs_train).transform(Xs_test)
 
-###############################################################################
-# Original Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^
+crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Simulated data crossplot: Gaussian setting')
 
+crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
+                title='Scores crossplot: Gaussian KMCCA')
 
-crossviews_plot(Xsg, ax_ticks=False, ax_labels=True, equal_axes=True)
+# Now, we assess the canonical correlations achieved on the testing data
 
-###############################################################################
-# Transformed Test Data Plotted
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-crossviews_plot(gausskcca, ax_ticks=False, ax_labels=True, equal_axes=True)
-
-# Now, we assess the canonical correlations achieved on the testing data by
-# printing the canonical correlations for each component
-
-
-# kcca_stats = kcca_g.get_stats()
-# print(kcca_stats['r'])
+print(kmcca.canon_corrs(scores))

@@ -29,6 +29,7 @@ views.
 
 """
 
+# Author: Ronan Perry
 # License: MIT
 
 from mvlearn.embed import CCA, KMCCA, DCCA
@@ -37,7 +38,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import seaborn as sns
-
+import warnings
+warnings.filterwarnings("ignore")
 
 # Make Latents
 n_samples = 200
