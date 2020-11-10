@@ -89,7 +89,7 @@ methods = [
          epoch_num=400)
 ]
 
-fig, axes = plt.subplots(3 * 2, 5 * 2, figsize=(20, 12))
+fig, axes = plt.subplots(3 * 2, 5 * 2, figsize=(22, 12))
 sns.set_context('notebook')
 
 for r, transform in enumerate(transforms):
@@ -106,15 +106,15 @@ for r, transform in enumerate(transforms):
         ax.set_xticks([], [])
         ax.set_yticks([], [])
         if dim1 == 0:
-            ax.set_ylabel(f"View 2 Dim {dim2+1}")
+            ax.set_ylabel(f"View 2 Dim {dim2+1}", fontsize=14)
         if dim1 == 0 and dim2 == 0:
-            ax.text(-0.5, -0.1, transform_labels[r], transform=ax.transAxes,
-                    fontsize=18, rotation=90, verticalalignment='center')
+            ax.text(-0.4, -0.1, transform_labels[r], transform=ax.transAxes,
+                    fontsize=22, rotation=90, verticalalignment='center')
         if dim2 == 1 and r == len(transforms)-1:
-            ax.set_xlabel(f"View 1 Dim {dim1+1}")
+            ax.set_xlabel(f"View 1 Dim {dim1+1}", fontsize=14)
         if i == 0 and r == 0:
             ax.set_title(method_labels[r],
-                         {'position': (1.11, 1), 'fontsize': 18})
+                         {'position': (1.11, 1), 'fontsize': 22})
 
     for c, method in enumerate(methods):
         axs = axes[2*r: 2*r+2, 2*c+2:2*c+4]
@@ -129,12 +129,14 @@ for r, transform in enumerate(transforms):
                 c=labels,
             )
             if dim2 == 1 and r == len(transforms)-1:
-                ax.set_xlabel(f"View 1 Dim {dim1+1}")
+                ax.set_xlabel(f"View 1 Dim {dim1+1}", fontsize=16)
             if i == 0 and r == 0:
                 ax.set_title(method_labels[c + 1], {'position': (1.11, 1),
-                             'fontsize': 18})
+                             'fontsize': 22})
             ax.axis("equal")
             ax.set_xticks([], [])
             ax.set_yticks([], [])
 
+plt.tight_layout()
+plt.subplots_adjust(wspace=0.15, hspace=0.15)
 plt.show()

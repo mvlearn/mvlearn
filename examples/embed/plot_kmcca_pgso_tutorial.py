@@ -132,6 +132,7 @@ ax2.plot(tols, canon_corrs, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
 plt.title('PGSO canonical correlations across tolerances')
+plt.tight_layout()
 plt.show()
 
 ###############################################################################
@@ -143,7 +144,7 @@ plt.show()
 # rank over multiple trials.
 #
 # From the rank vs canonical correlation analysis in the previous section, we
-# discovered that a tolerance of 10 will preserve the canonical correlation
+# discovered that a tolerance of 0.1 will preserve the canonical correlation
 # (accuracy). We also see here that we can get an order of magnitude
 # decrease in run-time compared to the full decomposition (tolerance 0).
 
@@ -173,4 +174,5 @@ ax2.plot(tols, runtimes, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
 plt.title('PGSO runtimes across tolerances')
+plt.tight_layout()
 plt.show()

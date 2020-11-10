@@ -88,19 +88,15 @@ def make_data(kernel, N):
 #
 # Here we show how KMCCA with a linear kernel can uncover the highly correlated
 # latent distribution of the 2 views which are related with a linear
-# relationship, and then transform the data into that latent space. We use an
-# 80-20, train-test data split to develop the embedding.
-#
-# Also, we use statistical tests (Wilk's Lambda) to check the significance of
-# the canonical correlations.
+# relationship, and then transform the data into that latent space.
 
 
 np.random.seed(1)
 Xs = make_data('linear', 250)
 Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
-kmcca = KMCCA(n_components=2, regs=0.01)
-scores = kmcca.fit(Xs_train).transform(Xs_test)
+kmcca = KMCCA(n_components=4, regs=0.01)
+scores = kmcca.fit_transform(Xs_test)
 
 crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
                 title='Simulated data crossplot: linear setting')
@@ -110,7 +106,7 @@ crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
 
 # Now, we assess the canonical correlations achieved on the testing data
 
-print(kmcca.canon_corrs(scores))
+print(f'Test data canonical correlations: {kmcca.canon_corrs(scores)}')
 
 ###############################################################################
 # Polynomial Kernel
@@ -126,7 +122,7 @@ Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
 kmcca = KMCCA(
     kernel="poly", kernel_params={'degree': 2.0, 'coef0': 0.1},
-    n_components=4, regs=0.001)
+    n_components=4, regs=0.01)
 scores = kmcca.fit(Xs_train).transform(Xs_test)
 
 crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
@@ -137,7 +133,7 @@ crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
 
 # Now, we assess the canonical correlations achieved on the testing data
 
-print(kmcca.canon_corrs(scores))
+print(f'Test data canonical correlations: {kmcca.canon_corrs(scores)}')
 
 ###############################################################################
 # Gaussian Kernel
@@ -152,7 +148,7 @@ Xs = make_data("gaussian", 250)
 Xs_train, Xs_test = train_test_split(Xs, test_size=0.3, random_state=42)
 
 kmcca = KMCCA(
-    kernel="rbf", kernel_params={'gamma': 1}, n_components=4, regs=0.01)
+    kernel="rbf", kernel_params={'gamma': 1}, n_components=2, regs=0.01)
 scores = kmcca.fit(Xs_train).transform(Xs_test)
 
 crossviews_plot(Xs, ax_ticks=False, ax_labels=True, equal_axes=True,
@@ -163,4 +159,4 @@ crossviews_plot(scores, ax_ticks=False, ax_labels=True, equal_axes=True,
 
 # Now, we assess the canonical correlations achieved on the testing data
 
-print(kmcca.canon_corrs(scores))
+print(f'Test data canonical correlations: {kmcca.canon_corrs(scores)}')
