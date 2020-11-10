@@ -185,6 +185,34 @@ class BaseCCA(BaseEstimator, TransformerMixin):
         else:
             return common_scores_normed
 
+    def canon_corrs(self, scores):
+        r"""
+        Computes the canonical correlations between scores from all views.
+
+        Parameters
+        ----------
+        scores: array-like, shape (n_views, n_samples, n_components)
+            The CCA scores.
+
+        Returns
+        -------
+        r : numpy.ndarray, shape (n_components,)
+            The canonical correlations between each component. If more than
+            two views, returns the correlation matrices.
+        """
+        check_is_fitted(self)
+        scores = check_Xs(scores, multiview=True)
+        scores = np.asarray(scores)
+
+        # pearson correlation matrices
+        r = np.asarray([
+            np.corrcoef(scores[:, :, i].squeeze())
+            for i in range(scores.shape[2])
+            ])
+        if r.shape[1] == 2:
+            r = np.asarray([corr[0, 1] for corr in r])
+        return r
+
 
 def _check_regs(regs, n_views):
     """

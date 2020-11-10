@@ -1,7 +1,6 @@
 from .gcca import GCCA
 from .omnibus import Omnibus
 from .mvmds import MVMDS
-from .kcca import KCCA
 from .mcca import MCCA
 from .kmcca import KMCCA
 from .utils import select_dimension
@@ -22,7 +21,6 @@ __all__ = [
         "GCCA",
         "Omnibus",
         "MVMDS",
-        "KCCA",
         "MCCA",
         "KMCCA",
         "select_dimension",

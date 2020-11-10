@@ -75,6 +75,14 @@ class KMCCA(BaseCCA):
         If True, the ``.transform`` method returns one dataset per view.
         Otherwise, it returns one dataset, of shape (n_samples, n_components)
 
+    pgso : bool, optional (default False)
+        If True, computes a partial Gram-Schmidt orthogonalization
+        approximation of the kernel matrices to the given tolerance.
+
+    tol : float (default 0.1)
+        The minimum matrix trace difference between a kernel matrix and its
+        computed pgso approximation, scaled by n_samples.
+
     Attributes
     ----------
     kernel_col_means_ : list of numpy.ndarray, shape (n_samples,)
@@ -95,7 +103,7 @@ class KMCCA(BaseCCA):
 
     Xs_ : list of numpy.ndarray, length (n_views,)
         - Xs[i] shape (n_samples, n_features_i)
-        The original data matrices for use in gram matrix computation
+        The original data matrices for use in kernel matrix computation
         during calls to ``.transform``.
 
     n_views_ : int
@@ -106,6 +114,67 @@ class KMCCA(BaseCCA):
 
     n_components_ : int
         The number of components in each transformed view
+
+    pgso_Ls_ : list of numpy.ndarray, length (n_views,)
+        - pgso_Ls_[i] shape (n_samples, rank_i)
+        The Gram-Schmidt approximations of the kernel matrices
+
+    pgso_norms_ : list of numpy.ndarray, length (n_views,)
+        - pgso_norms_[i] shape (rank_i,)
+        The maximum norms found during the Gram-Schmidt procedure, descending
+
+    pgso_idxs_ : list of numpy.ndarray, length (n_views,)
+        - pgso_idxs_[i] shape (rank_i,)
+        The sample indices of the maximum norms
+
+    pgso_Xs_ : list of numpy.ndarray, length (n_views,)
+        - pgso_Xs_[i] shape (rank_i, n_features)
+        The samples with indices saved in pgso_idxs_, sorted by pgso_norms_
+
+    pgso_ranks_ : list, length (n_views,)
+        The ranks of the partial Gram-Schmidt results for each view.
+
+    Notes
+    -----
+    Traditional CCA aims to find useful projections of features in each view
+    of data, computing a weighted sum, but may not extract useful descriptors
+    of the data because of its linearity. KMCCA offers an alternative solution
+    by first projecting the data onto a higher dimensional feature space.
+
+    .. math::
+        \phi: \mathbf{x} = (x_1,...,x_m) \mapsto
+        \phi(\mathbf{x}) = (z_1,...,z_N),
+        (m << N)
+
+    before performing CCA in the new feature space.
+
+    Kernels are effectively distance functions that compute inner products in
+    the higher dimensional feature space, a method known as the kernel trick.
+    A kernel function K, such that for all :math:`\mathbf{x},
+    \mathbf{z} \in X`
+
+    .. math::
+        K(\mathbf{x}, \mathbf{z}) = \langle\phi(\mathbf{x})
+        \cdot \phi(\mathbf{z})\rangle.
+
+    The kernel matrix :math:`K_i` has entries computed from the kernel
+    function. Using the kernel trick, loadings of the kernel matrix
+    (dual_vars_) are solved for rather than of the features from :math:`\phi`.
+
+    Kernel matrices grow exponentially with the size of data. They not only
+    have to store :math:`n^2` elements, but also face the complexity of matrix
+    eigenvalue problems. In a Cholesky decomposition a positive definite
+    matrix K is decomposed to a lower triangular matrix :math:`L` :
+    :math:`K = LL'`.
+
+    The dual partial Gram-Schmidt orthogonalization (PSGO) is equivalent to the
+    Incomplete Cholesky Decomposition (ICD) which looks for a low rank
+    approximation of :math:`L`, reducing the cost of operations of the matrix
+    such that :math:`K \approx \tilde{L} \tilde{L}'`.
+
+    A PSGO tolerance yielding rank :math:`m` leads to storage requirements of
+    :math:`O(mn)` instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead
+    of :math:`O(n^3)` [#3kmcca]_.
 
     See also
     --------
@@ -145,6 +214,8 @@ class KMCCA(BaseCCA):
         filter_params=False,
         n_jobs=None,
         multiview_output=True,
+        pgso=False,
+        tol=0.1
     ):
 
         self.n_components = n_components
@@ -158,6 +229,8 @@ class KMCCA(BaseCCA):
         self.filter_params = filter_params
         self.n_jobs = n_jobs
         self.multiview_output = multiview_output
+        self.pgso = pgso
+        self.tol = tol
 
     def _fit(self, Xs):
         """Helper method for `.fit` function"""
@@ -169,14 +242,32 @@ class KMCCA(BaseCCA):
         # set up (centered) kernels
         self.kernel_col_means_ = [None] * self.n_views_
         self.kernel_mat_means_ = [None] * self.n_views_
-        Ks = []
 
-        for b in range(self.n_views_):
-            K = self._get_kernel(Xs[b], view=b)
-            if centers[b]:
+        Ks = []
+        if self.pgso:
+            self.pgso_Ls_ = []
+            self.pgso_norms_ = []
+            self.pgso_idxs_ = []
+            self.pgso_Xs_ = []
+            self.pgso_ranks_ = []
+        else:
+            self.Xs_ = Xs  # stored for `transform` step
+
+        for view in range(self.n_views_):
+            K = self._get_kernel(Xs[view], view=view)
+            if self.pgso:
+                L, maxs, idxs = _pgso_decomp(K, self.tol)
+                self.pgso_Ls_.append(L)
+                self.pgso_norms_.append(maxs)
+                self.pgso_idxs_.append(idxs)
+                self.pgso_Xs_.append(Xs[view][idxs])
+                self.pgso_ranks_.append(len(maxs))
+                K = L @ L.T
+                del L
+            if centers[view]:
                 K, col_mean, mat_mean = _center_kernel(K)
-                self.kernel_col_means_[b] = col_mean
-                self.kernel_mat_means_[b] = mat_mean
+                self.kernel_col_means_[view] = col_mean
+                self.kernel_mat_means_[view] = mat_mean
             Ks.append(K)
 
         self.dual_vars_, scores, common_scores_normed, \
@@ -188,9 +279,6 @@ class KMCCA(BaseCCA):
                 regs=self.regs,
                 diag_mode=self.diag_mode,
             )
-
-        del Ks
-        self.Xs_ = Xs  # stored for `transform` step
 
         return scores, common_scores_normed
 
@@ -214,7 +302,13 @@ class KMCCA(BaseCCA):
         """
         check_is_fitted(self)
         X = check_array(X)
-        K = self._get_kernel(X, view, self.Xs_[view])
+        if self.pgso:
+            K = self._get_kernel(X, view=view, Y=self.pgso_Xs_[view])
+            L = _pgso_construct(K, self.pgso_Ls_[view],
+                                self.pgso_idxs_[view], self.pgso_norms_[view])
+            K = L @ self.pgso_Ls_[view].T
+        else:
+            K = self._get_kernel(X, view=view, Y=self.Xs_[view])
         if self.kernel_col_means_[view] is not None:
             row_means = np.sum(K, axis=1)[:, np.newaxis] / K.shape[0]
             K -= self.kernel_col_means_[view]
@@ -235,27 +329,26 @@ class KMCCA(BaseCCA):
         view : int
             The view index, for the kernel parameter selection
 
-        Y : numpy.ndarray, shape (m, d), optional (default=)
+        Y : numpy.ndarray, shape (m, d), optional (default None)
             Second data matrix
 
         Returns
         -------
         K : numpy.ndarray, shape (n, n) or (n, m) if Y provided
-            The gram matrix with entries from the kernel function
+            The kernel matrix with entries from the kernel function
         """
         if isinstance(self.kernel, list):
             kernel = self.kernel[view]
         else:
             kernel = self.kernel
-
         if isinstance(self.kernel_params, list):
             kernel_params = self.kernel_params[view]
         else:
             kernel_params = self.kernel_params
 
         return pairwise_kernels(
-            X, Y, metric=kernel, filter_params=True, n_jobs=self.n_jobs,
-            **kernel_params)
+            X, Y, metric=kernel, filter_params=self.filter_params,
+            n_jobs=self.n_jobs, **kernel_params)
 
     @property
     def n_components_(self):
@@ -263,6 +356,90 @@ class KMCCA(BaseCCA):
             return self.dual_vars_[0].shape[1]
         else:
             raise AttributeError("Model has not been fitted properly yet")
+
+
+def _pgso_decomp(K, tol=0.1):
+    r"""
+    Performs the partial Gram-Schmidt orthogonalization procedure
+
+    Parameters
+    ----------
+        K : numpy.ndarray, shape (n_samples, n_samples)
+            The kernel matrix to approximate
+
+        tol : float, optional (default 0.1)
+            The tolerance of the kernel matrix approximation
+
+    Returns
+    -------
+        L : numpy.ndarray, shape (n_samples, r)
+            The lower triangular approximation matrix
+
+        maxs : numpy.ndarray, shape (r,)
+            The maximum diagonal element of K during Gram-Schmidt iterations
+
+        indices : numpy.ndarray, shape (r,)
+            The sample indices of each of the values in `maxs`.
+
+    Notes
+    -----
+    The procedure iteratively constructs a lower triangular matrix L and
+    stops when the approximation L gives is below the tolerance, i.e.
+
+        ..math::
+            \frac{1}{N} tr(K - LL^T) \leq tol
+    """
+    K = check_array(K)
+    N = K.shape[0]
+    norm2 = K.diagonal().copy()
+    L = np.zeros(K.shape)
+    max_sizes = []
+    max_indices = []
+    M = 0
+    for j in range(N):
+        max_idx = np.argmax(norm2)
+        max_indices.append(max_idx)
+        max_sizes.append(np.sqrt(norm2[max_idx]))
+        L[:, j] = (
+            K[:, max_idx] - L[:, :j] @ L[max_idx, :j].T
+            ) / max_sizes[-1]
+        norm2 -= L[:, j]**2
+        M = j+1
+        if sum(norm2) / N < tol:
+            break
+
+    return L[:, :M], np.asarray(max_sizes), np.asarray(max_indices)
+
+
+def _pgso_construct(K, L, indices, maxs):
+    """
+    Constructs features for samples from a partial Gram-Schmidt
+    orthogonalization on different samples
+
+    Parameters
+    ----------
+        K : numpy.ndarray, shape (n_new_samples, n_new_samples)
+            The kernel matrix of new samples to approximate
+
+        L : numpy.ndarray, shape (n_samples, r)
+            Lower triangular Gram-Schmidt decomposition of a kernel matrix
+
+        indices : numpy.ndarray, shape (n_features,)
+            The sample indices of the maximums
+
+        maxs : numpy.ndarray, shape (n_features,)
+            The maximum diagonal elements during construction of L
+
+    Returns
+    -------
+        L_oos : numpy.ndarray, shape (n_samples, r)
+            The lower triangular approximation matrix
+    """
+    L_oos = np.zeros((K.shape[0], L.shape[1]))
+    for j in range(L.shape[1]):
+        L_oos[:, j] = (
+            K[:, j] - L_oos[:, :j] @ L[indices[j], :j].T) / maxs[j]
+    return L_oos
 
 
 def _kmcca_gevp(
