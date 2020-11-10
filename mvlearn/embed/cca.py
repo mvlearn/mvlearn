@@ -132,7 +132,7 @@ class CCA(MCCA):
                 )
         return scores, common_scores_normed
 
-    def get_stats(self, scores, stat=None):
+    def stats(self, scores, stat=None):
         r"""
         Compute relevant statistics from the fitted CCA.
 

@@ -33,10 +33,10 @@ test2 = data2[int(nSamples/10):]
 
 n_components = 4
 
-# Initialize a linear kCCA class
+# Initialize CCA
 cca = CCA(regs=0.001, n_components=n_components)
 
-# Use the methods to find a kCCA mapping and transform the views of data
+# Use the methods to find a CCA mapping and transform the views of data
 cca_ft = cca.fit_transform([train1, train2])
 cca_f = cca.fit([train1, train2])
 cca_t = cca.transform([train1, train2])
@@ -78,7 +78,7 @@ def test_ktype_components():
     assert np.allclose(cca_ft, cca_t)
 
 
-# Test get_stats() fail cases
+# Test stats() fail cases
 def test_errors():
     cca = CCA()
     with pytest.raises(ValueError):
@@ -86,20 +86,20 @@ def test_errors():
 
     with pytest.raises(ValueError):
         cca.fit([train1, train2])
-        cca.get_stats([train1, train1, train1])
+        cca.stats([train1, train1, train1])
 
     with pytest.raises(AssertionError):
         cca.fit([train1, train2])
-        _ = cca.get_stats([train1, train2])
+        _ = cca.stats([train1, train2])
 
     with pytest.raises(KeyError):
         cca.fit([train1, train2])
-        _ = cca.get_stats([train1, train1], 'FAIL')
+        _ = cca.stats([train1, train1], 'FAIL')
 
 
 # Test getting stats correctly, and check against stats that
 # Matlab canoncorr gives
-def test_get_stats_vs_matlab():
+def test_stats_vs_matlab():
     X = np.vstack((np.eye(3, 3), 2*np.eye(3, 3)))
     Y1 = np.fliplr(np.eye(3, 3))
     Y = np.vstack((Y1, 0.1*np.eye(3, 3)))
@@ -117,7 +117,7 @@ def test_get_stats_vs_matlab():
 
     cca = CCA(n_components=3)
     scores = cca.fit_transform([X, Y])
-    stats = cca.get_stats(scores)
+    stats = cca.stats(scores)
 
     assert np.allclose(stats['r'][0], 1)
     nondegen = np.argwhere(stats['r'] < 1 - 2 * np.finfo(float).eps).squeeze()
@@ -127,7 +127,7 @@ def test_get_stats_vs_matlab():
         assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
 
 
-def test_get_stats_1_feature_vs_matlab():
+def test_stats_1_feature_vs_matlab():
     X = np.arange(1, 11).reshape(-1, 1)
     Y = np.arange(2, 21, 2).reshape(-1, 1)
     matlab_stats = {
@@ -143,13 +143,13 @@ def test_get_stats_1_feature_vs_matlab():
 
     cca = CCA(n_components=1)
     scores = cca.fit_transform([X, Y])
-    stats = cca.get_stats(scores)
+    stats = cca.stats(scores)
 
     for key in stats:
         assert np.allclose(stats[key], matlab_stats[key], rtol=1e-3, atol=1e-4)
 
 
-def test_get_stats_1_component():
+def test_stats_1_component():
     np.random.seed(12)
     X = X = np.random.rand(100, 3)
     Y = np.random.rand(100, 4)
@@ -166,7 +166,7 @@ def test_get_stats_1_component():
 
     cca = CCA(n_components=1)
     scores = cca.fit_transform([X, Y])
-    stats = cca.get_stats(scores)
+    stats = cca.stats(scores)
 
     assert not stats['r'] == 1
     assert not stats['r'] + 2 * np.finfo(float).eps >= 1
@@ -175,7 +175,7 @@ def test_get_stats_1_component():
         assert np.allclose(stats[key], past_stats[key], rtol=1e-3, atol=1e-4)
 
 
-def test_get_stats_2_components():
+def test_stats_2_components():
     np.random.seed(12)
     X = X = np.random.rand(100, 3)
     Y = np.random.rand(100, 4)
@@ -192,7 +192,7 @@ def test_get_stats_2_components():
 
     cca = CCA(n_components=2)
     scores = cca.fit_transform([X, Y])
-    stats = cca.get_stats(scores)
+    stats = cca.stats(scores)
 
     nondegen = np.argwhere(stats['r'] < 1 - 2 * np.finfo(float).eps).squeeze()
     assert np.array_equal(nondegen, np.array([0, 1]))
