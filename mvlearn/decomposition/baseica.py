@@ -124,20 +124,20 @@ class BaseICA(BaseDecomposer):
         self.random_state = random_state
         self.multiview_output = multiview_output
 
-    def fit(self, X, y=None):
+    def fit(self, Xs, y=None):
         """Fits the model.
 
         Parameters
         ----------
-        X: list of np arrays of shape (n_voxels, n_samples)
+        Xs: list of np arrays of shape (n_voxels, n_samples)
             Input data: X[i] is the data of subject i
 
         y : ignored
         """
         if self.preproc_instance is not None:
-            reduced_X = self.preproc_instance.fit_transform(X)
+            reduced_X = self.preproc_instance.fit_transform(Xs)
         else:
-            reduced_X = X.copy()
+            reduced_X = Xs.copy()
         reduced_X = np.array(reduced_X)
         unmixings_, S = self._fit(np.swapaxes(reduced_X, 1, 2))
         mixing_ = np.array([np.linalg.pinv(W) for W in unmixings_])
