@@ -187,9 +187,9 @@ class CCA(MCCA):
         stats = {}
 
         # pearson correlation coefficient
-        r = np.array([np.corrcoef(S1[:, i], S2[:, i])[0, 1]
-                      for i in range(n_components)]).squeeze()
+        r = self.canon_corrs(scores)
         stats['r'] = r
+        r = r.squeeze()
 
         # Wilks' Lambda test statistic
         d = min([n_components, min(self.n_features_)])
