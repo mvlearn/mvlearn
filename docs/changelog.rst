@@ -7,16 +7,16 @@ Changelog
 .. role:: raw-latex(raw)
    :format: latex
 
-.. |MajorFeature| replace:: :raw-html:`<span class="badge badge-success">Major Feature</span>` :raw-latex:`{\small\sc [Major Feature]}`
-.. |Feature| replace:: :raw-html:`<span class="badge badge-success">Feature</span>` :raw-latex:`{\small\sc [Feature]}`
-.. |Efficiency| replace:: :raw-html:`<span class="badge badge-info">Efficiency</span>` :raw-latex:`{\small\sc [Efficiency]}`
-.. |Enhancement| replace:: :raw-html:`<span class="badge badge-info">Enhancement</span>` :raw-latex:`{\small\sc [Enhancement]}`
-.. |Fix| replace:: :raw-html:`<span class="badge badge-danger">Fix</span>` :raw-latex:`{\small\sc [Fix]}`
-.. |API| replace:: :raw-html:`<span class="badge badge-warning">API Change</span>` :raw-latex:`{\small\sc [API Change]}`
+.. |MajorFeature| replace:: :raw-html:`<font color="green">[Major Feature]</font>`
+.. |Feature| replace:: :raw-html:`<font color="green">[Feature]</font>`
+.. |Efficiency| replace:: :raw-html:`<font color="blue">[Efficiency]</font>`
+.. |Enhancement| replace:: :raw-html:`<font color="blue">[Enhancement]</font>`
+.. |Fix| replace:: :raw-html:`<font color="red">[Fix]</font>`
+.. |API| replace:: :raw-html:`<font color="DarkOrange">[API]</font>`
 
 Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0.23.html>`_):
 
-- |MajorFeature| : something big that you couldn’t do before.
+- |MajorFeature| : something big that you couldn’t do before. 
 
 - |Feature| : something that you couldn’t do before.
 
