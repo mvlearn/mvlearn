@@ -22,9 +22,7 @@ optimizing the set of mixing matrices relative to the average source signal.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mvlearn.decomposition.multiviewica import MultiviewICA
-from mvlearn.decomposition.permica import PermICA
-from mvlearn.decomposition.groupica import GroupICA
+from mvlearn.decomposition import MultiviewICA, PermICA, GroupICA
 
 # sigmas: data noise
 # m: number of subjects
