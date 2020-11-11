@@ -178,8 +178,6 @@ class BaseICA(BaseDecomposer):
             - Xs[i] shape: (n_samples, n_features_i)
             Training data to recover a source and unmixing matrices from.
 
-        y : ignored
-
         Returns
         -------
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
