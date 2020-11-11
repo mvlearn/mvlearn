@@ -81,7 +81,7 @@ class KMCCA(BaseCCA):
 
     tol : float (default 0.1)
         The minimum matrix trace difference between a kernel matrix and its
-        computed pgso approximation, scaled by n_samples.
+        computed pgso approximation, relative to the kernel trace.
 
     Attributes
     ----------
@@ -170,7 +170,7 @@ class KMCCA(BaseCCA):
     The dual partial Gram-Schmidt orthogonalization (PSGO) is equivalent to the
     Incomplete Cholesky Decomposition (ICD) which looks for a low rank
     approximation of :math:`L`, reducing the cost of operations of the matrix
-    such that :math:`K \approx \tilde{L} \tilde{L}'`.
+    such that :math:`\frac{1}{\sum_i K_{ii}} tr(K - LL^T) \leq tol`.
 
     A PSGO tolerance yielding rank :math:`m` leads to storage requirements of
     :math:`O(mn)` instead of :math:`O(n^2)` and becomes :math:`O(nm^2)` instead
@@ -387,11 +387,12 @@ def _pgso_decomp(K, tol=0.1):
     stops when the approximation L gives is below the tolerance, i.e.
 
         ..math::
-            \frac{1}{N} tr(K - LL^T) \leq tol
+            \frac{1}{\sum_i K_{ii}} tr(K - LL^T) \leq tol
     """
     K = check_array(K)
     N = K.shape[0]
     norm2 = K.diagonal().copy()
+    norm2_sum = sum(norm2)
     L = np.zeros(K.shape)
     max_sizes = []
     max_indices = []
@@ -405,7 +406,7 @@ def _pgso_decomp(K, tol=0.1):
             ) / max_sizes[-1]
         norm2 -= L[:, j]**2
         M = j+1
-        if sum(norm2) / N < tol:
+        if sum(norm2) / norm2_sum < tol:
             break
 
     return L[:, :M], np.asarray(max_sizes), np.asarray(max_indices)
