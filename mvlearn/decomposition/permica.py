@@ -73,8 +73,8 @@ class PermICA(BaseICA):
 
     See also
     --------
-    groupica
-    multiviewica
+    GroupICA
+    MultiviewICA
 
     References
     ----------
