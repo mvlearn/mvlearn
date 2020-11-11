@@ -1,13 +1,13 @@
 """
 test_rsm.py
 ====================================
-Tests Random subspace method for view construction and 
+Tests Random subspace method for view construction and
 param check helper functions.
 """
 
-import pytest
 import numpy as np
-from mvlearn.construct import rsm
+from mvlearn.compose import rsm
+
 
 def test_rsm_return_vals():
     X = np.random.rand(25, 25)
@@ -19,10 +19,10 @@ def test_rsm_return_vals():
     # test that each view has correct shape
     for view in views:
         assert view.shape == (25, 25)
-    
+
     # test that each view has correct number of cols set to 0
     for view in views:
-        assert (np.where(~view.any(axis = 0))[0]).size == 15
+        assert (np.where(~view.any(axis=0))[0]).size == 15
 
 
 def test_rsm_with_float_n_features():
@@ -34,4 +34,4 @@ def test_rsm_with_float_n_features():
 
     # test that each view has correct number of cols set to 0
     for view in views:
-        assert (np.where(~view.any(axis = 0))[0]).size == 2
+        assert (np.where(~view.any(axis=0))[0]).size == 2

@@ -12,7 +12,6 @@ The package is split up into submodules.
     semi_supervised
     embed
     decomposition
-    construct
     model_selection
     compose
     preprocessing
