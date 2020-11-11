@@ -4,6 +4,7 @@
 
 import numpy as np
 from sklearn.random_projection import GaussianRandomProjection
+from sklearn.utils import check_array
 from .utils import check_n_views
 
 
@@ -19,7 +20,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Parameters
     ----------
-    X : array-like matrix, shape = (n_samples, n_cols)
+    X : array-like matrix, shape (n_samples, n_features)
         The input samples.
 
     n_views : int, float optional (default = 1)
@@ -35,13 +36,11 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     random_state: int or None (default = None)
         Sets random state using np.random.seed
 
-
     Returns
     -------
-    views : list of array-like matrices
-        List of constructed views.
-            - length: n_views
-            - each view has shape (n_samples, n_features)
+    Xs : list of array-likes matrices
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_components)
 
     Notes
     -----
@@ -52,7 +51,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
 
     Examples
     --------
-    >>> from mvlearn.construct import random_gaussian_projection
+    >>> from mvlearn.compose import random_gaussian_projection
     >>> import numpy as np
     >>> single_view_data = np.random.rand(1000, 50)
     >>> # Project to 10 components
@@ -64,7 +63,7 @@ def random_gaussian_projection(X, n_views=1, n_components="auto",
     >>> print(multi_view_data[0].shape)
     (1000, 10)
     """
-
+    check_array(X)
     check_n_views(n_views)
     views = []
     # set function level random state
