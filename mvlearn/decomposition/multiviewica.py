@@ -84,10 +84,31 @@ class MultiviewICA(BaseICA):
 
     Attributes
     ----------
-    preproc : ViewTransformer-like instance
+    preproc_instance : ViewTransformer-like instance
         The fitted instance used for preprocessing
-    W_list : np array of shape (n_groups, n_components, n_components)
-        The unmixing matrices to apply on preprocessed data
+
+    mixing_ : array, shape (n_views, n_components, n_components)
+        The square mixing matrices, linking preprocessed data
+        and the independent components.
+
+    pca_components_: array, shape (n_components, n_features)
+        Principal axes in feature space, representing the directions
+        of maximum variance in the data. Only used if preproc == "pca".
+
+    components_ : array, shape (n_views, n_components, n_components)
+        The square unmixing matrices
+
+    individual_components_ : list of array
+        Individual unmixing matrices estimated by least squares.
+        `individual_components_[i]` is an array of shape
+        (n_components, n_features) where n_features is the number of
+        features in the dataset `i`.
+
+    individual_mixing_ : list of array
+        Individual mixing matrices estimated by least squares.
+        `individual_components_[i]` is an array of shape
+        (n_features, n_components) where n_features is the number of
+        features in the dataset `i`.
 
     See also
     --------
