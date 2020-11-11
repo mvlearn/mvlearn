@@ -213,10 +213,6 @@ class BaseICA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
-
-
-
-
         Returns
         -------
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
