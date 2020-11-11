@@ -159,7 +159,7 @@ class BaseICA(BaseDecomposer):
             self.individual_mixing_ = []
             self.individual_components_ = []
             sources_pinv = linalg.pinv(S.T)
-            for x in X:
+            for x in Xs:
                 lstq_solution = np.dot(sources_pinv, x)
                 self.individual_components_.append(
                     linalg.pinv(lstq_solution).T
@@ -203,14 +203,19 @@ class BaseICA(BaseDecomposer):
     def fit_transform(self, X, y=None):
         return self.fit(X).transform(X)
 
-    def inverse_transform(self, S):
+    def inverse_transform(self, X_transformed):
         r"""
         Transforms the sources back to the mixed data for each view
         (apply mixing matrix).
 
         Parameters
         ----------
-        None
+        X_transformed : list of array-likes or numpy.ndarray
+            The dataset corresponding to transformed data
+
+
+
+
 
         Returns
         -------
@@ -221,9 +226,9 @@ class BaseICA(BaseDecomposer):
             raise ValueError("The model has not yet been fitted.")
 
         if self.multiview_output:
-            S_ = np.mean(S, axis=0)
+            S_ = np.mean(X_transformed, axis=0)
         else:
-            S_ = S
+            S_ = X_transformed
         inv_red = [S_.dot(w.T) for w in self.mixing_]
 
         if self.preproc_instance is not None:
