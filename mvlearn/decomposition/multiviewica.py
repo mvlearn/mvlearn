@@ -112,8 +112,8 @@ class MultiviewICA(BaseICA):
 
     See also
     --------
-    groupica
-    permica
+    GroupICA
+    PermICA
 
     Notes
     -----
