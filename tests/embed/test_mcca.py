@@ -398,23 +398,29 @@ def test_pgso():
     Xs = next(generate_mcca_test_data())
     N = Xs[0].shape[0]
     ranks = []
+    corrs = []
     for tol in [0, 0.1, 0.5, 1]:
-        kmcca = KMCCA(kernel='rbf', pgso=True, tol=tol).fit(Xs)
-        kmcca2 = KMCCA(kernel='rbf', pgso=True, tol=tol).fit(Xs)
+        kmcca = KMCCA(kernel='rbf', pgso=True, tol=tol, n_components=2)
+        scores = kmcca.fit(Xs).transform(Xs)
+        # kmcca2 = KMCCA(kernel='rbf', pgso=True, tol=tol)
+        # scores2 = kmcca2.fit(Xs).transform(Xs)
         for v in range(len(Xs)):
             assert len(set(
                 [kmcca.pgso_Ls_[v].shape[1],
                  kmcca.pgso_norms_[v].shape[0],
                  kmcca.pgso_idxs_[v].shape[0],
                  kmcca.pgso_Xs_[v].shape[0]])) == 1
-            R = kmcca2._get_kernel(Xs[v], v) - \
+            R = kmcca._get_kernel(Xs[v], v) - \
                 kmcca.pgso_Ls_[v] @ kmcca.pgso_Ls_[v].T
-            R = R - kmcca2.kernel_col_means_[v] - \
-                kmcca2.kernel_col_means_[v].T + kmcca2.kernel_mat_means_[v]
+            R = R - kmcca.kernel_col_means_[v] - \
+                kmcca.kernel_col_means_[v].T + kmcca.kernel_mat_means_[v]
             assert np.trace(R) / N <= tol
         ranks.append(kmcca.pgso_ranks_)
+        corrs.append(kmcca.canon_corrs(scores))
         if tol == 0:
             assert np.all(ranks[-1] == [N for _ in Xs])
+    assert np.all(np.diff(corrs, axis=0) <= 0), corrs
+    assert np.all(np.diff(corrs, axis=1) <= 1e-10)
     assert np.all(np.diff(ranks, axis=0) <= 0)
 
 
