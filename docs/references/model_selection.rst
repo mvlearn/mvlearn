@@ -7,3 +7,8 @@ Cross Validation
 ----------------
 
 .. autofunction:: cross_validate
+
+Train-Test Split
+----------------
+
+.. autofunction:: train_test_split
