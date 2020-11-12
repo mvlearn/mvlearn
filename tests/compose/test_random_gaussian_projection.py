@@ -5,7 +5,7 @@ Tests functions in random_gaussian_projection.py.
 """
 
 import numpy as np
-from mvlearn.compose import random_gaussian_projection
+from mvlearn.compose import RandomGaussianProjection
 
 # IMPORTANT: Because random gaussian projection wraps sklearn's
 # implementation, we do not test projection functionality. Instead
@@ -15,5 +15,8 @@ from mvlearn.compose import random_gaussian_projection
 def test_multiple_views():
     n_views = 5
     X = np.random.rand(4, 4)
-    views = random_gaussian_projection(X, n_views=n_views, n_components=1)
-    assert(len(views) == n_views)
+    rgp = RandomGaussianProjection(n_views=n_views, n_components=1)
+    Xs = rgp.fit_transform(X)
+    assert(len(Xs) == n_views)
+    assert(len(rgp.GaussianRandomProjections_) == n_views)
+    assert np.all([X.shape == (4, 1) for X in Xs])
