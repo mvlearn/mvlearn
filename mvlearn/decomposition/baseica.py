@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) [2017] [Pierre Ablin and Hugo Richard]
+# Copyright (c) [2020] [Pierre Ablin and Hugo Richard]
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
