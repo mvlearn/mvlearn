@@ -30,11 +30,14 @@
 
 import pytest
 import numpy as np
-from multiviewica import _hungarian
 from mvlearn.decomposition import MultiviewICA
 from mvlearn.preprocessing import ViewTransformer
 from sklearn.decomposition import PCA
 
+def hungarian(M):
+    u, order = scipy.optimize.linear_sum_assignment(-abs(M))
+    vals = M[u, order]
+    return order, np.sign(vals)
 
 def normalize(A):
     A_ = A - np.mean(A, axis=1, keepdims=True)
@@ -52,7 +55,7 @@ def amari_d(W, A):
 
 
 def error(M):
-    order, _ = _hungarian(M)
+    order, _ = hungarian(M)
     return 1 - M[np.arange(M.shape[0]), order]
 
 
