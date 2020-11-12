@@ -31,7 +31,7 @@
 import pytest
 import numpy as np
 from multiviewica import _hungarian
-from mvlearn.decomposition import MultiviewICA, PermICA
+from mvlearn.decomposition import MultiviewICA
 from mvlearn.preprocessing import ViewTransformer
 from sklearn.decomposition import PCA
 
@@ -68,7 +68,7 @@ def Xs():
 
 @pytest.mark.parametrize(
     ("algo", "init"),
-    [(PermICA, None), (MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
+    [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
 )
 def test_ica(algo, init):
     # Test that all algo can recover the sources
@@ -121,8 +121,9 @@ def test_badpreprocess(Xs):
         def __init__(self):
             pass
 
+    mvica = MultiviewICA(preproc=BadPreprocess())
     with pytest.raises(ValueError):
-        MultiviewICA(preproc=BadPreprocess())
+        mvica.fit(Xs)
 
 
 def test_transform(Xs):

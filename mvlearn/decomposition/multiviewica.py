@@ -28,12 +28,16 @@
 #
 # Modified from source package https://github.com/hugorichard/multiviewica
 
+import numpy as np
+from scipy import linalg
+from sklearn.decomposition import PCA
 from multiviewica import multiviewica
 
-from .baseica import BaseICA
+from .base import BaseDecomposer
+from ..preprocessing.repeat import ViewTransformer
 
 
-class MultiviewICA(BaseICA):
+class MultiviewICA(BaseDecomposer):
     r"""
     Multiview ICA for which views share a common source but separate mixing
     matrices.
@@ -84,7 +88,7 @@ class MultiviewICA(BaseICA):
 
     Attributes
     ----------
-    preproc_instance : ViewTransformer-like instance
+    preproc_instance_ : ViewTransformer-like instance
         The fitted instance used for preprocessing
 
     mixing_ : array, shape (n_views, n_components, n_components)
@@ -113,7 +117,6 @@ class MultiviewICA(BaseICA):
     See also
     --------
     groupica
-    permica
 
     Notes
     -----
@@ -163,17 +166,155 @@ class MultiviewICA(BaseICA):
         n_jobs=30,
         preproc="pca",
     ):
-        super().__init__(
-            n_components=n_components,
-            preproc=preproc,
-            random_state=random_state,
-            verbose=verbose,
-            multiview_output=multiview_output,
-        )
+        self.verbose = verbose
+        self.n_components = n_components
         self.noise = noise
         self.max_iter = max_iter
         self.init = init
         self.tol = tol
+        self.preproc = preproc
+        self.random_state = random_state
+        self.multiview_output = multiview_output
+
+    def fit(self, Xs, y=None):
+        """Fits the model.
+
+        Parameters
+        ----------
+        Xs: list of np arrays of shape (n_voxels, n_samples)
+            Input data: X[i] is the data of subject i
+
+        y : ignored
+        """
+        if (
+            self.preproc is None
+            or self.preproc == "pca"
+            and self.n_components is None
+        ):
+            preprocessing_name = "None"
+            self.preproc_instance_ = None
+        elif self.preproc == "pca":
+            preprocessing_name = "pca"
+            self.preproc_instance_ = ViewTransformer(
+                PCA(n_components=self.n_components)
+            )
+        else:
+            preprocessing_name = "custom"
+            if hasattr(self.preproc, "transform") and hasattr(
+                self.preproc, "inverse_transform"
+            ):
+                self.preproc_instance_ = self.preproc
+            else:
+                raise ValueError(
+                    "preproc should either be 'pca', None or have"
+                    "a transform and inverse transform method"
+                )
+        if self.preproc_instance_ is not None:
+            reduced_X = self.preproc_instance_.fit_transform(Xs)
+        else:
+            reduced_X = Xs.copy()
+        reduced_X = np.array(reduced_X)
+        _, unmixings_, S = multiviewica(
+            np.swapaxes(reduced_X, 1, 2),
+            noise=self.noise,
+            max_iter=self.max_iter,
+            init=self.init,
+            random_state=self.random_state,
+            tol=self.tol,
+            verbose=self.verbose,
+        )
+        mixing_ = np.array([np.linalg.pinv(W) for W in unmixings_])
+        self.components_ = unmixings_
+        self.mixing_ = mixing_
+        if preprocessing_name == "pca":
+            pca_components = []
+            for i, transformer in enumerate(
+                self.preproc_instance_.transformers_
+            ):
+                K = transformer.components_
+                pca_components.append(K)
+            self.pca_components_ = np.array(pca_components)
+
+        if preprocessing_name == "None":
+            self.individual_components_ = unmixings_
+            self.individual_mixing_ = mixing_
+        else:
+            self.individual_mixing_ = []
+            self.individual_components_ = []
+            sources_pinv = linalg.pinv(S.T)
+            for x in Xs:
+                lstq_solution = np.dot(sources_pinv, x)
+                self.individual_components_.append(
+                    linalg.pinv(lstq_solution).T
+                )
+                self.individual_mixing_.append(lstq_solution.T)
+        return self
+
+    def transform(self, X):
+        r"""
+        Recover the sources from each view (apply unmixing matrix).
+
+        Parameters
+        ----------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            Training data to recover a source and unmixing matrices from.
+
+        Returns
+        -------
+        Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
+            The mixed sources from the single source and per-view unmixings.
+        """
+        if not hasattr(self, "components_"):
+            raise ValueError("The model has not yet been fitted.")
+
+        if self.preproc_instance_ is not None:
+            transformed_X = self.preproc_instance_.transform(X)
+        else:
+            transformed_X = X.copy()
+        if self.multiview_output:
+            return np.array(
+                [x.dot(w.T) for w, x in zip(self.components_, transformed_X)]
+            )
+        else:
+            return np.mean(
+                [x.dot(w.T) for w, x in zip(self.components_, transformed_X)],
+                axis=0,
+            )
+
+    def inverse_transform(self, X_transformed):
+        r"""
+        Transforms the sources back to the mixed data for each view
+        (apply mixing matrix).
+
+        Parameters
+        ----------
+        X_transformed : list of array-likes or numpy.ndarray
+            The dataset corresponding to transformed data
+
+
+
+
+
+        Returns
+        -------
+        Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
+            The mixed sources from the single source and per-view unmixings.
+        """
+        if not hasattr(self, "components_"):
+            raise ValueError("The model has not yet been fitted.")
+
+        if self.multiview_output:
+            S_ = np.mean(X_transformed, axis=0)
+        else:
+            S_ = X_transformed
+        inv_red = [S_.dot(w.T) for w in self.mixing_]
+
+        if self.preproc_instance_ is not None:
+            return self.preproc_instance_.inverse_transform(inv_red)
+        else:
+            return inv_red
 
     def _fit(self, Xs, y=None):
         r"""
