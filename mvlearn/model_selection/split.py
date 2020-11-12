@@ -95,7 +95,6 @@ def train_test_split(*inputs, **options):
     # Print test set
     >>> for i in range(len(Xs_test)):
     ...     print('Xs_test[%d]' % i, Xs_test[i], sep='\n')
-
     Xs_test[0]
     [[0 1]]
     Xs_test[1]
