@@ -9,12 +9,6 @@ Multiview ICA
 .. autoclass:: MultiviewICA
     :exclude-members: is_fit, get_params, set_params, _fit
 
-Permutation ICA
----------------
-
-.. autoclass:: PermICA
-    :exclude-members: is_fit, get_params, set_params, _fit
-
 Group ICA
 ---------
 
