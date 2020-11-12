@@ -33,6 +33,7 @@ import numpy as np
 from mvlearn.decomposition import MultiviewICA
 from mvlearn.preprocessing import ViewTransformer
 from sklearn.decomposition import PCA
+import scipy
 
 def hungarian(M):
     u, order = scipy.optimize.linear_sum_assignment(-abs(M))
