@@ -2,7 +2,7 @@ from .split import SimpleSplitter
 from .merge import ConcatMerger, AverageMerger
 from .random_gaussian_projection import RandomGaussianProjection
 from .rsm import RandomSubspaceMethod
-from .wrap import ViewClassifier
+from .wrap import ViewClassifier, ViewTransformer
 
 __all__ = [
     "SimpleSplitter",
@@ -10,5 +10,6 @@ __all__ = [
     "AverageMerger",
     "RandomGaussianProjection",
     "RandomSubspaceMethod",
-    "ViewClassifier"
+    "ViewClassifier",
+    "ViewTransformer"
     ]

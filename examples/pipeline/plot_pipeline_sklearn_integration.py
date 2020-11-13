@@ -19,8 +19,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.decomposition import FastICA
 from sklearn.pipeline import Pipeline
-from mvlearn.preprocessing import ViewTransformer
-from mvlearn.compose import ConcatMerger
+from mvlearn.compose import ViewTransformer, ConcatMerger
 
 ###############################################################################
 # Create the data
@@ -41,7 +40,7 @@ Xs = [X1, X2]
 # ViewTransformer
 # ---------------
 #
-# `mvlearn.preprocessing.ViewTransformer` is a handy tool to apply the same
+# `mvlearn.compose.ViewTransformer` is a handy tool to apply the same
 # `sklearn` transformer to each view of the multiview dataset. For instance, it
 # is simple to apply PCA to each view. In the following, we reduce the
 # dimension of each view to 3:
@@ -79,7 +78,7 @@ print([X.shape for X in Xs_transformed])
 #
 # A simple way to transform a multiview dataset in a single view dataset is
 # simply by stacking each features. The class
-# `mvlearn.preprocessing.ConcatMerger` implements this:
+# `mvlearn.compose.ConcatMerger` implements this:
 
 
 merge = ConcatMerger()
