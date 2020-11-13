@@ -79,13 +79,13 @@ class BaseWrapper(BaseEstimator):
 class ViewClassifier(BaseWrapper):
     r"""Apply a sklearn classifier to each view of a dataset
 
-    Build a transformer from multiview dataset to multiview dataset by
-    using individual scikit-learn transformer on each view.
+    Build a classifier from multiview data by
+    using individual scikit-learn classifiers on each view.
 
     Parameters
     ----------
-    base_transformer : a sklearn transformer instance, or a list
-        Either a single sklearn transformer that will be applied to each
+    base_estimator : a sklearn classifier instance, or a list
+        Either a single sklearn classifier that will be applied to each
         view. One clone of the estimator will correspond to each view.
         Otherwise, it should be a list of estimators, of length the number of
         views in the multiview dataset.
@@ -95,11 +95,11 @@ class ViewClassifier(BaseWrapper):
     n_views_ : int
         The number of views in the input dataset
 
-    transformers_ : list of objects of length n_views_
-        The list of transformer used to transform data. If
-        self.base_transformer is a single transformer, it is a list containing
-        clones of that transformer, otherwise it is a view of
-        self.base_transformer.
+    estimators_ : list of objects of length n_views_
+        The list of classifiers used to predict data labels. If
+        self.base_estimator is a single estimator, this is a list containing
+        clones of that estimator, otherwise it is one view of
+        self.base_estimator.
 
     Examples
     --------
@@ -183,9 +183,9 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
 
     estimators_ : list of objects of length n_views_
         The list of transformers used to transform data. If
-        self.base_transformer is a single transformer, it is a list containing
+        self.base_estimator is a single transformer, it is a list containing
         clones of that transformer, otherwise it is a view of
-        self.base_transformer.
+        self.base_estimator.
 
     Examples
     --------

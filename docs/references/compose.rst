@@ -41,3 +41,9 @@ ViewClassifier
 
 .. autoclass:: ViewClassifier
     :exclude-members: get_params, set_params
+
+ViewTransformer
+---------------
+
+.. autoclass:: ViewTransformer
+    :exclude-members: get_params, set_params
