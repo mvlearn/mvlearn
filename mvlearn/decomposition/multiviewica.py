@@ -91,8 +91,10 @@ class MultiviewICA(BaseDecomposer):
     ----------
     pcas_ : ViewTransformer instance
         The fitted `ViewTransformer` used to reduce the data.
-        The `ViewTransformer` is given by `ViewTransformer(PCA(n_components=n_components))`
-        where n_components is the number of chosen. Only used if n_components is not None.
+        The `ViewTransformer` is given by
+        `ViewTransformer(PCA(n_components=n_components))`
+        where n_components is the number of chosen.
+        Only used if n_components is not None.
 
     mixing_ : array, shape (n_views, n_components, n_components)
         The square mixing matrices, linking preprocessed data
