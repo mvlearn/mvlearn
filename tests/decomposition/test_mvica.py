@@ -30,10 +30,11 @@
 
 import pytest
 import numpy as np
+import scipy
+from sklearn.decomposition import PCA
 from mvlearn.decomposition import MultiviewICA
 from mvlearn.preprocessing import ViewTransformer
-from sklearn.decomposition import PCA
-import scipy
+from mvlearn.utils import requires_multiviewica
 
 def hungarian(M):
     u, order = scipy.optimize.linear_sum_assignment(-abs(M))
@@ -70,6 +71,7 @@ def Xs():
     return np.asarray(Xs)
 
 
+@requires_multiviewica
 @pytest.mark.parametrize(
     ("algo", "init"),
     [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
@@ -110,26 +112,7 @@ def test_ica(algo, init):
     assert err < 0.01
 
 
-def test_custom_preproc(Xs):
-    ica1 = MultiviewICA(n_components=2, random_state=0)
-    ica2 = MultiviewICA(
-        preproc=ViewTransformer(PCA(n_components=2)), random_state=0
-    )
-    S1 = ica1.fit_transform(Xs)
-    S2 = ica2.fit_transform(Xs)
-    np.testing.assert_array_almost_equal(S1, S2)
-
-
-def test_badpreprocess(Xs):
-    class BadPreprocess:
-        def __init__(self):
-            pass
-
-    mvica = MultiviewICA(preproc=BadPreprocess())
-    with pytest.raises(ValueError):
-        mvica.fit(Xs)
-
-
+@requires_multiviewica
 def test_transform(Xs):
     ica = MultiviewICA(n_components=2)
     with pytest.raises(ValueError):
@@ -140,6 +123,7 @@ def test_transform(Xs):
     assert ica.fit_transform(Xs).shape == Xs.shape
 
 
+@requires_multiviewica
 @pytest.mark.parametrize("multiview_output", [True, False])
 def test_inverse_transform(Xs, multiview_output):
     ica = MultiviewICA(n_components=2, multiview_output=multiview_output)
@@ -158,6 +142,7 @@ def test_inverse_transform(Xs, multiview_output):
     assert np.linalg.norm(avg_mixed2 - avg_mixed) < 0.2
 
 
+@requires_multiviewica
 def test_inverse_transform_no_preproc(Xs):
     ica = MultiviewICA()
     S = ica.fit_transform(Xs)
@@ -165,6 +150,7 @@ def test_inverse_transform_no_preproc(Xs):
     assert np.mean((Xs_mixed - Xs) ** 2) / np.mean(Xs ** 2) < 0.05
 
 
+@requires_multiviewica
 def test_fit_errors(Xs):
     with pytest.raises(ValueError):
         ica = MultiviewICA()
@@ -177,6 +163,7 @@ def test_fit_errors(Xs):
         ica.fit(Xs)
 
 
+@requires_multiviewica
 def test_fit(Xs, capfd):
     ica = MultiviewICA(verbose=True)
     ica.fit(Xs)

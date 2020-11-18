@@ -31,6 +31,7 @@
 import numpy as np
 from scipy import linalg
 from sklearn.decomposition import PCA
+from sklearn.utils.validation import check_is_fitted
 from multiviewica import multiviewica
 
 from .base import BaseDecomposer
@@ -88,8 +89,10 @@ class MultiviewICA(BaseDecomposer):
 
     Attributes
     ----------
-    preproc_instance_ : ViewTransformer-like instance
-        The fitted instance used for preprocessing
+    pcas_ : ViewTransformer instance
+        The fitted `ViewTransformer` used to reduce the data.
+        The `ViewTransformer` is given by `ViewTransformer(PCA(n_components=n_components))`
+        where n_components is the number of chosen. Only used if n_components is not None.
 
     mixing_ : array, shape (n_views, n_components, n_components)
         The square mixing matrices, linking preprocessed data
@@ -97,7 +100,7 @@ class MultiviewICA(BaseDecomposer):
 
     pca_components_: array, shape (n_components, n_features)
         Principal axes in feature space, representing the directions
-        of maximum variance in the data. Only used if preproc == "pca".
+        of maximum variance in the data. Only used if n_components is not None.
 
     components_ : array, shape (n_views, n_components, n_components)
         The square unmixing matrices
@@ -164,7 +167,6 @@ class MultiviewICA(BaseDecomposer):
         tol=1e-3,
         verbose=False,
         n_jobs=30,
-        preproc="pca",
     ):
         self.verbose = verbose
         self.n_components = n_components
@@ -172,7 +174,6 @@ class MultiviewICA(BaseDecomposer):
         self.max_iter = max_iter
         self.init = init
         self.tol = tol
-        self.preproc = preproc
         self.random_state = random_state
         self.multiview_output = multiview_output
 
@@ -186,31 +187,13 @@ class MultiviewICA(BaseDecomposer):
 
         y : ignored
         """
-        if (
-            self.preproc is None
-            or self.preproc == "pca"
-            and self.n_components is None
-        ):
-            preprocessing_name = "None"
-            self.preproc_instance_ = None
-        elif self.preproc == "pca":
-            preprocessing_name = "pca"
-            self.preproc_instance_ = ViewTransformer(
+        if self.n_components is not None:
+            self.pcas_ = ViewTransformer(
                 PCA(n_components=self.n_components)
             )
-        else:
-            preprocessing_name = "custom"
-            if hasattr(self.preproc, "transform") and hasattr(
-                self.preproc, "inverse_transform"
-            ):
-                self.preproc_instance_ = self.preproc
-            else:
-                raise ValueError(
-                    "preproc should either be 'pca', None or have"
-                    "a transform and inverse transform method"
-                )
-        if self.preproc_instance_ is not None:
-            reduced_X = self.preproc_instance_.fit_transform(Xs)
+
+        if self.n_components is not None:
+            reduced_X = self.pcas_.fit_transform(Xs)
         else:
             reduced_X = Xs.copy()
         reduced_X = np.array(reduced_X)
@@ -226,16 +209,16 @@ class MultiviewICA(BaseDecomposer):
         mixing_ = np.array([np.linalg.pinv(W) for W in unmixings_])
         self.components_ = unmixings_
         self.mixing_ = mixing_
-        if preprocessing_name == "pca":
+        if self.n_components is not None:
             pca_components = []
             for i, transformer in enumerate(
-                self.preproc_instance_.transformers_
+                self.pcas_.transformers_
             ):
                 K = transformer.components_
                 pca_components.append(K)
             self.pca_components_ = np.array(pca_components)
 
-        if preprocessing_name == "None":
+        if self.n_components is None:
             self.individual_components_ = unmixings_
             self.individual_mixing_ = mixing_
         else:
@@ -266,11 +249,12 @@ class MultiviewICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
+
         if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
-        if self.preproc_instance_ is not None:
-            transformed_X = self.preproc_instance_.transform(X)
+        if self.n_components is not None:
+            transformed_X = self.pcas_.transform(X)
         else:
             transformed_X = X.copy()
         if self.multiview_output:
@@ -302,43 +286,14 @@ class MultiviewICA(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
-        if not hasattr(self, "components_"):
-            raise ValueError("The model has not yet been fitted.")
-
+        check_is_fitted(self, "components_")
         if self.multiview_output:
             S_ = np.mean(X_transformed, axis=0)
         else:
             S_ = X_transformed
         inv_red = [S_.dot(w.T) for w in self.mixing_]
 
-        if self.preproc_instance_ is not None:
-            return self.preproc_instance_.inverse_transform(inv_red)
+        if self.n_components is not None:
+            return self.pcas_.inverse_transform(inv_red)
         else:
             return inv_red
-
-    def _fit(self, Xs, y=None):
-        r"""
-        Fits the model to the views Xs.
-
-        Parameters
-        ----------
-        Xs : list of array-likes or numpy.ndarray
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            Training data to recover a source and unmixing matrices from.
-        y : ignored
-
-        Returns
-        -------
-        self : returns an instance of itself.
-        """
-        _, W, S = multiviewica(
-            Xs,
-            noise=self.noise,
-            max_iter=self.max_iter,
-            init=self.init,
-            random_state=self.random_state,
-            tol=self.tol,
-            verbose=self.verbose,
-        )
-        return W, S
