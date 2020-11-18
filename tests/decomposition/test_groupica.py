@@ -50,6 +50,9 @@ def generate_signals(n_samples, n_sources, n_features, noise_level, rng):
     ]
     return Xs, sources, mixings
 
+def test_badsolver():
+    with pytest.raises(ValueError):
+        ica = GroupICA(solver="bla")
 
 @pytest.mark.parametrize("n_components", [None, 1, 3])
 @pytest.mark.parametrize(
