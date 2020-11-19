@@ -51,9 +51,10 @@ jobs:
             command: |
               sudo apt-get install pandoc
               python -m pip install --user --upgrade --progress-bar off pip
-              python -m pip install --user --upgrade --progress-bar off -r requirements.txt
-              python -m pip install --user --upgrade --progress-bar off -r requirements_torch.txt
-              python -m pip install --user --upgrade --progress-bar off -r docs/requirements.txt
+              python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
+              python -m pip install --user --upgrade --progress-bar off -r requirements/torch.txt
+              python -m pip install --user --upgrade --progress-bar off -r requirements/multiviewica.txt
+              python -m pip install --user --upgrade --progress-bar off -r docs/base.txt
               python -m pip install --user -e .
 
         - save_cache:

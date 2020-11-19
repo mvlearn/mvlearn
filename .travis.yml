@@ -3,16 +3,36 @@ language: python
 branches:
   only:
   - master
-  - 0.0.2
 
 python:
   - '3.8'
   - '3.7'
   - '3.6'
 
+jobs:
+  include:
+    - stage: test_base
+      install: pip install -r ./requirements/base.txt
+      script: pytest tests/base/ --cov=./mvlearn/
+    - stage: test_multiviewica
+      install: pip install -r ./requirements/multiviewica.txt
+      script: pytest tests/multiviewica/ --cov=./mvlearn/ --append-cov
+    - stage: test_torch
+      install: pip install -r ./requirements/torch.txt
+      script: pytest tests/torch/ --cov=./mvlearn/ --append-cov
+    - stage: codestyle
+      install: pip install -U pytest pytest-cov codecov pycodestyle flake8
+      script: pycodestyle mvlearn/
+      script: flake8 mvlearn
+      script: flake8 examples
+
+after_success:
+  - codecov
+
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements_torch.txt
+  - pip install -r ./requirements/base.txt
+  - pip install -r ./requirements/torch.txt
+  - pip install -r ./requirements/multiviewica.txt
   - pip install -U pytest pytest-cov codecov pycodestyle flake8
 
 script:
@@ -21,5 +41,4 @@ script:
   - flake8 mvlearn
   - flake8 examples
 
-after_success:
-  - codecov
+
