@@ -13,32 +13,19 @@ jobs:
   include:
     - stage: test_base
       install: pip install -r ./requirements/base.txt
-      script: pytest tests/base/ --cov=./mvlearn/
+      script: pytest tests/ --cov=./mvlearn/ --ignore=tests/multiviewica --ignore=tests/torch
     - stage: test_multiviewica
       install: pip install -r ./requirements/multiviewica.txt
-      script: pytest tests/multiviewica/ --cov=./mvlearn/ --append-cov
+      script: pytest tests/multiviewica/ --cov=./mvlearn/ --cov-append
     - stage: test_torch
       install: pip install -r ./requirements/torch.txt
-      script: pytest tests/torch/ --cov=./mvlearn/ --append-cov
+      script: pytest tests/torch/ --cov=./mvlearn/ --cov-append
     - stage: codestyle
       install: pip install -U pytest pytest-cov codecov pycodestyle flake8
-      script: pycodestyle mvlearn/
-      script: flake8 mvlearn
-      script: flake8 examples
+      script:
+        pycodestyle mvlearn/
+        flake8 mvlearn
+        flake8 examples
 
 after_success:
   - codecov
-
-install:
-  - pip install -r ./requirements/base.txt
-  - pip install -r ./requirements/torch.txt
-  - pip install -r ./requirements/multiviewica.txt
-  - pip install -U pytest pytest-cov codecov pycodestyle flake8
-
-script:
-  - pytest tests/ --cov=./mvlearn/
-  - pycodestyle mvlearn/
-  - flake8 mvlearn
-  - flake8 examples
-
-

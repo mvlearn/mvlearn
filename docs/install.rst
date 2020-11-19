@@ -4,11 +4,11 @@ Install
 ``mvlearn`` can be installed by using ``pip``, GitHub, or through the conda-forge
 channel into an existing ``conda`` environment.
 
-**IMPORTANT NOTE:** ``mvlearn`` has an optional dependency to ``torch``
-and ``tqdm``, so special instructions must be followed to include these
+**IMPORTANT NOTE:** ``mvlearn`` has an optional dependencies for certain functions,
+and so special instructions must be followed to include these
 optional dependencies in the installation (if you do not have those packages already)
 in order to access all the features within ``mvlearn``.
-More details can be found in :ref:`torchDependencyAnchor`.
+More details can be found in :ref:`extraDependencyAnchor`.
 
 Installing the released version with pip
 ----------------------------------------
@@ -46,27 +46,33 @@ top-level source directory using the Terminal::
 
 This will install ``mvlearn`` and the required dependencies (see below).
 
-.. _torchDependencyAnchor:
+.. _extraDependencyAnchor:
 
-Including optional torch dependencies for full functionality
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Including optional dependencies for full functionality
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Due to the size of the ``torch`` dependency, it is an optional installation.
-Because it, and ``tqdm``, are only used by Deep CCA and SplitAE, they are not
-included in the basic ``mvlearn`` download.
-If you wish to use functionality associated with these dependencies (Deep CCA
-and SplitAE), you must install additional dependencies. You can install
-them independently, or to install everything from PyPI, simply call::
+A small subset of functions require specific extra dependencies not installed
+by default with the core installation. Each bullet point denotes a collection
+of functions, with corresponding keyword enclosed in the brackets [].
 
-    $ pip3 install mvlearn[torch]
+* [torch]: ``DCCA``, ``SplitAE``
+* [multiviewica]: ``MultiviewICA``, ``GroupICA``
 
+If you wish to use these functions, you must install their required
+dependencies. These are listed in the package requirements folder
+with corresponding keyword names
+for manual installation or can be installed from PyPI by simply calling::
+
+    $ pip3 install mvlearn[keyword]
+
+where 'keyword' is from the list above, bracketed.
 To upgrade the package and torch requirements::
 
-    $ pip3 install --upgrade mvlearn[torch]
+    $ pip3 install --upgrade mvlearn[keyword]
 
 If you have the package locally, from the top level folder call::
 
-    $ pip3 install -e .[torch]
+    $ pip3 install -e .[keyword]
 
 .. _condaAnchor:
 
@@ -75,7 +81,7 @@ Installing the released version with conda-forge
 
 Here, we assume you have created a conda environment with one of the
 accepted python versions, and you intend to install the full ``mvlearn``
-release into it (with torch dependencies included). For more information
+release into it (with extra dependencies included). For more information
 about using conda-forge feedstocks, see the `about page <https://conda-forge.org/>`_,
 or the `mvlearn feedstock <https://github.com/conda-forge/mvlearn-feedstock>`_.
 
@@ -102,10 +108,15 @@ Python package dependencies
 - joblib >=0.11
 - python-picard >= 0.4
 
-with optional dependencies
+with optional [torch] dependencies
 
 - torch >=1.1.0
 - tqdm
+
+and optional [multiviewica] dependencies
+
+- python-picard >= 0.4
+- multiviewica >= 0.0.1
 
 Currently, ``mvlearn`` is supported for Python 3.6, 3.7, and 3.8.
 

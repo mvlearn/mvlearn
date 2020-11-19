@@ -12,13 +12,11 @@ from sklearn.utils.validation import check_is_fitted
 try:
     from picard import picard
 except ModuleNotFoundError as error:
-    import sys
-    print(
-        f'Error: {error}. multiviewica dependencies required for this ' +
-        'function. Please consult the mvlearn installation instructions at ' +
-        'https://github.com/mvlearn/mvlearn to correctly install ' +
-        'multiviewica dependencies.')
-    sys.exit(1)
+    msg = (f"ModuleNotFoundError: {error}. multiviewica dependencies" +
+           "required for this function. Please consult the mvlearn" +
+           "installation instructions at https://github.com/mvlearn/mvlearn" +
+           "to correctly install multiviewica dependencies.")
+    raise ModuleNotFoundError(msg)
 
 from ..utils.utils import check_Xs
 from .base import BaseDecomposer
