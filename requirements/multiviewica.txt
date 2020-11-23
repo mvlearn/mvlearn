@@ -1,0 +1,2 @@
+python-picard >= 0.4
+multiviewica >= 0.0.1
