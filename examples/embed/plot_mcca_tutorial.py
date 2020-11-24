@@ -77,6 +77,9 @@ crossviews_plot(mcca_scores[[0, 1]],
                 equal_axes=True,
                 scatter_kwargs={'alpha': 0.4, 's': 2.0})
 
+print('Canonical Correlations:')
+print(mcca.canon_corrs(mcca_scores))
+
 ###############################################################################
 # Informative MCCA: PCA then MCCA
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -96,6 +99,8 @@ crossviews_plot(mcca_scores[[0, 1]],
                 equal_axes=True,
                 scatter_kwargs={'alpha': 0.4, 's': 2.0})
 
+print('Canonical Correlations:')
+print(mcca.canon_corrs(mcca_scores))
 
 ###############################################################################
 # Kernel MCCA
@@ -113,3 +118,6 @@ crossviews_plot(kmcca_scores[[0, 1]],
                 title='KMCCA scores: linear kernel (first 2 views shown)',
                 equal_axes=True,
                 scatter_kwargs={'alpha': 0.4, 's': 2.0})
+
+print('Canonical Correlations:')
+print(mcca.canon_corrs(mcca_scores))

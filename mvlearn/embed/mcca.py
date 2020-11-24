@@ -100,12 +100,13 @@ class MCCA(BaseCCA):
     Examples
     --------
     >>> from mvlearn.embed import MCCA
-    >>> X1 = [[0., 0., 1.], [1.,0.,0.], [2.,2.,2.], [3.,5.,4.]]
+    >>> X1 = [[0, 0, 1], [1, 0, 0], [2, 2, 2], [3, 5, 4]]
     >>> X2 = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
+    >>> X3 = [[0, 1, 0], [1, 9, 0], [4, 3, 3,], [12, 8, 10]]
     >>> mcca = MCCA()
-    >>> mcca.fit([X1, X2])
+    >>> mcca.fit([X1, X2, X3])
     MCCA()
-    >>> Xs_scores = mcca.transform([X1, X2])
+    >>> Xs_scores = mcca.transform([X1, X2, X3])
     """
 
     def __init__(

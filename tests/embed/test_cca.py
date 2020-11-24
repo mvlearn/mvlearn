@@ -151,7 +151,7 @@ def test_stats_1_feature_vs_matlab():
 
 def test_stats_1_component():
     np.random.seed(12)
-    X = X = np.random.rand(100, 3)
+    X = np.random.rand(100, 3)
     Y = np.random.rand(100, 4)
     past_stats = {
         'r': np.array([0.22441608326082138]),
@@ -177,7 +177,7 @@ def test_stats_1_component():
 
 def test_stats_2_components():
     np.random.seed(12)
-    X = X = np.random.rand(100, 3)
+    X = np.random.rand(100, 3)
     Y = np.random.rand(100, 4)
     past_stats = {
         'r': np.array([0.22441608, 0.19056307]),
