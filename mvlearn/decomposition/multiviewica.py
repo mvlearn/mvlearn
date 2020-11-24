@@ -43,7 +43,7 @@ except ModuleNotFoundError as error:
     raise ModuleNotFoundError(msg)
 
 from .base import BaseDecomposer
-from ..preprocessing.repeat import ViewTransformer
+from ..compose import ViewTransformer
 
 
 class MultiviewICA(BaseDecomposer):
@@ -221,10 +221,10 @@ class MultiviewICA(BaseDecomposer):
         self.mixing_ = mixing_
         if self.n_components is not None:
             pca_components = []
-            for i, transformer in enumerate(
-                self.pcas_.transformers_
+            for i, estimator in enumerate(
+                self.pcas_.estimators_
             ):
-                K = transformer.components_
+                K = estimator.components_
                 pca_components.append(K)
             self.pca_components_ = np.array(pca_components)
 

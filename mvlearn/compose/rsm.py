@@ -1,37 +1,44 @@
+"""Random Subspace Method"""
+
+# Authors: Ronan Perry
+#
 # License: MIT
 
 import numpy as np
-import random
 from sklearn.utils import check_array
+from sklearn.base import TransformerMixin
+from sklearn.utils.validation import check_is_fitted
 from .utils import check_n_views, check_n_features
 
 
-def random_subspace_method(X, n_features=None, n_views=1):
+class RandomSubspaceMethod(TransformerMixin):
     """
     Random Subspace Method [#1RSM]_ for constructing multiple views.
-    Each view is constructed by randomly selecting n_features
-    (columns) from X. All unselected features are set to 0.
+    Each view is constructed by randomly selecting features from X.
 
     Parameters
     ----------
-    X : array-like matrix, shape (n_samples, n_cols)
-        The input samples.
+    n_views : int
+        Number of views to construct
 
-    n_features : int, float
-        Number (or proportion, if float) of features to randomly select.
+    subspace_dim : int, float
+        Number of features from the data to subsample. If float, is between 0
+        and 1 and denotes the proportion of features to subsample.
 
-        - If int, then n_features is the number of columns to select.
+    random_state : int or RandomState instance, optional (default None)
+        Controls the random sampling of features. Set for
+        reproducible results.
 
-        - If float, then n_features*n_cols is the number of columns to select.
+    Attributes
+    ----------
+    n_features_  : list, length n_views
+        The number of features in the fitted data
 
-    n_views : strictly positive int, float optional (default = 1)
-        Number of views to construct.
+    subspace_dim_ : int
+        The number of features subsampled in each view
 
-    Returns
-    -------
-    Xs : list of array-likes matrices
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_features)
+    subspace_indices_ : list of numpy.ndarray, length n_views
+        Feature indices to subsample for each view
 
     References
     ----------
@@ -39,55 +46,87 @@ def random_subspace_method(X, n_features=None, n_views=1):
             decision forests." IEEE transactions on pattern analysis
             and machine intelligence 20.8 (1998): 832-844.
 
+    .. [#2RSM] Dacheng Tao, Xiaoou Tang, Xuelong Li and Xindong Wu,
+               "Asymmetric bagging and random subspace for support vector
+               machines-based relevance feedback in image retrieval," in
+               IEEE Transactions on Pattern Analysis and Machine Intelligence,
+               vol. 28, no. 7, pp. 1088-1099, July 2006
+
     Examples
     --------
-    >>> from mvlearn.compose import random_subspace_method
-    >>> import random
+    >>> from mvlearn.compose import RandomSubspaceMethod
     >>> import numpy as np
-    >>> # Random integer data for compressed viewing
-    >>> np.random.seed(1)
-    >>> random.seed(1)
-    >>> single_view_data = np.random.randint(low=1, high=10, size=(4, 5))
-    >>> multi_view_data = random_subspace_method(single_view_data,
-    ...                                          n_features=3, n_views=2)
-    >>> print(multi_view_data[0])
-    [[6 9 0 0 1]
-     [2 8 0 0 5]
-     [6 3 0 0 5]
-     [8 8 0 0 1]]
-    >>> print(multi_view_data[1])
-    [[6 0 6 1 0]
-     [2 0 7 3 0]
-     [6 0 5 3 0]
-     [8 0 2 8 0]]
+    >>> X = np.random.rand(1000, 50)
+    >>> rsm = RandomSubspaceMethod(n_views=3, subspace_dim=10)
+    >>> Xs = rsm.fit_transform(Xs)
+    >>> print(len(Xs))
+    3
+    >>> print(Xs[0].shape)
+    (1000, 10)
     """
-    X = check_array(X)
-    _, cols = X.shape
+    def __init__(self, n_views, subspace_dim, random_state=None):
+        check_n_views(n_views)
+        self.n_views = n_views
+        self.subspace_dim = subspace_dim
+        self.random_state = random_state
 
-    check_n_views(n_views)
-    check_n_features(n_features, cols)
+    def fit(self, X, y=None):
+        r"""
+        Fit to the singleview data.
 
-    # check if n_feaures is between 0 and 1
-    if n_features < 1:
-        n_features = int(n_features*cols)
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_total_features)
+            Input dataset
 
-    views = []
+        y : Ignored
 
-    for _ in range(n_views):
-        view = np.copy(X)
-        features_selected = []
+        Returns
+        -------
+        self : object
+            The Transformer instance
+        """
+        X = check_array(X)
+        _, n_features = X.shape
+        self.n_features_ = n_features
+        check_n_features(self.subspace_dim, n_features)
 
-        while len(features_selected) != n_features:
+        # check if n_feaures is between 0 and 1
+        self.subspace_dim_ = self.subspace_dim
+        if self.subspace_dim_ < 1:
+            self.subspace_dim_ = int(self.subspace_dim_ * n_features)
 
-            feature = random.randint(0, cols - 1)
+        np.random.seed(self.random_state)
+        self.subspace_indices_ = [
+            np.random.choice(
+                n_features, size=self.subspace_dim_, replace=False)
+            for _ in range(self.n_views)]
 
-            if feature not in features_selected:
-                features_selected.append(feature)
+        return self
 
-        # set unselected features to zero
-        for feature in range(cols):
-            if feature not in features_selected:
-                view[:, feature] = 0
-        views.append(view)
+    def transform(self, X):
+        r"""
+        Transforms the singleview dataset and into a multiview dataset.
 
-    return views
+        Parameters
+        ----------
+        X : array of shape (n_samples, n_features)
+            Input dataset
+
+        Returns
+        -------
+        Xs : list of array-likes or numpy.ndarray
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, subspace_dim)
+        """
+        check_is_fitted(self)
+        X = check_array(X)
+        _, n_features = X.shape
+
+        if n_features != self.n_features_:
+            raise ValueError("Number of features different " +
+                             f"than fitted number {self.n_features_}")
+
+        Xs = [X[:, idxs] for idxs in self.subspace_indices_]
+
+        return Xs

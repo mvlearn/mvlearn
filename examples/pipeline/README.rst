@@ -1,2 +1,0 @@
-Examples on pipeline
---------------------

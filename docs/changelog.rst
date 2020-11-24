@@ -38,12 +38,15 @@ Updates in this release:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |MajorFeature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+- |MajorFeature| Adds ``ViewTransformer`` to apply a single view transformer to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_, `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
+- |MajorFeature| Adds ``ViewClassifier`` to apply a single view classifier to each view separately. `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
+- |Feature| Switches ``random_subspace_method`` and ``random_gaussian_projection`` functions to sklearn-compliant estimators ``RandomSubspaceMethod`` and ``RandomGaussianProjection``. `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
 - |API| The ``mvlearn.construct`` module was merged into ``mvlearn.compose`` due to overlapping functionality. Any imports statements change accordingly. `#258 <https://github.com/mvlearn/mvlearn/pull/258>`_ by `Ronan Perry`_.
 
-`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/construct>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`mvlearn.construct <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/construct>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |API| The ``mvlearn.construct`` module was merged into ``mvlearn.compose`` due to overlapping functionality. Any imports statements change accordingly. `#258 <https://github.com/mvlearn/mvlearn/pull/258>`_ by `Ronan Perry`_.
+- |API| The ``mvlearn.construct`` module was merged into ``mvlearn.compose`` due to overlapping functionality and no longer exists. Any imports statements change accordingly. `#258 <https://github.com/mvlearn/mvlearn/pull/258>`_ by `Ronan Perry`_.
 
 `mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,10 +67,8 @@ Updates in this release:
 
 - |Feature| Adds the function ``model_selection.train_test_split`` to wrap that of `sklearn <scikit-learn <https://scikit-learn.org/>`_ for multiview data or items. `#174 <https://github.com/mvlearn/mvlearn/pull/174>`_ by `Alexander Chang <https://github.com/achang63>`_ and `Gavin Mischler <https://gavinmischler.github.io/>`_.
 
-`mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- |MajorFeature| Adds an ``mvlearn.preprocessing`` module with ``ViewTransformer`` to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_.
+`mvlearn.utils <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/utils>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin`_.
 
