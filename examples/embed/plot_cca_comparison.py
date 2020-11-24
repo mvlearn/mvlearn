@@ -3,12 +3,12 @@
 Comparing CCA Variants
 ======================
 
-This tutorial shows a comparison of Kernel Canonical Correlation Analysis
-(KCCA) with three different types of kernel to Deep Canonical Correlation
-Analysis (DCCA). Each learns and computes kernels suitable for different
-situations. The point of this tutorial is to illustrate, in toy examples,
-the rough intuition as to when such methods work well and generate
-linearly correlated projections.
+This tutorial shows a comparison of Canonical Correlation Analysis (CCA),
+Kernel CCA (KCCA) with two different types of kernel, and Deep CCA (DCCA).
+CCA is equivalent to KCCA with a linear kernel. Each learns kernels suitable
+for different situations. The point of this tutorial is to illustrate, in toy
+examples, the rough intuition as to when such methods work well and find
+highly correlated projections.
 
 The simulated latent data has two signal dimensions draw from independent
 Gaussians. Two views of data were derived from this.
@@ -29,15 +29,17 @@ views.
 
 """
 
+# Author: Ronan Perry
 # License: MIT
 
-from mvlearn.embed import KCCA, DCCA
+from mvlearn.embed import CCA, KMCCA, DCCA
 from mvlearn.datasets import GaussianMixture
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import seaborn as sns
-
+import warnings
+warnings.filterwarnings("ignore")
 
 # Make Latents
 n_samples = 200
@@ -69,7 +71,7 @@ cmap = matplotlib.colors.ListedColormap(
 cmap = 'coolwarm'
 
 method_labels = \
-    ['Raw Views', 'Linear KCCA', 'Polynomial KCCA', 'Gaussian KCCA', 'DCCA']
+    ['Raw Views', 'CCA', 'Polynomial KCCA', 'Gaussian KCCA', 'DCCA']
 transform_labels = \
     ['Linear Transform', 'Polynomial Transform', 'Sinusoidal Transform']
 
@@ -78,14 +80,16 @@ outdim_size = min(Xs_train[0][0].shape[1], 2)
 layer_sizes1 = [256, 256, outdim_size]
 layer_sizes2 = [256, 256, outdim_size]
 methods = [
-    KCCA(ktype='linear', reg=0.1, degree=2.0, constant=0.1, n_components=2),
-    KCCA(ktype='poly', reg=0.1, degree=2.0, constant=0.1, n_components=2),
-    KCCA(ktype='gaussian', reg=1.0, sigma=2.0, n_components=2),
+    CCA(regs=0.1, n_components=2),
+    KMCCA(kernel='poly', regs=0.1, kernel_params={'degree': 2, 'coef0': 0.1},
+          n_components=2),
+    KMCCA(kernel='rbf', regs=0.1, kernel_params={'gamma': 1/4},
+          n_components=2),
     DCCA(input_size1, input_size2, outdim_size, layer_sizes1, layer_sizes2,
          epoch_num=400)
 ]
 
-fig, axes = plt.subplots(3 * 2, 5 * 2, figsize=(20, 12))
+fig, axes = plt.subplots(3 * 2, 5 * 2, figsize=(22, 12))
 sns.set_context('notebook')
 
 for r, transform in enumerate(transforms):
@@ -102,15 +106,15 @@ for r, transform in enumerate(transforms):
         ax.set_xticks([], [])
         ax.set_yticks([], [])
         if dim1 == 0:
-            ax.set_ylabel(f"View 2 Dim {dim2+1}")
+            ax.set_ylabel(f"View 2 Dim {dim2+1}", fontsize=14)
         if dim1 == 0 and dim2 == 0:
-            ax.text(-0.5, -0.1, transform_labels[r], transform=ax.transAxes,
-                    fontsize=18, rotation=90, verticalalignment='center')
+            ax.text(-0.4, -0.1, transform_labels[r], transform=ax.transAxes,
+                    fontsize=22, rotation=90, verticalalignment='center')
         if dim2 == 1 and r == len(transforms)-1:
-            ax.set_xlabel(f"View 1 Dim {dim1+1}")
+            ax.set_xlabel(f"View 1 Dim {dim1+1}", fontsize=14)
         if i == 0 and r == 0:
             ax.set_title(method_labels[r],
-                         {'position': (1.11, 1), 'fontsize': 18})
+                         {'position': (1.11, 1), 'fontsize': 22})
 
     for c, method in enumerate(methods):
         axs = axes[2*r: 2*r+2, 2*c+2:2*c+4]
@@ -125,10 +129,14 @@ for r, transform in enumerate(transforms):
                 c=labels,
             )
             if dim2 == 1 and r == len(transforms)-1:
-                ax.set_xlabel(f"View 1 Dim {dim1+1}")
+                ax.set_xlabel(f"View 1 Dim {dim1+1}", fontsize=16)
             if i == 0 and r == 0:
                 ax.set_title(method_labels[c + 1], {'position': (1.11, 1),
-                             'fontsize': 18})
+                             'fontsize': 22})
             ax.axis("equal")
             ax.set_xticks([], [])
             ax.set_yticks([], [])
+
+plt.tight_layout()
+plt.subplots_adjust(wspace=0.15, hspace=0.15)
+plt.show()
