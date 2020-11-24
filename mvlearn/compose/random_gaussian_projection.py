@@ -35,12 +35,6 @@ class RandomGaussianProjection(TransformerMixin):
         Controls the random sampling of Gaussian projections. Set for
         reproducible results.
 
-    Returns
-    -------
-    Xs : list of array-likes matrices
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_components)
-
     Attributes
     ----------
     GaussianRandomProjections_  : list, length n_views

@@ -22,8 +22,8 @@ class BaseWrapper(BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to.
 
         y : array-like of length (n_samples,), optional (default None)
@@ -58,8 +58,8 @@ class BaseWrapper(BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to.
 
         y : array-like of length (n_samples,), optional (default None)
@@ -79,8 +79,8 @@ class BaseWrapper(BaseEstimator):
 class ViewClassifier(BaseWrapper):
     r"""Apply a sklearn classifier to each view of a dataset
 
-    Build a classifier from multiview data by
-    using individual scikit-learn classifiers on each view.
+    Build a classifier from multiview data by using one
+    or more individual scikit-learn classifiers on each view.
 
     Parameters
     ----------
@@ -109,7 +109,7 @@ class ViewClassifier(BaseWrapper):
     >>> Xs, y = load_UCImultifeature()
     >>> clfs = ViewClassifier(LogisticRegression())
     >>> y_hat = clfs.fit(Xs, y).predict(Xs)
-    >>> print(y.shape)
+    >>> print(y_hat.shape)
     (2000,)
     """
     def predict(self, Xs):
@@ -120,8 +120,8 @@ class ViewClassifier(BaseWrapper):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to predict
 
         Returns
@@ -144,8 +144,8 @@ class ViewClassifier(BaseWrapper):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to predict
 
         y : array-like of shape (n_samples,)
@@ -166,7 +166,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
     r"""Apply a sklearn transformer to each view of a dataset
 
     Build a transformer from multiview dataset to multiview dataset by
-    using individual scikit-learn transformer on each view.
+    using one or more individual scikit-learn transformers on each view.
 
     Parameters
     ----------
@@ -209,8 +209,8 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
         Returns
@@ -232,8 +232,8 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to.
 
         y : numpy.ndarray of shape (n_samples,), optional (default None)
@@ -260,8 +260,8 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
         Returns
