@@ -57,6 +57,8 @@ Updates in this release:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Feature| Adds Multi CCA (``MCCA``) and Kernel MCCA (``KMCCA``) for two or more views. `#249 <https://github.com/mvlearn/mvlearn/pull/249>`_ by `Ronan Perry`_ and `Iain Carmichael`_.
+- |Feature| Adds CCA, MCCA which requires 2 views but has a variety of interpretable statistics. `#261 <https://github.com/mvlearn/mvlearn/pull/251>`_ by `Ronan Perry`_.
+- |API| Removes KCCA and moves its functionallity into KMCCA. `#261 <https://github.com/mvlearn/mvlearn/pull/251>`_ by `Ronan Perry`_.
 
 `mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
