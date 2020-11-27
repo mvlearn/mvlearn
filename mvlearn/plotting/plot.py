@@ -117,8 +117,8 @@ def crossviews_plot(
         if dim1 == dim2 and equal_axes:
             ax.axis("equal")
         if not ax_ticks:
-            ax.set_xticks([], [])
-            ax.set_yticks([], [])
+            ax.set_xticks([])
+            ax.set_yticks([])
 
     if title is not None:
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -223,8 +223,8 @@ def quick_visualize(
         plt.xlabel("Component 1")
         plt.ylabel("Component 2")
     if not ax_ticks:
-        plt.xticks([], [])
-        plt.yticks([], [])
+        plt.xticks([])
+        plt.yticks([])
 
     if title is not None:
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
