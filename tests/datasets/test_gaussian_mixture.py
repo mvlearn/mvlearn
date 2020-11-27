@@ -1,15 +1,15 @@
 import pytest
-from mvlearn.datasets import GaussianMixture
+from mvlearn.datasets import make_gaussian_mixture
 from numpy.testing import assert_equal
 import numpy as np
 
 
 n_samples = 100
-gm_uni = GaussianMixture(n_samples, [0, 1], np.eye(2))
+Xs_uni, y_uni = make_gaussian_mixture(n_samples, [0, 1], np.eye(2))
 centers = [[-1, 0], [1, 0]]
 covariances = [[[1, 0], [0, 1]], [[1, 0], [1, 2]]]
 class_probs = [0.3, 0.7]
-gm_centerslti = GaussianMixture(n_samples, centers, covariances, class_probs)
+Xs_lti, y_lti = make_gaussian_mixture(n_samples, centers, covariances, class_probs)
 
 
 def test_centersltivariate():
@@ -35,7 +35,7 @@ def test_transforms():
 
 def test_bad_class_probs():
     with pytest.raises(ValueError):
-        GaussianMixture(
+        make_gaussian_mixture(
             centers, covariances, n_samples, class_probs=[0.3, 0.4]
         )
 
@@ -51,7 +51,7 @@ def test_bad_transform_string():
 
 
 def test_no_sample():
-    gaussm = GaussianMixture(n_samples, centers, covariances, class_probs)
+    gaussm = make_gaussian_mixture(n_samples, centers, covariances, class_probs)
     with pytest.raises(NameError):
         gaussm.get_Xy()
 
@@ -59,29 +59,29 @@ def test_no_sample():
 def test_bad_shapes():
     ## Wrong Length
     with pytest.raises(ValueError):
-        GaussianMixture(n_samples, [1], covariances)
+        make_gaussian_mixture(n_samples, [1], covariances)
     ## Inconsistent dimension
     with pytest.raises(ValueError):
-        GaussianMixture(
+        make_gaussian_mixture(
             n_samples, centers, [np.eye(2), np.eye(3)], class_probs
         )
     ## Wrong uni dimensions
     with pytest.raises(ValueError):
-        GaussianMixture(n_samples, [1, 0], [1, 0])
+        make_gaussian_mixture(n_samples, [1, 0], [1, 0])
     ## Wrong centerslti sizes
     with pytest.raises(ValueError):
-        GaussianMixture(
+        make_gaussian_mixture(
             n_samples, centers, covariances, class_probs=[0.3, 0.1, 0.6]
         )
 
 
 def test_random_state():
-    gm_1 = GaussianMixture(
+    gm_1 = make_gaussian_mixture(
         10, centers, covariances, class_probs, random_state=42
     )
     gm_1.sample_views("poly")
     Xs_1, y_1 = gm_1.get_Xy()
-    gm_2 = GaussianMixture(
+    gm_2 = make_gaussian_mixture(
         10, centers, covariances, class_probs, random_state=42
     )
     gm_2.sample_views("poly")
@@ -92,14 +92,14 @@ def test_random_state():
 
 
 def test_noise_dims_not_same_but_reproducible():
-    gm_1 = GaussianMixture(
+    gm_1 = make_gaussian_mixture(
         20, centers, covariances, class_probs, random_state=42
     )
     gm_1.sample_views("poly", n_noise=2)
     Xs_2, _ = gm_1.get_Xy()
     view1_noise, view2_noise = Xs_2[0][:, -2:], Xs_2[1][:, -2:]
     assert not np.allclose(view1_noise, view2_noise)
-    gm_2 = GaussianMixture(
+    gm_2 = make_gaussian_mixture(
         20, centers, covariances, class_probs, random_state=42
     )
     gm_2.sample_views("poly", n_noise=2)
@@ -111,7 +111,7 @@ def test_noise_dims_not_same_but_reproducible():
 
 def test_shuffle():
     np.random.seed(42)
-    gm_1 = GaussianMixture(
+    gm_1 = make_gaussian_mixture(
         20,
         centers,
         covariances,
@@ -123,7 +123,7 @@ def test_shuffle():
     gm_1.sample_views("poly")
     Xs_1, y_1 = gm_1.get_Xy()
     np.random.seed(30)
-    gm_2 = GaussianMixture(
+    gm_2 = make_gaussian_mixture(
         20,
         centers,
         covariances,
@@ -140,7 +140,7 @@ def test_shuffle():
 
 
 def test_shuffle_with_random_state():
-    gm_1 = GaussianMixture(
+    gm_1 = make_gaussian_mixture(
         20,
         centers,
         covariances,
@@ -151,7 +151,7 @@ def test_shuffle_with_random_state():
     )
     gm_1.sample_views("poly")
     Xs_1, y_1 = gm_1.get_Xy()
-    gm_2 = GaussianMixture(
+    gm_2 = make_gaussian_mixture(
         20,
         centers,
         covariances,
