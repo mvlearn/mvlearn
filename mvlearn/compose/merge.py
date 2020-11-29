@@ -72,8 +72,8 @@ class BaseMerger(TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
         y : array, shape (n_samples,), optional
 
         Returns
