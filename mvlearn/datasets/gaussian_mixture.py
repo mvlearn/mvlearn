@@ -5,13 +5,12 @@ import numpy as np
 from scipy.stats import ortho_group
 
 
-def make_gaussian_mixtures(
-    self,
+def make_gaussian_mixture(
     n_samples,
     centers,
     covariances,
     transform='linear',
-    noise=1,
+    noise=None,
     noise_dims=None,
     class_probs=None,
     random_state=None,
@@ -21,9 +20,8 @@ def make_gaussian_mixtures(
     return_latents=False,
 ):
     r"""
-    Creates an object with a fixed latent variable sampled from a
-    (potentially) multivariate Gaussian distribution according to the
-    specified parameters and class probability priors.
+    Creates a two-view dataset from a Gaussian mixture model and
+    a transformation.
 
     Parameters
     ----------
@@ -43,9 +41,9 @@ def make_gaussian_mixtures(
         Transformation to perform on the latent variable. If a function,
         applies it to the latent. Otherwise uses an implemented function.
     noise : double or None (default=None)
-        Variance of mean zero Gaussian noise to add
+        Variance of mean zero Gaussian noise added to the first view
     noise_dims : int or None (default=None)
-        Number of additional dimensions to add of pure Gaussian noise
+        Number of additional dimensions of standard normal noise to add
     class_probs : array-like, default=None
         A list of probabilities specifying the probability of a latent
         point being sampled from each of the Gaussians. Must sum to 1. If
@@ -82,6 +80,11 @@ def make_gaussian_mixtures(
         (X_1, y_1), \dots, (X_{np_i}, Y_{np_i}) \overset{i.i.d.}{\sim}
             \mathcal{N}(\mu_i, \Sigma_i)
 
+    Two views of data are returned, the first being the latent samples and
+    the second being a specified transformation of the latent samples.
+    Additional noise may be added to the first view or added as noise
+    dimensions to both views.
+
     Examples
     --------
     >>> from mvlearn.datasets import GaussianMixture
@@ -108,14 +111,14 @@ def make_gaussian_mixtures(
         msg = "covariance matrix is of the incorrect shape"
         raise ValueError(msg)
     if centers.shape[0] != covariances.shape[0]:
-        msg = "The first dimensions of 2D centers and 3D covariances \
-            must be equal"
+        msg = "The first dimensions of 2D centers and 3D covariances" + \
+            "must be equal"
         raise ValueError(msg)
     if centers.dtype == np.dtype(
         "O"
     ) or covariances.dtype == np.dtype("O"):
-        msg = "elements of covariances or centers are of \
-            inconsistent lengths or are not floats nor ints"
+        msg = "elements of covariances or centers are of " + \
+            "inconsistent lengths or are not floats nor ints"
         raise ValueError(msg)
     if class_probs is None:
         class_probs = np.ones(centers.shape[0])
@@ -161,8 +164,8 @@ def make_gaussian_mixtures(
         X = np.asarray([transform(x) for x in latent])
     elif not type(transform) == str:
         raise TypeError(
-            f"'transform' must be of type string or a callable function,\
-            not {type(transform)}"
+            "'transform' must be of type string or a callable function," +
+            f"not {type(transform)}"
         )
     elif transform == "linear":
         X = _linear2view(latent)
@@ -172,30 +175,31 @@ def make_gaussian_mixtures(
         X = _sin2view(latent)
     else:
         raise ValueError(
-            "Transform type must be one of {'linear', 'poly'\
-            , 'sin'} or a callable function. Not "
-            + f"{transform}"
+            "Transform type must be one of {'linear', 'poly', 'sin'}" +
+            f" or a callable function. Not {transform}"
         )
-    X += np.sqrt(noise) * np.random.randn(*X.shape)
-    Xs = [latent, X]
+
+    if noise is not None:
+        Xs = [latent + np.sqrt(noise) * np.random.randn(*latent.shape), X]
+    else:
+        Xs = [latent, X]
 
     # if random_state is not None, make sure both views are independent
     # but reproducible
     if noise_dims is not None:
         np.random.seed(random_state)
-        Xs = [_add_noise(X, noise_dims, noise) for X in Xs]
+        Xs = [_add_noise(X, noise_dims) for X in Xs]
 
     if return_latents:
-        return Xs, y, latents
+        return Xs, y, latent
     else:
         return Xs, y
 
 
-def _add_noise(X, n_noise, var):
+def _add_noise(X, n_noise):
     """Appends dimensions of standard normal noise to X
     """
     noise_vars = np.random.randn(X.shape[0], n_noise)
-    noise_vars *= np.sqrt(var)
     return np.hstack((X, noise_vars))
 
 
