@@ -11,7 +11,7 @@ UCI multiple feature dataset (located `here <https://archive.ics.uci.edu/ml/data
 Data Simulator
 --------------
 
-.. autoclass:: GaussianMixture
+.. autofunction:: make_gaussian_mixture
 
 Factor Model
 ------------

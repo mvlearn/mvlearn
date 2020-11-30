@@ -52,10 +52,10 @@ Xs_test_sets = []
 for transform in transforms:
     Xs_train, _ = make_gaussian_mixture(
         n_samples, centers, covariances, transform=transform, noise=0.25,
-        noise_dims=2, random_state=1)
+        noise_dims=2, random_state=41)
     Xs_test, _, latents = make_gaussian_mixture(
         n_samples, centers, covariances, transform=transform, noise=0.25,
-        noise_dims=2, random_state=2, return_latents=True)
+        noise_dims=2, random_state=42, return_latents=True)
 
     Xs_train_sets.append(Xs_train)
     Xs_test_sets.append(Xs_test)
