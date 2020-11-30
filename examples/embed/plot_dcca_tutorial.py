@@ -19,7 +19,7 @@ this information in a low dimensional embedding.
 
 import numpy as np
 from mvlearn.embed import DCCA
-from mvlearn.datasets import GaussianMixture
+from mvlearn.datasets import make_gaussian_mixture
 from mvlearn.plotting import crossviews_plot
 from mvlearn.model_selection import train_test_split
 
@@ -36,9 +36,9 @@ from mvlearn.model_selection import train_test_split
 n_samples = 2000
 means = [[0, 1], [0, -1]]
 covariances = [np.eye(2), np.eye(2)]
-gm = GaussianMixture(n_samples, means, covariances, random_state=42,
-                     shuffle=True, shuffle_random_state=42)
-latent, y = gm.get_Xy(latents=True)
+Xs, y, latent = make_gaussian_mixture(
+      n_samples, means, covariances, transform='poly', random_state=42,
+      shuffle=True, shuffle_random_state=42, return_latents=True)
 
 # Plot latent data against itself to reveal the underlying distribtution.
 crossviews_plot([latent, latent], labels=y,
@@ -46,7 +46,6 @@ crossviews_plot([latent, latent], labels=y,
 
 
 # Split data into train and test sets
-Xs, y = gm.sample_views(transform='poly', n_noise=2).get_Xy()
 Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
                                                       random_state=42)
 
@@ -100,11 +99,11 @@ crossviews_plot(Xs_transformed, labels=y_test,
 n_samples = 2000
 means = [[0, 1], [0, -1]]
 covariances = [np.eye(2), np.eye(2)]
-gm = GaussianMixture(n_samples, means, covariances, random_state=42,
-                     shuffle=True, shuffle_random_state=42)
+Xs, y, latent = make_gaussian_mixture(
+      n_samples, means, covariances, transform='sin', random_state=42,
+      shuffle=True, shuffle_random_state=42, return_latents=True, noise_dims=2)
 
 # Split data into train and test segments
-Xs, y = gm.sample_views(transform='sin', n_noise=2).get_Xy()
 Xs_train, Xs_test, y_train, y_test = train_test_split(Xs, y, test_size=0.3,
                                                       random_state=42)
 
