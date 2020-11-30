@@ -112,13 +112,7 @@ def make_gaussian_mixture(
         raise ValueError(msg)
     if centers.shape[0] != covariances.shape[0]:
         msg = "The first dimensions of 2D centers and 3D covariances" + \
-            "must be equal"
-        raise ValueError(msg)
-    if centers.dtype == np.dtype(
-        "O"
-    ) or covariances.dtype == np.dtype("O"):
-        msg = "elements of covariances or centers are of " + \
-            "inconsistent lengths or are not floats nor ints"
+            " must be equal"
         raise ValueError(msg)
     if class_probs is None:
         class_probs = np.ones(centers.shape[0])

@@ -8,20 +8,23 @@ n_samples = 100
 centers = [[-1, 0], [1, 0]]
 covariances = [[[1, 0], [0, 1]], [[1, 0], [1, 2]]]
 class_probs = [0.3, 0.7]
-Xs, y, latents = make_gaussian_mixture(
-    n_samples, centers, covariances, class_probs=class_probs,
-    return_latents=True)
 
 
-def test_formats():
+@pytest.mark.parametrize("centers, covariances, class_probs", [
+        (centers, covariances, class_probs),
+        (centers[0], covariances[0], None)]
+)
+def test_formats(centers, covariances, class_probs):
+    Xs, y, latents = make_gaussian_mixture(
+        n_samples, centers, covariances, class_probs=class_probs,
+        return_latents=True)
     assert_equal(n_samples, len(latents))
-    assert_equal(len(centers[0]), latents.shape[1])
+    assert_equal(len(covariances[0]), latents.shape[1])
     assert_equal(Xs[0], latents)
 
-
-def test_class_probs():
-    for i, p in enumerate(class_probs):
-        assert_equal(int(p * n_samples), list(y).count(i))
+    if class_probs is not None:
+        for i, p in enumerate(class_probs):
+            assert_equal(int(p * n_samples), list(y).count(i))
 
 
 @pytest.mark.parametrize(
@@ -37,10 +40,11 @@ def test_transforms(transform):
 
 
 def test_bad_class_probs():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         make_gaussian_mixture(
-            centers, covariances, n_samples, class_probs=[0.3, 0.4]
+            n_samples, centers, covariances, class_probs=[0.3, 0.4]
         )
+    assert str(e.value) == "elements of `class_probs` must sum to 1"
 
 
 @pytest.mark.parametrize(
@@ -60,23 +64,32 @@ def test_bad_transform_type(transform):
 
 
 def test_bad_shapes():
+    with pytest.raises(ValueError) as e:
+        make_gaussian_mixture(n_samples, None, covariances)
+    assert str(e.value) == "centers is of the incorrect shape"
     # Wrong Length
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         make_gaussian_mixture(n_samples, [1], covariances)
+    assert str(e.value) == \
+        "The first dimensions of 2D centers and 3D covariances must be equal"
     # Inconsistent dimension
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         make_gaussian_mixture(
             n_samples, centers, [np.eye(2), np.eye(3)],
             class_probs=class_probs
         )
+    assert str(e.value) == "covariance matrix is of the incorrect shape"
     # Wrong uni dimensions
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         make_gaussian_mixture(n_samples, [1, 0], [1, 0])
+    assert str(e.value) == "covariance matrix is of the incorrect shape"
     # Wrong centerslti sizes
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         make_gaussian_mixture(
             n_samples, centers, covariances, class_probs=[0.3, 0.1, 0.6]
         )
+    assert str(e.value) == \
+        "centers, covariances, and class_probs must be of equal length"
 
 
 @pytest.mark.parametrize("noise", [None, 0, 1])
