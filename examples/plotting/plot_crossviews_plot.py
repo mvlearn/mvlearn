@@ -22,7 +22,7 @@ n_samples = 100
 centers = [[0, 1], [0, -1]]
 covariances = [np.eye(2), np.eye(2)]
 Xs, y = make_gaussian_mixture(
-    n_samples, centers, covariances, transform='poly', noise_dims=2, shuffle=True)
+    n_samples, centers, covariances, transform='poly', noise_dims=2)
 
 # Below, we see that the first two dimensions are related by a degree 2
 # polynomial while the latter two dimensions are uncorrelated.
