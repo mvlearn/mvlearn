@@ -148,8 +148,8 @@ class Omnibus(BaseEmbed):
         Parameters
         ==========
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
         y : ignored
@@ -178,8 +178,8 @@ class Omnibus(BaseEmbed):
         Parameters
         ==========
          Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
         y : ignored
