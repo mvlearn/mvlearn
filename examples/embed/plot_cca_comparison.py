@@ -33,7 +33,7 @@ views.
 # License: MIT
 
 from mvlearn.embed import CCA, KMCCA, DCCA
-from mvlearn.datasets import GaussianMixture
+from mvlearn.datasets import make_gaussian_mixture
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
@@ -41,31 +41,28 @@ import seaborn as sns
 import warnings
 warnings.filterwarnings("ignore")
 
-# Make Latents
+# GMM settings
 n_samples = 200
-centers = [[0, 1], [0, -1]]
-covariances = 2*np.array([np.eye(2), np.eye(2)])
-gm_train = GaussianMixture(n_samples, centers, covariances)
-
-# Test
-gm_test = GaussianMixture(n_samples, centers, covariances)
-
-# Make 2 views
-n_noise = 2
+centers = [[0, 0], [0, 0]]
+covariances = 4*np.array([np.eye(2), np.eye(2)])
 transforms = ['linear', 'poly', 'sin']
 
-Xs_train = []
-Xs_test = []
+Xs_train_sets = []
+Xs_test_sets = []
 for transform in transforms:
-    gm_train.sample_views(transform=transform, n_noise=n_noise)
-    gm_test.sample_views(transform=transform, n_noise=n_noise)
+    Xs_train, _ = make_gaussian_mixture(
+        n_samples, centers, covariances, transform=transform, noise=0.25,
+        noise_dims=2, random_state=1)
+    Xs_test, _, latents = make_gaussian_mixture(
+        n_samples, centers, covariances, transform=transform, noise=0.25,
+        noise_dims=2, random_state=2, return_latents=True)
 
-    Xs_train.append(gm_train.get_Xy()[0])
-    Xs_test.append(gm_test.get_Xy()[0])
+    Xs_train_sets.append(Xs_train)
+    Xs_test_sets.append(Xs_test)
 
 
 # Plotting parameters
-labels = gm_test.latent_[:, 0]
+labels = latents[:, 0]
 cmap = matplotlib.colors.ListedColormap(
     sns.diverging_palette(240, 10, n=len(labels), center='light').as_hex())
 cmap = 'coolwarm'
@@ -75,8 +72,9 @@ method_labels = \
 transform_labels = \
     ['Linear Transform', 'Polynomial Transform', 'Sinusoidal Transform']
 
-input_size1, input_size2 = Xs_train[0][0].shape[1], Xs_train[0][1].shape[1]
-outdim_size = min(Xs_train[0][0].shape[1], 2)
+input_size1 = Xs_train_sets[0][0].shape[1]
+input_size2 = Xs_train_sets[0][1].shape[1]
+outdim_size = min(Xs_train_sets[0][0].shape[1], 2)
 layer_sizes1 = [256, 256, outdim_size]
 layer_sizes2 = [256, 256, outdim_size]
 methods = [
@@ -98,8 +96,8 @@ for r, transform in enumerate(transforms):
         dim2 = int(i / 2)
         dim1 = i % 2
         ax.scatter(
-            Xs_test[r][0][:, dim1],
-            Xs_test[r][1][:, dim2],
+            Xs_test_sets[r][0][:, dim1],
+            Xs_test_sets[r][1][:, dim2],
             cmap=cmap,
             c=labels,
         )
@@ -118,7 +116,7 @@ for r, transform in enumerate(transforms):
 
     for c, method in enumerate(methods):
         axs = axes[2*r: 2*r+2, 2*c+2:2*c+4]
-        Xs = method.fit(Xs_train[r]).transform(Xs_test[r])
+        Xs = method.fit(Xs_train_sets[r]).transform(Xs_test_sets[r])
         for i, ax in enumerate(axs.flatten()):
             dim2 = int(i / 2)
             dim1 = i % 2

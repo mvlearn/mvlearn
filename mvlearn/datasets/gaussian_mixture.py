@@ -87,13 +87,13 @@ def make_gaussian_mixture(
 
     Examples
     --------
-    >>> from mvlearn.datasets import GaussianMixture
+    >>> from mvlearn.datasets import make_gaussian_mixture
     >>> import numpy as np
     >>> n_samples = 10
     >>> centers = [[0,1], [0,-1]]
     >>> covariances = [np.eye(2), np.eye(2)]
-    >>> Xs, y = GaussianMixture(n_samples, centers, covariances,
-    ...                         shuffle=True, shuffle_random_state=42)
+    >>> Xs, y = make_gaussian_mixture(n_samples, centers, covariances,
+    ...                               shuffle=True, shuffle_random_state=42)
     >>> print(y)
     [1. 0. 1. 0. 1. 0. 1. 0. 0. 1.]
     """
