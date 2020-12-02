@@ -152,7 +152,7 @@ class MultiviewICA(BaseDecomposer):
     References
     ----------
     .. [#1mvica] Hugo Richard, et al. "Modeling shared
-            responses in neuroimaging studies through multiview ica." In
+            responses in neuroimaging studies through multiview ICA." In
             Pre-proceedings of Advances in Neural Information Processing
             Systems, volume 33, 2020
 
