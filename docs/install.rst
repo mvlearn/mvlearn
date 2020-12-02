@@ -101,7 +101,6 @@ Python package dependencies
 - graspy >=0.1.1
 - matplotlib >=3.0.0
 - numpy >=1.17.0
-- pandas >=0.25.0
 - scikit-learn >=0.19.1
 - scipy >=1.1.0
 - seaborn >=0.9.0

@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import pandas as pd
 from mvlearn.semi_supervised.ctregression import CTRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
