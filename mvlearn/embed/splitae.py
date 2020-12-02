@@ -133,10 +133,9 @@ class SplitAE(BaseEmbed):
 
     References
     ----------
-    .. [#1Split] Weiran Wang, Raman Arora, Karen Livescu, and Jeff Bilmes.
-        "`On Deep Multi-View Representation Learning.
-        <http://proceedings.mlr.press/v37/wangb15.pdf>`_",
-        ICML, 2015.
+    .. [#1Split] Wang, Weiran, et al. "On Deep Multi-View Representation
+            Learning." In Proceedings of the 32nd International Conference on
+            Machine Learning, 37:1083-1092, 2015.
 
     For more extensive examples, see the ``tutorials`` for SplitAE in this
     documentation.

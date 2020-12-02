@@ -93,8 +93,10 @@ class MultiviewCoRegSpectralClustering(MultiviewSpectralClustering):
 
     References
     ----------
-    .. [#4Clu] Kumar A, Rai P, Daumé H (2011) Co-regularized multi-view
-            spectral clustering. Adv Neural Inform Process Syst 24:1413–1421
+    .. [#4Clu] Abhishek Kumar, Piyush Rai, and Hal Daume.  Co-regularized
+            multi-view spectral cluster-ing. In Proceedings of the 24th
+            International Conference on Neural Information Processing Systems,
+            page 1413–1421. Curran Associates Inc., 2011.
 
     Examples
     --------

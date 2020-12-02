@@ -97,10 +97,11 @@ def select_dimension(
     ----------
     .. [#1EUtils] Code from the https://github.com/neurodata/graspy package,
         reproduced and shared with permission.
-    .. [#2EUtils] Zhu, M. and Ghodsi, A. (2006).
-        Automatic dimensionality selection from the scree plot via the
+
+    .. [#2EUtils] Zhu, M. and Ghodsi, A.,
+        "Automatic dimensionality selection from the scree plot via the
         use of profile likelihood. Computational Statistics & Data
-        Analysis, 51(2), pp.918-930.
+        Analysis." 51(2):918-930, 2006
     """
     # Handle input data
     if not isinstance(X, np.ndarray):

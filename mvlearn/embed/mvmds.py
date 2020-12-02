@@ -106,14 +106,12 @@ class MVMDS(BaseEmbed):
     References
     ----------
     .. [#1MVMDS] Trendafilov, Nickolay T. “Stepwise Estimation of Common
-            Principal Components.” Computational Statistics &amp; Data
-            Analysis, vol. 54, no. 12, 2010, pp. 3446–3457.,
-            doi:10.1016/j.csda.2010.03.010.
+            Principal Components.” Computational Statistics & Data
+            Analysis, 54(12):3446–3457, 2010
 
-    .. [#2MVMDS] Samir Kanaan-Izquierdo, Andrey Ziyatdinov,
-        Maria Araceli Burgueño, Alexandre Perera-Lluna, Multiview: a software
-        package for multiview pattern recognition methods, Bioinformatics,
-        Volume 35, Issue 16, 15 August 2019, Pages 2877–2879
+    .. [#2MVMDS] Kanaan-Izquierdo, Samir, et al. "Multiview: a software
+        package for multiview pattern recognition methods." Bioinformatics,
+        35(16):2877–2879, 2019
 
     """
     def __init__(self, n_components=2, num_iter=15, dissimilarity='euclidean'):

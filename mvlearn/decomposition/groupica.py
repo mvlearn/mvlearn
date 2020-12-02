@@ -113,10 +113,11 @@ class GroupICA(BaseDecomposer):
 
     References
     ----------
-    .. [#1groupica] Calhoun, Vince, et al. "A method for making group
-                    inferences from functional MRI data using independent
-                    component analysis."
-                    Human brain mapping 14.3 (2001): 140-151.
+    .. [#1groupica] Vince D Calhoun, et al.
+            "A method for making group inferences from
+            functional MRI data using independent component analysis."
+            Human Brain Mapping, 14(3):140–151, 2001.
+
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature

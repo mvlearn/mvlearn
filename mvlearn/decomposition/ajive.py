@@ -216,6 +216,11 @@ class AJIVE(BaseDecomposer):
     Ph.D.'s pip-installable package, *jive*, the code for which is
     `linked here <https://github.com/idc9/py_jive>`_.
 
+    References
+    ----------
+    .. [#1ajive] Qing Feng, Meilei Jiang, Jan Hannig, and J.S. Marron.
+            "Angle-based joint and individual variation explained." Journal of
+            Multivariate Analysis, 166:241–265, 2018.
 
     Examples
     --------
@@ -230,13 +235,6 @@ class AJIVE(BaseDecomposer):
     >>> Xs_transformed = ajive.fit_transform(Xs)
     >>> print(Xs_transformed[0].shape)
     (2000, 76)
-
-    References
-    ----------
-    .. [#1ajive] Feng, Qing, et al. “Angle-Based Joint and Individual
-            Variation Explained.” Journal of Multivariate Analysis,
-            vol. 166, 2018, pp. 241–265., doi:10.1016/j.jmva.2018.03.008.
-
     """
 
     def __init__(self,

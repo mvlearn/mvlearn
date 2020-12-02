@@ -551,9 +551,10 @@ class DCCA(BaseEmbed):
 
     References
     ----------
-    .. [#1DCCA] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
-                February). Deep canonical correlation analysis. In
-                International conference on machine learning (pp. 1247-1255).
+    .. [#1DCCA] Andrew, G., et al., "Deep canonical correlation analysis." In
+            Proceedings of the 30th International Conference on International
+            Conferenceon Machine Learning, volume 28, pages 1247–1255.
+            JMLR.org, 2013.
     """
 
     def __init__(

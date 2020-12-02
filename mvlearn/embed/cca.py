@@ -84,9 +84,10 @@ class CCA(MCCA):
     References
     ----------
     .. [#1cca] Kettenring, J. R., "Canonical Analysis of Several Sets of
-                Variables." Biometrika, 58 (1971), pp. 433-451
+                Variables." Biometrika, 58:433-451, (1971)
+
     .. [#2cca] Tenenhaus, A., et al. "Regularized generalized canonical
-                correlation analysis." Psychometrika, 76(2):257.
+                correlation analysis." Psychometrika, 76:257–284, 2011
 
     Examples
     --------

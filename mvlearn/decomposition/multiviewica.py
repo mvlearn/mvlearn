@@ -151,9 +151,10 @@ class MultiviewICA(BaseDecomposer):
 
     References
     ----------
-    .. [#1mvica] Hugo Richard, Luigi Gresele, Aapo Hyvärinen, Bertrand Thirion,
-        Alexandre Gramfort, Pierre Ablin. Modeling Shared Responses in
-        Neuroimaging Studies through MultiView ICA. arXiv 2020.
+    .. [#1mvica] Hugo Richard, et al. "Modeling shared
+            responses in neuroimaging studies through multiview ICA." In
+            Pre-proceedings of Advances in Neural Information Processing
+            Systems, volume 33, 2020
 
     Examples
     --------

@@ -93,9 +93,9 @@ class MCCA(BaseCCA):
     References
     ----------
     .. [#1mcca] Kettenring, J. R., "Canonical Analysis of Several Sets of
-                Variables." Biometrika, 58 (1971), pp. 433-451
+                Variables." Biometrika, 58:433-451, (1971)
     .. [#2mcca] Tenenhaus, A., et al. "Regularized generalized canonical
-                correlation analysis." Psychometrika, 76(2):257.
+                correlation analysis." Psychometrika, 76:257–284, 2011
 
     Examples
     --------
@@ -586,7 +586,7 @@ def _flag_mean(bases, n_components=None):
     ----------
     .. [#3mcca] Draper B., et al. "A flag representation for finite
                 collections of subspaces of mixed dimensions."
-                Linear Algebra Appl., 451 (2014), pp. 15-32
+                Linear Algebra and its Applications, 451:5-32, 2014
     """
     bases, n_views, ambient_dim, subspace_dims = check_Xs(
         bases, multiview=True, return_dimensions=True

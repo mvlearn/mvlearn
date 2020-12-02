@@ -97,7 +97,7 @@ print(X_transformed.shape)
 #
 # We use the group ICA of *Calhoun et al. "A method for making group
 # inferences from functional MRI data using independent component analysis.",
-# Human brain mapping 14.3 (2001): 140-151.* as reference.
+# Human Brain Mapping 14.3 (2001): 140-151.* as reference.
 #
 # GroupICA takes a multiview dataset, and tries to extract from it some shared
 # independent sources. In its usual formulation, it consists of three simple
