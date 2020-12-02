@@ -53,9 +53,8 @@ def load_UCImultifeature(select_labeled="all", views="all", shuffle=False,
 
     References
     ----------
-    .. [#1Data] M. van Breukelen, R.P.W. Duin, D.M.J. Tax, and J.E. den Hartog,
-            Handwritten digit recognition by combined classifiers, Kybernetika,
-            vol. 34, no. 4, 1998, 381-386
+    .. [#1Data] Dheeru Dua and Casey Graff. UCI machine learning repository,
+            2017. URL http://archive.ics.uci.edu/ml.
 
     Examples
     --------

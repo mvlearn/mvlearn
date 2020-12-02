@@ -186,7 +186,7 @@ class KMCCA(BaseCCA):
                  Overview with Application to Learning Methods", Neural
                  Computation, Volume 16 (12), pp 2639-2664, 2004.
     .. [#2kmcca] Bach, F. and Jordan, M. "Kernel Independent Component
-                 Analysis." JMLR, 3(Jul):1-48, 2002.
+                 Analysis." Journal of Machine Learning Research, 3:1-48, 2002.
     .. [#3kmcca] Kuss, M. and Graepel, T.. "The Geometry of Kernel Canonical
                  Correlation Analysis." MPI Technical Report, 108. (2003).
 

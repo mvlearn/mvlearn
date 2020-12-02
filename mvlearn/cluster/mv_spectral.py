@@ -135,9 +135,10 @@ class MultiviewSpectralClustering(BaseCluster):
 
     References
     ----------
-    .. [#1Clu] Abhishek Kumar and Hal Daumé. A Co-training Approach for
-            Multiview Spectral Clustering. In International Conference
-            on Machine Learning, 2011
+    .. [#1Clu] Abhishek Kumar and Hal Daume. "A co-training approach for
+            multi-view spectral clustering." In Proceedings of the 28th
+            International Conference on Machine Learning, page 393–400.
+            Omnipress, 2011.
 
     Examples
     --------

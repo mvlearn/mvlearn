@@ -156,12 +156,13 @@ class CTClassifier(BaseCoTrainEstimator):
 
     References
     ----------
-    .. [#1CTC] Blum, A., & Mitchell, T. (1998, July). Combining labeled and
-            unlabeled_pool data with co-training. In Proceedings of the
-            eleventh annual conference on Computational learning theory
-            (pp. 92-100). ACM.
+    .. [#1CTC] Blum, A., and Mitchell, T. "Combining labeled and unlabeled
+            data with co-training." In Proceedings of the Eleventh Annual
+            Conference on Computational Learning Theory, pages 92–100, 1998.
+
     .. [#2CTC] Goldman, Sally, and Yan Zhou. "Enhancing supervised
-            learning with unlabeled data." ICML. 2000.
+            learning with unlabeled data." In Proceedings of the Eleventh
+            Annual Conference on Computational Learning Theory, 2000.
 
     """
 

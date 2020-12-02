@@ -132,10 +132,11 @@ class MultiviewKMeans(BaseCluster):
 
     References
     ----------
-    .. [#2Clu] Bickel S, Scheffer T (2004) Multi-view clustering. Proceedings
-            of the 4th IEEE International Conference on Data Mining, pp. 19–26
-    .. [#3Clu] Chao, Guoqing, Shiliang Sun, and Jinbo Bi. "A survey on
-            multi-view clustering." arXiv preprint arXiv:1712.06246 (2017).
+    .. [#2Clu] Steffen Bickel and Tobias Scheffer. Multi-view clustering. In
+            Proceedings of the Fourth IEEE International Conference on Data
+            Mining, page 19–26. IEEE Computer Society, 2004.
+    .. [#3Clu] Guoqing Chao, Shiliang Sun, and J. Bi. A survey on multi-view
+            clustering.arXiv preprint, arXiv:1712.06246, 2017.
 
     Examples
     --------

@@ -42,15 +42,15 @@ class RandomSubspaceMethod(TransformerMixin):
 
     References
     ----------
-    .. [#1RSM] Ho, Tin Kam. "The random subspace method for constructing
-            decision forests." IEEE transactions on pattern analysis
-            and machine intelligence 20.8 (1998): 832-844.
+    .. [#1RSM] Tin Kam Ho. "The random subspace method for constructing
+            decision forests." IEEE trans-actions on pattern analysis and
+            machine intelligence, 20(8):832–844, 1998.
 
     .. [#2RSM] Dacheng Tao, Xiaoou Tang, Xuelong Li and Xindong Wu,
                "Asymmetric bagging and random subspace for support vector
                machines-based relevance feedback in image retrieval," in
                IEEE Transactions on Pattern Analysis and Machine Intelligence,
-               vol. 28, no. 7, pp. 1088-1099, July 2006
+               28(7):1088-1099, July 2006
 
     Examples
     --------

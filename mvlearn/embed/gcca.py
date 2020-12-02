@@ -112,9 +112,9 @@ class GCCA(BaseEmbed):
     References
     ----------
     .. [#1GCCA] B. Afshin-Pour, G.A. Hossein-Zadeh, S.C. Strother, H.
-            Soltanian-Zadeh. Enhancing reproducibility of fMRI statistical
+            Soltanian-Zadeh. "Enhancing reproducibility of fMRI statistical
             maps using generalized canonical correlation analysis in NPAIRS
-            framework. Neuroimage, 60 (2012), pp. 1970-1981
+            framework." Neuroimage, volume 60, pp. 1970-1981, 2012
 
     Examples
     --------
