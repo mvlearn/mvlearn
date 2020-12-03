@@ -15,6 +15,10 @@ AUTHOR = (
     "Alexander Chang",
     "Arman Koul",
     "Cameron Franz",
+    "Alexandre Gramfort",
+    "Hugo Richard",
+    "Pierre Ablin",
+    "Iain Carmichael",
 )
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/mvlearn/mvlearn"
@@ -56,12 +60,12 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRA_PACKAGES,
     url=URL,
-    license="Apache License 2.0",
+    license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Mathematics",
-        "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
