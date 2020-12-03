@@ -113,8 +113,8 @@ with optional [torch] dependencies,
 
 optional [multiviewica] dependencies,
 
-- python-picard >= 0.4
-- multiviewica >= 0.0.1
+- python-picard >=0.4
+- multiviewica >=0.0.1
 
 and optional [graspy] dependencies,
 
