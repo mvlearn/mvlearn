@@ -19,6 +19,8 @@ script:
   - pytest tests/multiviewica/ --cov=./mvlearn/ --cov-append
   - pip install -r ./requirements/torch.txt
   - pytest tests/torch/ --cov=./mvlearn/ --cov-append
+  - pip install -r ./requirements/graspy.txt
+  - pytest tests/graspy/ --cov=./mvlearn/ --cov-append
   - pycodestyle mvlearn/
   - flake8 mvlearn
   - flake8 examples

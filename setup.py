@@ -29,9 +29,12 @@ with open("./requirements/torch.txt", "r") as f:
     torch_extras = f.read()
 with open("./requirements/multiviewica.txt", "r") as f:
     multiviewica_extras = f.read()
+with open("./requirements/graspy.txt", "r") as f:
+    graspy_extras = f.read()
 EXTRA_PACKAGES = {
     'torch': torch_extras,
     'multiviewica': multiviewica_extras,
+    'graspy': graspy_extras,
 }
 
 # Find mvlearn version.

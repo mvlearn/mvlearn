@@ -16,7 +16,17 @@
 # Code from the https://github.com/neurodata/graspy package,
 # reproduced and shared with permission.
 
-from graspy.embed import OmnibusEmbed
+try:
+    from grapsologic.embed import OmnibusEmbed
+except ModuleNotFoundError as error:
+    print(
+        f"Error: {error}. package graspy required for this function. \
+    Please consult the mvlearn installation instructions at \
+    https://github.com/mvlearn/mvlearn to correctly install \
+    this dependency."
+    )
+    import sys
+    sys.exit(1)
 from sklearn.metrics import pairwise_distances
 from sklearn.preprocessing import normalize
 

@@ -1,5 +1,4 @@
 from .gcca import GCCA
-from .omnibus import Omnibus
 from .mvmds import MVMDS
 from .mcca import MCCA
 from .kmcca import KMCCA
@@ -13,6 +12,11 @@ try:
     from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler  # noqa
     from .dcca import DCCA, linear_cca, cca_loss, MlpNet, DeepPairedNetworks  # noqa
     from .splitae import SplitAE  # noqa
+except ModuleNotFoundError:
+    pass
+
+try:
+    from .omnibus import Omnibus
 except ModuleNotFoundError:
     pass
 
