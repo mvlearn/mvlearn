@@ -23,16 +23,18 @@ AUTHOR = (
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/mvlearn/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
-with open("./requirements/base.txt", "r") as f:
-    REQUIRED_PACKAGES = f.read()
-with open("./requirements/torch.txt", "r") as f:
-    torch_extras = f.read()
-with open("./requirements/multiviewica.txt", "r") as f:
-    multiviewica_extras = f.read()
-EXTRA_PACKAGES = {
-    'torch': torch_extras,
-    'multiviewica': multiviewica_extras,
-}
+REQUIRED_PACKAGES = [
+    "graspy>=0.1.1",
+    "matplotlib>=3.0.0",
+    "numpy>=1.17.0",
+    "scikit-learn>=0.19.1",
+    "scipy>=1.4.0",
+    "seaborn>=0.9.0",
+    "joblib>=0.11",
+    "torch>=1.1.0",
+    "tqdm",
+    "python-picard >= 0.4",
+]
 
 # Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +60,6 @@ setup(
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     install_requires=REQUIRED_PACKAGES,
-    extras_require=EXTRA_PACKAGES,
     url=URL,
     license="MIT",
     classifiers=[
