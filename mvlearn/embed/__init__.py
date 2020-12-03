@@ -17,21 +17,22 @@ except ModuleNotFoundError:
 
 try:
     from .omnibus import Omnibus
-except ModuleNotFoundError:
+except ModuleNotFoundError as e:
+    print(e)
     pass
 
 __all__ = [
-        "CCA",
-        "GCCA",
-        "Omnibus",
-        "MVMDS",
-        "MCCA",
-        "KMCCA",
-        "select_dimension",
-        "DCCA",
-        "SplitAE",
-        "linear_cca",
-        "cca_loss",
-        "MlpNet",
-        "DeepPairedNetworks",
-    ]
+    "CCA",
+    "GCCA",
+    "Omnibus",
+    "MVMDS",
+    "MCCA",
+    "KMCCA",
+    "select_dimension",
+    "DCCA",
+    "SplitAE",
+    "linear_cca",
+    "cca_loss",
+    "MlpNet",
+    "DeepPairedNetworks",
+]
