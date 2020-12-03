@@ -17,8 +17,7 @@ except ModuleNotFoundError:
 
 try:
     from .omnibus import Omnibus
-except ModuleNotFoundError as e:
-    print(e)
+except ModuleNotFoundError:
     pass
 
 __all__ = [
