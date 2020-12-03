@@ -105,7 +105,6 @@ Python package dependencies
 - scipy >=1.1.0
 - seaborn >=0.9.0
 - joblib >=0.11
-- python-picard >= 0.4
 
 with optional [torch] dependencies
 
