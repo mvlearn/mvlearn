@@ -1,6 +1,5 @@
 # License: MIT
 
-import sys
 import itertools
 
 import numpy as np
@@ -11,13 +10,11 @@ import tqdm
 try:
     import torch
 except ModuleNotFoundError as error:
-    print(
-        f"Error: {error}. torch dependencies required for this function. \
-    Please consult the mvlearn installation instructions at \
-    https://github.com/mvlearn/mvlearn to correctly install torch \
-    dependencies."
-    )
-    sys.exit(1)
+    msg = (f"Error: {error}. torch dependencies required for this function. " +
+           "Please consult the mvlearn installation instructions at " +
+           "https://github.com/mvlearn/mvlearn to correctly install " +
+           "torch dependency.")
+    raise ModuleNotFoundError(msg)
 
 from .base import BaseEmbed
 from ..utils.utils import check_Xs

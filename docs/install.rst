@@ -106,15 +106,19 @@ Python package dependencies
 - seaborn >=0.9.0
 - joblib >=0.11
 
-with optional [torch] dependencies
+with optional [torch] dependencies,
 
 - torch >=1.1.0
 - tqdm
 
-and optional [multiviewica] dependencies
+optional [multiviewica] dependencies,
 
-- python-picard >= 0.4
-- multiviewica >= 0.0.1
+- python-picard >=0.4
+- multiviewica >=0.0.1
+
+and optional [graspy] dependencies,
+
+- graspy >=0.1.1
 
 Currently, ``mvlearn`` is supported for Python 3.6, 3.7, and 3.8.
 

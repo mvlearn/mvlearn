@@ -1,55 +1,55 @@
 """
-test_omnibus.py
+test_py
 ====================================
 """
 
 import pytest
-from mvlearn.embed import omnibus
+from mvlearn.embed import Omnibus
 import numpy as np
 
 def test_default_constructor():
-    omnibus.Omnibus()
+    Omnibus()
 
 def test_invalid_components():
     with pytest.raises(ValueError):
-        omnibus.Omnibus(n_components=-1)
+        Omnibus(n_components=-1)
 
     with pytest.raises(ValueError):
-        omnibus.Omnibus(n_components=0)
+        Omnibus(n_components=0)
 
 def test_invalid_metric():
-    omnibus.Omnibus(distance_metric="yule")
+    Omnibus(distance_metric="yule")
     with pytest.raises(ValueError):
-        omnibus.Omnibus(distance_metric="blah")
+        Omnibus(distance_metric="blah")
 
 def test_invalid_normalize():
-    omnibus.Omnibus(normalize="l2")
-    omnibus.Omnibus(normalize=None)
-    omnibus.Omnibus(normalize="max")
+    Omnibus(normalize="l2")
+    Omnibus(normalize=None)
+    Omnibus(normalize="max")
 
     with pytest.raises(ValueError):
-        omnibus.Omnibus(normalize="blah")
+        Omnibus(normalize="blah")
 
 def test_invalid_algorithm():
-    omnibus.Omnibus(algorithm="full")
+    Omnibus(algorithm="full")
 
     with pytest.raises(ValueError):
-        omnibus.Omnibus(algorithm="blah")
+        Omnibus(algorithm="blah")
 
 def test_invalid_n_iter():
     with pytest.raises(ValueError):
-        omnibus.Omnibus(n_iter=-1)
+        Omnibus(n_iter=-1)
 
     with pytest.raises(ValueError):
-        omnibus.Omnibus(n_iter=0)
+        Omnibus(n_iter=0)
 
 def test_embeddings_default_none():
-    omni = omnibus.Omnibus()
+    omni = Omnibus()
     assert omni.embeddings_ == None
 
 def test_omnibus_embedding():
     n_components = 2
-    embedder = omnibus.Omnibus(n_components=n_components)
+    embedder = Omnibus(n_components=n_components)
     n_views = 4
     n = 25
     m = 25
@@ -63,7 +63,7 @@ def test_omnibus_embedding():
 
 def test_omnibus_embedding_no_normalize():
     n_components = 2
-    embedder = omnibus.Omnibus(n_components=n_components, normalize=None)
+    embedder = Omnibus(n_components=n_components, normalize=None)
     n_views = 4
     n = 25
     m = 25
@@ -77,7 +77,7 @@ def test_omnibus_embedding_no_normalize():
 
 def test_fit():
     n_components = 2
-    embedder = omnibus.Omnibus(n_components=n_components)
+    embedder = Omnibus(n_components=n_components)
     n_views = 4
     n = 25
     m = 25
