@@ -20,10 +20,10 @@ try:
     from graspy.embed import OmnibusEmbed
 except ModuleNotFoundError as error:
     print(
-        f"Error: {error}. package graspy required for this function. \
-    Please consult the mvlearn installation instructions at \
-    https://github.com/mvlearn/mvlearn to correctly install \
-    this dependency."
+        f"Error: {error}. package graspy required for this function. " +
+        "Please consult the mvlearn installation instructions at " +
+        "https://github.com/mvlearn/mvlearn to correctly install " +
+        "this dependency."
     )
     import sys
     sys.exit(1)
