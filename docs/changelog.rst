@@ -31,7 +31,7 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 Version 0.4.1
 -------------
 
-- |Efficiency| The 'graspy' package was made an optional dependency in order to reduce the base installation ovverhead. To use the `Omnibus()` object from `mvlearn.embed`, see the installation guide. `#271 <https://github.com/mvlearn/mvlearn/pull/2271>`_ by `Ronan Perry`_.
+- |Efficiency| The 'graspy' package was made an optional dependency in order to reduce the base installation ovverhead. To use the `Omnibus()` object from `mvlearn.embed`, see the installation guide. `#271 <https://github.com/mvlearn/mvlearn/pull/271>`_ by `Ronan Perry`_.
 
 Version 0.4.0
 -------------
