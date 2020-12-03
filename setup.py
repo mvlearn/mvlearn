@@ -60,6 +60,11 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRA_PACKAGES,
     url=URL,
+    project_urls={
+      'Documentation': 'https://mvlearn.github.io',
+      'Source': URL,
+      'Tracker': URL + '/issues/',
+    },
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
