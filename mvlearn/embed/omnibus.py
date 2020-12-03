@@ -17,7 +17,7 @@
 # reproduced and shared with permission.
 
 try:
-    from grapsologic.embed import OmnibusEmbed
+    from graspy.embed import OmnibusEmbed
 except ModuleNotFoundError as error:
     print(
         f"Error: {error}. package graspy required for this function. \
