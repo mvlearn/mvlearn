@@ -28,9 +28,13 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 
 - |API| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
 
+Version 0.4.1
+-------------
+
+- |Efficiency| The 'graspy' package was made an optional dependency in order to reduce the base installation overhead. To use the `Omnibus()` object from `mvlearn.embed`, see the installation guide. `#271 <https://github.com/mvlearn/mvlearn/pull/271>`_ by `Ronan Perry`_.
+
 Version 0.4.0
 -------------
-**In development**.
 
 Updates in this release:
 
