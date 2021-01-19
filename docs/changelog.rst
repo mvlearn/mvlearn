@@ -31,7 +31,7 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 Unreleased
 ----------
 
-- [Fix] ``CCA`` now only acepts integer arguments for ``n_components``, upper bounded by the minimum number of view features. Previously it accepted options that ``MCCA`` accepted which are only valid for greater than two views. This also had the effect of errors with ``cca.get_stats``.
+- [Fix] ``CCA`` now only acepts integer arguments for ``n_components``, upper bounded by the minimum number of view features. Previously it accepted options that ``MCCA`` accepted which are only valid for greater than two views. This also had the effect of errors with ``cca.get_stats``. `#279 <https://github.com/mvlearn/mvlearn/pull/279>` by `Ronan Perry`_.
 
 Version 0.4.1
 -------------
