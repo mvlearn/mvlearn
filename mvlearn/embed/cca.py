@@ -4,6 +4,7 @@
 # License: MIT
 
 import numpy as np
+import numbers
 from scipy.stats import f, chi2
 from sklearn.utils.validation import check_is_fitted
 from .mcca import MCCA, _i_mcca, _mcca_gevp
@@ -18,13 +19,11 @@ class CCA(MCCA):
 
     Parameters
     ----------
-    n_components : int | 'min' | 'max' | None (default 1)
-        Number of final components to compute. If `int`, will compute that
-        many. If None, will compute as many as possible. 'min' and 'max' will
-        respectively use the minimum/maximum number of features among views.
+    n_components : int (default 1)
+        Number of canonical components to compute and return.
 
     regs : float | 'lw' | 'oas' | None, or list, optional (default None)
-        MCCA regularization for each data view, which can be important
+        CCA regularization for each data view, which can be important
         for high dimensional data. A list will specify for each view
         separately. If float, must be between 0 and 1 (inclusive).
 
@@ -109,6 +108,11 @@ class CCA(MCCA):
             raise ValueError(
                 f"CCA accepts exactly 2 views but {self.n_views_}"
                 "were provided. Consider using MCCA for more than 2 views")
+        if not (isinstance(self.n_components, numbers.Integral) and
+                1 <= self.n_components <= min(self.n_features_)):
+            raise ValueError(
+                "n_components must be an integer in the range"
+                f"[1, {min(self.n_features_)}]")
 
         centers = param_as_list(self.center, self.n_views_)
         self.means_ = [np.mean(X, axis=0) if c else None

@@ -97,6 +97,16 @@ def test_errors():
         _ = cca.stats([train1, train1], 'FAIL')
 
 
+@pytest.mark.parametrize(
+    "n_components",
+    [None, 0, 'min', 'max', min((train1.shape[1], train2.shape[1]))+1]
+    )
+def test_n_components(n_components):
+    cca = CCA(n_components=n_components)
+    with pytest.raises(ValueError, match="n_components must be an integer"):
+        cca = cca.fit([train1, train2])
+
+
 # Test getting stats correctly, and check against stats that
 # Matlab canoncorr gives
 def test_stats_vs_matlab():
@@ -164,7 +174,7 @@ def test_stats_1_component():
         'pChisq': np.array([0.9609454])
         }
 
-    cca = CCA(n_components=1)
+    cca = CCA(n_components=np.int64(1))
     scores = cca.fit_transform([X, Y])
     stats = cca.stats(scores)
 
