@@ -4,6 +4,7 @@
 # License: MIT
 
 import numpy as np
+import numbers
 from scipy.stats import f, chi2
 from sklearn.utils.validation import check_is_fitted
 from .mcca import MCCA, _i_mcca, _mcca_gevp
@@ -107,7 +108,7 @@ class CCA(MCCA):
             raise ValueError(
                 f"CCA accepts exactly 2 views but {self.n_views_}"
                 "were provided. Consider using MCCA for more than 2 views")
-        if not (type(self.n_components) == int and
+        if not (isinstance(self.n_components, numbers.Integral) and
                 1 <= self.n_components <= min(self.n_features_)):
             raise ValueError(
                 "n_components must be an integer in the range"

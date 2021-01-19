@@ -174,7 +174,7 @@ def test_stats_1_component():
         'pChisq': np.array([0.9609454])
         }
 
-    cca = CCA(n_components=1)
+    cca = CCA(n_components=np.int64(1))
     scores = cca.fit_transform([X, Y])
     stats = cca.stats(scores)
 
