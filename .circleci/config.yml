@@ -25,7 +25,7 @@ jobs:
                 echo "Merging $(cat merge.txt)";
                 git remote add upstream git://github.com/mvlearn/mvlearn.git;
                 git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
-                git fetch upstream master;
+                git fetch upstream main;
               fi
 
         # Load our data
@@ -109,21 +109,21 @@ jobs:
             name: Deploy docs
             command: |
               set -e;
-              if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              if [ "${CIRCLE_BRANCH}" == "main" ]; then
                 git config --global user.email "circle@mvlearn.com";
                 git config --global user.name "Circle CI";
                 cd ~/mvlearn.github.io;
-                git checkout master
+                git checkout main
                 git remote -v
                 git fetch origin
-                git reset --hard origin/master
+                git reset --hard origin/main
                 git clean -xdf
                 echo "Deploying dev docs for ${CIRCLE_BRANCH}.";
                 cp -a /tmp/build/html/* .;
                 touch .nojekyll;
                 git add -A;
                 git commit -m "CircleCI update of dev docs (${CIRCLE_BUILD_NUM}).";
-                git push origin master;
+                git push origin main;
               else
                 echo "No deployment (build: ${CIRCLE_BRANCH}).";
               fi
@@ -140,4 +140,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
