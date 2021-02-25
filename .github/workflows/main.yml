@@ -6,7 +6,7 @@ jobs:
     name: Run CircleCI artifacts redirector
     steps:
       - name: GitHub Action step
-        uses: larsoner/circleci-artifacts-redirector-action@master
+        uses: larsoner/circleci-artifacts-redirector-action@main
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           artifact-path: 0/dev/index.html
