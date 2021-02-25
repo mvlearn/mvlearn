@@ -419,9 +419,9 @@ def test_pgso():
         corrs.append(kmcca.canon_corrs(scores))
         if tol == 0:
             assert np.all(ranks[-1] == [N for _ in Xs])
-    assert np.all(np.diff(corrs, axis=0) <= 0), corrs
-    assert np.all(np.diff(corrs, axis=1) <= 1e-10)
-    assert np.all(np.diff(ranks, axis=0) <= 0)
+    assert np.all(np.diff(corrs, axis=0) <= 1e-10), corrs
+    assert np.all(np.diff(corrs, axis=1) <= 1e-10), corrs
+    assert np.all(np.diff(ranks, axis=0) <= 1e-10), ranks
 
 
 @pytest.mark.parametrize("signal_ranks", [None, 2])
