@@ -8,7 +8,15 @@ import numpy as np
 from scipy import linalg
 from sklearn.decomposition import fastica
 from sklearn.utils.validation import check_is_fitted
-from picard import picard
+
+try:
+    from picard import picard
+except ModuleNotFoundError as error:
+    msg = (f"ModuleNotFoundError: {error}. multiviewica dependencies" +
+           "required for this function. Please consult the mvlearn" +
+           "installation instructions at https://github.com/mvlearn/mvlearn" +
+           "to correctly install multiviewica dependencies.")
+    raise ModuleNotFoundError(msg)
 
 from ..utils.utils import check_Xs
 from .base import BaseDecomposer
@@ -67,12 +75,12 @@ class GroupICA(BaseDecomposer):
     grouppca_ : mvlearn.decomposition.GroupPCA instance
         A GroupPCA class for preprocessing and dimension reduction
 
-    unmixing_ : array, shape (n_components, n_components)
-        The square unmixing matrix, linking the output of the group-pca
+    mixing_ : array, shape (n_components, n_components)
+        The square mixing matrix, linking the output of the group-pca
         and the independent components.
 
     components_ : array, shape (n_components, n_components)
-        The square mixing matrix
+        The square unmixing matrix
 
     individual_components_ : list of array
         Individual unmixing matrices estimated by least squares.
@@ -105,10 +113,11 @@ class GroupICA(BaseDecomposer):
 
     References
     ----------
-    .. [#1groupica] Calhoun, Vince, et al. "A method for making group
-                    inferences from functional MRI data using independent
-                    component analysis."
-                    Human brain mapping 14.3 (2001): 140-151.
+    .. [#1groupica] Vince D Calhoun, et al.
+            "A method for making group inferences from
+            functional MRI data using independent component analysis."
+            Human Brain Mapping, 14(3):140–151, 2001.
+
     Examples
     --------
     >>> from mvlearn.datasets import load_UCImultifeature
@@ -152,8 +161,8 @@ class GroupICA(BaseDecomposer):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
 
         y : None
             Ignored variable.

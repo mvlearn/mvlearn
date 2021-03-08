@@ -120,10 +120,10 @@ class GroupPCA(BaseDecomposer):
 
     References
     ----------
-    .. [#1grouppca] Calhoun, Vince, et al. "A method for making group
-                    inferences from functional MRI data using independent
-                    component analysis."
-                    Human brain mapping 14.3 (2001): 140-151.
+    .. [#1grouppca] Vince D Calhoun, et al.
+            "A method for making group inferences from
+            functional MRI data using independent component analysis."
+            Human Brain Mapping, 14(3):140–151, 2001.
 
     Examples
     --------
@@ -162,8 +162,8 @@ class GroupPCA(BaseDecomposer):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
 
         y : None
             Ignored variable.

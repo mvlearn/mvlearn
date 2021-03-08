@@ -11,7 +11,7 @@ mixtures and plot the views against each other using a crossviews plot.
 # License: MIT
 
 import numpy as np
-from mvlearn.datasets import GaussianMixture
+from mvlearn.datasets import make_gaussian_mixture
 from mvlearn.plotting import crossviews_plot
 
 # Latent variables are sampled from two multivariate Gaussians with equal
@@ -21,12 +21,11 @@ from mvlearn.plotting import crossviews_plot
 n_samples = 100
 centers = [[0, 1], [0, -1]]
 covariances = [np.eye(2), np.eye(2)]
-gm = GaussianMixture(n_samples, centers, covariances, random_state=42,
-                     shuffle=True, shuffle_random_state=42)
-gm = gm.sample_views(transform='poly', n_noise=2)
+Xs, y, latent = make_gaussian_mixture(
+    n_samples, centers, covariances, random_state=42, noise_dims=2,
+    shuffle=True, shuffle_random_state=42, transform='poly',
+    return_latents=True)
 
-latent, y = gm.get_Xy(latents=True)
-Xs, _ = gm.get_Xy(latents=False)
 
 # The latent data is plotted against itself to reveal the underlying
 # distribtution.

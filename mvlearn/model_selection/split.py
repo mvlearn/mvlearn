@@ -55,8 +55,8 @@ def train_test_split(*inputs, **options):
 
     Examples
     --------
-    >>> from mvlearn.preprocessing import train_test_split
     >>> import numpy as np
+    >>> from mvlearn.model_selection import train_test_split
     >>> Xs = np.arange(18).reshape((3, 3, 2))
     >>> y = np.arange(3)
     >>> # Print the data
@@ -95,7 +95,6 @@ def train_test_split(*inputs, **options):
     # Print test set
     >>> for i in range(len(Xs_test)):
     ...     print('Xs_test[%d]' % i, Xs_test[i], sep='\n')
-
     Xs_test[0]
     [[0 1]]
     Xs_test[1]

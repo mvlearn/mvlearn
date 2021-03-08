@@ -7,12 +7,10 @@ Adopted from the code at
 `https://github.com/hugorichard/multiviewica`_
 and their tutorial written by Hugo Richard and Pierre Ablin.
 
-Three multiview ICA algorithms are compared. GroupICA concatenates
+Two multiview ICA algorithms are compared. GroupICA concatenates
 the individual views prior to dimensionality reduction and running
-ICA over the result. PermICA is more sensitive to individual
-discrepencies, and computes ICA on each view before aligning the results
-using the hungarian algorithm. Lastly, MultiviewICA performs the best by
-optimizing the set of mixing matrices relative to the average source signal.
+ICA over the result. MultiviewICA performs better by optimizing
+the set of mixing matrices relative to the average source signal.
 
 """
 
@@ -22,7 +20,7 @@ optimizing the set of mixing matrices relative to the average source signal.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mvlearn.decomposition.mv_ica import MultiviewICA, PermICA, GroupICA
+from mvlearn.decomposition import MultiviewICA, GroupICA
 
 # sigmas: data noise
 # m: number of subjects
@@ -35,7 +33,6 @@ m, k, n = 5, 3, 1000
 cm = plt.cm.tab20
 algos = [
     ("MultiViewICA", cm(0), MultiviewICA),
-    ("PermICA", cm(2), PermICA),
     ("GroupICA", cm(6), GroupICA),
 ]
 
@@ -63,13 +60,12 @@ for name, color, algo in algos:
             noises = rng.randn(m, n, k)
             Xs = np.array([S_true.dot(A) for A in A_list])
             Xs += [sigma * N.dot(A) for A, N in zip(A_list, noises)]
-            if name == 'MultiViewICA' or name == 'PermICA':
+            if name == 'MultiViewICA':
                 ica = algo(tol=1e-4, max_iter=1000, random_state=0).fit(Xs)
-                W = ica.unmixings_
             elif name == 'GroupICA':
                 ica = algo(ica_kwargs={'tol': 1e-4}, random_state=0).fit(Xs)
-                W = ica.individual_components_
-            dist = np.mean([amari_d(W[i], A_list[i]) for i in range(m)])
+            W = ica.individual_components_
+            dist = np.mean([amari_d(W[i].T, A_list[i]) for i in range(m)])
             dists.append(dist)
         dists = np.array(dists)
         mean = np.mean(dists)

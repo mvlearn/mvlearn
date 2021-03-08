@@ -1,11 +1,11 @@
 """
 test_construct_utils.py
 ====================================
-Test mvlearn.construct.utils.py
+Test mvlearn.compose.utils.py
 """
 
 import pytest
-from mvlearn.construct import utils
+from mvlearn.compose import utils
 
 
 def test_check_n_views():
@@ -28,7 +28,7 @@ def test_check_n_views():
 
 
 def test_check_n_features():
-    #these should all pass:
+    # these should all pass:
     cols = 10
     utils.check_n_features(1, cols)
     utils.check_n_features(.5, cols)
@@ -36,7 +36,7 @@ def test_check_n_features():
     # n_features > cols
     with pytest.raises(Exception):
         utils.check_n_features(11, cols)
-    
+
     # check <= 0
     with pytest.raises(Exception):
         utils.check_n_features(0, cols)

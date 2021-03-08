@@ -1,10 +1,9 @@
 from .gcca import GCCA
-from .omnibus import Omnibus
 from .mvmds import MVMDS
-from .kcca import KCCA
 from .mcca import MCCA
 from .kmcca import KMCCA
 from .utils import select_dimension
+from .cca import CCA
 
 try:
     import torch  # noqa
@@ -16,18 +15,23 @@ try:
 except ModuleNotFoundError:
     pass
 
+try:
+    from .omnibus import Omnibus
+except ModuleNotFoundError:
+    pass
+
 __all__ = [
-        "GCCA",
-        "Omnibus",
-        "MVMDS",
-        "KCCA",
-        "MCCA",
-        "KMCCA",
-        "select_dimension",
-        "DCCA",
-        "SplitAE",
-        "linear_cca",
-        "cca_loss",
-        "MlpNet",
-        "DeepPairedNetworks",
-    ]
+    "CCA",
+    "GCCA",
+    "Omnibus",
+    "MVMDS",
+    "MCCA",
+    "KMCCA",
+    "select_dimension",
+    "DCCA",
+    "SplitAE",
+    "linear_cca",
+    "cca_loss",
+    "MlpNet",
+    "DeepPairedNetworks",
+]

@@ -1,12 +1,10 @@
 from .ajive import AJIVE
-from .mv_ica import MultiviewICA, PermICA
 from .grouppca import GroupPCA
-from .groupica import GroupICA
 
-__all__ = [
-    "AJIVE",
-    "MultiviewICA",
-    "PermICA",
-    "GroupICA",
-    "GroupPCA"
-    ]
+try:
+    from .groupica import GroupICA
+    from .multiviewica import MultiviewICA
+except ModuleNotFoundError:
+    pass
+
+__all__ = ["AJIVE", "MultiviewICA", "GroupICA", "GroupPCA"]

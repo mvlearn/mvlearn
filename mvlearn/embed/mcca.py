@@ -93,19 +93,20 @@ class MCCA(BaseCCA):
     References
     ----------
     .. [#1mcca] Kettenring, J. R., "Canonical Analysis of Several Sets of
-                Variables." Biometrika, 58 (1971), pp. 433-451
+                Variables." Biometrika, 58:433-451, (1971)
     .. [#2mcca] Tenenhaus, A., et al. "Regularized generalized canonical
-                correlation analysis." Psychometrika, 76(2):257.
+                correlation analysis." Psychometrika, 76:257–284, 2011
 
     Examples
     --------
     >>> from mvlearn.embed import MCCA
-    >>> X1 = [[0., 0., 1.], [1.,0.,0.], [2.,2.,2.], [3.,5.,4.]]
+    >>> X1 = [[0, 0, 1], [1, 0, 0], [2, 2, 2], [3, 5, 4]]
     >>> X2 = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
+    >>> X3 = [[0, 1, 0], [1, 9, 0], [4, 3, 3,], [12, 8, 10]]
     >>> mcca = MCCA()
-    >>> mcca.fit([X1, X2])
+    >>> mcca.fit([X1, X2, X3])
     MCCA()
-    >>> Xs_scores = mcca.transform([X1, X2])
+    >>> Xs_scores = mcca.transform([X1, X2, X3])
     """
 
     def __init__(
@@ -159,7 +160,7 @@ class MCCA(BaseCCA):
 
         Parameters
         ----------
-        scores: array-like, shape (n_samples, n_components)
+        scores: array-like, shape (n_views, n_samples, n_components)
             The CCA scores.
 
         Returns
@@ -585,7 +586,7 @@ def _flag_mean(bases, n_components=None):
     ----------
     .. [#3mcca] Draper B., et al. "A flag representation for finite
                 collections of subspaces of mixed dimensions."
-                Linear Algebra Appl., 451 (2014), pp. 15-32
+                Linear Algebra and its Applications, 451:5-32, 2014
     """
     bases, n_views, ambient_dim, subspace_dims = check_Xs(
         bases, multiview=True, return_dimensions=True

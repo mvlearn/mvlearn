@@ -2,8 +2,7 @@ language: python
 
 branches:
   only:
-  - master
-  - 0.0.2
+  - main
 
 python:
   - '3.8'
@@ -11,12 +10,17 @@ python:
   - '3.6'
 
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements_torch.txt
+  - pip install -r ./requirements/base.txt
   - pip install -U pytest pytest-cov codecov pycodestyle flake8
 
 script:
-  - pytest tests/ --cov=./mvlearn/
+  - pytest tests/ --cov=./mvlearn/ --ignore=tests/multiviewica --ignore=tests/torch --ignore=tests/graspy
+  - pip install -r ./requirements/multiviewica.txt
+  - pytest tests/multiviewica/ --cov=./mvlearn/ --cov-append
+  - pip install -r ./requirements/torch.txt
+  - pytest tests/torch/ --cov=./mvlearn/ --cov-append
+  - pip install -r ./requirements/graspy.txt
+  - pytest tests/graspy/ --cov=./mvlearn/ --cov-append
   - pycodestyle mvlearn/
   - flake8 mvlearn
   - flake8 examples

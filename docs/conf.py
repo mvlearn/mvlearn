@@ -4,7 +4,7 @@
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# http://www.sphinx-doc.org/en/main/config
 
 # -- Path setup --------------------------------------------------------------
 
@@ -116,7 +116,7 @@ html_context = {
     # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
     "github_user": "mvlearn",
     "github_repo": "mvlearn",
-    "github_version": "master/docs/",
+    "github_version": "main/docs/",
 }
 
 # Custom sidebar templates, must be a dictionary that maps document names

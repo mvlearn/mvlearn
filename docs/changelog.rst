@@ -7,16 +7,16 @@ Changelog
 .. role:: raw-latex(raw)
    :format: latex
 
-.. |MajorFeature| replace:: :raw-html:`<span class="badge badge-success">Major Feature</span>` :raw-latex:`{\small\sc [Major Feature]}`
-.. |Feature| replace:: :raw-html:`<span class="badge badge-success">Feature</span>` :raw-latex:`{\small\sc [Feature]}`
-.. |Efficiency| replace:: :raw-html:`<span class="badge badge-info">Efficiency</span>` :raw-latex:`{\small\sc [Efficiency]}`
-.. |Enhancement| replace:: :raw-html:`<span class="badge badge-info">Enhancement</span>` :raw-latex:`{\small\sc [Enhancement]}`
-.. |Fix| replace:: :raw-html:`<span class="badge badge-danger">Fix</span>` :raw-latex:`{\small\sc [Fix]}`
-.. |API| replace:: :raw-html:`<span class="badge badge-warning">API Change</span>` :raw-latex:`{\small\sc [API Change]}`
+.. |MajorFeature| replace:: :raw-html:`<font color="green">[Major Feature]</font>`
+.. |Feature| replace:: :raw-html:`<font color="green">[Feature]</font>`
+.. |Efficiency| replace:: :raw-html:`<font color="blue">[Efficiency]</font>`
+.. |Enhancement| replace:: :raw-html:`<font color="blue">[Enhancement]</font>`
+.. |Fix| replace:: :raw-html:`<font color="red">[Fix]</font>`
+.. |API| replace:: :raw-html:`<font color="DarkOrange">[API]</font>`
 
 Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0.23.html>`_):
 
-- |MajorFeature| : something big that you couldn’t do before.
+- |MajorFeature| : something big that you couldn’t do before. 
 
 - |Feature| : something that you couldn’t do before.
 
@@ -28,38 +28,56 @@ Change tags (adopted from `sklearn <https://scikit-learn.org/stable/whats_new/v0
 
 - |API| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
 
+Unreleased
+----------
+
+- [Fix] ``CCA`` now only acepts integer arguments for ``n_components``, upper bounded by the minimum number of view features. Previously it accepted options that ``MCCA`` accepted which are only valid for greater than two views. This also had the effect of errors with ``cca.get_stats``. `#279 <https://github.com/mvlearn/mvlearn/pull/279>` by `Ronan Perry`_.
+
+Version 0.4.1
+-------------
+
+- |Efficiency| The 'graspy' package was made an optional dependency in order to reduce the base installation overhead. To use the `Omnibus()` object from `mvlearn.embed`, see the installation guide. `#271 <https://github.com/mvlearn/mvlearn/pull/271>`_ by `Ronan Perry`_.
+
 Version 0.4.0
 -------------
-**In development**.
 
 Updates in this release:
 
-`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/compose>`_
+`mvlearn.compose <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/compose>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+- |MajorFeature| Adds an ``mvlearn.compose`` module with Merger and Splitter objects to create single views from multiviews and vice versa: ``ConcatMerger``, ``AverageMerger``, and ``SimpleSplitter``. `#228 <https://github.com/mvlearn/mvlearn/pull/228>`_, `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+- |MajorFeature| Adds ``ViewTransformer`` to apply a single view transformer to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_, `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
+- |MajorFeature| Adds ``ViewClassifier`` to apply a single view classifier to each view separately. `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
+- |Feature| Switches ``random_subspace_method`` and ``random_gaussian_projection`` functions to sklearn-compliant estimators ``RandomSubspaceMethod`` and ``RandomGaussianProjection``. `#263 <https://github.com/mvlearn/mvlearn/pull/263>`_ by `Ronan Perry`_.
+- |API| The ``mvlearn.construct`` module was merged into ``mvlearn.compose`` due to overlapping functionality. Any imports statements change accordingly. `#258 <https://github.com/mvlearn/mvlearn/pull/258>`_ by `Ronan Perry`_.
 
-`mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/decomposition>`_
+`mvlearn.construct <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/construct>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- |API| The ``mvlearn.construct`` module was merged into ``mvlearn.compose`` due to overlapping functionality and no longer exists. Any imports statements change accordingly. `#258 <https://github.com/mvlearn/mvlearn/pull/258>`_ by `Ronan Perry`_.
+
+`mvlearn.decomposition <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/decomposition>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Feature| Adds ``GroupICA`` and ``GroupPCA``. `#225 <https://github.com/mvlearn/mvlearn/pull/225>`_ by `Pierre Ablin`_ and `Hugo Richard <https://github.com/hugorichard>`_.
 
-`mvlearn.embed <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/embed>`_
+`mvlearn.embed <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/embed>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Feature| Adds Multi CCA (``MCCA``) and Kernel MCCA (``KMCCA``) for two or more views. `#249 <https://github.com/mvlearn/mvlearn/pull/249>`_ by `Ronan Perry`_ and `Iain Carmichael`_.
+- |Feature| Adds CCA, MCCA which requires 2 views but has a variety of interpretable statistics. `#261 <https://github.com/mvlearn/mvlearn/pull/251>`_ by `Ronan Perry`_.
+- |API| Removes KCCA and moves its functionallity into KMCCA. `#261 <https://github.com/mvlearn/mvlearn/pull/251>`_ by `Ronan Perry`_.
 
-`mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/model_selection>`_
+`mvlearn.model_selection <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/model_selection>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- |Major Feature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
+- |MajorFeature| Adds an ``model_selection`` module with multiview cross validation. `#234 <https://github.com/mvlearn/mvlearn/pull/234>`_ by `Pierre Ablin`_.
 
 - |Feature| Adds the function ``model_selection.train_test_split`` to wrap that of `sklearn <scikit-learn <https://scikit-learn.org/>`_ for multiview data or items. `#174 <https://github.com/mvlearn/mvlearn/pull/174>`_ by `Alexander Chang <https://github.com/achang63>`_ and `Gavin Mischler <https://gavinmischler.github.io/>`_.
 
-`mvlearn.preprocessing <https://github.com/mvlearn/mvlearn/tree/master/mvlearn/preprocessing>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- |Major Feature| Adds an ``mvlearn.preprocessing`` module with ``ViewTransformer`` to apply a single view function to each view separately. `#229 <https://github.com/mvlearn/mvlearn/pull/229>`_ by `Pierre Ablin`_.
+`mvlearn.utils <https://github.com/mvlearn/mvlearn/tree/main/mvlearn/utils>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - |Enhancement| Adds a parameter to utils.check_Xs so that the function also returns the dimensions (n_views, n_samples, n_features) of the input dataset. `#235 <https://github.com/mvlearn/mvlearn/pull/235>`_ by `Pierre Ablin`_.
 

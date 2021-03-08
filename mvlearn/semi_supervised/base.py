@@ -99,8 +99,8 @@ class BaseCoTrainEstimator(BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
              A list of the different views of data to fit and
              then predict.
         y : array, shape (n_samples,)

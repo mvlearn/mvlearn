@@ -15,16 +15,26 @@ AUTHOR = (
     "Alexander Chang",
     "Arman Koul",
     "Cameron Franz",
+    "Alexandre Gramfort",
+    "Hugo Richard",
+    "Pierre Ablin",
+    "Iain Carmichael",
 )
 AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/mvlearn/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
-with open("requirements.txt", "r") as f:
+with open("./requirements/base.txt", "r") as f:
     REQUIRED_PACKAGES = f.read()
-with open("requirements_torch.txt", "r") as f:
+with open("./requirements/torch.txt", "r") as f:
     torch_extras = f.read()
+with open("./requirements/multiviewica.txt", "r") as f:
+    multiviewica_extras = f.read()
+with open("./requirements/graspy.txt", "r") as f:
+    graspy_extras = f.read()
 EXTRA_PACKAGES = {
-    'torch': torch_extras
+    'torch': torch_extras,
+    'multiviewica': multiviewica_extras,
+    'graspy': graspy_extras,
 }
 
 # Find mvlearn version.
@@ -53,12 +63,17 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRA_PACKAGES,
     url=URL,
-    license="Apache License 2.0",
+    project_urls={
+      'Documentation': 'https://mvlearn.github.io',
+      'Source': URL,
+      'Tracker': URL + '/issues/',
+    },
+    license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Mathematics",
-        "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

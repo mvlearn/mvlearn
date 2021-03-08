@@ -150,13 +150,13 @@ class CTRegressor(BaseCoTrainEstimator):
 
     References
     ----------
-    .. [#1CTR] Semi-Supervised Regression with
-            Co-Training by Zhi-Hua Zhou and Ming Li
-            https://pdfs.semanticscholar.org/437c/85ad1c05f60574544d31e96bd8e60393fc92.pdf
+    .. [#1CTR] Zhou, Zhi-Hua and Li, Ming. "Semi-supervised regression with
+            co-training." In Proceedings of the 19th International Joint
+            Conference on Artificial Intelligence, page 908–913, 2005
 
     .. [#2CTR] Goldman, Sally, and Yan Zhou. "Enhancing supervised
-            learning with unlabeled data." ICML. 2000.
-            http://www.cs.columbia.edu/~dplewis/candidacy/goldman00enhancing.pdf
+            learning with unlabeled data." In Proceedings of the Eleventh
+            Annual Conference on Computational Learning Theory, 2000.
 
     """
 

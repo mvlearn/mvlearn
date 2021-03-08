@@ -29,7 +29,7 @@ Free software
 -------------
 
 mvlearn is free software; you can redistribute it and/or modify it under the
-terms of the :doc:`Apache-2.0 </license>`.  We welcome contributions.
+terms of the :doc:`MIT License </license>`.  We welcome contributions.
 Join us on `GitHub <https://github.com/mvlearn/mvlearn>`_.
 
 History

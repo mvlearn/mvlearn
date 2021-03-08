@@ -16,7 +16,15 @@
 # Code from the https://github.com/neurodata/graspy package,
 # reproduced and shared with permission.
 
-from graspy.embed import OmnibusEmbed
+try:
+    from graspy.embed import OmnibusEmbed
+except ModuleNotFoundError as error:
+    msg = (f"Error: {error}. package graspy required for this function. " +
+           "Please consult the mvlearn installation instructions at " +
+           "https://github.com/mvlearn/mvlearn to correctly install " +
+           "this dependency.")
+    raise ModuleNotFoundError(msg)
+
 from sklearn.metrics import pairwise_distances
 from sklearn.preprocessing import normalize
 
@@ -148,8 +156,8 @@ class Omnibus(BaseEmbed):
         Parameters
         ==========
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
         y : ignored
@@ -178,8 +186,8 @@ class Omnibus(BaseEmbed):
         Parameters
         ==========
          Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to embed based on the prior fit function. Each
             X in Xs will receive its own embedding.
         y : ignored

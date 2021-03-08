@@ -96,7 +96,7 @@ repository on GitHub, clone, and develop on a branch. Steps:
        $ git checkout -b my-feature
 
    Always use a ``feature`` branch. It’s good practice to never work on
-   the ``master`` branch!
+   the ``main`` branch!
 
 
 4. Develop the feature on your feature branch. Add changed files using

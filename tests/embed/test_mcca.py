@@ -36,6 +36,38 @@ def generate_mcca_test_settings():
     yield {'n_components': 5, 'regs': None, 'center': False}
 
 
+@pytest.fixture(scope='module')
+def data():
+    # Initialize number of samples
+    nSamples = 1000
+    np.random.seed(30)
+
+    # Define two latent variables (number of samples x 1)
+    latvar1 = np.random.randn(nSamples,)
+    latvar2 = np.random.randn(nSamples,)
+
+    # Define independent components for each dataset
+    # (number of observations x dataset dimensions)
+    indep1 = np.random.randn(nSamples, 4)
+    indep2 = np.random.randn(nSamples, 5)
+
+    # Create two datasets, with each dimension composed as a sum of 75%
+    # one of the latent variables and 25% independent component
+    data1 = 0.25*indep1 + 0.75 * \
+        np.vstack((latvar1, latvar2, latvar1, latvar2)).T
+    data2 = 0.25*indep2 + 0.75 * \
+        np.vstack((latvar1, latvar2, latvar1, latvar2, latvar1)).T
+
+    # Split each dataset into a training set and test set (10% of dataset
+    # is training data)
+    train1 = data1[:int(nSamples/10)]
+    train2 = data2[:int(nSamples/10)]
+    test1 = data1[int(nSamples/10):]
+    test2 = data2[int(nSamples/10):]
+
+    return [train1, train2], [test1, test2]
+
+
 def check_mcca_scores_and_loadings(
     Xs, loadings, scores, common_scores_normed,
     regs=None, check_normalization=False
@@ -362,6 +394,36 @@ def test_kmcca(diag_mode):
                 kmcca.transform(Xs), mcca.transform(Xs), decimal=2)
 
 
+def test_pgso():
+    Xs = next(generate_mcca_test_data())
+    N = Xs[0].shape[0]
+    ranks = []
+    corrs = []
+    for tol in [0, 0.1, 0.5, 1]:
+        kmcca = KMCCA(kernel='rbf', pgso=True, tol=tol, n_components=2)
+        scores = kmcca.fit(Xs).transform(Xs)
+        # kmcca2 = KMCCA(kernel='rbf', pgso=True, tol=tol)
+        # scores2 = kmcca2.fit(Xs).transform(Xs)
+        for v in range(len(Xs)):
+            assert len(set(
+                [kmcca.pgso_Ls_[v].shape[1],
+                 kmcca.pgso_norms_[v].shape[0],
+                 kmcca.pgso_idxs_[v].shape[0],
+                 kmcca.pgso_Xs_[v].shape[0]])) == 1
+            R = kmcca._get_kernel(Xs[v], v) - \
+                kmcca.pgso_Ls_[v] @ kmcca.pgso_Ls_[v].T
+            R = R - kmcca.kernel_col_means_[v] - \
+                kmcca.kernel_col_means_[v].T + kmcca.kernel_mat_means_[v]
+            assert np.trace(R) / N <= tol
+        ranks.append(kmcca.pgso_ranks_)
+        corrs.append(kmcca.canon_corrs(scores))
+        if tol == 0:
+            assert np.all(ranks[-1] == [N for _ in Xs])
+    assert np.all(np.diff(corrs, axis=0) <= 1e-10), corrs
+    assert np.all(np.diff(corrs, axis=1) <= 1e-10), corrs
+    assert np.all(np.diff(ranks, axis=0) <= 1e-10), ranks
+
+
 @pytest.mark.parametrize("signal_ranks", [None, 2])
 @pytest.mark.parametrize("n_components", [None, 2, 'min', 'max'])
 @pytest.mark.parametrize("regs", [None, 0.5, 'lw', 'oas'])
@@ -381,13 +443,16 @@ def test_mcca_params(signal_ranks, n_components, regs,
     scores = mcca.fit_transform(Xs)
     if multiview_output:
         assert len(scores) == len(Xs)
+        canon_corrs = mcca.canon_corrs(scores)
+        assert np.all(canon_corrs[:2] > 0), f"{canon_corrs}"
+        assert len(canon_corrs) == scores.shape[2]
     else:
         assert scores.shape == (Xs[0].shape[0], mcca.n_components_)
 
 
 @pytest.mark.parametrize("kernel_args", [
     ("linear", {}),
-    (["poly", "rbf"], [{"degree": 2, "coef0": 0}, {"gamma": 4}])])
+    (["poly", "rbf"], [{"degree": 2, "coef0": 0}, {"gamma": 2}])])
 @pytest.mark.parametrize("diag_mode", ["A", "B", "C"])
 @pytest.mark.parametrize("signal_ranks", [None, 2])
 @pytest.mark.parametrize("n_components", [None, 2])
@@ -395,8 +460,8 @@ def test_mcca_params(signal_ranks, n_components, regs,
 @pytest.mark.parametrize("sval_thresh", [0, 0.01])
 @pytest.mark.parametrize("center", [True, False])
 @pytest.mark.parametrize("multiview_output", [True, False])
-def test_kmcca_params(kernel_args, diag_mode, signal_ranks, n_components, regs,
-                      sval_thresh, center, multiview_output):
+def test_kmcca_params(kernel_args, diag_mode, signal_ranks, n_components,
+                      regs, sval_thresh, center, multiview_output):
     kernel, kernel_params = kernel_args
     kmcca = KMCCA(
         kernel=kernel, kernel_params=kernel_params,
@@ -407,5 +472,7 @@ def test_kmcca_params(kernel_args, diag_mode, signal_ranks, n_components, regs,
     scores = kmcca.fit_transform(Xs)
     if multiview_output:
         assert len(scores) == len(Xs)
+        canon_corrs = kmcca.canon_corrs(scores)
+        assert len(canon_corrs) == scores.shape[2]
     else:
         assert scores.shape == (Xs[0].shape[0], kmcca.n_components_)

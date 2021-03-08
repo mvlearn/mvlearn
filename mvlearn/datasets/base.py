@@ -8,7 +8,7 @@ def load_UCImultifeature(select_labeled="all", views="all", shuffle=False,
                          random_state=None):
     r"""
     Load the UCI multiple features dataset [#1Data]_, taken from the UCI
-    Machine Learning Repository at
+    Machine Learning Repository [#2UCI]_ at
     https://archive.ics.uci.edu/ml/datasets/Multiple+Features. This data set
     consists of 6 views of handwritten digit images, with classes 0-9. The
     6 views are the following:
@@ -53,9 +53,11 @@ def load_UCImultifeature(select_labeled="all", views="all", shuffle=False,
 
     References
     ----------
-    .. [#1Data] M. van Breukelen, R.P.W. Duin, D.M.J. Tax, and J.E. den Hartog,
-            Handwritten digit recognition by combined classifiers, Kybernetika,
-            vol. 34, no. 4, 1998, 381-386
+    .. [#1Data] M. van Breukelen, et al. "Handwritten digit recognition by
+            combined classifiers", Kybernetika, 34(4):381-386, 1998
+
+    .. [#2UCI] Dheeru Dua and Casey Graff. UCI machine learning repository,
+            2017. URL http://archive.ics.uci.edu/ml.
 
     Examples
     --------

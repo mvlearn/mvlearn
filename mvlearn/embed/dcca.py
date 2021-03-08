@@ -12,7 +12,6 @@
 # all copies or substantial portions of the Software.
 
 import warnings
-import sys
 import numpy as np
 
 from sklearn.exceptions import NotFittedError
@@ -22,11 +21,11 @@ try:
     import torch.nn as nn
     from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler
 except ModuleNotFoundError as error:
-    print(f'Error: {error}. torch dependencies required for this function. \
-    Please consult the mvlearn installation instructions at \
-    https://github.com/mvlearn/mvlearn to correctly install torch \
-    dependencies.')
-    sys.exit(1)
+    msg = (f"Error: {error}. torch dependencies required for this function. " +
+           "Please consult the mvlearn installation instructions at " +
+           "https://github.com/mvlearn/mvlearn to correctly install " +
+           "torch dependency.")
+    raise ModuleNotFoundError(msg)
 
 from .base import BaseEmbed
 from ..utils.utils import check_Xs
@@ -551,9 +550,10 @@ class DCCA(BaseEmbed):
 
     References
     ----------
-    .. [#1DCCA] Andrew, G., Arora, R., Bilmes, J., & Livescu, K. (2013,
-                February). Deep canonical correlation analysis. In
-                International conference on machine learning (pp. 1247-1255).
+    .. [#1DCCA] Andrew, G., et al., "Deep canonical correlation analysis." In
+            Proceedings of the 30th International Conference on International
+            Conferenceon Machine Learning, volume 28, pages 1247–1255.
+            JMLR.org, 2013.
     """
 
     def __init__(
@@ -613,8 +613,8 @@ class DCCA(BaseEmbed):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             The data to fit to. Each view will receive its own embedding.
 
         y : ignored
@@ -702,8 +702,8 @@ class DCCA(BaseEmbed):
         Parameters
         ----------
         Xs : list of array-likes or numpy.ndarray
-             - Xs length: n_views
-             - Xs[i] shape: (n_samples, n_features_i)
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of data matrices from each view to transform based on the
             prior fit function. If view_idx defined, then Xs is a 2D data
             matrix corresponding to a single view.
