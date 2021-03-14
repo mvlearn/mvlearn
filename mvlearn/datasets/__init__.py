@@ -1,4 +1,4 @@
-from .base import load_UCImultifeature
+from .uci_multifeature import load_UCImultifeature
 from .gaussian_mixture import make_gaussian_mixture
 from .factor_model import sample_joint_factor_model
 
