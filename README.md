@@ -1,6 +1,5 @@
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
-[![Build Status](https://travis-ci.com/mvlearn/mvlearn.svg?branch=main)](https://travis-ci.com/mvlearn/mvlearn)
 [![CircleCI](https://circleci.com/gh/mvlearn/mvlearn/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/mvlearn/mvlearn)
 [![codecov](https://codecov.io/gh/mvlearn/mvlearn/branch/main/graph/badge.svg)](https://codecov.io/gh/mvlearn/mvlearn)
 [![PyPI version](https://badge.fury.io/py/mvlearn.svg)](https://badge.fury.io/py/mvlearn)

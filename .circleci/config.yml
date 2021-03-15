@@ -1,138 +1,244 @@
 # Tagging a commit with [circle front] will build the front page and perform test-doc.
 # Tagging a commit with [circle full] will build everything.
-version: 2
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+
 jobs:
-    build_docs:
-      docker:
-        - image: circleci/python:3.7-stretch
-      steps:
-        - checkout
-        - run:
-            name: Set BASH_ENV
-            command: |
-              echo "set -e" >> $BASH_ENV
-              echo "export DISPLAY=:99" >> $BASH_ENV
-              echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
-              echo "BASH_ENV:"
-              cat $BASH_ENV
+  build:
+    parameters:
+      version:
+        default: "3.8"
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.version >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-<< parameters.version >>-min-dependency-cache-{{ checksum "./requirements/base.txt" }}
+      - run:
+          name: install python dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install -r ./requirements/base.txt
 
-        - run:
-            name: Merge with upstream
-            command: |
-              echo $(git log -1 --pretty=%B) | tee gitlog.txt
-              echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
-              if [[ $(cat merge.txt) != "" ]]; then
-                echo "Merging $(cat merge.txt)";
-                git remote add upstream git://github.com/mvlearn/mvlearn.git;
-                git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
-                git fetch upstream main;
-              fi
+      - save_cache:
+          key: v1-<< parameters.version >>-min-dependency-cache-{{ checksum "./requirements/base.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: test if package installs
+          command: |
+            . venv/bin/activate
+            python3 setup.py install
+  test:
+    parameters:
+      version:
+        default: "3.8"
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.version >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-<< parameters.version >>-min-dependency-cache-{{ checksum "./requirements/base.txt" }}
+      - run:
+          name: install base package
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r "./requirements/base.txt"
+            pip install -U pytest pytest-cov codecov pycodestyle flake8
+            pip install -e .
+      - save_cache:
+          key: v1-<< parameters.version >>-min-dependency-cache-{{ checksum "./requirements/base.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: base tests
+          command: |
+            . venv/bin/activate
+            python3 -m pytest tests/ --junitxml=coverage/coverage.xml --cov-report=xml --cov=./mvlearn/ --ignore=tests/multiviewica --ignore=tests/torch --ignore=tests/graspy
+      - run:
+          name: multiviewica tests
+          command: |
+            . venv/bin/activate
+            pip install -r ./requirements/multiviewica.txt
+            python3 -m pytest tests/multiviewica/ --cov=./mvlearn/ --cov-append
+      - run:
+          name: torch tests
+          command: |
+            . venv/bin/activate
+            pip install -r ./requirements/torch.txt
+            python3 -m pytest tests/torch/ --cov=./mvlearn/ --cov-append
+      - run:
+          name: graspy tests
+          command: |
+            . venv/bin/activate
+            pip install -r ./requirements/graspy.txt
+            python3 -m pytest tests/graspy/ --cov=./mvlearn/ --cov-append
+      - run:
+          name: run code linting
+          command: |
+            . venv/bin/activate
+            pycodestyle mvlearn/
+            flake8 mvlearn
+            flake8 examples
+      - store_test_results:
+          path: coverage
+      - store_artifacts:
+          path: coverage
+      - codecov/upload:
+          file: "coverage/coverage.xml"
 
-        # Load our data
-        - restore_cache:
-            keys:
-              - data-cache-0
-              - pip-cache
+  build_docs:
+    docker:
+      - image: circleci/python:3.7-stretch
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-3.7-dependency-cache-{{ checksum "dev-requirements.txt" }}
+      - run:
+          name: Set BASH_ENV
+          command: |
+            echo "set -e" >> $BASH_ENV
+            echo "export DISPLAY=:99" >> $BASH_ENV
+            echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
+            echo "BASH_ENV:"
+            cat $BASH_ENV
 
-        - run:
-            name: Spin up Xvfb
-            command: |
-              /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+      - run:
+          name: Merge with upstream
+          command: |
+            echo $(git log -1 --pretty=%B) | tee gitlog.txt
+            echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+            if [[ $(cat merge.txt) != "" ]]; then
+              echo "Merging $(cat merge.txt)";
+              git remote add upstream git://github.com/mvlearn/mvlearn.git;
+              git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
+              git fetch upstream main;
+            fi
 
-        # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
-        # https://github.com/golemfactory/golem/issues/1019
-        - run:
-            name: Fix libgcc_s.so.1 pthread_cancel bug
-            command: |
-              sudo apt-get install qt5-default
+      # Load our data
+      - restore_cache:
+          keys:
+            - data-cache-0
+            - pip-cache
 
-        - run:
-            name: Get Python running
-            command: |
-              sudo apt-get install pandoc
-              python -m pip install --user --upgrade --progress-bar off pip
-              python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
-              python -m pip install --user --upgrade --progress-bar off -r requirements/torch.txt
-              python -m pip install --user --upgrade --progress-bar off -r requirements/multiviewica.txt
-              python -m pip install --user --upgrade --progress-bar off -r requirements/graspy.txt
-              python -m pip install --user --upgrade --progress-bar off -r docs/requirements.txt
-              python -m pip install --user -e .
+      - run:
+          name: Spin up Xvfb
+          command: |
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
 
-        - save_cache:
-            key: pip-cache
-            paths:
-              - ~/.cache/pip
+      # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
+      # https://github.com/golemfactory/golem/issues/1019
+      - run:
+          name: Fix libgcc_s.so.1 pthread_cancel bug
+          command: |
+            sudo apt-get install qt5-default
 
-        # Look at what we have and fail early if there is some library conflict
-        - run:
-            name: Check installation
-            command: |
-               which python
-               python -c "import mvlearn"
+      - run:
+          name: Get Python running
+          command: |
+            sudo apt-get install pandoc
+            python -m pip install --user --upgrade --progress-bar off pip
+            python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
+            python -m pip install --user --upgrade --progress-bar off -r requirements/torch.txt
+            python -m pip install --user --upgrade --progress-bar off -r requirements/multiviewica.txt
+            python -m pip install --user --upgrade --progress-bar off -r requirements/graspy.txt
+            python -m pip install --user --upgrade --progress-bar off -r docs/requirements.txt
+            python -m pip install --user -e .
 
-        # Build docs
-        - run:
-            name: make html
-            command: |
-              cd docs;
-              make html;
+      - save_cache:
+          key: pip-cache
+          paths:
+            - ~/.cache/pip
 
-        # Save the outputs
-        - store_artifacts:
-            path: docs/_build/html/
-            destination: dev
-        - persist_to_workspace:
-            root: docs/_build
-            paths:
-              - html
+      # Look at what we have and fail early if there is some library conflict
+      - run:
+          name: Check installation
+          command: |
+              which python
+              python -c "import mvlearn"
 
-    deploy:
-      docker:
-        - image: circleci/python:3.6-jessie
-      steps:
-        - attach_workspace:
-            at: /tmp/build
-        - run:
-            name: Fetch docs
-            command: |
-              set -e
-              mkdir -p ~/.ssh
-              echo -e "Host *\nStrictHostKeyChecking no" > ~/.ssh/config
-              chmod og= ~/.ssh/config
-              if [ ! -d ~/mvlearn.github.io ]; then
-                git clone git@github.com:/mvlearn/mvlearn.github.io.git ~/mvlearn.github.io --depth=1
-              fi
-        - add_ssh_keys:
-            fingerprints:
-              - "0f:02:d7:6c:c2:20:94:c9:3f:49:40:4c:46:39:5a:81"
-        - run:
-            name: Deploy docs
-            command: |
-              set -e;
-              if [ "${CIRCLE_BRANCH}" == "main" ]; then
-                git config --global user.email "circle@mvlearn.com";
-                git config --global user.name "Circle CI";
-                cd ~/mvlearn.github.io;
-                git checkout main
-                git remote -v
-                git fetch origin
-                git reset --hard origin/main
-                git clean -xdf
-                echo "Deploying dev docs for ${CIRCLE_BRANCH}.";
-                cp -a /tmp/build/html/* .;
-                touch .nojekyll;
-                git add -A;
-                git commit -m "CircleCI update of dev docs (${CIRCLE_BUILD_NUM}).";
-                git push origin main;
-              else
-                echo "No deployment (build: ${CIRCLE_BRANCH}).";
-              fi
+      # Build docs
+      - run:
+          name: make html
+          command: |
+            cd docs;
+            make html;
+
+      # Save the outputs
+      - store_artifacts:
+          path: docs/_build/html/
+          destination: dev
+      - persist_to_workspace:
+          root: docs/_build
+          paths:
+            - html
+
+  deploy:
+    docker:
+      - image: circleci/python:3.6-jessie
+    steps:
+      - attach_workspace:
+          at: /tmp/build
+      - run:
+          name: Fetch docs
+          command: |
+            set -e
+            mkdir -p ~/.ssh
+            echo -e "Host *\nStrictHostKeyChecking no" > ~/.ssh/config
+            chmod og= ~/.ssh/config
+            if [ ! -d ~/mvlearn.github.io ]; then
+              git clone git@github.com:/mvlearn/mvlearn.github.io.git ~/mvlearn.github.io --depth=1
+            fi
+      - add_ssh_keys:
+          fingerprints:
+            - "0f:02:d7:6c:c2:20:94:c9:3f:49:40:4c:46:39:5a:81"
+      - run:
+          name: Deploy docs
+          command: |
+            set -e;
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
+              git config --global user.email "circle@mvlearn.com";
+              git config --global user.name "Circle CI";
+              cd ~/mvlearn.github.io;
+              git checkout main
+              git remote -v
+              git fetch origin
+              git reset --hard origin/main
+              git clean -xdf
+              echo "Deploying dev docs for ${CIRCLE_BRANCH}.";
+              cp -a /tmp/build/html/* .;
+              touch .nojekyll;
+              git add -A;
+              git commit -m "CircleCI update of dev docs (${CIRCLE_BUILD_NUM}).";
+              git push origin main;
+            else
+              echo "No deployment (build: ${CIRCLE_BRANCH}).";
+            fi
 
 workflows:
-  version: 2
-
-  default:
+  build-test-deploy:
     jobs:
+      - build:
+          matrix:
+            parameters:
+              version:
+                - "3.6"
+                - "3.7"
+                - "3.8"
+      - test:
+          matrix:
+            parameters:
+              version:
+                - "3.6"
+                - "3.7"
+                - "3.8"
       - build_docs
       - deploy:
           requires:
