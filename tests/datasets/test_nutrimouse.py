@@ -14,6 +14,7 @@ def test_return_Xs_y():
     assert y.shape == (40, 2)
     assert len(np.unique(y[:, 0])) == 2
     assert len(np.unique(y[:, 1])) == 5
+    assert y.dtype.char == 'U'
 
 
 def test_data_dict():
@@ -24,9 +25,7 @@ def test_data_dict():
     for key, n_unique in zip(y_filenames, (2, 5)):
         assert data[key].shape == (40,)
         assert len(np.unique(data[key])) == n_unique
+        assert data[key].dtype.char == 'U'
 
     for key, n_unique in zip(Xs_filenames, (120, 21)):
         assert len(data[key + '_feature_names']) == n_unique
-
-    for key, n_unique in zip(y_filenames, (2, 5)):
-        assert len(data[key + '_names']) == n_unique

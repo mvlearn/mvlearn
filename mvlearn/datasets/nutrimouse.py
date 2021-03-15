@@ -6,6 +6,7 @@
 
 from os.path import dirname, join
 import numpy as np
+import csv
 
 
 def load_nutrimouse(return_Xs_y=True):
@@ -18,11 +19,11 @@ def load_nutrimouse(return_Xs_y=True):
     ----------
     return_Xs_y : bool, default=True
         If ``True``, returns an ``(Xs, y)`` tuple of the multiple views and
-        sample labels.
+        sample labels as strings.
 
     Returns
     -------
-    (Xs, y) : 2-tuple of the multiple views and labels
+    (Xs, y) : 2-tuple of the multiple views and labels as strings
         Returned if ``return_Xs_y`` is True (default).
 
     data : dictionary with the following key: value pairs (see Notes for
@@ -39,10 +40,6 @@ def load_nutrimouse(return_Xs_y=True):
             The names of the genes.
         lipid_feature_names : list, length 21
             The names of the fatty acids.
-        genotype_names : list, length 2
-            The names of the genotype classes.
-        diet_names : list, length 5
-            The names of the diet classes.
 
     Notes
     -----
@@ -89,16 +86,15 @@ def load_nutrimouse(return_Xs_y=True):
 
     for fname in Xs_filenames:
         csv_file = join(module_path, folder, fname + '.csv')
-        X = np.genfromtxt(csv_file, delimiter=',', dtype=str)
-        data[fname] = X[1:].astype(float)
-        data[f'{fname}_feature_names'] = list(X[0])
+        X = np.genfromtxt(csv_file, delimiter=',', names=True)
+        data[fname] = X.view((float, len(X.dtype.names)))
+        data[f'{fname}_feature_names'] = list(X.dtype.names)
 
     for fname in y_filenames:
         csv_file = join(module_path, folder, fname + '.csv')
-        y = np.genfromtxt(csv_file, delimiter=',', dtype=str)[1:]
-        class_names, y = np.unique(y, return_inverse=True)
+        with open(csv_file, newline='') as f:
+            y = np.asarray(list(csv.reader(f))[1:]).squeeze()
         data[fname] = y
-        data[f'{fname}_names'] = class_names
 
     if return_Xs_y:
         Xs = [data[X_key] for X_key in Xs_filenames]
