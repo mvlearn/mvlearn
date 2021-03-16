@@ -20,20 +20,14 @@ mouse has two labels: it's genetic type and diet.
 #
 # License: MIT
 
-# %%
 ###############################################################################
 # Load the Nutrimouse dataset
 # ---------------------------
-from mvlearn.plotting import crossviews_plot
-from mvlearn.embed import CCA
-import seaborn as sns
-from mvlearn.decomposition import AJIVE
-from sklearn.cluster import KMeans
-from mvlearn.cluster import MultiviewKMeans
-from matplotlib import cm
-import matplotlib.pyplot as plt
-from mvlearn.embed import MVMDS
+
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import seaborn as sns
 from mvlearn.datasets import load_nutrimouse
 
 dataset = load_nutrimouse()
@@ -42,20 +36,22 @@ y = np.vstack((dataset['genotype'], dataset['diet'])).T
 
 print(f"Shapes of each view: {[X.shape for X in Xs]}")
 
-# %%
 ###############################################################################
 # Embed using MVMDS
 # -----------------
+#
+# Multiview multi-dimensional scaling embeds multiview data into a single
+# representation that captures information shared between both views.
+# Embedding the two nutrimouse views, we can observe clear separation between
+# the different genotypes and some of the diets too.
+
+from mvlearn.embed import MVMDS
 
 X_mvmds = MVMDS(n_components=2, num_iter=50).fit_transform(Xs)
 
-# %%
-# We can observe clear separation between the mice of different genotypes
-# and some of the diets separate too.
-
 diet_names = dataset['diet_names']
 genotype_names = dataset['genotype_names']
-plt.figure(figsize=(8, 8))
+plt.figure(figsize=(5, 5))
 for genotype_idx, cmap in enumerate((cm.Blues, cm.Reds)):
     for diet_idx in range(5):
         X_idx = np.where((y == (genotype_idx, diet_idx)).all(axis=1))
@@ -69,21 +65,20 @@ plt.title('MVMDS Embedding')
 plt.legend()
 plt.show()
 
-# %%
 ###############################################################################
 # Cluster using Multiview KMeans
 # ------------------------------
 #
 # We can compare the estimated clusters from multiview KMeans to regular
-# KMeans on each of the views.
+# KMeans on each of the views. Multiview Kmeans clearly finds two clusters
+# matching the two different genotype labels observed in the prior plots.
+
+from mvlearn.cluster import MultiviewKMeans
+from sklearn.cluster import KMeans
 
 Xs_labels = MultiviewKMeans(n_clusters=2, random_state=0).fit_predict(Xs)
 X1_labels = KMeans(n_clusters=2, random_state=0).fit_predict(Xs[0])
 X2_labels = KMeans(n_clusters=2, random_state=0).fit_predict(Xs[1])
-
-# %%
-# Multiview Kmeans clearly finds two clusters matching the two different
-# genotype labels observed in the prior plots.
 
 sca_kwargs = {'alpha': 0.7, 's': 10}
 
@@ -101,8 +96,8 @@ for ax in axes:
     ax.set_yticks([])
 axes[0].set_ylabel('MVMDS component 2')
 axes[0].set_title('Multiview Kmeans Clusters')
+plt.show()
 
-# %%
 ###############################################################################
 # Decomposition using AJIVE
 # -------------------------
@@ -111,10 +106,10 @@ axes[0].set_title('Multiview Kmeans Clusters')
 # that are jointly related. Using AJIVE, we can find genes and lipids that are
 # jointly related.
 
+from mvlearn.decomposition import AJIVE
+
 ajive = AJIVE()
 Xs_joint = ajive.fit_transform(Xs)
-
-# %%
 
 f, axes = plt.subplots(1, 2, figsize=(12, 4))
 sort_idx = np.hstack((np.argsort(y[:20, 1]), np.argsort(y[20:, 1]) + 20))
@@ -132,9 +127,9 @@ sns.heatmap(Xs_joint[1][sort_idx],
             yticklabels=False, cmap="RdBu_r", ax=axes[1],
             xticklabels=dataset['lipid_feature_names'])
 axes[1].set_title('Joint data: Lipid concentrations')
+plt.tight_layout()
 plt.show()
 
-# %%
 ###############################################################################
 # Inference using regularized CCA
 # -------------------------------
@@ -147,6 +142,9 @@ plt.show()
 # Because the genetic expression data has more features than samples, we need
 # to use regularization so as to not to trivially overfit.
 
+from mvlearn.plotting import crossviews_plot
+from mvlearn.embed import CCA
+
 cca = CCA(n_components=2, regs=[0.9, 0.1])
 Xs_cca = cca.fit_transform(Xs)
 
@@ -155,7 +153,6 @@ crossviews_plot(Xs_cca, labels=y[:, 0], ax_ticks=False,
                 title='CCA view embeddings', equal_axes=True)
 
 print(f'Canonical correlations: {cca.canon_corrs(Xs_cca)}')
-# %%
 f, axes = plt.subplots(1, 2, figsize=(12, 2))
 gene_ticks = [n if i in [31, 57, 76, 88] else '' for i,
               n in enumerate(dataset['gene_feature_names'])]
@@ -170,4 +167,5 @@ sns.heatmap(cca.loadings_[1].T,
             yticklabels=False, cmap="RdBu_r", ax=axes[1],
             xticklabels=dataset['lipid_feature_names'])
 axes[1].set_title('Lipid concentration loadings')
+plt.tight_layout()
 plt.show()
