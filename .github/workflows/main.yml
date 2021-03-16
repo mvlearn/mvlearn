@@ -10,7 +10,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         python_version: [3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v2
