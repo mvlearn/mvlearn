@@ -45,7 +45,7 @@ print(f"Shapes of each view: {[X.shape for X in Xs]}")
 # Embedding the two nutrimouse views, we can observe clear separation between
 # the different genotypes and some of the diets too.
 
-from mvlearn.embed import MVMDS
+from mvlearn.embed import MVMDS  # noqa: E402
 
 X_mvmds = MVMDS(n_components=2, num_iter=50).fit_transform(Xs)
 
@@ -73,8 +73,8 @@ plt.show()
 # KMeans on each of the views. Multiview Kmeans clearly finds two clusters
 # matching the two different genotype labels observed in the prior plots.
 
-from mvlearn.cluster import MultiviewKMeans
-from sklearn.cluster import KMeans
+from mvlearn.cluster import MultiviewKMeans  # noqa: E402
+from sklearn.cluster import KMeans  # noqa: E402
 
 Xs_labels = MultiviewKMeans(n_clusters=2, random_state=0).fit_predict(Xs)
 X1_labels = KMeans(n_clusters=2, random_state=0).fit_predict(Xs[0])
@@ -106,7 +106,7 @@ plt.show()
 # that are jointly related. Using AJIVE, we can find genes and lipids that are
 # jointly related.
 
-from mvlearn.decomposition import AJIVE
+from mvlearn.decomposition import AJIVE  # noqa: E402
 
 ajive = AJIVE()
 Xs_joint = ajive.fit_transform(Xs)
@@ -142,8 +142,8 @@ plt.show()
 # Because the genetic expression data has more features than samples, we need
 # to use regularization so as to not to trivially overfit.
 
-from mvlearn.plotting import crossviews_plot
-from mvlearn.embed import CCA
+from mvlearn.plotting import crossviews_plot  # noqa: E402
+from mvlearn.embed import CCA  # noqa: E402
 
 cca = CCA(n_components=2, regs=[0.9, 0.1])
 Xs_cca = cca.fit_transform(Xs)
