@@ -1,5 +1,9 @@
-name: circleci-redirector
-on: [status]
+name: CI Tests
+on:
+pull_request:
+push:
+  branches:
+    - main
 jobs:
   unit-test:
     runs-on: ${{matrix.os}}
@@ -30,13 +34,3 @@ jobs:
           pycodestyle mvlearn/
           flake8 mvlearn
           flake8 examples
-  circleci_artifacts_redirector_job:
-    runs-on: ubuntu-latest
-    name: Run CircleCI artifacts redirector
-    steps:
-      - name: GitHub Action step
-        uses: larsoner/circleci-artifacts-redirector-action@master
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          artifact-path: 0/dev/index.html
-          circleci-jobs: build_docs
