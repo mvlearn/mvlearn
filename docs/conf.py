@@ -108,6 +108,7 @@ html_theme_options = {
     "logo_only": True,
 }
 html_logo = "./figures/mvlearn-logo-transparent-white.png"
+html_favicon = "./figures/mvlearn-logo-32x32.ico"
 
 html_context = {
     # Enable the "Edit in GitHub link within the header of each page.
