@@ -28,7 +28,6 @@ from mvlearn.plotting import crossviews_plot
 from mvlearn.embed import CCA
 import seaborn as sns
 from mvlearn.decomposition import AJIVE
-from mvlearn.plotting import quick_visualize
 from sklearn.cluster import KMeans
 from mvlearn.cluster import MultiviewKMeans
 from matplotlib import cm
