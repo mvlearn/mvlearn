@@ -11,7 +11,7 @@ jobs:
       version:
         type: string
     docker:
-      - image: circleci/python:<< parameters.version >>-stretch
+      - image: cimg/python:<< parameters.version >>
     steps:
       - checkout
       - restore_cache:
@@ -38,7 +38,7 @@ jobs:
       version:
         type: string
     docker:
-      - image: circleci/python:<< parameters.version >>-stretch
+      - image: cimg/python:<< parameters.version >>
     steps:
       - checkout
       - restore_cache:
