@@ -1,9 +1,9 @@
 name: CI Tests
 on:
-pull_request:
-push:
-  branches:
-    - main
+  pull_request:
+  push:
+    branches:
+      - main
 jobs:
   unit-test:
     runs-on: ${{matrix.os}}
