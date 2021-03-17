@@ -8,6 +8,11 @@ UCI multiple feature dataset (located `here <https://archive.ics.uci.edu/ml/data
 
 .. autofunction:: load_UCImultifeature
 
+Nutrimouse dataset
+------------------
+
+.. autofunction:: load_nutrimouse
+
 Data Simulator
 --------------
 
