@@ -62,13 +62,13 @@ else:
    # set this build's current language to english
    current_language = 'en'
 
-if 'current_version' in os.environ:
+# if 'current_version' in os.environ:
 #    # get the current_version env var set by buildDocs.sh
 #    current_version = os.environ['current_version']
 # else:
    # the user is probably doing `make html`
    # set this build's current version by looking at the branch
-   current_version = repo.active_branch.name
+current_version = repo.active_branch.name
 
 # -- Extension configuration -------------------------------------------------
 extensions = [
