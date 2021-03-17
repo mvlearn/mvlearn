@@ -12,9 +12,9 @@ import csv
 
 def load_nutrimouse(return_Xs_y=False):
     r"""
-    Load the Nutrimouse dataset [#1paper], a two-view dataset from a nutrition
+    Load the Nutrimouse dataset [#1paper]_, a two-view dataset from a nutrition
     study on mice, as available from
-    https://CRAN.R-project.org/package=CCA [#2r].
+    https://CRAN.R-project.org/package=CCA [#2r]_.
 
     Parameters
     ----------
