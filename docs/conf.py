@@ -14,7 +14,9 @@
 #
 import os
 import sys
+import re
 from distutils.version import LooseVersion
+from git import Repo
 
 import matplotlib
 
@@ -41,6 +43,30 @@ for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
 # The full version, including alpha/beta/rc tags
 release = "alpha"
 
+if 'REPO_NAME' in os.environ:
+   REPO_NAME = os.environ['REPO_NAME']
+else:
+   REPO_NAME = ''
+
+repo = Repo( search_parent_directories=True )
+
+# SET CURRENT_LANGUAGE
+if 'current_language' in os.environ:
+   # get the current_language env var set by buildDocs.sh
+   current_language = os.environ['current_language']
+else:
+   # the user is probably doing `make html`
+   # set this build's current language to english
+   current_language = 'en'
+
+if 'current_version' in os.environ:
+   # get the current_version env var set by buildDocs.sh
+   current_version = os.environ['current_version']
+else:
+   # the user is probably doing `make html`
+   # set this build's current version by looking at the branch
+   current_version = repo.active_branch.name
+
 # -- Extension configuration -------------------------------------------------
 extensions = [
     "sphinx.ext.autodoc",
@@ -53,6 +79,7 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
     'sphinx_gallery.gen_gallery',
+    "sphinx_multiversion",
 ]
 
 if LooseVersion(sphinx_gallery.__version__) < LooseVersion('0.2'):
@@ -118,7 +145,27 @@ html_context = {
     "github_user": "mvlearn",
     "github_repo": "mvlearn",
     "github_version": "main/docs/",
+    # The following are for creating the tab at the bottom left to choose which version of the docs to view
+    "display_lower_left": True,
+    "current_language": current_language,
+    "current_version": current_version,
+    "version": current_version,
+    "versions": list(),
 }
+
+# # POPULATE LINKS TO OTHER LANGUAGES
+# languages = [lang.name for lang in os.scandir('locales') if lang.is_dir()]
+# for lang in languages:
+#    html_context['languages'].append( (lang, '/' +REPO_NAME+ '/' +lang+ '/' +current_version+ '/') )
+
+# POPULATE LINKS TO OTHER VERSIONS
+# sort the repo tags by creation date so they are returned in proper order (e.g. 0.10.1 is after 0.2.1)
+versions = [tag.name for tag in sorted(repo.tags, key=lambda t: t.commit.committed_datetime)[::-1]]
+for version in versions:
+   # check if the tag is either X.X.X so that it doesn't include versions like torch-only
+   if re.match("\d+\.\d+\.\d+$", version):
+      html_context['versions'].append( (version, '/' +REPO_NAME+ '/'  +current_language+ '/' +version+ '/') )
+# reverse them so they are in decreasing order
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
