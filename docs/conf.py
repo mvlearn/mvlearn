@@ -41,7 +41,7 @@ for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
         version = line.strip().split()[2][1:-1]
 
 # The full version, including alpha/beta/rc tags
-release = "alpha"
+release = version
 
 if 'REPO_NAME' in os.environ:
    REPO_NAME = os.environ['REPO_NAME']
@@ -79,7 +79,6 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
     'sphinx_gallery.gen_gallery',
-    "sphinx_multiversion",
 ]
 
 if LooseVersion(sphinx_gallery.__version__) < LooseVersion('0.2'):
