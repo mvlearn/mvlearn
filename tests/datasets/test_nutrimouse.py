@@ -1,6 +1,6 @@
-from mvlearn.datasets import load_nutrimouse
-import numpy as np
 import numbers
+import numpy as np
+from mvlearn.datasets import load_nutrimouse
 
 
 Xs_filenames = ["gene", "lipid"]

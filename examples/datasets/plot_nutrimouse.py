@@ -1,7 +1,7 @@
 """
-=====================================================
-An mvlearn casestudy: the Nutrimouse dataset
-=====================================================
+=============================================
+An mvlearn case study: the Nutrimouse dataset
+=============================================
 
 In this tutorial, we show how one may utilize various tools of mvlearn. We
 demonstrate applications to the :class:`mvlearn.datasets.load_nutrimouse`
