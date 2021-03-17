@@ -24,6 +24,8 @@ import matplotlib
 import sphinx_rtd_theme
 import sphinx_gallery
 
+import mvlearn
+
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
@@ -36,9 +38,10 @@ authors = u"Richard Guo, Ronan Perry, Gavin Mischler, Theo Lee, " \
 # The short X.Y version
 # Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
-    if line.startswith("__version__ = "):
-        version = line.strip().split()[2][1:-1]
+# for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
+#     if line.startswith("__version__ = "):
+#         version = line.strip().split()[2][1:-1]
+version = mvlearn.__version__
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -60,9 +63,9 @@ else:
    current_language = 'en'
 
 if 'current_version' in os.environ:
-   # get the current_version env var set by buildDocs.sh
-   current_version = os.environ['current_version']
-else:
+#    # get the current_version env var set by buildDocs.sh
+#    current_version = os.environ['current_version']
+# else:
    # the user is probably doing `make html`
    # set this build's current version by looking at the branch
    current_version = repo.active_branch.name
