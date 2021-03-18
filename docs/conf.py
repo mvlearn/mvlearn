@@ -46,10 +46,7 @@ version = mvlearn.__version__
 # The full version, including alpha/beta/rc tags
 release = version
 
-if 'REPO_NAME' in os.environ:
-   REPO_NAME = os.environ['REPO_NAME']
-else:
-   REPO_NAME = ''
+REPO_NAME = 'mvlearn'
 
 repo = Repo( search_parent_directories=True )
 
@@ -162,12 +159,28 @@ html_context = {
 
 # POPULATE LINKS TO OTHER VERSIONS
 # sort the repo tags by creation date so they are returned in proper order (e.g. 0.10.1 is after 0.2.1)
-versions = [tag.name for tag in sorted(repo.tags, key=lambda t: t.commit.committed_datetime)[::-1]]
+# versions = [tag.name for tag in sorted(repo.tags, key=lambda t: t.commit.committed_datetime)[::-1]]
+# versions.insert(0,'main')
+# for version in versions:
+#    # check if the tag is either X.X.X so that it doesn't include versions like torch-only
+#    if re.match("\d+\.\d+\.\d+$", version) or version == 'main':
+#       html_context['versions'].append( (version, '/' +REPO_NAME+ '/'  +current_language+ '/' +version+ '/') )
+
+# POPULATE LINKS TO OTHER VERSIONS
+remote_refs = repo.remote().refs
+versions = []
+for ref in remote_refs:
+    ref = ref.name.split('/')[-1]
+    versions.append( ref )
+
 for version in versions:
-   # check if the tag is either X.X.X so that it doesn't include versions like torch-only
-   if re.match("\d+\.\d+\.\d+$", version):
-      html_context['versions'].append( (version, '/' +REPO_NAME+ '/'  +current_language+ '/' +version+ '/') )
-# reverse them so they are in decreasing order
+    # override to rename 'main' branch to 'dev'
+    if version == 'main':
+        version = 'dev'
+
+    if re.match("\d+\.\d+\.\d+$", version) or version == 'dev':
+
+        html_context['versions'].append( (version, '/' +REPO_NAME+ '/' +current_language+ '/' +version+ '/') )
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
