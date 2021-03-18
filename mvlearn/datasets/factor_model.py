@@ -38,6 +38,12 @@ def sample_joint_factor_model(
     m : float (default 1.5)
         Signal strength.
 
+    random_state : int, default=None
+        Random state initialization seed.
+
+    return_decomp : boolean, default=False
+        If ``True``, returns ``view_loadings`` as well.
+
     Returns
     -------
     Xs : list of array-likes or numpy.ndarray
