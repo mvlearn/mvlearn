@@ -60,7 +60,7 @@ Brief examples
 Highlighted full examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- `Nutrimouse datasetcase study <auto_examples/datasets/plot_nutrimouse.html>`_:
+- `Nutrimouse dataset case study <auto_examples/datasets/plot_nutrimouse.html>`_:
     A collection of multiview learning methods across modules provide insights to a 2-view genomics dataset.
 
 - `Multiview vs singleview clustering on the UCI multiview digits <auto_examples/cluster/plot_mv_vs_singleview_spectral.html>`_:

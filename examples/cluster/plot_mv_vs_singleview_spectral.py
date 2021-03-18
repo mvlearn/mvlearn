@@ -145,7 +145,7 @@ def plot_clusters(Xs, y_true, y_predicted, title, method):
 
     sca_kwargs = {'alpha': 0.7, 's': 10}
     f, axes = plt.subplots(1, 2, figsize=(8, 4))
-    axes[0].scatter(Xs_pca[:, 0], Xs_pca[:, 1], c=y_true, **sca_kwargs)
+    axes[0].scatter(Xs[:, 0], Xs[:, 1], c=y_true, **sca_kwargs)
     axes[0].set_title('True labels', fontsize=14)
     axes[1].scatter(Xs[:, 0], Xs[:, 1], c=y_predicted, **sca_kwargs)
     axes[1].set_title(title, fontsize=14)
