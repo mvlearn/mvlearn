@@ -32,7 +32,7 @@ different views in the UCI handwritten digits dataset.
 
 # License: MIT
 
-from mvlearn.datasets.base import load_UCImultifeature
+from mvlearn.datasets import load_UCImultifeature
 import numpy as np
 from matplotlib import pyplot as plt
 from mvlearn.embed import omnibus

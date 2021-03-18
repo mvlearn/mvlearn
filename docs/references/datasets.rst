@@ -8,6 +8,11 @@ UCI multiple feature dataset
 
 .. autofunction:: load_UCImultifeature
 
+Nutrimouse dataset
+------------------
+
+.. autofunction:: load_nutrimouse
+
 Data Simulator
 --------------
 

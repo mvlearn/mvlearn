@@ -3,7 +3,7 @@
 
 import pytest
 import numpy as np
-from mvlearn.datasets.base import load_UCImultifeature
+from mvlearn.datasets import load_UCImultifeature
 
 def test_UCImultifeature_dataloader():
     # load data
