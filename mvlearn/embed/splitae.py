@@ -78,7 +78,7 @@ class SplitAE(BaseEmbed):
         batch size while training the network
     learning_rate : float (default=0.001)
         learning rate of the Adam optimizer
-    print_info : bool (default=True)
+    print_info : bool (default=False)
         whether or not to print errors as the network trains.
     print_graph : bool (default=True)
         whether or not to graph training loss
