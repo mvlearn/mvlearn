@@ -92,10 +92,12 @@ class SplitAE(BaseEmbed):
     view2_decoder_ : torch.nn.Module
         the View2 decoding network as a PyTorch module
 
-    Warns
-    -----
-    In order to run SplitAE, pytorch and other certain optional dependencies
-    must be installed. See the installation page for details.
+    Raises
+    ------
+    ModuleNotFoundError
+        In order to run SplitAE, pytorch and other certain optional
+        dependencies must be installed. See the installation page for
+        details.
 
     Notes
     -----

@@ -475,10 +475,12 @@ class DCCA(BaseEmbed):
     optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
 
-    Warns
-    -----
-    In order to run DCCA, pytorch and other certain optional dependencies must
-        be installed. See the installation page for details.
+    Raises
+    ------
+    ModuleNotFoundError
+        In order to run DCCA, pytorch and other certain optional
+        dependencies must be installed. See the installation page
+        for details.
 
     Notes
     -----
