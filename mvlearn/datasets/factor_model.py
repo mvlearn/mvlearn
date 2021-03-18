@@ -38,6 +38,13 @@ def sample_joint_factor_model(
     m : float (default 1.5)
         Signal strength.
 
+    random_state : int or RandomState instance, optional (default=None)
+        Controls random orthonormal matrix sampling and random noise
+        generation. Set for reproducible results.
+
+    return_decomp : boolean, default=False
+        If ``True``, returns the ``view_loadings`` as well.
+
     Returns
     -------
     Xs : list of array-likes or numpy.ndarray
@@ -47,11 +54,11 @@ def sample_joint_factor_model(
 
     U: (n_samples, joint_rank)
         The true orthonormal joint scores matrix. Returned if
-        `return_decomp` is True.
+        ``return_decomp`` is True.
 
     view_loadings: list of numpy.ndarray
         The true view loadings matrices. Returned if
-        `return_decomp` is True.
+        ``return_decomp`` is True.
 
     Notes
     -----

@@ -475,10 +475,12 @@ class DCCA(BaseEmbed):
     optimizer_ : torch.optim.RMSprop object
         Optimizer used to train the networks.
 
-    Warns
-    -----
-    In order to run DCCA, pytorch and other certain optional dependencies must
-    be installed. See the installation page for details.
+    Raises
+    ------
+    ModuleNotFoundError
+        In order to run DCCA, pytorch and other certain optional
+        dependencies must be installed. See the installation page
+        for details.
 
     Notes
     -----
@@ -707,6 +709,9 @@ class DCCA(BaseEmbed):
             A list of data matrices from each view to transform based on the
             prior fit function. If view_idx defined, then Xs is a 2D data
             matrix corresponding to a single view.
+        return_loss :boolean, default=False
+            If ``True``, returns the loss along with the transformed
+            data in a tuple.
 
         Returns
         -------
