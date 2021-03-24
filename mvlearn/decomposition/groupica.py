@@ -292,8 +292,16 @@ class GroupICA(BaseDecomposer):
             assert len(X_transformed) == len(indexes_)
             return [
                 np.dot(X, A.T) + mean
-                for X, A, mean in (zip(X_transformed, [ self.individual_mixing_[i] for i in indexes_], [self.means_[i] for i in indexes_]))
+                for X, A, mean in (
+                    zip(
+                        X_transformed,
+                        [self.individual_mixing_[i] for i in indexes_],
+                        [self.means_[i] for i in indexes_],
+                    )
+                )
             ]
 
         else:
-            return self.grouppca_.inverse_transform(np.dot(X_transformed, self.mixing_.T), indexes=indexes)
+            return self.grouppca_.inverse_transform(
+                np.dot(X_transformed, self.mixing_.T), indexes=indexes
+            )
