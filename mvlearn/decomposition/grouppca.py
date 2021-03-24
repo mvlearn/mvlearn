@@ -185,7 +185,9 @@ class GroupPCA(BaseDecomposer):
         else:
             self.n_components_ = self.n_components
         if self.n_individual_components == "auto":
-            self.n_individual_components_ = min(self.n_components_, min(n_features))
+            self.n_individual_components_ = min(
+                self.n_components_, min(n_features)
+            )
         else:
             self.n_individual_components_ = self.n_individual_components
         if self.n_individual_components_ is None and self.prewhiten:
@@ -206,11 +208,19 @@ class GroupPCA(BaseDecomposer):
                     dimension = self.n_individual_components_
                 else:
                     dimension = self.n_individual_components_[i]
-                pca = PCA(dimension, whiten=self.prewhiten, random_state=self.random_state,)
+                pca = PCA(
+                    dimension,
+                    whiten=self.prewhiten,
+                    random_state=self.random_state,
+                )
                 X_transformed[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
-                self.individual_explained_variance_ratio_.append(pca.explained_variance_ratio_)
-                self.individual_explained_variance_.append(pca.explained_variance_)
+                self.individual_explained_variance_ratio_.append(
+                    pca.explained_variance_ratio_
+                )
+                self.individual_explained_variance_.append(
+                    pca.explained_variance_
+                )
         X_stack = np.hstack(X_transformed)
         pca = PCA(self.n_components_, whiten=self.whiten)
         X_transformed = pca.fit_transform(X_stack)
@@ -282,7 +292,10 @@ class GroupPCA(BaseDecomposer):
                     np.dot(X - mean, W.T)
                     for W, X, mean in (
                         zip(
-                            [self.individual_projections_[i] for i in indexes_],
+                            [
+                                self.individual_projections_[i]
+                                for i in indexes_
+                            ],
                             Xs,
                             [self.individual_mean_[i] for i in indexes_],
                         )
@@ -380,7 +393,9 @@ class GroupPCA(BaseDecomposer):
         Xs_pred = [
             X_t.dot(W)
             for W in [
-                np.split(self.components_, np.cumsum(self.n_features_)[:-1], axis=1)[i]
+                np.split(
+                    self.components_, np.cumsum(self.n_features_)[:-1], axis=1
+                )[i]
                 for i in indexes_
             ]
         ]
