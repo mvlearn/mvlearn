@@ -320,13 +320,10 @@ class GroupPCA(BaseDecomposer):
                 Xs[i] = X_transformed
         else:
             Xs = [X - mean for X, mean in zip(Xs, self.individual_mean_)]
-
         X_stack = np.hstack(Xs)
         X_transformed = np.dot(X_stack, self.components_.T)
-
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
-
         return X_transformed
 
     def inverse_transform(self, X_transformed, indexes=None):
@@ -388,8 +385,8 @@ class GroupPCA(BaseDecomposer):
             X_t = X_transformed * np.sqrt(self.explained_variance_)
         else:
             X_t = X_transformed
-
         X_stack = np.dot(X_t, self.components_)
+
         if self.individual_pca_:
             Xs = []
             cur_p = 0
