@@ -245,25 +245,3 @@ def test_grouppca_deterministic_output():
     assert_allclose(
         transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
     )
-
-
-def test_grouppca_deterministic_output():
-    n_samples = 100
-    n_features = [6, 4, 5]
-    rng = np.random.RandomState(0)
-    Xs = [
-        rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples)
-        for p in n_features
-    ]
-    transformed_X = np.zeros((20, 2))
-    for i in range(20):
-        pca = GroupPCA(
-            n_components=2,
-            n_individual_components=3,
-            multiview_output=False,
-            random_state=rng,
-        )
-        transformed_X[i, :] = pca.fit_transform(Xs)[0]
-    assert_allclose(
-        transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
-    )
