@@ -26,7 +26,9 @@ from mvlearn.decomposition.grouppca import GroupPCA
 
 
 @pytest.mark.parametrize("n_components", [None, 1, 3, 9])
-@pytest.mark.parametrize("n_individual_components", ["auto", None, 3, [2, 3, 4]])
+@pytest.mark.parametrize(
+    "n_individual_components", ["auto", None, 3, [2, 3, 4]]
+)
 @pytest.mark.parametrize("multiview_output", [True, False])
 def test_pca(n_components, n_individual_components, multiview_output):
     gpca = GroupPCA(
@@ -37,7 +39,10 @@ def test_pca(n_components, n_individual_components, multiview_output):
     n_samples = 100
     n_features = [6, 4, 5]
     rng = np.random.RandomState(0)
-    Xs = [rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples) for p in n_features]
+    Xs = [
+        rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples)
+        for p in n_features
+    ]
     # check the shape of fit.transform
     X_r = gpca.fit(Xs).transform(Xs)
     if multiview_output:
@@ -71,7 +76,9 @@ def test_whitening(n_individual_components, prewhiten, multiview_output):
     # some low rank data with correlated features
     X = np.dot(
         rng.randn(n_samples, rank),
-        np.dot(np.diag(np.linspace(10.0, 1.0, rank)), rng.randn(rank, n_features)),
+        np.dot(
+            np.diag(np.linspace(10.0, 1.0, rank)), rng.randn(rank, n_features)
+        ),
     )
     # the component-wise variance of the first 50 features is 3 times the
     # mean component-wise variance of the remaining 30 features
@@ -124,7 +131,9 @@ def test_whitening(n_individual_components, prewhiten, multiview_output):
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2]])
 @pytest.mark.parametrize("multiview_output", [True, False])
-def test_grouppca_inverse(n_individual_components, prewhiten, whiten, multiview_output):
+def test_grouppca_inverse(
+    n_individual_components, prewhiten, whiten, multiview_output
+):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -156,8 +165,17 @@ def test_grouppca_inverse(n_individual_components, prewhiten, whiten, multiview_
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2, 2]])
 @pytest.mark.parametrize("multiview_output", [True, False])
 @pytest.mark.parametrize("indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
-@pytest.mark.parametrize("inverse_indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
-def test_grouppca_inverse_indexes(n_individual_components, prewhiten, whiten, multiview_output, indexes, inverse_indexes):
+@pytest.mark.parametrize(
+    "inverse_indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+)
+def test_grouppca_inverse_indexes(
+    n_individual_components,
+    prewhiten,
+    whiten,
+    multiview_output,
+    indexes,
+    inverse_indexes,
+):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -206,27 +224,46 @@ def test_grouppca_inverse_indexes(n_individual_components, prewhiten, whiten, mu
         for X, X_estimated in zip(Xs_inverse, Y_inverse):
             assert_allclose(X, X_estimated, atol=1e-4)
 
+
 def test_grouppca_deterministic_output():
     n_samples = 100
     n_features = [6, 4, 5]
     rng = np.random.RandomState(0)
-    Xs = [rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples) for p in n_features]
+    Xs = [
+        rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples)
+        for p in n_features
+    ]
     transformed_X = np.zeros((20, 2))
     for i in range(20):
         pca = GroupPCA(
-            n_components=2, n_individual_components=3, multiview_output=False, random_state=rng,
+            n_components=2,
+            n_individual_components=3,
+            multiview_output=False,
+            random_state=rng,
         )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]
-    assert_allclose(transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2))
+    assert_allclose(
+        transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
+    )
+
+
 def test_grouppca_deterministic_output():
     n_samples = 100
     n_features = [6, 4, 5]
     rng = np.random.RandomState(0)
-    Xs = [rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples) for p in n_features]
+    Xs = [
+        rng.multivariate_normal(np.zeros(p), np.eye(p), size=n_samples)
+        for p in n_features
+    ]
     transformed_X = np.zeros((20, 2))
     for i in range(20):
         pca = GroupPCA(
-            n_components=2, n_individual_components=3, multiview_output=False, random_state=rng,
+            n_components=2,
+            n_individual_components=3,
+            multiview_output=False,
+            random_state=rng,
         )
         transformed_X[i, :] = pca.fit_transform(Xs)[0]
-    assert_allclose(transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2))
+    assert_allclose(
+        transformed_X, np.tile(transformed_X[0, :], 20).reshape(20, 2)
+    )
