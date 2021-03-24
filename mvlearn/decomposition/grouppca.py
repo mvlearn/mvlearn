@@ -358,7 +358,6 @@ class GroupPCA(BaseDecomposer):
             indexes_ = np.copy(indexes)
 
         if self.multiview_output:
-            print(len(X_transformed), len(indexes_))
             assert len(X_transformed) == len(indexes_)
             X_transformed = check_Xs(X_transformed)
             return [
@@ -390,25 +389,14 @@ class GroupPCA(BaseDecomposer):
         else:
             X_t = X_transformed
 
-        Xs_pred = [
-            X_t.dot(W)
-            for W in [
-                np.split(
-                    self.components_, np.cumsum(self.n_features_)[:-1], axis=1
-                )[i]
-                for i in indexes_
-            ]
-        ]
-
         X_stack = np.dot(X_t, self.components_)
         if self.individual_pca_:
             Xs = []
             cur_p = 0
-            for (mean, components_, explained_variance_, X_i) in zip(
+            for (mean, components_, explained_variance_) in zip(
                 self.individual_mean_,
                 self.individual_components_,
                 self.individual_explained_variance_,
-                Xs_pred,
             ):
                 n_features_i = components_.shape[0]
                 sl = slice(cur_p, cur_p + n_features_i)
