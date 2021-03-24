@@ -185,9 +185,7 @@ class GroupPCA(BaseDecomposer):
         else:
             self.n_components_ = self.n_components
         if self.n_individual_components == "auto":
-            self.n_individual_components_ = min(
-                self.n_components_, min(n_features)
-            )
+            self.n_individual_components_ = min(self.n_components_, min(n_features))
         else:
             self.n_individual_components_ = self.n_individual_components
         if self.n_individual_components_ is None and self.prewhiten:
@@ -208,19 +206,11 @@ class GroupPCA(BaseDecomposer):
                     dimension = self.n_individual_components_
                 else:
                     dimension = self.n_individual_components_[i]
-                pca = PCA(
-                    dimension,
-                    whiten=self.prewhiten,
-                    random_state=self.random_state,
-                )
+                pca = PCA(dimension, whiten=self.prewhiten, random_state=self.random_state,)
                 X_transformed[i] = pca.fit_transform(X)
                 self.individual_components_.append(pca.components_)
-                self.individual_explained_variance_ratio_.append(
-                    pca.explained_variance_ratio_
-                )
-                self.individual_explained_variance_.append(
-                    pca.explained_variance_
-                )
+                self.individual_explained_variance_ratio_.append(pca.explained_variance_ratio_)
+                self.individual_explained_variance_.append(pca.explained_variance_)
         X_stack = np.hstack(X_transformed)
         pca = PCA(self.n_components_, whiten=self.whiten)
         X_transformed = pca.fit_transform(X_stack)
@@ -236,7 +226,7 @@ class GroupPCA(BaseDecomposer):
         self.explained_variance_ratio_ = pca.explained_variance_ratio_
         return self
 
-    def transform(self, Xs, y=None):
+    def transform(self, Xs, y=None, indexes=None):
         r"""Apply groupPCA to Xs.
 
         Xs is projected on the principal components learned
@@ -251,6 +241,12 @@ class GroupPCA(BaseDecomposer):
         y : None
             Ignored variable.
 
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit.
+
         Returns
         -------
         X_transformed : list of array-likes or numpy.ndarray
@@ -262,15 +258,39 @@ class GroupPCA(BaseDecomposer):
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
+
+        if indexes is None:
+            indexes_ = np.arange(len(self.individual_projections_))
+        else:
+            indexes_ = np.copy(indexes)
+
         if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
                     zip(
-                        self.individual_projections_, Xs, self.individual_mean_
+                        [self.individual_projections_[i] for i in indexes_],
+                        Xs,
+                        [self.individual_mean_[i] for i in indexes_],
                     )
                 )
             ]
+
+        if indexes is not None:
+            return np.mean(
+                [
+                    np.dot(X - mean, W.T)
+                    for W, X, mean in (
+                        zip(
+                            [self.individual_projections_[i] for i in indexes_],
+                            Xs,
+                            [self.individual_mean_[i] for i in indexes_],
+                        )
+                    )
+                ],
+                axis=0,
+            )
+
         if self.individual_pca_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
                 zip(
@@ -287,13 +307,16 @@ class GroupPCA(BaseDecomposer):
                 Xs[i] = X_transformed
         else:
             Xs = [X - mean for X, mean in zip(Xs, self.individual_mean_)]
+
         X_stack = np.hstack(Xs)
         X_transformed = np.dot(X_stack, self.components_.T)
+
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
+
         return X_transformed
 
-    def inverse_transform(self, X_transformed):
+    def inverse_transform(self, X_transformed, indexes=None):
         r"""Recover multiview data from transformed data.
 
         Returns an array Xs such that the transform of Xs would be
@@ -304,38 +327,73 @@ class GroupPCA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit. Not supported if multiview_output is True.
+
         Returns
         -------
         Xs : list of arrays
             The recovered individual datasets
         """
         check_is_fitted(self)
+        if indexes is None:
+            indexes_ = np.arange(len(self.individual_projections_))
+        else:
+            indexes_ = np.copy(indexes)
+
         if self.multiview_output:
+            print(len(X_transformed), len(indexes_))
+            assert len(X_transformed) == len(indexes_)
             X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (
                     zip(
                         X_transformed,
-                        self.individual_embeddings_,
-                        self.individual_mean_,
+                        [self.individual_embeddings_[i] for i in indexes_],
+                        [self.individual_mean_[i] for i in indexes_],
                     )
                 )
             ]
+        if indexes is not None:
+            X_transformed = check_Xs(X_transformed)
+            return [
+                np.dot(X, A.T) + mean
+                for X, A, mean in (
+                    zip(
+                        X_transformed,
+                        [self.individual_embeddings_[i] for i in indexes_],
+                        [self.individual_mean_[i] for i in indexes_],
+                    )
+                )
+            ]
+
         # Inverse stacked PCA
         if self.whiten:
             X_t = X_transformed * np.sqrt(self.explained_variance_)
         else:
             X_t = X_transformed
-        X_stack = np.dot(X_t, self.components_)
 
+        Xs_pred = [
+            X_t.dot(W)
+            for W in [
+                np.split(self.components_, np.cumsum(self.n_features_)[:-1], axis=1)[i]
+                for i in indexes_
+            ]
+        ]
+
+        X_stack = np.dot(X_t, self.components_)
         if self.individual_pca_:
             Xs = []
             cur_p = 0
-            for (mean, components_, explained_variance_) in zip(
+            for (mean, components_, explained_variance_, X_i) in zip(
                 self.individual_mean_,
                 self.individual_components_,
                 self.individual_explained_variance_,
+                Xs_pred,
             ):
                 n_features_i = components_.shape[0]
                 sl = slice(cur_p, cur_p + n_features_i)

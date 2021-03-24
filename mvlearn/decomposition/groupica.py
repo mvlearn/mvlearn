@@ -12,10 +12,12 @@ from sklearn.utils.validation import check_is_fitted
 try:
     from picard import picard
 except ModuleNotFoundError as error:
-    msg = (f"ModuleNotFoundError: {error}. multiviewica dependencies" +
-           "required for this function. Please consult the mvlearn" +
-           "installation instructions at https://github.com/mvlearn/mvlearn" +
-           "to correctly install multiviewica dependencies.")
+    msg = (
+        f"ModuleNotFoundError: {error}. multiviewica dependencies"
+        + "required for this function. Please consult the mvlearn"
+        + "installation instructions at https://github.com/mvlearn/mvlearn"
+        + "to correctly install multiviewica dependencies."
+    )
     raise ModuleNotFoundError(msg)
 
 from ..utils.utils import check_Xs
@@ -142,9 +144,7 @@ class GroupICA(BaseDecomposer):
         random_state=None,
     ):
         if solver not in ["picard", "fastica"]:
-            raise ValueError(
-                "Invalid solver, must be either `fastica` or `picard`"
-            )
+            raise ValueError("Invalid solver, must be either `fastica` or `picard`")
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.multiview_output = multiview_output
@@ -185,13 +185,9 @@ class GroupICA(BaseDecomposer):
         X_pca = gpca.fit_transform(Xs)
         self.grouppca_ = gpca
         if self.solver == "fastica":
-            K, W, sources = fastica(
-                X_pca, **self.ica_kwargs, random_state=self.random_state
-            )
+            K, W, sources = fastica(X_pca, **self.ica_kwargs, random_state=self.random_state)
         else:
-            K, W, sources = picard(
-                X_pca.T, **self.ica_kwargs, random_state=self.random_state
-            )
+            K, W, sources = picard(X_pca.T, **self.ica_kwargs, random_state=self.random_state)
             sources = sources.T
         if K is not None:
             self.components_ = np.dot(W, K)
@@ -212,7 +208,7 @@ class GroupICA(BaseDecomposer):
         self.n_views_ = gpca.n_views_
         return self
 
-    def transform(self, Xs, y=None):
+    def transform(self, Xs, y=None, indexes=None):
         r"""Transform the data Xs into sources.
 
         Parameters
@@ -223,6 +219,12 @@ class GroupICA(BaseDecomposer):
 
         y : None
             Ignored variable.
+
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit
 
         Returns
         -------
@@ -235,19 +237,29 @@ class GroupICA(BaseDecomposer):
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
+        if indexes is None:
+            indexes_ = np.arange(len(self.means_))
+        else:
+            indexes_ = np.copy(indexes)
+
+        assert len(indexes_) == len(Xs)
 
         if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
-                    zip(self.individual_components_, Xs, self.means_)
+                    zip(
+                        [self.individual_components_[i] for i in indexes_],
+                        Xs,
+                        [self.means_[i] for i in indexes_],
+                    )
                 )
             ]
         else:
-            X = self.grouppca_.transform(Xs)
+            X = self.grouppca_.transform(Xs, indexes=indexes)
             return np.dot(X, self.components_.T)
 
-    def inverse_transform(self, X_transformed):
+    def inverse_transform(self, X_transformed, indexes=None):
         r"""Recover multiview data from transformed data.
 
         Parameters
@@ -258,6 +270,11 @@ class GroupICA(BaseDecomposer):
             If `multiview_output` is False, it must be a single
             array containing shared sources.
 
+        indexes: None, or np array
+            This has to be used when only a subset of views
+            used in fit need to be recovered.
+
+
         Returns
         -------
         Xs : list of arrays
@@ -265,16 +282,18 @@ class GroupICA(BaseDecomposer):
         """
         check_is_fitted(self)
 
+        if indexes is None:
+            indexes_ = np.arange(len(self.means_))
+        else:
+            indexes_ = np.copy(indexes)
+
         if self.multiview_output:
             X_transformed = check_Xs(X_transformed)
+            assert len(X_transformed) == len(indexes_)
             return [
                 np.dot(X, A.T) + mean
-                for X, A, mean in (
-                    zip(X_transformed, self.individual_mixing_, self.means_)
-                )
+                for X, A, mean in (zip(X_transformed, [ self.individual_mixing_[i] for i in indexes_], [self.means_[i] for i in indexes_]))
             ]
 
         else:
-            return self.grouppca_.inverse_transform(
-                np.dot(X_transformed, self.mixing_.T)
-            )
+            return self.grouppca_.inverse_transform(np.dot(X_transformed, self.mixing_.T), indexes=indexes)
