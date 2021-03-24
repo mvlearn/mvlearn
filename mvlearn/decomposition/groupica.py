@@ -144,7 +144,9 @@ class GroupICA(BaseDecomposer):
         random_state=None,
     ):
         if solver not in ["picard", "fastica"]:
-            raise ValueError("Invalid solver, must be either `fastica` or `picard`")
+            raise ValueError(
+                "Invalid solver, must be either `fastica` or `picard`"
+            )
         self.n_components = n_components
         self.n_individual_components = n_individual_components
         self.multiview_output = multiview_output
@@ -185,9 +187,13 @@ class GroupICA(BaseDecomposer):
         X_pca = gpca.fit_transform(Xs)
         self.grouppca_ = gpca
         if self.solver == "fastica":
-            K, W, sources = fastica(X_pca, **self.ica_kwargs, random_state=self.random_state)
+            K, W, sources = fastica(
+                X_pca, **self.ica_kwargs, random_state=self.random_state
+            )
         else:
-            K, W, sources = picard(X_pca.T, **self.ica_kwargs, random_state=self.random_state)
+            K, W, sources = picard(
+                X_pca.T, **self.ica_kwargs, random_state=self.random_state
+            )
             sources = sources.T
         if K is not None:
             self.components_ = np.dot(W, K)
