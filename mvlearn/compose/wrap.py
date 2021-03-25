@@ -9,6 +9,7 @@ from sklearn.base import clone, BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.metrics import accuracy_score
 from ..utils import check_Xs, check_Xs_y
+import numpy as np
 
 
 class BaseWrapper(BaseEstimator):
@@ -200,7 +201,8 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
     >>> print(Xs_transformed[0].shape)
     (2000, 2)
     """
-    def transform(self, Xs):
+
+    def transform(self, Xs, indexes=None):
         r"""Transform each dataset
 
         Applies the transform of each transformer on the
@@ -213,16 +215,29 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit.
+
         Returns
         -------
         Xs_transformed : list of array-likes
             List of length n_views.
             The transformed data.
         """
+        if indexes is None:
+            indexes_ = np.arange(len(self.estimators_))
+        else:
+            indexes_ = np.copy(indexes)
+
+        assert len(indexes_) == len(Xs)
+
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip(self.estimators_, Xs):
+        for estimator, X in zip([self.estimators_[i] for i in indexes_], Xs):
             Xs_transformed.append(estimator.transform(X))
         return Xs_transformed
 
@@ -251,7 +266,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             Xs_transformed.append(estimator.fit_transform(X, y))
         return Xs_transformed
 
-    def inverse_transform(self, Xs):
+    def inverse_transform(self, Xs, indexes=None):
         r"""Compute the inverse transform of a dataset
 
         Applies the inverse_transform function of each
@@ -264,6 +279,11 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
+        indexes: None, or np array
+            This has to be used when less views are used in
+            inverse transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit.
         Returns
         -------
         Xs_transformed : list of array-likes
@@ -271,8 +291,15 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             The transformed data.
         """
         check_is_fitted(self)
+
+        if indexes is None:
+            indexes_ = np.arange(len(self.estimators_))
+        else:
+            indexes_ = np.copy(indexes)
+
+        assert len(indexes_) == len(Xs)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip(self.estimators_, Xs):
+        for estimator, X in zip([self.estimators_[i] for i in indexes_], Xs):
             Xs_transformed.append(estimator.inverse_transform(X))
         return Xs_transformed

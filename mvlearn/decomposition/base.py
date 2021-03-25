@@ -171,7 +171,7 @@ class BaseMultiView(BaseDecomposer):
                 self.individual_mixing_.append(lstq_solution.T)
         return self
 
-    def transform(self, Xs):
+    def transform(self, Xs, indexes=None):
         r"""
         Recover the sources from each view (apply unmixing matrix).
 
@@ -187,6 +187,11 @@ class BaseMultiView(BaseDecomposer):
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
+
+        if indexes is None:
+            indexes_ = np.arange(len(self.individual_projections_))
+        else:
+            indexes_ = np.copy(indexes)
 
         if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
