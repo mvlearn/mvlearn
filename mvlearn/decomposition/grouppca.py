@@ -368,12 +368,10 @@ class GroupPCA(BaseDecomposer):
                 )
             ]
         if indexes is not None:
-            X_transformed = check_Xs(X_transformed)
             return [
-                np.dot(X, A.T) + mean
-                for X, A, mean in (
+                np.dot(X_transformed, A.T) + mean
+                for A, mean in (
                     zip(
-                        X_transformed,
                         [self.individual_embeddings_[i] for i in indexes_],
                         [self.individual_mean_[i] for i in indexes_],
                     )
