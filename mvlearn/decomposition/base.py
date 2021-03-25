@@ -182,33 +182,49 @@ class BaseMultiView(BaseDecomposer):
             - Xs[i] shape: (n_samples, n_features_i)
             Training data to recover a source and unmixing matrices from.
 
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit.
+
         Returns
         -------
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.individual_projections_))
-        else:
-            indexes_ = np.copy(indexes)
-
         if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
+        if indexes is None:
+            indexes_ = np.arange(len(self.components_))
+        else:
+            indexes_ = np.copy(indexes)
+
         if self.n_components is not None:
-            transformed_X = self.pcas_.transform(Xs)
+            transformed_X = self.pcas_.transform(Xs, indexes=indexes_)
         else:
             transformed_X = Xs.copy()
         if self.multiview_output:
             return np.array(
-                [x.dot(w.T) for w, x in zip(self.components_, transformed_X)]
+                [
+                    x.dot(w.T)
+                    for w, x in zip(
+                        [self.components_[i] for i in indexes_], transformed_X
+                    )
+                ]
             )
         return self.aggregate(
-            [x.dot(w.T) for w, x in zip(self.components_, transformed_X)],
+            [
+                x.dot(w.T)
+                for w, x in zip(
+                    [self.components_[i] for i in indexes_], transformed_X
+                )
+            ],
         )
 
-    def inverse_transform(self, X_transformed):
+    def inverse_transform(self, X_transformed, indexes=None):
         r"""
         Transforms the sources back to the mixed data for each view
         (apply mixing matrix).
@@ -217,19 +233,30 @@ class BaseMultiView(BaseDecomposer):
         ----------
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
+
+        indexes: None, or np array
+            This has to be used when less views are used in
+            inverse transform than during the fit.
+            View Xs[i] should correspond to the view indexes[i]
+            in the fit.
         Returns
         -------
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
         """
         check_is_fitted(self, "components_")
+
+        if indexes is None:
+            indexes_ = np.arange(len(self.components_))
+        else:
+            indexes_ = np.copy(indexes)
+
         if self.multiview_output:
             S_ = self.aggregate(X_transformed)
         else:
             S_ = X_transformed
-        inv_red = [S_.dot(w.T) for w in self.mixing_]
+        inv_red = [S_.dot(w.T) for w in [self.mixing_[i] for i in indexes_]]
 
         if self.n_components is not None:
-            return self.pcas_.inverse_transform(inv_red)
-        else:
-            return inv_red
+            return self.pcas_.inverse_transform(inv_red, indexes=indexes_)
+        return inv_red
