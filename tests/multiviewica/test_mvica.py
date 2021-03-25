@@ -31,9 +31,7 @@
 import pytest
 import numpy as np
 import scipy
-from sklearn.decomposition import PCA
 from mvlearn.decomposition import MultiviewICA
-from mvlearn.compose import ViewTransformer
 from mvlearn.utils import requires_multiviewica
 
 def hungarian(M):
