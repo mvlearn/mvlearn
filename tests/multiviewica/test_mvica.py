@@ -34,10 +34,12 @@ import scipy
 from mvlearn.decomposition import MultiviewICA
 from mvlearn.utils import requires_multiviewica
 
+
 def hungarian(M):
     u, order = scipy.optimize.linear_sum_assignment(-abs(M))
     vals = M[u, order]
     return order, np.sign(vals)
+
 
 def normalize(A):
     A_ = A - np.mean(A, axis=1, keepdims=True)
@@ -71,13 +73,12 @@ def Xs():
 
 @requires_multiviewica
 @pytest.mark.parametrize(
-    ("algo", "init"),
-    [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
+    ("algo", "init"), [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
 )
 def test_ica(algo, init):
     # Test that all algo can recover the sources
     sigma = 1e-4
-    n, v, p, t = 3, 10, 5, 1000
+    n, v, p, t = 4, 10, 5, 1000
     # Generate signals
     rng = np.random.RandomState(0)
     S_true = rng.laplace(size=(p, t))
@@ -138,6 +139,52 @@ def test_inverse_transform(Xs, multiview_output):
         axis=0,
     )
     assert np.linalg.norm(avg_mixed2 - avg_mixed) < 0.2
+
+
+@requires_multiviewica
+@pytest.mark.parametrize("multiview_output", [True, False])
+@pytest.mark.parametrize("indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
+@pytest.mark.parametrize(
+    "inverse_indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+)
+def test_indexes(indexes, inverse_indexes, multiview_output):
+    # Test that the projection of data can be inverted
+    rng = np.random.RandomState(0)
+    n, p = 50, 3
+    X = rng.randn(n, p)  # spherical data
+    X[:, 1] *= 0.00001  # make middle component relatively small
+    X += [5, 4, 3]  # make a large mean
+
+    X2 = np.copy(X)
+    X2[:, 1] += rng.randn(n) * 0.00001
+    X2 = X2.dot(rng.rand(p, p))
+
+    X3 = np.copy(X)
+    X3[:, 1] += rng.randn(n) * 0.00001
+    X3 = X3.dot(rng.rand(p, p))
+
+    Xs = [X, X2, X3]
+    ica = MultiviewICA(
+        n_components=2, init="groupica", multiview_output=multiview_output,
+    ).fit(Xs)
+    if indexes is not None:
+        Xs_transform = [Xs[i] for i in indexes]
+        len_indexes = len(indexes)
+    else:
+        len_indexes = 3
+        Xs_transform = np.copy(Xs)
+
+    if inverse_indexes is not None:
+        Xs_inverse = [Xs[i] for i in inverse_indexes]
+        len_inverse_indexes = len(inverse_indexes)
+    else:
+        len_inverse_indexes = 3
+        Xs_inverse = np.copy(Xs)
+
+    Y = ica.transform(Xs_transform, indexes=indexes)
+    Y_inverse = ica.inverse_transform(Y, indexes=inverse_indexes)
+    for X, X_estimated in zip(Xs_inverse, Y_inverse):
+        np.testing.assert_allclose(X, X_estimated, atol=1e-3)
 
 
 @requires_multiviewica
