@@ -215,7 +215,7 @@ class MultiviewICA(BaseMultiView):
         )
         return unmixings_, S.T
 
-    def aggregate(self, X_transformed):
+    def aggregate(self, X_transformed, indexes=None):
         """
         Aggregate transformed data to form a unique output
 

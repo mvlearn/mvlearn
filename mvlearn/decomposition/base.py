@@ -113,10 +113,18 @@ class BaseMultiView(BaseDecomposer):
         pass
 
     @abstractmethod
-    def aggregate(self, X_transformed):
+    def aggregate(self, X_transformed, indexes=None):
         """
         Aggregate transformed data to form a unique output
-
+        Parameters
+        ----------
+        X_transformed: numpy.ndarray, shape (n_views, n_samples, n_components)
+            The mixed sources from the single source and per-view unmixings.
+        indexes: None, or np array
+            This has to be used when less views are used in
+            transform than during the fit.
+            View X_transformed[i] should correspond to the view indexes[i]
+            in the fit.
         Returns
         -------
         Source: np array of shape (n_samples, n_components)
@@ -222,6 +230,7 @@ class BaseMultiView(BaseDecomposer):
                     [self.components_[i] for i in indexes_], transformed_X
                 )
             ],
+            indexes=indexes_,
         )
 
     def inverse_transform(self, X_transformed, indexes=None):
