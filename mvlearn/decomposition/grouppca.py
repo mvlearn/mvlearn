@@ -255,6 +255,8 @@ class GroupPCA(BaseDecomposer):
             int or list of ints specifying the indices of the
             inputted views relative to the fitted views.
             If None, there should be as many inputted views as fitted views.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
 
         Returns
         -------
@@ -340,6 +342,8 @@ class GroupPCA(BaseDecomposer):
             int or list of ints specifying the indices of the
             inputted views relative to the fitted views.
             If None, there should be as many inputted views as fitted views.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
 
         Returns
         -------
