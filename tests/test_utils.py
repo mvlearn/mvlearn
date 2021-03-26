@@ -3,13 +3,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 
-from mvlearn.utils.utils import (
-    check_Xs_y,
-    check_Xs,
-    check_Xs_y_nan_allowed,
-)
-
-rng = np.random.RandomState(0)
+from mvlearn.utils.utils import check_Xs_y, check_Xs, check_Xs_y_nan_allowed
 
 
 def test_good_input():
