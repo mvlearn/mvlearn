@@ -275,35 +275,21 @@ class GroupPCA(BaseDecomposer):
         else:
             index_ = np.copy(index)
 
-        if self.multiview_output:
-            return [
-                np.dot(X - mean, W.T)
-                for W, X, mean in (
-                    zip(
-                        [self.individual_projections_[i] for i in index_],
-                        Xs,
-                        [self.individual_mean_[i] for i in index_],
-                    )
+        multiview_output = [
+            np.dot(X - mean, W.T)
+            for W, X, mean in (
+                zip(
+                    [self.individual_projections_[i] for i in index_],
+                    Xs,
+                    [self.individual_mean_[i] for i in index_],
                 )
-            ]
+            )
+        ]
+        if self.multiview_output:
+            return multiview_output
 
         if index is not None:
-            return np.mean(
-                [
-                    np.dot(X - mean, W.T)
-                    for W, X, mean in (
-                        zip(
-                            [
-                                self.individual_projections_[i]
-                                for i in index_
-                            ],
-                            Xs,
-                            [self.individual_mean_[i] for i in index_],
-                        )
-                    )
-                ],
-                axis=0,
-            )
+            return np.mean(multiview_output, axis=0,)
 
         if self.individual_pca_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
