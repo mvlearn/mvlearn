@@ -164,17 +164,17 @@ def test_grouppca_inverse(
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2, 2]])
 @pytest.mark.parametrize("multiview_output", [True, False])
-@pytest.mark.parametrize("indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
+@pytest.mark.parametrize("index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
 @pytest.mark.parametrize(
-    "inverse_indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+    "inverse_index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
 )
-def test_grouppca_inverse_indexes(
+def test_grouppca_inverse_index(
     n_individual_components,
     prewhiten,
     whiten,
     multiview_output,
-    indexes,
-    inverse_indexes,
+    index,
+    inverse_index,
 ):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
@@ -199,28 +199,28 @@ def test_grouppca_inverse_indexes(
         n_individual_components=n_individual_components,
         multiview_output=multiview_output,
     ).fit(Xs)
-    if indexes is not None:
-        Xs_transform = [Xs[i] for i in indexes]
-        len_indexes = len(indexes)
+    if index is not None:
+        Xs_transform = [Xs[i] for i in index]
+        len_index = len(index)
     else:
-        len_indexes = 3
+        len_index = 3
         Xs_transform = np.copy(Xs)
 
-    if inverse_indexes is not None:
-        Xs_inverse = [Xs[i] for i in inverse_indexes]
-        len_inverse_indexes = len(inverse_indexes)
+    if inverse_index is not None:
+        Xs_inverse = [Xs[i] for i in inverse_index]
+        len_inverse_index = len(inverse_index)
     else:
-        len_inverse_indexes = 3
+        len_inverse_index = 3
         Xs_inverse = np.copy(Xs)
 
-    Y = gpca.transform(Xs_transform, indexes=indexes)
-    if multiview_output and len_indexes != len_inverse_indexes:
+    Y = gpca.transform(Xs_transform, index=index)
+    if multiview_output and len_index != len_inverse_index:
         with pytest.raises(AssertionError):
-            Y_inverse = gpca.inverse_transform(Y, indexes=inverse_indexes)
-    elif multiview_output and indexes != inverse_indexes:
+            Y_inverse = gpca.inverse_transform(Y, index=inverse_index)
+    elif multiview_output and index != inverse_index:
         pass
     else:
-        Y_inverse = gpca.inverse_transform(Y, indexes=inverse_indexes)
+        Y_inverse = gpca.inverse_transform(Y, index=inverse_index)
         for X, X_estimated in zip(Xs_inverse, Y_inverse):
             assert_allclose(X, X_estimated, atol=1e-4)
 

@@ -212,7 +212,7 @@ class GroupICA(BaseDecomposer):
         self.n_views_ = gpca.n_views_
         return self
 
-    def transform(self, Xs, y=None, indexes=None):
+    def transform(self, Xs, y=None, index=None):
         r"""Transform the data Xs into sources.
 
         Parameters
@@ -224,10 +224,10 @@ class GroupICA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        indexes: None, or np array
+        index: None, or np array
             This has to be used when less views are used in
             transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
+            View Xs[i] should correspond to the view index[i]
             in the fit
 
         Returns
@@ -241,29 +241,29 @@ class GroupICA(BaseDecomposer):
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
-        if indexes is None:
-            indexes_ = np.arange(len(self.means_))
+        if index is None:
+            index_ = np.arange(len(self.means_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
-        assert len(indexes_) == len(Xs)
+        assert len(index_) == len(Xs)
 
         if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
                     zip(
-                        [self.individual_components_[i] for i in indexes_],
+                        [self.individual_components_[i] for i in index_],
                         Xs,
-                        [self.means_[i] for i in indexes_],
+                        [self.means_[i] for i in index_],
                     )
                 )
             ]
         else:
-            X = self.grouppca_.transform(Xs, indexes=indexes)
+            X = self.grouppca_.transform(Xs, index=index)
             return np.dot(X, self.components_.T)
 
-    def inverse_transform(self, X_transformed, indexes=None):
+    def inverse_transform(self, X_transformed, index=None):
         r"""Recover multiview data from transformed data.
 
         Parameters
@@ -274,7 +274,7 @@ class GroupICA(BaseDecomposer):
             If `multiview_output` is False, it must be a single
             array containing shared sources.
 
-        indexes: None, or np array
+        index: None, or np array
             This has to be used when only a subset of views
             used in fit need to be recovered.
 
@@ -286,26 +286,26 @@ class GroupICA(BaseDecomposer):
         """
         check_is_fitted(self)
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.means_))
+        if index is None:
+            index_ = np.arange(len(self.means_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
         if self.multiview_output:
             X_transformed = check_Xs(X_transformed)
-            assert len(X_transformed) == len(indexes_)
+            assert len(X_transformed) == len(index_)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (
                     zip(
                         X_transformed,
-                        [self.individual_mixing_[i] for i in indexes_],
-                        [self.means_[i] for i in indexes_],
+                        [self.individual_mixing_[i] for i in index_],
+                        [self.means_[i] for i in index_],
                     )
                 )
             ]
 
         else:
             return self.grouppca_.inverse_transform(
-                np.dot(X_transformed, self.mixing_.T), indexes=indexes
+                np.dot(X_transformed, self.mixing_.T), index=index
             )

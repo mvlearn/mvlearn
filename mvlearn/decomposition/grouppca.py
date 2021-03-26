@@ -236,7 +236,7 @@ class GroupPCA(BaseDecomposer):
         self.explained_variance_ratio_ = pca.explained_variance_ratio_
         return self
 
-    def transform(self, Xs, y=None, indexes=None):
+    def transform(self, Xs, y=None, index=None):
         r"""Apply groupPCA to Xs.
 
         Xs is projected on the principal components learned
@@ -251,10 +251,10 @@ class GroupPCA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        indexes: None, or np array
+        index: None, or np array
             This has to be used when less views are used in
             transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
+            View Xs[i] should correspond to the view index[i]
             in the fit.
 
         Returns
@@ -269,24 +269,24 @@ class GroupPCA(BaseDecomposer):
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.individual_projections_))
+        if index is None:
+            index_ = np.arange(len(self.individual_projections_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
         if self.multiview_output:
             return [
                 np.dot(X - mean, W.T)
                 for W, X, mean in (
                     zip(
-                        [self.individual_projections_[i] for i in indexes_],
+                        [self.individual_projections_[i] for i in index_],
                         Xs,
-                        [self.individual_mean_[i] for i in indexes_],
+                        [self.individual_mean_[i] for i in index_],
                     )
                 )
             ]
 
-        if indexes is not None:
+        if index is not None:
             return np.mean(
                 [
                     np.dot(X - mean, W.T)
@@ -294,10 +294,10 @@ class GroupPCA(BaseDecomposer):
                         zip(
                             [
                                 self.individual_projections_[i]
-                                for i in indexes_
+                                for i in index_
                             ],
                             Xs,
-                            [self.individual_mean_[i] for i in indexes_],
+                            [self.individual_mean_[i] for i in index_],
                         )
                     )
                 ],
@@ -326,7 +326,7 @@ class GroupPCA(BaseDecomposer):
             X_transformed /= np.sqrt(self.explained_variance_)
         return X_transformed
 
-    def inverse_transform(self, X_transformed, indexes=None):
+    def inverse_transform(self, X_transformed, index=None):
         r"""Recover multiview data from transformed data.
 
         Returns an array Xs such that the transform of Xs would be
@@ -337,10 +337,10 @@ class GroupPCA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
-        indexes: None, or np array
+        index: None, or np array
             This has to be used when less views are used in
             transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
+            View Xs[i] should correspond to the view index[i]
             in the fit. Not supported if multiview_output is True.
 
         Returns
@@ -349,31 +349,31 @@ class GroupPCA(BaseDecomposer):
             The recovered individual datasets
         """
         check_is_fitted(self)
-        if indexes is None:
-            indexes_ = np.arange(len(self.individual_projections_))
+        if index is None:
+            index_ = np.arange(len(self.individual_projections_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
         if self.multiview_output:
-            assert len(X_transformed) == len(indexes_)
+            assert len(X_transformed) == len(index_)
             X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (
                     zip(
                         X_transformed,
-                        [self.individual_embeddings_[i] for i in indexes_],
-                        [self.individual_mean_[i] for i in indexes_],
+                        [self.individual_embeddings_[i] for i in index_],
+                        [self.individual_mean_[i] for i in index_],
                     )
                 )
             ]
-        if indexes is not None:
+        if index is not None:
             return [
                 np.dot(X_transformed, A.T) + mean
                 for A, mean in (
                     zip(
-                        [self.individual_embeddings_[i] for i in indexes_],
-                        [self.individual_mean_[i] for i in indexes_],
+                        [self.individual_embeddings_[i] for i in index_],
+                        [self.individual_mean_[i] for i in index_],
                     )
                 )
             ]

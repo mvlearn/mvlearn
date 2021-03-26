@@ -7,8 +7,6 @@ from mvlearn.utils.utils import (
     check_Xs_y,
     check_Xs,
     check_Xs_y_nan_allowed,
-    indexes_to_Xs,
-    Xs_to_indexes,
 )
 
 rng = np.random.RandomState(0)
@@ -133,18 +131,3 @@ def test_bad_inputs():
             num_classes=1,
             max_classes=0,
         )
-
-
-def test_Xs_indexes():
-    A, B = rng.rand(2, 2), rng.rand(2, 2)
-    Xs = [None, A, B]
-    Xs_useful = [A, B]
-    indexes = [1, 2]
-    for x, x2 in zip(Xs, indexes_to_Xs(Xs_useful, indexes, 3)):
-        if x is None:
-            assert x2 is None
-        else:
-            np.testing.assert_allclose(x, x2)
-    for x, y, x2, y2 in zip(Xs_useful, indexes, *Xs_to_indexes(Xs)):
-        np.testing.assert_allclose(y, y2)
-        np.testing.assert_allclose(x, x2)
