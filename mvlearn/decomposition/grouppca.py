@@ -352,7 +352,7 @@ class GroupPCA(BaseDecomposer):
         """
         check_is_fitted(self)
         if index is None:
-            index_ = np.arange(len(self.individual_projections_))
+            index_ = np.arange(len(self.n_views_))
         else:
             index_ = np.copy(index)
 
