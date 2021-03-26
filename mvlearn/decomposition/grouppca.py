@@ -251,11 +251,10 @@ class GroupPCA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        index: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View Xs[i] should correspond to the view index[i]
-            in the fit.
+        index: None, or int or array-like
+            int or list of ints specifying the indices of the
+            inputted views relative to the fitted views.
+            If None, there should be as many inputted views as fitted views.
 
         Returns
         -------
@@ -337,11 +336,10 @@ class GroupPCA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
-        index: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View Xs[i] should correspond to the view index[i]
-            in the fit. Not supported if multiview_output is True.
+        index: None, or int or array-like
+            int or list of ints specifying the indices of the
+            inputted views relative to the fitted views.
+            If None, there should be as many inputted views as fitted views.
 
         Returns
         -------

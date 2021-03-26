@@ -224,11 +224,10 @@ class GroupICA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        index: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View Xs[i] should correspond to the view index[i]
-            in the fit
+        index: None, or int or array-like
+            int or list of ints specifying the indices of the
+            inputted views relative to the fitted views.
+            If None, there should be as many inputted views as fitted views.
 
         Returns
         -------
@@ -274,9 +273,10 @@ class GroupICA(BaseDecomposer):
             If `multiview_output` is False, it must be a single
             array containing shared sources.
 
-        index: None, or np array
-            This has to be used when only a subset of views
-            used in fit need to be recovered.
+        index: None, or int or array-like
+            int or list of ints specifying the indices of the
+            inputted views relative to the fitted views.
+            If None, there should be as many inputted views as fitted views.
 
 
         Returns
