@@ -160,6 +160,71 @@ def test_grouppca_inverse(
         assert_allclose(X, X_estimated, atol=1e-4)
 
 
+@pytest.mark.parametrize("prewhiten", [False, True])
+@pytest.mark.parametrize("whiten", [False, True])
+@pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2, 2]])
+@pytest.mark.parametrize("multiview_output", [True, False])
+@pytest.mark.parametrize("index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
+@pytest.mark.parametrize(
+    "inverse_index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+)
+def test_grouppca_inverse_index(
+    n_individual_components,
+    prewhiten,
+    whiten,
+    multiview_output,
+    index,
+    inverse_index,
+):
+    # Test that the projection of data can be inverted
+    rng = np.random.RandomState(0)
+    n, p = 50, 3
+    X = rng.randn(n, p)  # spherical data
+    X[:, 1] *= 0.00001  # make middle component relatively small
+    X += [5, 4, 3]  # make a large mean
+
+    X2 = np.copy(X)
+    X2[:, 1] += rng.randn(n) * 0.00001
+    X2 = X2.dot(rng.rand(p, p))
+
+    X3 = np.copy(X)
+    X3[:, 1] += rng.randn(n) * 0.00001
+    X3 = X3.dot(rng.rand(p, p))
+
+    Xs = [X, X2, X3]
+    gpca = GroupPCA(
+        n_components=2,
+        prewhiten=prewhiten,
+        whiten=whiten,
+        n_individual_components=n_individual_components,
+        multiview_output=multiview_output,
+    ).fit(Xs)
+    if index is not None:
+        Xs_transform = [Xs[i] for i in index]
+        len_index = len(index)
+    else:
+        len_index = 3
+        Xs_transform = np.copy(Xs)
+
+    if inverse_index is not None:
+        Xs_inverse = [Xs[i] for i in inverse_index]
+        len_inverse_index = len(inverse_index)
+    else:
+        len_inverse_index = 3
+        Xs_inverse = np.copy(Xs)
+
+    Y = gpca.transform(Xs_transform, index=index)
+    if multiview_output and len_index != len_inverse_index:
+        with pytest.raises(AssertionError):
+            Y_inverse = gpca.inverse_transform(Y, index=inverse_index)
+    elif multiview_output and index != inverse_index:
+        pass
+    else:
+        Y_inverse = gpca.inverse_transform(Y, index=inverse_index)
+        for X, X_estimated in zip(Xs_inverse, Y_inverse):
+            assert_allclose(X, X_estimated, atol=1e-4)
+
+
 def test_grouppca_deterministic_output():
     n_samples = 100
     n_features = [6, 4, 5]

@@ -236,7 +236,7 @@ class GroupPCA(BaseDecomposer):
         self.explained_variance_ratio_ = pca.explained_variance_ratio_
         return self
 
-    def transform(self, Xs, y=None):
+    def transform(self, Xs, y=None, index=None):
         r"""Apply groupPCA to Xs.
 
         Xs is projected on the principal components learned
@@ -251,6 +251,13 @@ class GroupPCA(BaseDecomposer):
         y : None
             Ignored variable.
 
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         X_transformed : list of array-likes or numpy.ndarray
@@ -262,15 +269,29 @@ class GroupPCA(BaseDecomposer):
         """
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
-        if self.multiview_output:
-            return [
-                np.dot(X - mean, W.T)
-                for W, X, mean in (
-                    zip(
-                        self.individual_projections_, Xs, self.individual_mean_
-                    )
+
+        if index is None:
+            index_ = np.arange(self.n_views_)
+        else:
+            index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
+
+        multiview_output = [
+            np.dot(X - mean, W.T)
+            for W, X, mean in (
+                zip(
+                    [self.individual_projections_[i] for i in index_],
+                    Xs,
+                    [self.individual_mean_[i] for i in index_],
                 )
-            ]
+            )
+        ]
+        if self.multiview_output:
+            return multiview_output
+
+        if index is not None:
+            return np.mean(multiview_output, axis=0,)
+
         if self.individual_pca_:
             for i, (X, mean, components_, explained_variance_) in enumerate(
                 zip(
@@ -293,7 +314,7 @@ class GroupPCA(BaseDecomposer):
             X_transformed /= np.sqrt(self.explained_variance_)
         return X_transformed
 
-    def inverse_transform(self, X_transformed):
+    def inverse_transform(self, X_transformed, index=None):
         r"""Recover multiview data from transformed data.
 
         Returns an array Xs such that the transform of Xs would be
@@ -304,24 +325,49 @@ class GroupPCA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Xs : list of arrays
             The recovered individual datasets
         """
         check_is_fitted(self)
+        if index is None:
+            index_ = np.arange(self.n_views_)
+        else:
+            index_ = np.copy(index)
+            index_ = np.atleast_1d(index)
+
         if self.multiview_output:
+            assert len(X_transformed) == len(index_)
             X_transformed = check_Xs(X_transformed)
             return [
                 np.dot(X, A.T) + mean
                 for X, A, mean in (
                     zip(
                         X_transformed,
-                        self.individual_embeddings_,
-                        self.individual_mean_,
+                        [self.individual_embeddings_[i] for i in index_],
+                        [self.individual_mean_[i] for i in index_],
                     )
                 )
             ]
+        if index is not None:
+            return [
+                np.dot(X_transformed, A.T) + mean
+                for A, mean in (
+                    zip(
+                        [self.individual_embeddings_[i] for i in index_],
+                        [self.individual_mean_[i] for i in index_],
+                    )
+                )
+            ]
+
         # Inverse stacked PCA
         if self.whiten:
             X_t = X_transformed * np.sqrt(self.explained_variance_)
