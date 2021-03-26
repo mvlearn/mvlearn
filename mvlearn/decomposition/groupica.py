@@ -224,10 +224,10 @@ class GroupICA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        index: None, or int or array-like
-            int or list of ints specifying the indices of the
-            inputted views relative to the fitted views.
-            If None, there should be as many inputted views as fitted views.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
             Note that the index parameter is not available in all methods of
             mvlearn yet.
 
