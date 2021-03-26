@@ -271,7 +271,7 @@ class GroupPCA(BaseDecomposer):
         Xs = check_Xs(Xs, copy=True)
 
         if index is None:
-            index_ = np.arange(len(self.individual_projections_))
+            index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
 
