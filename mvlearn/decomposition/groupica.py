@@ -291,7 +291,7 @@ class GroupICA(BaseDecomposer):
         check_is_fitted(self)
 
         if index is None:
-            index_ = np.arange(len(self.n_views_))
+            index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
 
