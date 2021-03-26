@@ -243,7 +243,7 @@ class GroupICA(BaseDecomposer):
         check_is_fitted(self)
         Xs = check_Xs(Xs, copy=True)
         if index is None:
-            index_ = np.arange(len(self.means_))
+            index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
 
