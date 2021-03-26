@@ -246,6 +246,7 @@ class GroupICA(BaseDecomposer):
             index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         assert len(index_) == len(Xs)
 
@@ -275,10 +276,10 @@ class GroupICA(BaseDecomposer):
             If `multiview_output` is False, it must be a single
             array containing shared sources.
 
-        index: None, or int or array-like
-            int or list of ints specifying the indices of the
-            inputted views relative to the fitted views.
-            If None, there should be as many inputted views as fitted views.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
             Note that the index parameter is not available in all methods of
             mvlearn yet.
 
@@ -294,6 +295,7 @@ class GroupICA(BaseDecomposer):
             index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         if self.multiview_output:
             X_transformed = check_Xs(X_transformed)

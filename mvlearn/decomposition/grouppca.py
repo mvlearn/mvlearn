@@ -251,10 +251,10 @@ class GroupPCA(BaseDecomposer):
         y : None
             Ignored variable.
 
-        index: None, or int or array-like
-            int or list of ints specifying the indices of the
-            inputted views relative to the fitted views.
-            If None, there should be as many inputted views as fitted views.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
             Note that the index parameter is not available in all methods of
             mvlearn yet.
 
@@ -274,6 +274,7 @@ class GroupPCA(BaseDecomposer):
             index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         multiview_output = [
             np.dot(X - mean, W.T)
@@ -324,10 +325,10 @@ class GroupPCA(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
-        index: None, or int or array-like
-            int or list of ints specifying the indices of the
-            inputted views relative to the fitted views.
-            If None, there should be as many inputted views as fitted views.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
             Note that the index parameter is not available in all methods of
             mvlearn yet.
 
@@ -341,6 +342,7 @@ class GroupPCA(BaseDecomposer):
             index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index)
 
         if self.multiview_output:
             assert len(X_transformed) == len(index_)
