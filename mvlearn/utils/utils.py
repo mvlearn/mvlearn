@@ -170,7 +170,7 @@ def check_Xs_y_nan_allowed(
     enforce_views=None,
     num_classes=None,
     max_classes=None,
-    min_classes=None,
+    min_classes=None
 ):
     r"""
     Checks Xs and y for consistent length. Xs is set to be of dimension 3.
@@ -263,9 +263,8 @@ def param_as_list(param, n_views, single_None=False):
     -------
     """
     if isinstance(param, list):
-        assert (
-            len(param) == n_views
-        ), f"params {param} must be of length n_views={n_views}"
+        assert len(param) == n_views, \
+            f"params {param} must be of length n_views={n_views}"
     elif not (param is None and single_None):
         param = [param] * n_views
     return param
