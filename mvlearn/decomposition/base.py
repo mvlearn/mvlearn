@@ -117,6 +117,7 @@ class BaseMultiView(BaseDecomposer):
     def aggregate(self, X_transformed, index=None):
         """
         Aggregate transformed data to form a unique output
+
         Parameters
         ----------
         X_transformed: numpy.ndarray, shape (n_views, n_samples, n_components)
