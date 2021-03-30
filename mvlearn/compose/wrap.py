@@ -202,7 +202,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
     (2000, 2)
     """
 
-    def transform(self, Xs, indexes=None):
+    def transform(self, Xs, index=None):
         r"""Transform each dataset
 
         Applies the transform of each transformer on the
@@ -215,11 +215,12 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
-        indexes: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
-            in the fit.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
 
         Returns
         -------
@@ -227,17 +228,17 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             List of length n_views.
             The transformed data.
         """
-        if indexes is None:
-            indexes_ = np.arange(len(self.estimators_))
+        if index is None:
+            index_ = np.arange(len(self.estimators_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
-        assert len(indexes_) == len(Xs)
+        assert len(index_) == len(Xs)
 
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip([self.estimators_[i] for i in indexes_], Xs):
+        for estimator, X in zip([self.estimators_[i] for i in index_], Xs):
             Xs_transformed.append(estimator.transform(X))
         return Xs_transformed
 
@@ -266,7 +267,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             Xs_transformed.append(estimator.fit_transform(X, y))
         return Xs_transformed
 
-    def inverse_transform(self, Xs, indexes=None):
+    def inverse_transform(self, Xs, index=None):
         r"""Compute the inverse transform of a dataset
 
         Applies the inverse_transform function of each
@@ -279,11 +280,13 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
-        indexes: None, or np array
-            This has to be used when less views are used in
-            inverse transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
-            in the fit.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Xs_transformed : list of array-likes
@@ -292,14 +295,14 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
         """
         check_is_fitted(self)
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.estimators_))
+        if index is None:
+            index_ = np.arange(len(self.estimators_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
-        assert len(indexes_) == len(Xs)
+        assert len(index_) == len(Xs)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip([self.estimators_[i] for i in indexes_], Xs):
+        for estimator, X in zip([self.estimators_[i] for i in index_], Xs):
             Xs_transformed.append(estimator.inverse_transform(X))
         return Xs_transformed

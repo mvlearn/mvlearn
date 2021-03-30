@@ -9,6 +9,7 @@ from scipy import linalg
 
 from ..compose import ViewTransformer
 from sklearn.decomposition import PCA
+from ..utils.utils import check_Xs
 
 
 class BaseDecomposer(BaseEstimator):
@@ -113,18 +114,21 @@ class BaseMultiView(BaseDecomposer):
         pass
 
     @abstractmethod
-    def aggregate(self, X_transformed, indexes=None):
+    def aggregate(self, X_transformed, index=None):
         """
         Aggregate transformed data to form a unique output
         Parameters
         ----------
         X_transformed: numpy.ndarray, shape (n_views, n_samples, n_components)
             The mixed sources from the single source and per-view unmixings.
-        indexes: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View X_transformed[i] should correspond to the view indexes[i]
-            in the fit.
+
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Source: np array of shape (n_samples, n_components)
@@ -145,6 +149,12 @@ class BaseMultiView(BaseDecomposer):
         -------
         self: returns an instance of self.
         """
+        Xs, n_views, n_samples, n_features = check_Xs(
+            Xs, copy=False, return_dimensions=True
+        )
+        self.n_views_ = n_views
+        self.n_features_ = n_features
+        self.n_samples_ = n_samples
         if self.n_components is not None:
             self.pcas_ = ViewTransformer(PCA(n_components=self.n_components))
 
@@ -179,7 +189,7 @@ class BaseMultiView(BaseDecomposer):
                 self.individual_mixing_.append(lstq_solution.T)
         return self
 
-    def transform(self, Xs, indexes=None):
+    def transform(self, Xs, index=None):
         r"""
         Recover the sources from each view (apply unmixing matrix).
 
@@ -190,11 +200,12 @@ class BaseMultiView(BaseDecomposer):
             - Xs[i] shape: (n_samples, n_features_i)
             Training data to recover a source and unmixing matrices from.
 
-        indexes: None, or np array
-            This has to be used when less views are used in
-            transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
-            in the fit.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
 
         Returns
         -------
@@ -205,13 +216,14 @@ class BaseMultiView(BaseDecomposer):
         if not hasattr(self, "components_"):
             raise ValueError("The model has not yet been fitted.")
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.components_))
+        if index is None:
+            index_ = np.arange(self.n_views_)
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         if self.n_components is not None:
-            transformed_X = self.pcas_.transform(Xs, indexes=indexes_)
+            transformed_X = self.pcas_.transform(Xs, index=index_)
         else:
             transformed_X = Xs.copy()
         if self.multiview_output:
@@ -219,7 +231,7 @@ class BaseMultiView(BaseDecomposer):
                 [
                     x.dot(w.T)
                     for w, x in zip(
-                        [self.components_[i] for i in indexes_], transformed_X
+                        [self.components_[i] for i in index_], transformed_X
                     )
                 ]
             )
@@ -227,13 +239,13 @@ class BaseMultiView(BaseDecomposer):
             [
                 x.dot(w.T)
                 for w, x in zip(
-                    [self.components_[i] for i in indexes_], transformed_X
+                    [self.components_[i] for i in index_], transformed_X
                 )
             ],
-            indexes=indexes_,
+            index=index_,
         )
 
-    def inverse_transform(self, X_transformed, indexes=None):
+    def inverse_transform(self, X_transformed, index=None):
         r"""
         Transforms the sources back to the mixed data for each view
         (apply mixing matrix).
@@ -243,11 +255,13 @@ class BaseMultiView(BaseDecomposer):
         X_transformed : list of array-likes or numpy.ndarray
             The dataset corresponding to transformed data
 
-        indexes: None, or np array
-            This has to be used when less views are used in
-            inverse transform than during the fit.
-            View Xs[i] should correspond to the view indexes[i]
-            in the fit.
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Xs_new : numpy.ndarray, shape (n_views, n_samples, n_components)
@@ -255,17 +269,17 @@ class BaseMultiView(BaseDecomposer):
         """
         check_is_fitted(self, "components_")
 
-        if indexes is None:
-            indexes_ = np.arange(len(self.components_))
+        if index is None:
+            index_ = np.arange(len(self.components_))
         else:
-            indexes_ = np.copy(indexes)
+            index_ = np.copy(index)
 
         if self.multiview_output:
             S_ = self.aggregate(X_transformed)
         else:
             S_ = X_transformed
-        inv_red = [S_.dot(w.T) for w in [self.mixing_[i] for i in indexes_]]
+        inv_red = [S_.dot(w.T) for w in [self.mixing_[i] for i in index_]]
 
         if self.n_components is not None:
-            return self.pcas_.inverse_transform(inv_red, indexes=indexes_)
+            return self.pcas_.inverse_transform(inv_red, index=index_)
         return inv_red

@@ -143,11 +143,11 @@ def test_inverse_transform(Xs, multiview_output):
 
 @requires_multiviewica
 @pytest.mark.parametrize("multiview_output", [True, False])
-@pytest.mark.parametrize("indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
+@pytest.mark.parametrize("index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
 @pytest.mark.parametrize(
-    "inverse_indexes", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+    "inverse_index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
 )
-def test_indexes(indexes, inverse_indexes, multiview_output):
+def test_index(index, inverse_index, multiview_output):
     # Test that the projection of data can be inverted
     rng = np.random.RandomState(0)
     n, p = 50, 3
@@ -167,22 +167,22 @@ def test_indexes(indexes, inverse_indexes, multiview_output):
     ica = MultiviewICA(
         n_components=2, init="groupica", multiview_output=multiview_output,
     ).fit(Xs)
-    if indexes is not None:
-        Xs_transform = [Xs[i] for i in indexes]
-        len_indexes = len(indexes)
+    if index is not None:
+        Xs_transform = [Xs[i] for i in index]
+        len_index = len(index)
     else:
-        len_indexes = 3
+        len_index = 3
         Xs_transform = np.copy(Xs)
 
-    if inverse_indexes is not None:
-        Xs_inverse = [Xs[i] for i in inverse_indexes]
-        len_inverse_indexes = len(inverse_indexes)
+    if inverse_index is not None:
+        Xs_inverse = [Xs[i] for i in inverse_index]
+        len_inverse_index = len(inverse_index)
     else:
-        len_inverse_indexes = 3
+        len_inverse_index = 3
         Xs_inverse = np.copy(Xs)
 
-    Y = ica.transform(Xs_transform, indexes=indexes)
-    Y_inverse = ica.inverse_transform(Y, indexes=inverse_indexes)
+    Y = ica.transform(Xs_transform, index=index)
+    Y_inverse = ica.inverse_transform(Y, index=inverse_index)
     for X, X_estimated in zip(Xs_inverse, Y_inverse):
         np.testing.assert_allclose(X, X_estimated, atol=1e-3)
 

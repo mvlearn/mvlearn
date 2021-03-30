@@ -215,9 +215,25 @@ class MultiviewICA(BaseMultiView):
         )
         return unmixings_, S.T
 
-    def aggregate(self, X_transformed, indexes=None):
+    def aggregate(self, X_transformed, index=None):
         """
         Aggregate transformed data to form a unique output
+
+        Parameters
+        ----------
+        X_transformed : list of array-likes
+            The transformed data.
+            If `multiview_output` is True, it is a list with the estimated
+            individual principal components.
+            If `multiview_output` is False, it is a single array containing the
+            shared principal components.
+
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
 
         Returns
         -------
