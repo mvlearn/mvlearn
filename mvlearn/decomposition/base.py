@@ -107,7 +107,7 @@ class BaseMultiView(BaseDecomposer):
 
         Returns
         --------
-        unmixing: np array of shape (n_views, n_components, n_components)
+        unmixing: numpy.ndarray, shape (n_views, n_samples, n_components)
             such that reduced_X[i].dot(unmixing[i].T) unmixes the data
         sources: np array of shape (n_samples, n_components)
         """
