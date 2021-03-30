@@ -41,10 +41,10 @@ except ModuleNotFoundError as error:
     )
     raise ModuleNotFoundError(msg)
 
-from .base import BaseMultiView
+from .base import BaseMultiViewICA
 
 
-class MultiviewICA(BaseMultiView):
+class MultiviewICA(BaseMultiViewICA):
     r"""
     Multiview ICA for which views share a common source but separate mixing
     matrices.

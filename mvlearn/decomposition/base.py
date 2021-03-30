@@ -86,7 +86,7 @@ class BaseDecomposer(BaseEstimator):
         return self.fit(Xs, y).transform(Xs)
 
 
-class BaseMultiView(BaseDecomposer):
+class BaseMultiViewICA(BaseDecomposer):
     r"""
     Base for Multiview-ICA like algorithms
     """
@@ -225,24 +225,18 @@ class BaseMultiView(BaseDecomposer):
             transformed_X = self.pcas_.transform(Xs, index=index_)
         else:
             transformed_X = Xs.copy()
-        if self.multiview_output:
-            return np.array(
-                [
-                    x.dot(w.T)
-                    for w, x in zip(
-                        [self.components_[i] for i in index_], transformed_X
-                    )
-                ]
-            )
-        return self.aggregate(
+
+        multiview_output = np.array(
             [
                 x.dot(w.T)
                 for w, x in zip(
                     [self.components_[i] for i in index_], transformed_X
                 )
-            ],
-            index=index_,
+            ]
         )
+        if self.multiview_output:
+            return multiview_output
+        return self.aggregate(multiview_output)
 
     def inverse_transform(self, X_transformed, index=None):
         r"""
