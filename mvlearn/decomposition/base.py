@@ -143,6 +143,7 @@ class BaseMultiView(BaseDecomposer):
         Xs: list of array-likes
             - Xs shape: (n_views,)
             - Xs[i] shape: (n_samples, n_features_i)
+
         y : ignored
 
         Returns
