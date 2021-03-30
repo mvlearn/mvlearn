@@ -88,7 +88,7 @@ class BaseDecomposer(BaseEstimator):
 
 class BaseMultiView(BaseDecomposer):
     r"""
-    Base for Multiview-ICA like algorithms 
+    Base for Multiview-ICA like algorithms
     """
 
     def __init__(
