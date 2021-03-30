@@ -103,7 +103,7 @@ class BaseMultiView(BaseDecomposer):
         Fit the model with reduced data
         Parameters
         ----------
-        reduced_X: np array of shape (n_views, n_samples, n_components)
+        reduced_X: numpy.ndarray, shape (n_views, n_samples, n_components)
 
         Returns
         --------
