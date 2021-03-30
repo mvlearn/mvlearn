@@ -73,12 +73,13 @@ def Xs():
 
 @requires_multiviewica
 @pytest.mark.parametrize(
-    ("algo", "init"), [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
+    ("algo", "init"),
+    [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
 )
 def test_ica(algo, init):
     # Test that all algo can recover the sources
     sigma = 1e-4
-    n, v, p, t = 4, 10, 5, 1000
+    n, v, p, t = 3, 10, 5, 1000
     # Generate signals
     rng = np.random.RandomState(0)
     S_true = rng.laplace(size=(p, t))
