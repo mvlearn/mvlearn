@@ -159,8 +159,6 @@ class BaseMultiView(BaseDecomposer):
         self.n_samples_ = n_samples
         if self.n_components is not None:
             self.pcas_ = ViewTransformer(PCA(n_components=self.n_components))
-
-        if self.n_components is not None:
             reduced_X = self.pcas_.fit_transform(Xs)
         else:
             reduced_X = Xs.copy()
