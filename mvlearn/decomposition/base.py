@@ -213,8 +213,7 @@ class BaseMultiView(BaseDecomposer):
             The mixed sources from the single source and per-view unmixings.
         """
 
-        if not hasattr(self, "components_"):
-            raise ValueError("The model has not yet been fitted.")
+        check_is_fitted(self, "components_")
 
         if index is None:
             index_ = np.arange(self.n_views_)
