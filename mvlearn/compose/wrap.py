@@ -229,7 +229,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             The transformed data.
         """
         if index is None:
-            index_ = np.arange(len(self.estimators_))
+            index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
 
