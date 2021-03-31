@@ -266,6 +266,7 @@ class BaseMultiViewICA(BaseDecomposer):
             index_ = np.arange(len(self.components_))
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         if self.multiview_output:
             S_ = self.aggregate(X_transformed)

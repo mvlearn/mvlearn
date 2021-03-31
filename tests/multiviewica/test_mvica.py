@@ -170,7 +170,7 @@ def test_index(index, inverse_index, multiview_output):
         n_components=2, init="groupica", multiview_output=multiview_output,
     ).fit(Xs)
     if index is not None:
-        index_ = np.at_least1d(index)
+        index_ = np.atleast_1d(index)
         Xs_transform = [Xs[i] for i in index_]
         len_index = len(index_)
     else:
@@ -178,7 +178,7 @@ def test_index(index, inverse_index, multiview_output):
         Xs_transform = np.copy(Xs)
 
     if inverse_index is not None:
-        inverse_index_ = np.at_least1d(inverse_index)
+        inverse_index_ = np.atleast_1d(inverse_index)
         Xs_inverse = [Xs[i] for i in inverse_index_]
         len_inverse_index = len(inverse_index_)
     else:
