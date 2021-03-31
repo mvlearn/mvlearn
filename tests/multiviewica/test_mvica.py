@@ -73,8 +73,7 @@ def Xs():
 
 @requires_multiviewica
 @pytest.mark.parametrize(
-    ("algo", "init"),
-    [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
+    ("algo", "init"), [(MultiviewICA, "permica"), (MultiviewICA, "groupica"),],
 )
 def test_ica(algo, init):
     # Test that all algo can recover the sources
@@ -144,9 +143,11 @@ def test_inverse_transform(Xs, multiview_output):
 
 @requires_multiviewica
 @pytest.mark.parametrize("multiview_output", [True, False])
-@pytest.mark.parametrize("index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
 @pytest.mark.parametrize(
-    "inverse_index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+    "index", [1, 2, [0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+)
+@pytest.mark.parametrize(
+    "inverse_index", [1, 2, [0, 1], [1, 2], [0, 2], [0, 1, 2], None]
 )
 def test_index(index, inverse_index, multiview_output):
     # Test that the projection of data can be inverted
@@ -169,15 +170,17 @@ def test_index(index, inverse_index, multiview_output):
         n_components=2, init="groupica", multiview_output=multiview_output,
     ).fit(Xs)
     if index is not None:
-        Xs_transform = [Xs[i] for i in index]
-        len_index = len(index)
+        index_ = np.at_least1d(index)
+        Xs_transform = [Xs[i] for i in index_]
+        len_index = len(index_)
     else:
         len_index = 3
         Xs_transform = np.copy(Xs)
 
     if inverse_index is not None:
-        Xs_inverse = [Xs[i] for i in inverse_index]
-        len_inverse_index = len(inverse_index)
+        inverse_index_ = np.at_least1d(inverse_index)
+        Xs_inverse = [Xs[i] for i in inverse_index_]
+        len_inverse_index = len(inverse_index_)
     else:
         len_inverse_index = 3
         Xs_inverse = np.copy(Xs)
