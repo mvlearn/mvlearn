@@ -82,7 +82,11 @@ def check_Xs(
             )
             raise ValueError(msg)
 
-    Xs = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
+    if type(Xs[0]) != np.memmap:
+        Xs = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
+    else:
+        for X in Xs:
+            check_array(X)
 
     if not len(set([X.shape[0] for X in Xs])) == 1:
         msg = "All views must have the same number of samples"
