@@ -9,6 +9,7 @@ from sklearn.base import clone, BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.metrics import accuracy_score
 from ..utils import check_Xs, check_Xs_y
+import numpy as np
 
 
 class BaseWrapper(BaseEstimator):
@@ -200,7 +201,8 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
     >>> print(Xs_transformed[0].shape)
     (2000, 2)
     """
-    def transform(self, Xs):
+
+    def transform(self, Xs, index=None):
         r"""Transform each dataset
 
         Applies the transform of each transformer on the
@@ -213,16 +215,31 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Xs_transformed : list of array-likes
             List of length n_views.
             The transformed data.
         """
+        if index is None:
+            index_ = np.arange(self.n_views_)
+        else:
+            index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
+
+        assert len(index_) == len(Xs)
+
         check_is_fitted(self)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip(self.estimators_, Xs):
+        for estimator, X in zip([self.estimators_[i] for i in index_], Xs):
             Xs_transformed.append(estimator.transform(X))
         return Xs_transformed
 
@@ -251,7 +268,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             Xs_transformed.append(estimator.fit_transform(X, y))
         return Xs_transformed
 
-    def inverse_transform(self, Xs):
+    def inverse_transform(self, Xs, index=None):
         r"""Compute the inverse transform of a dataset
 
         Applies the inverse_transform function of each
@@ -264,6 +281,13 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             - Xs[i] shape: (n_samples, n_features_i)
             The input data.
 
+        index: int or array-like, default=None
+            The index or list of indices of the fitted views to which the
+            inputted views correspond. If None, there should be as many
+            inputted views as the fitted views and in the same order.
+            Note that the index parameter is not available in all methods of
+            mvlearn yet.
+
         Returns
         -------
         Xs_transformed : list of array-likes
@@ -271,8 +295,16 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             The transformed data.
         """
         check_is_fitted(self)
+
+        if index is None:
+            index_ = np.arange(self.n_views_)
+        else:
+            index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
+
+        assert len(index_) == len(Xs)
         Xs = check_Xs(Xs)
         Xs_transformed = []
-        for estimator, X in zip(self.estimators_, Xs):
+        for estimator, X in zip([self.estimators_[i] for i in index_], Xs):
             Xs_transformed.append(estimator.inverse_transform(X))
         return Xs_transformed

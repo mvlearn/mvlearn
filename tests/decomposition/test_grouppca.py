@@ -164,9 +164,11 @@ def test_grouppca_inverse(
 @pytest.mark.parametrize("whiten", [False, True])
 @pytest.mark.parametrize("n_individual_components", [None, 2, [2, 2, 2]])
 @pytest.mark.parametrize("multiview_output", [True, False])
-@pytest.mark.parametrize("index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None])
 @pytest.mark.parametrize(
-    "inverse_index", [[0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+    "index", [1, 2, [0, 1], [1, 2], [0, 2], [0, 1, 2], None]
+)
+@pytest.mark.parametrize(
+    "inverse_index", [1, 2, [0, 1], [1, 2], [0, 2], [0, 1, 2], None]
 )
 def test_grouppca_inverse_index(
     n_individual_components,
@@ -200,15 +202,17 @@ def test_grouppca_inverse_index(
         multiview_output=multiview_output,
     ).fit(Xs)
     if index is not None:
-        Xs_transform = [Xs[i] for i in index]
-        len_index = len(index)
+        index_ = np.atleast_1d(index)
+        Xs_transform = [Xs[i] for i in index_]
+        len_index = len(index_)
     else:
         len_index = 3
         Xs_transform = np.copy(Xs)
 
     if inverse_index is not None:
-        Xs_inverse = [Xs[i] for i in inverse_index]
-        len_inverse_index = len(inverse_index)
+        inverse_index_ = np.atleast_1d(inverse_index)
+        Xs_inverse = [Xs[i] for i in inverse_index_]
+        len_inverse_index = len(inverse_index_)
     else:
         len_inverse_index = 3
         Xs_inverse = np.copy(Xs)
