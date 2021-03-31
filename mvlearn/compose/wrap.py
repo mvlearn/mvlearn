@@ -300,6 +300,7 @@ class ViewTransformer(BaseWrapper, TransformerMixin):
             index_ = np.arange(self.n_views_)
         else:
             index_ = np.copy(index)
+            index_ = np.atleast_1d(index_)
 
         assert len(index_) == len(Xs)
         Xs = check_Xs(Xs)
