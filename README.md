@@ -31,7 +31,7 @@
 If you find the package useful for your research, please cite our [JMLR Paper](https://www.jmlr.org/papers/volume22/20-1370/20-1370.pdf).
 
 ```tex
-@article{JMLR:v22:20-1370,
+@article{perry2021mvlearn,
   author  = {Ronan Perry and Gavin Mischler and Richard Guo and Theodore Lee and Alexander Chang and Arman Koul and Cameron Franz and Hugo Richard and Iain Carmichael and Pierre Ablin and Alexandre Gramfort and Joshua T. Vogelstein},
   title   = {mvlearn: Multiview Machine Learning in Python},
   journal = {Journal of Machine Learning Research},
