@@ -3,7 +3,6 @@
   <img width=300 src="docs/figures/mvlearn-logo-transparent-grey.png" />
 </p>
 
-## `mvlearn`
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mvlearn.svg)](https://img.shields.io/pypi/pyversions/mvlearn.svg)
 [![GH Actions Tests](https://github.com/mvlearn/mvlearn/actions/workflows/main.yml/badge.svg)](https://github.com/mvlearn/mvlearn/actions)
