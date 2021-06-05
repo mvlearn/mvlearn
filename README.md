@@ -1,4 +1,3 @@
-
 <p align="center">
   <img width=300 src="docs/figures/mvlearn-logo-transparent-grey.png" />
 </p>
