@@ -29,6 +29,11 @@
 
 If you find the package useful for your research, please cite our [JMLR Paper](https://www.jmlr.org/papers/volume22/20-1370/20-1370.pdf).
 
+> Perry, Ronan, et al. "mvlearn: Multiview Machine Learning in Python." Journal of Machine Learning Research 22.109 (2021): 1-7.
+
+
+BibTeX entry:
+
 ```tex
 @article{perry2021mvlearn,
   title={mvlearn: Multiview Machine Learning in Python},
