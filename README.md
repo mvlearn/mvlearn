@@ -37,7 +37,7 @@ BibTeX entry:
 ```tex
 @article{perry2021mvlearn,
   title={mvlearn: Multiview Machine Learning in Python},
-  author={Perry, Ronan and Mischler, Gavin and Guo, Richard and Lee, Theodore and Chang, Alexander and Koul, Arman and Franz, Cameron and Richard, Hugo and Carmichael, Iain and Ablin, Pierre and others},
+  author={Perry, Ronan and Mischler, Gavin and Guo, Richard and Lee, Theodore and Chang, Alexander and Koul, Arman and Franz, Cameron and Richard, Hugo and Carmichael, Iain and Ablin, Pierre and Gramfort, Alexandre and Vogelstein, Joshua T.},
   journal={Journal of Machine Learning Research},
   volume={22},
   number={109},
@@ -45,4 +45,3 @@ BibTeX entry:
   year={2021}
 }
 ```
-
