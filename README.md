@@ -25,7 +25,7 @@
 
 `mvlearn` aims to serve as a community-driven open-source software package that offers reference implementations for algorithms and methods related to multiview learning (machine learning in settings where there are multiple incommensurate views or feature sets for each sample). It brings together the most widely-used tools in this setting with a standardized scikit-learn like API, well tested code and high-quality documentation. Doing so, we aim to facilitate application, extension, and comparison of methods, and offer a foundation for research into new multiview algorithms. We welcome new contributors and the addition of methods with proven efficacy and current use.
 
-## Citing `mvlearn`
+## Citing mvlearn
 
 If you find the package useful for your research, please cite our [JMLR Paper](https://www.jmlr.org/papers/volume22/20-1370/20-1370.pdf).
 
