@@ -110,7 +110,7 @@ BibTeX entry:
       journal={Journal of Machine Learning Research},
       volume={22},
       number={109},
-      pages={1--7},
+      pages={1-7},
       year={2021}
     }
 
