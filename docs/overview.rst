@@ -93,6 +93,27 @@ History
 
 mvlearn was developed during the end of 2019 by Richard Guo, Ronan Perry, Gavin Mischler, Theo Lee, Alexander Chang, Arman Koul, and Cameron Franz, a team out of the Johns Hopkins University NeuroData group.
 
+Citing `mvlearn`
+----------------
+
+If you find the package useful for your research, please cite our `JMLR Paper <https://www.jmlr.org/papers/volume22/20-1370/20-1370.pdf>`_.
+
+Perry, Ronan, et al. "mvlearn: Multiview Machine Learning in Python." Journal of Machine Learning Research 22.109 (2021): 1-7.
+
+BibTeX entry:
+
+.. code:: tex
+
+    @article{perry2021mvlearn,
+      title={mvlearn: Multiview Machine Learning in Python},
+      author={Perry, Ronan and Mischler, Gavin and Guo, Richard and Lee, Theodore and Chang, Alexander and Koul, Arman and Franz, Cameron and Richard, Hugo and Carmichael, Iain and Ablin, Pierre and others},
+      journal={Journal of Machine Learning Research},
+      volume={22},
+      number={109},
+      pages={1--7},
+      year={2021}
+    }
+
 References
 ----------
 
