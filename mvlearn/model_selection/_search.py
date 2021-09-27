@@ -586,7 +586,6 @@ class GridSearchCV(BaseSearchCV):
     refit_time_ : float
         Seconds used for refitting the best model on the whole dataset.
         This is present only if ``refit`` is not False.
-        .. versionadded:: 0.20
     multimetric_ : bool
         Whether or not the scorers compute several metrics.
     classes_ : ndarray of shape (n_classes,)
@@ -597,13 +596,11 @@ class GridSearchCV(BaseSearchCV):
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `n_features_in_` when fit.
-        .. versionadded:: 0.24
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during :term:`fit`. Only defined if
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `feature_names_in_` when fit.
-        .. versionadded:: 1.0
     Notes
     -----
     The parameters selected are those that maximize the score of the left out
@@ -851,7 +848,6 @@ class RandomizedSearchCV(BaseSearchCV):
     refit_time_ : float
         Seconds used for refitting the best model on the whole dataset.
         This is present only if ``refit`` is not False.
-        .. versionadded:: 0.20
     multimetric_ : bool
         Whether or not the scorers compute several metrics.
     classes_ : ndarray of shape (n_classes,)
@@ -862,13 +858,11 @@ class RandomizedSearchCV(BaseSearchCV):
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `n_features_in_` when fit.
-        .. versionadded:: 0.24
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during :term:`fit`. Only defined if
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `feature_names_in_` when fit.
-        .. versionadded:: 1.0
     Notes
     -----
     The parameters selected are those that maximize the score of the held-out
