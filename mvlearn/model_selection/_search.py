@@ -117,11 +117,11 @@ class ParameterSampler:
             for key in dist:
                 if isinstance(dist[key], Iterable):
                     if any(
-                        [
-                            not isinstance(view_param, Iterable)
-                            and not hasattr(view_param, "rvs")
-                            for view_param in dist[key]
-                        ]
+                            [
+                                not isinstance(view_param, Iterable)
+                                and not hasattr(view_param, "rvs")
+                                for view_param in dist[key]
+                            ]
                     ):
                         raise TypeError(
                             "Parameter value for at least one view is not iterable "
@@ -149,35 +149,16 @@ class ParameterSampler:
                 # if value is an iterable then either the elements are the distribution or each element is a distribution
                 # for each view.
                 if isinstance(v, Iterable):
-                    # if the parameter is shared across views then the list will just contain non-iterable values
-                    if not any(
-                        [
-                            (isinstance(v_, Iterable) and not isinstance(v_, str))
-                            for v_ in v
-                        ]
-                    ):
-                        params[k] = self.return_param(v)
                     # if each element is a distribution for each view (i.e. it is a non-string Iterable) then call return_param for each view
-                    else:
+                    if any([(isinstance(v_, Iterable) and not isinstance(v_, str)) for v_ in v]):
                         params[k] = [self.return_param(v_) for v_ in v]
+                    # if the parameter is shared across views then the list will just contain non-iterable values
+                    else:
+                        params[k] = self.return_param(v)
                 # if value is not iterable then it is either a distribution or a value in which case call return param on it.
                 else:
                     params[k] = self.return_param(v)
             yield params
-
-    def return_param(self, v):
-        rng = check_random_state(self.random_state)
-        if hasattr(v, "rvs"):
-            param = v.rvs(random_state=rng)
-        elif isinstance(v, Iterable) and not isinstance(v, str):
-            param = v[rng.randint(len(v))]
-        else:
-            param = v
-        return param
-
-    def __len__(self):
-        """Number of points that will be sampled."""
-        return self.n_iter
 
 
 class BaseSearchCV(SKBaseSearchCV):
