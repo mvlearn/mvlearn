@@ -41,16 +41,14 @@ def param2grid(params):
 
     Examples
     ---------
-    >>> params = {
-    >>>     'regs': [[1, 2], [3, 4]],
-    >>> }
+    >>> params = {'regs': [[1, 2], [3, 4]]}
     >>> param2grid(params)
-    >>> [[1,3], [1,4], [2,3], [2,4]]
+    [[1,3], [1,4], [2,3], [2,4]]
     """
     for k, v in params.items():
         if any([isinstance(v_, list) for v_ in v]):
-            #itertools expects all lists to perform product
-            v=[[v_] if not isinstance(v_, list) else v_ for v_ in v]
+            # itertools expects all lists to perform product
+            v = [[v_] if not isinstance(v_, list) else v_ for v_ in v]
             params[k] = list(map(list, itertools.product(*v)))
     return params
 
@@ -107,11 +105,11 @@ class ParameterSampler:
             for key in dist:
                 if isinstance(dist[key], Iterable):
                     if any(
-                            [
-                                not isinstance(view_param, Iterable)
-                                and not hasattr(view_param, "rvs")
-                                for view_param in dist[key]
-                            ]
+                        [
+                            not isinstance(view_param, Iterable)
+                            and not hasattr(view_param, "rvs")
+                            for view_param in dist[key]
+                        ]
                     ):
                         raise TypeError(
                             "Parameter value for at least one view is not iterable "
@@ -141,10 +139,10 @@ class ParameterSampler:
                 if isinstance(v, Iterable):
                     # if the parameter is shared across views then the list will just contain non-iterable values
                     if not any(
-                            [
-                                (isinstance(v_, Iterable) and not isinstance(v_, str))
-                                for v_ in v
-                            ]
+                        [
+                            (isinstance(v_, Iterable) and not isinstance(v_, str))
+                            for v_ in v
+                        ]
                     ):
                         params[k] = self.return_param(v)
                     # if each element is a distribution for each view (i.e. it is a non-string Iterable) then call return_param for each view
@@ -172,17 +170,17 @@ class ParameterSampler:
 
 class BaseSearchCV(SKBaseSearchCV):
     def __init__(
-            self,
-            estimator,
-            *,
-            scoring=None,
-            n_jobs=None,
-            refit=True,
-            cv=None,
-            verbose=0,
-            pre_dispatch="2*n_jobs",
-            error_score=np.nan,
-            return_train_score=True,
+        self,
+        estimator,
+        *,
+        scoring=None,
+        n_jobs=None,
+        refit=True,
+        cv=None,
+        verbose=0,
+        pre_dispatch="2*n_jobs",
+        error_score=np.nan,
+        return_train_score=True,
     ):
         super().__init__(
             estimator=estimator,
@@ -432,12 +430,10 @@ class GridSearchCV(BaseSearchCV):
         - a callable returning a dictionary where the keys are the metric
           names and the values are the metric scores;
         - a dictionary with metric names as keys and callables a values.
-        See :ref:`multimetric_grid_search` for an example.
     n_jobs : int, default=None
         Number of jobs to run in parallel.
         ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all processors. See :term:`Glossary <n_jobs>`
-        for more details.
+        ``-1`` means using all processors.
     refit : bool, str, or callable, default=True
         Refit an estimator using the best found parameters on the whole
         dataset.
@@ -601,6 +597,22 @@ class GridSearchCV(BaseSearchCV):
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `feature_names_in_` when fit.
+
+    Examples
+    ---------
+    >>> from mvlearn.model_selection import GridSearchCV
+    >>> from mvlearn.embed import MCCA
+    >>> X1 = [[0, 0, 1], [1, 0, 0], [2, 2, 2], [3, 5, 4]]
+    >>> X2 = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
+    >>> X3 = [[0, 1, 0], [1, 9, 0], [4, 3, 3,], [12, 8, 10]]
+    >>> model = MCCA()
+    >>> params = {'regs': [[0.1, 0.2], [0.3, 0.4], 0.1]}
+    >>> def scorer(estimator, X):
+    ...    scores = estimator.score(X)
+    ...    return np.mean(scores)
+    >>> GridSearchCV(model,param_grid=params, cv=3, scoring=scorer).fit([X1,X2,X3]).best_estimator_
+    MCCA(regs=[0.1, 0.3, 0.1])
+
     Notes
     -----
     The parameters selected are those that maximize the score of the left out
@@ -618,18 +630,18 @@ class GridSearchCV(BaseSearchCV):
     _required_parameters = ["estimator", "param_grid"]
 
     def __init__(
-            self,
-            estimator,
-            param_grid,
-            *,
-            scoring=None,
-            n_jobs=None,
-            refit=True,
-            cv=None,
-            verbose=0,
-            pre_dispatch="2*n_jobs",
-            error_score=np.nan,
-            return_train_score=False,
+        self,
+        estimator,
+        param_grid,
+        *,
+        scoring=None,
+        n_jobs=None,
+        refit=True,
+        cv=None,
+        verbose=0,
+        pre_dispatch="2*n_jobs",
+        error_score=np.nan,
+        return_train_score=False,
     ):
         super().__init__(
             estimator=estimator,
@@ -696,13 +708,11 @@ class RandomizedSearchCV(BaseSearchCV):
         - a callable returning a dictionary where the keys are the metric
           names and the values are the metric scores;
         - a dictionary with metric names as keys and callables a values.
-        See :ref:`multimetric_grid_search` for an example.
         If None, the estimator's score method is used.
     n_jobs : int, default=None
         Number of jobs to run in parallel.
         ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all processors. See :term:`Glossary <n_jobs>`
-        for more details.
+        ``-1`` means using all processors.
     refit : bool, str, or callable, default=True
         Refit an estimator using the best found parameters on the whole
         dataset.
@@ -863,6 +873,23 @@ class RandomizedSearchCV(BaseSearchCV):
         `best_estimator_` is defined (see the documentation for the `refit`
         parameter for more details) and that `best_estimator_` exposes
         `feature_names_in_` when fit.
+
+    Examples
+    ---------
+    >>> from mvlearn.model_selection import RandomizedSearchCV
+    >>> from mvlearn.embed import MCCA
+    >>> from sklearn.utils.fixes import loguniform
+    >>> X1 = [[0, 0, 1], [1, 0, 0], [2, 2, 2], [3, 5, 4]]
+    >>> X2 = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
+    >>> X3 = [[0, 1, 0], [1, 9, 0], [4, 3, 3,], [12, 8, 10]]
+    >>> model = MCCA()
+    >>> params = {'regs': [loguniform(1e-4, 1e0), loguniform(1e-4, 1e0), [0.1]]}
+    >>> def scorer(estimator, X):
+    ...    scores = estimator.score(X)
+    ...    return np.mean(scores)
+    >>> RandomizedSearchCV(model,param_distributions=params, cv=3, scoring=scorer,n_iter=10).fit([X1,X2,X3]).n_iter
+    10
+
     Notes
     -----
     The parameters selected are those that maximize the score of the held-out
@@ -879,20 +906,20 @@ class RandomizedSearchCV(BaseSearchCV):
     _required_parameters = ["estimator", "param_distributions"]
 
     def __init__(
-            self,
-            estimator,
-            param_distributions,
-            *,
-            n_iter=10,
-            scoring=None,
-            n_jobs=None,
-            refit=True,
-            cv=None,
-            verbose=0,
-            pre_dispatch="2*n_jobs",
-            random_state=None,
-            error_score=np.nan,
-            return_train_score=False,
+        self,
+        estimator,
+        param_distributions,
+        *,
+        n_iter=10,
+        scoring=None,
+        n_jobs=None,
+        refit=True,
+        cv=None,
+        verbose=0,
+        pre_dispatch="2*n_jobs",
+        random_state=None,
+        error_score=np.nan,
+        return_train_score=False,
     ):
         self.param_distributions = param_distributions
         self.n_iter = n_iter
