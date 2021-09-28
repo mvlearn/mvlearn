@@ -55,7 +55,7 @@ def param2grid(params):
     ---------
     >>> params = {'regs': [[1, 2], [3, 4]]}
     >>> param2grid(params)
-    [[1,3], [1,4], [2,3], [2,4]]
+    {'regs': [[1, 3], [1, 4], [2, 3], [2, 4]]}
     """
     for k, v in params.items():
         if any([isinstance(v_, list) for v_ in v]):
@@ -159,6 +159,20 @@ class ParameterSampler:
                 else:
                     params[k] = self.return_param(v)
             yield params
+
+    def return_param(self, v):
+        rng = check_random_state(self.random_state)
+        if hasattr(v, "rvs"):
+            param = v.rvs(random_state=rng)
+        elif isinstance(v, Iterable) and not isinstance(v, str):
+            param = v[rng.randint(len(v))]
+        else:
+            param = v
+        return param
+
+    def __len__(self):
+        """Number of points that will be sampled."""
+        return self.n_iter
 
 
 class BaseSearchCV(SKBaseSearchCV):
@@ -500,17 +514,6 @@ class GridSearchCV(BaseSearchCV):
         A dict with keys as column headers and values as columns, that can be
         imported into a pandas ``DataFrame``.
         For instance the below given table
-        +------------+-----------+------------+-----------------+---+---------+
-        |param_kernel|param_gamma|param_degree|split0_test_score|...|rank_t...|
-        +============+===========+============+=================+===+=========+
-        |  'poly'    |     --    |      2     |       0.80      |...|    2    |
-        +------------+-----------+------------+-----------------+---+---------+
-        |  'poly'    |     --    |      3     |       0.70      |...|    4    |
-        +------------+-----------+------------+-----------------+---+---------+
-        |  'rbf'     |     0.1   |     --     |       0.80      |...|    3    |
-        +------------+-----------+------------+-----------------+---+---------+
-        |  'rbf'     |     0.2   |     --     |       0.93      |...|    1    |
-        +------------+-----------+------------+-----------------+---+---------+
         will be represented by a ``cv_results_`` dict of::
             {
             'param_kernel': masked_array(data = ['poly', 'poly', 'rbf', 'rbf'],
@@ -779,15 +782,6 @@ class RandomizedSearchCV(BaseSearchCV):
         A dict with keys as column headers and values as columns, that can be
         imported into a pandas ``DataFrame``.
         For instance the below given table
-        +--------------+-------------+-------------------+---+---------------+
-        | param_kernel | param_gamma | split0_test_score |...|rank_test_score|
-        +==============+=============+===================+===+===============+
-        |    'rbf'     |     0.1     |       0.80        |...|       1       |
-        +--------------+-------------+-------------------+---+---------------+
-        |    'rbf'     |     0.2     |       0.84        |...|       3       |
-        +--------------+-------------+-------------------+---+---------------+
-        |    'rbf'     |     0.3     |       0.70        |...|       2       |
-        +--------------+-------------+-------------------+---+---------------+
         will be represented by a ``cv_results_`` dict of::
             {
             'param_kernel' : masked_array(data = ['rbf', 'rbf', 'rbf'],
