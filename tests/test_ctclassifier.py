@@ -144,11 +144,11 @@ def test_fit_defaultclassifier(data):
     y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [2., 3., 2., 2., 2.]
-    truth_proba = [[0.88555037, 0.11444963],
-    [0.05650123, 0.94349877],
-    [0.50057741, 0.49942259],
-    [0.89236186, 0.10763814],
-    [0.95357416, 0.04642584]]
+    truth_proba = [[0.90643161, 0.09356839],
+    [0.35361377, 0.64638623],
+    [0.50968072, 0.49031928],
+    [0.58446856, 0.41553144],
+    [0.87548943, 0.12451057]]
 
     for i in range(data['N_test']):
         assert y_pred_test[i] == truth[i]
@@ -163,14 +163,17 @@ def test_predict_default(data):
     y_pred_prob = data['clf_test'].predict_proba(data['random_test'])
 
     truth = [2., 3., 2., 2., 2.]
-    truth_proba = [[0.88555037, 0.11444963],
-    [0.05650123, 0.94349877],
-    [0.50057741, 0.49942259],
-    [0.89236186, 0.10763814],
-    [0.95357416, 0.04642584]]
+    truth_proba = [[0.90643161, 0.09356839],
+    [0.35361377, 0.64638623],
+    [0.50968072, 0.49031928],
+    [0.58446856, 0.41553144],
+    [0.87548943, 0.12451057]]
 
     for i in range(data['N_test']):
         assert y_pred_test[i] == truth[i]
+
+    print('test_predict_default')
+    print(y_pred_prob)
 
     for i in range(data['N_test']):
         for j in range(2):
@@ -259,12 +262,12 @@ def test_predict_unlabeled_pool_size(data):
     y_pred_test = clf.predict(data['random_test'])
     y_pred_prob = clf.predict_proba(data['random_test'])
 
-    truth = [2., 3., 2., 2., 2.]
-    truth_proba = [[0.55708013, 0.44291987],
-    [0.29591617, 0.70408383],
-    [0.50441055, 0.49558945],
-    [0.99276393, 0.00723607],
-    [0.95221514, 0.04778486]]
+    truth = [2., 3., 3., 2., 2.]
+    truth_proba = [[0.75269031, 0.24730969],
+    [0.37316567, 0.62683433],
+    [0.45283102, 0.54716898],
+    [0.59666021, 0.40333979],
+    [0.81196019, 0.18803981]]
 
     for i in range(data['N_test']):
         assert y_pred_test[i] == truth[i]
@@ -283,11 +286,11 @@ def test_predict_num_iter(data):
     y_pred_prob = clf.predict_proba(data['random_test'])
 
     truth = [2., 3., 2., 2., 2.]
-    truth_proba = [[0.88555037, 0.11444963],
-    [0.05650123, 0.94349877],
-    [0.50057741, 0.49942259],
-    [0.89236186, 0.10763814],
-    [0.95357416, 0.04642584]]
+    truth_proba = [[0.90643161, 0.09356839],
+    [0.35361377, 0.64638623],
+    [0.50968072, 0.49031928],
+    [0.58446856, 0.41553144],
+    [0.87548943, 0.12451057]]
 
     for i in range(data['N_test']):
         assert y_pred_test[i] == truth[i]
