@@ -1,6 +1,4 @@
 # License: MIT
-#
-# Implements multi-view co-training classification for 2-view data.
 
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
