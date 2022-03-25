@@ -98,7 +98,6 @@ Python package dependencies
 ---------------------------
 ``mvlearn`` requires the following packages:
 
-- graspy >=0.1.1
 - matplotlib >=3.0.0
 - numpy >=1.17.0
 - scikit-learn >=0.19.1
@@ -118,7 +117,7 @@ optional [multiviewica] dependencies,
 
 and optional [graspy] dependencies,
 
-- graspy >=0.1.1
+- graspologic >=1.0.0
 
 Currently, ``mvlearn`` is supported for Python 3.6, 3.7, and 3.8.
 

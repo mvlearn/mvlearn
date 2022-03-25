@@ -1,25 +1,13 @@
-# Copyright 2019 NeuroData (http://neurodata.io)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# License: MIT
 #
 # Omnibus embedding for multiview dimensionality reduction.
-# Code from the https://github.com/neurodata/graspy package,
+# Code from the https://github.com/microsoft/graspologic package,
 # reproduced and shared with permission.
 
 try:
-    from graspy.embed import OmnibusEmbed
+    from graspologic.embed import OmnibusEmbed
 except ModuleNotFoundError as error:
-    msg = (f"Error: {error}. package graspy required for this function. " +
+    msg = (f"Error: {error}. package graspologic required for Omnibus. " +
            "Please consult the mvlearn installation instructions at " +
            "https://github.com/mvlearn/mvlearn to correctly install " +
            "this dependency.")
@@ -72,8 +60,8 @@ class Omnibus(BaseEmbed):
     Notes
     -----
     From an implementation perspective, omnibus embedding is performed
-    using the GrasPy package's implementation graspy.embed.OmnibusEmbed
-    for dissimilarity matrices.
+    using the graspologic package's implementation 
+    graspologic.embed.OmnibusEmbed for dissimilarity matrices.
 
     References
     ----------
@@ -81,12 +69,12 @@ class Omnibus(BaseEmbed):
 
     Examples
     --------
-    >>> from mvlearn.embed import omnibus
+    >>> from mvlearn.embed import Omnibus
     >>> import numpy as np
     >>> # Create 2 random data views with feature sizes 50 and 100
     >>> view1 = np.random.rand(1000, 50)
     >>> view2 = np.random.rand(1000, 100)
-    >>> embedder = omnibus.Omnibus(n_components=3)
+    >>> embedder = Omnibus(n_components=3)
     >>> embeddings = embedder.fit_transform([view1, view2])
     >>> view1_hat, view2_hat = embeddings
     >>> print(view1_hat.shape, view2_hat.shape)
