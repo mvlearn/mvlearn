@@ -110,14 +110,11 @@ with optional [torch] dependencies,
 - torch >=1.1.0
 - tqdm
 
-optional [multiviewica] dependencies,
+and optional [multiviewica] dependencies,
 
 - python-picard >=0.4
 - multiviewica >=0.0.1
 
-and optional [graspy] dependencies,
-
-- graspologic >=1.0.0
 
 Currently, ``mvlearn`` is supported for Python 3.6, 3.7, and 3.8.
 
