@@ -44,6 +44,7 @@ jobs:
         - run:
             name: Fix libgcc_s.so.1 pthread_cancel bug
             command: |
+              sudo apt-get update
               sudo apt-get install qt5-default
 
         - run:
