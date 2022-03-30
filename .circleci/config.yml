@@ -15,7 +15,6 @@ jobs:
               echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
               echo "BASH_ENV:"
               cat $BASH_ENV
-
         - run:
             name: Merge with upstream
             command: |
@@ -23,11 +22,10 @@ jobs:
               echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
               if [[ $(cat merge.txt) != "" ]]; then
                 echo "Merging $(cat merge.txt)";
-                git remote add upstream git://github.com/mvlearn/mvlearn.git;
+                git remote add upstream https://github.com/mvlearn/mvlearn.git;
                 git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
                 git fetch upstream main;
               fi
-
         # Load our data
         - restore_cache:
             keys:
@@ -38,14 +36,13 @@ jobs:
             name: Spin up Xvfb
             command: |
               /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
-
         # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
         # https://github.com/golemfactory/golem/issues/1019
         - run:
             name: Fix libgcc_s.so.1 pthread_cancel bug
             command: |
+              sudo apt-get update
               sudo apt-get install qt5-default
-
         - run:
             name: Get Python running
             command: |
@@ -54,9 +51,9 @@ jobs:
               python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
               python -m pip install --user --upgrade --progress-bar off -r requirements/torch.txt
               python -m pip install --user --upgrade --progress-bar off -r requirements/multiviewica.txt
+              python -m pip install --user --upgrade --progress-bar off -r requirements/graspy.txt
               python -m pip install --user --upgrade --progress-bar off -r docs/requirements.txt
               python -m pip install --user -e .
-
         - save_cache:
             key: pip-cache
             paths:
@@ -68,7 +65,6 @@ jobs:
             command: |
                which python
                python -c "import mvlearn"
-
         # Build docs
         - run:
             name: make html
@@ -76,7 +72,6 @@ jobs:
             command: |
               cd docs;
               make html;
-
         # Save the outputs
         - store_artifacts:
             path: docs/_build/html/
@@ -127,7 +122,6 @@ jobs:
               else
                 echo "No deployment (build: ${CIRCLE_BRANCH}).";
               fi
-
 workflows:
   version: 2
 
