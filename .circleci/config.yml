@@ -58,6 +58,7 @@ jobs:
               python -m pip install --user --upgrade --progress-bar off -r requirements/graspy.txt
               python -m pip install --user --upgrade --progress-bar off -r docs/requirements.txt
               python -m pip install --user -e .
+
         - save_cache:
             key: pip-cache
             paths:
