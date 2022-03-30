@@ -140,7 +140,7 @@ htmlhelp_basename = "mvlearndoc"
 
 def setup(app):
     # to hide/show the prompt in code examples:
-    app.add_javascript("js/copybutton.js")
+    app.add_js_file("js/copybutton.js")
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
