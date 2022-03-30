@@ -23,7 +23,7 @@ jobs:
               echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
               if [[ $(cat merge.txt) != "" ]]; then
                 echo "Merging $(cat merge.txt)";
-                git remote add upstream git://github.com/mvlearn/mvlearn.git;
+                git remote add upstream https://github.com/mvlearn/mvlearn.git;
                 git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
                 git fetch upstream main;
               fi
@@ -44,6 +44,7 @@ jobs:
         - run:
             name: Fix libgcc_s.so.1 pthread_cancel bug
             command: |
+              sudo apt-get update
               sudo apt-get install qt5-default
 
         - run:
@@ -73,6 +74,7 @@ jobs:
         # Build docs
         - run:
             name: make html
+            no_output_timeout: 30m
             command: |
               cd docs;
               make html;
