@@ -1,6 +1,4 @@
 # License: MIT
-#
-# Implements multi-view co-training classification for 2-view data.
 
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
@@ -342,7 +340,9 @@ class CTClassifier(BaseCoTrainEstimator):
 
                 # remove newly labeled samples from unlabeled_pool
                 unlabeled_pool = [elem for elem in unlabeled_pool
-                                  if not (elem in p or elem in n)]
+                                  if not (elem in np.array(unlabeled_pool)[p]
+                                          or elem in
+                                          np.array(unlabeled_pool)[n])]
 
                 # add new elements to unlabeled_pool
                 add_counter = 0
