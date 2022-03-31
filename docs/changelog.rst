@@ -37,7 +37,7 @@ Version 0.5.0
 
 - |API| Due to the removal of the graspy dependency, the ``mvlearn.embed.Omnibus`` class has been removed. The same functionality with a similar API can be found in `graspologic.embed.OmnibusEmbed <https://microsoft.github.io/graspologic/latest/reference/reference/embed.html#multiple-graph-embedding>`_.
 
-- |Fix| An issue in ``CTClassifier`` where the incorrect samples were being removed from the unlabeled_pool has been fixed. `#304 <https://github.com/mvlearn/mvlearn/pull/306>`_ by `Gavin Mischler`_.
+- |Fix| An issue in ``CTClassifier`` where the incorrect samples were being removed from the unlabeled_pool has been fixed. `#304 <https://github.com/mvlearn/mvlearn/pull/304>`_ by `Gavin Mischler`_.
 
 Version 0.4.1
 -------------
