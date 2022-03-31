@@ -15,15 +15,10 @@ try:
 except ModuleNotFoundError:
     pass
 
-try:
-    from .omnibus import Omnibus
-except ModuleNotFoundError:
-    pass
 
 __all__ = [
     "CCA",
     "GCCA",
-    "Omnibus",
     "MVMDS",
     "MCCA",
     "KMCCA",

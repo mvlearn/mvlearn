@@ -34,11 +34,6 @@ Deep Canonical Correlation Analysis (DCCA)
 .. autoclass:: DCCA
     :exclude-members: get_params, set_params
 
-Omnibus Embedding
------------------
-
-.. autoclass:: Omnibus
-    :exclude-members: transform, get_params, set_params
 
 Multiview Multidimensional Scaling
 ----------------------------------

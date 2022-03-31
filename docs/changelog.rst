@@ -33,6 +33,10 @@ Unreleased
 
 - |Fix| ``CCA`` now only acepts integer arguments for ``n_components``, upper bounded by the minimum number of view features. Previously it accepted options that ``MCCA`` accepted which are only valid for greater than two views. This also had the effect of errors with ``cca.get_stats``. `#279 <https://github.com/mvlearn/mvlearn/pull/279>`_ by `Ronan Perry`_.
 
+- |Efficiency| Removed the package dependency on graspy, now called `graspologic <https://microsoft.github.io/graspologic/latest/#>`_, since graspy is no longer being maintained. `#305 <https://github.com/mvlearn/mvlearn/pull/306>`_ by `Gavin Mischler`_.
+
+- |API| Due to the removal of the graspy dependency, the ``mvlearn.embed.Omnibus`` class has been removed. The same functionality with a similar API can be found in `graspologic.embed.OmnibusEmbed <https://microsoft.github.io/graspologic/latest/reference/reference/embed.html#multiple-graph-embedding>`_.
+
 Version 0.4.1
 -------------
 
