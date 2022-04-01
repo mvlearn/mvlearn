@@ -59,7 +59,6 @@ setup(
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     install_requires=REQUIRED_PACKAGES,
-    extras_require=EXTRA_PACKAGES,
     url=URL,
     project_urls={
       'Documentation': 'https://mvlearn.github.io',
