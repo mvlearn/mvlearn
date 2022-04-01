@@ -4,7 +4,7 @@ We currently use Sphinx
 
 If you only want to get the documentation, note that pre-build versions can be found at
 
-[mvlearn.neurodata.io](https://mvlearn.neurodata.io/)
+[mvlearn.neurodata.io](https://mvlearn.github.io/)
 
 ## Instructions
 
@@ -12,13 +12,13 @@ If you only want to get the documentation, note that pre-build versions can be f
 
 You will need to install all the dependencies as defined in `requirements.txt` file. The following packages are needed:
 
-    sphinx==1.8.5
-    sphinx_rtd_theme==0.4.2
-    nbsphinx==0.4.2
-    ipython==7.4.0
-    ipykernel==5.1.0
-    numpydoc==0.7
+    sphinx>=4.2.0
+    sphinx_rtd_theme>=1.0.0
+    ipython>=7.4
+    ipykernel>=5.1.0
+    numpydoc>=1.1.0
     recommonmark==0.5.0
+    sphinx-gallery
 
 The above can be installed by entering:
 
