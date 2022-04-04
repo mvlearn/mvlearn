@@ -95,7 +95,7 @@ If you have the package locally, from the top level folder call::
 
     $ pip3 install -e .[keyword]
 
-To install the optional dependencies in with conda::
+To install the optional dependencies in with conda, consult the following for the dependencies you need:
 
 * [torch]: Please consult the `PyTorch Installation Guide <https://pytorch.org/get-started/locally/>`_
 to install it properly for your specific system specifications. Then, install tqdm::
