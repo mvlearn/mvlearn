@@ -3,6 +3,7 @@ Install
 
 ``mvlearn`` can be installed by using ``pip``, GitHub, or through the conda-forge
 channel into an existing ``conda`` environment.
+See below for :ref:`pipAnchor` or :ref:`condaAnchor`.
 
 **IMPORTANT NOTE:** ``mvlearn`` has an optional dependencies for certain functions,
 and so special instructions must be followed to include these
@@ -10,8 +11,10 @@ optional dependencies in the installation (if you do not have those packages alr
 in order to access all the features within ``mvlearn``.
 More details can be found in :ref:`extraDependencyAnchor`.
 
-Installing the released version with pip
-----------------------------------------
+.. _pipAnchor:
+
+pip installation instructions
+-----------------------------
 
 Below we assume you have the default Python3 environment already configured on
 your computer and you intend to install ``mvlearn`` inside of it.  If you want
@@ -48,8 +51,8 @@ This will install ``mvlearn`` and the required dependencies (see below).
 
 .. _condaAnchor:
 
-Installing the released version with conda-forge
-------------------------------------------------
+conda installation instructions
+-------------------------------
 
 Here, we assume you have created a conda environment with one of the
 accepted python versions, and you intend to install the ``mvlearn``
