@@ -30,9 +30,6 @@ REQUIRED_PACKAGES = [
     "scipy>=1.5.0",
     "seaborn>=0.9.0",
     "joblib>=0.11",
-    "torch>=1.1.0",
-    "tqdm",
-    "python-picard >= 0.4",
 ]
 
 # Find mvlearn version.
