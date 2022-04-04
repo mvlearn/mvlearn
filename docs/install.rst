@@ -102,10 +102,10 @@ to install it properly for your specific system specifications. Then, install tq
 
     $ conda install -c conda-forge tqdm
 
-* [multiviewica]: There are two package dependencies for this functionality. The first, python-picard, can be installed through conda-forge, but the second must be pip-installed::
+* [multiviewica]: There are two package dependencies for this functionality, which can be installed through conda-forge::
 
     $ conda install -c conda-forge python-picard
-    $ pip3 install multiviewica
+    $ conda install -c conda-forge multiviewica
 
 
 Python package dependencies
