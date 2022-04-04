@@ -24,7 +24,7 @@ AUTHOR_EMAIL = "rflperry@gmail.com"
 URL = "https://github.com/mvlearn/mvlearn"
 MINIMUM_PYTHON_VERSION = 3, 6  # Minimum of Python 3.6
 REQUIRED_PACKAGES = [
-    "matplotlib>=3.0.0, <=3.3.4",
+    "matplotlib>=3.0.0",
     "numpy>=1.17.0",
     "scikit-learn>=0.19.1",
     "scipy>=1.5.0",
