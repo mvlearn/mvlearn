@@ -108,7 +108,6 @@ to install it properly for your specific system specifications. Then, install tq
     $ conda install -c conda-forge python-picard
     $ conda install -c conda-forge multiviewica
 
-
 Python package dependencies
 ---------------------------
 ``mvlearn`` requires the following packages:
