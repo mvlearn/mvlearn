@@ -56,9 +56,7 @@ conda installation instructions
 
 Here, we assume you have created a conda environment with one of the
 accepted python versions, and you intend to install the ``mvlearn``
-into it. For more information about using conda-forge feedstocks,
-see the `about page <https://conda-forge.org/>`_,
-or the `mvlearn feedstock <https://github.com/conda-forge/mvlearn-feedstock>`_.
+into it.
 
 To install ``mvlearn`` with conda, run::
 
