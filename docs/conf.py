@@ -14,13 +14,17 @@
 #
 import os
 import sys
+import re
 from distutils.version import LooseVersion
+from git import Repo
 
 import matplotlib
 
 # Use RTD Theme
 import sphinx_rtd_theme
 import sphinx_gallery
+
+import mvlearn
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -34,12 +38,34 @@ authors = u"Richard Guo, Ronan Perry, Gavin Mischler, Theo Lee, " \
 # The short X.Y version
 # Find mvlearn version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
-    if line.startswith("__version__ = "):
-        version = line.strip().split()[2][1:-1]
+# for line in open(os.path.join(PROJECT_PATH, "..", "mvlearn", "__init__.py")):
+#     if line.startswith("__version__ = "):
+#         version = line.strip().split()[2][1:-1]
+version = mvlearn.__version__
 
 # The full version, including alpha/beta/rc tags
-release = "alpha"
+release = version
+
+REPO_NAME = 'mvlearn'
+
+repo = Repo( search_parent_directories=True )
+
+# SET CURRENT_LANGUAGE
+if 'current_language' in os.environ:
+   # get the current_language env var set by buildDocs.sh
+   current_language = os.environ['current_language']
+else:
+   # the user is probably doing `make html`
+   # set this build's current language to english
+   current_language = 'en'
+
+# if 'current_version' in os.environ:
+#    # get the current_version env var set by buildDocs.sh
+#    current_version = os.environ['current_version']
+# else:
+   # the user is probably doing `make html`
+   # set this build's current version by looking at the branch
+current_version = repo.active_branch.name
 
 # -- Extension configuration -------------------------------------------------
 extensions = [
@@ -118,7 +144,43 @@ html_context = {
     "github_user": "mvlearn",
     "github_repo": "mvlearn",
     "github_version": "main/docs/",
+    # The following are for creating the tab at the bottom left to choose which version of the docs to view
+    "display_lower_left": True,
+    "current_language": current_language,
+    "current_version": current_version,
+    "version": current_version,
+    "versions": list(),
 }
+
+# # POPULATE LINKS TO OTHER LANGUAGES
+# languages = [lang.name for lang in os.scandir('locales') if lang.is_dir()]
+# for lang in languages:
+#    html_context['languages'].append( (lang, '/' +REPO_NAME+ '/' +lang+ '/' +current_version+ '/') )
+
+# POPULATE LINKS TO OTHER VERSIONS
+# sort the repo tags by creation date so they are returned in proper order (e.g. 0.10.1 is after 0.2.1)
+# versions = [tag.name for tag in sorted(repo.tags, key=lambda t: t.commit.committed_datetime)[::-1]]
+# versions.insert(0,'main')
+# for version in versions:
+#    # check if the tag is either X.X.X so that it doesn't include versions like torch-only
+#    if re.match("\d+\.\d+\.\d+$", version) or version == 'main':
+#       html_context['versions'].append( (version, '/' +REPO_NAME+ '/'  +current_language+ '/' +version+ '/') )
+
+# POPULATE LINKS TO OTHER VERSIONS
+remote_refs = repo.remote().refs
+versions = []
+for ref in remote_refs:
+    ref = ref.name.split('/')[-1]
+    versions.append( ref )
+
+for version in versions:
+    # override to rename 'main' branch to 'dev'
+    if version == 'main':
+        version = 'dev'
+
+    if re.match("\d+\.\d+\.\d+$", version) or version == 'dev':
+
+        html_context['versions'].append( (version, '/' +REPO_NAME+ '/' +current_language+ '/' +version+ '/') )
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

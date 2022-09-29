@@ -5,3 +5,5 @@ ipykernel>=5.1.0
 numpydoc>=1.1.0
 recommonmark==0.5.0
 sphinx-gallery
+GitPython
+mvlearn
