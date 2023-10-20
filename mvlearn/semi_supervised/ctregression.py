@@ -50,14 +50,14 @@ class CTRegressor(BaseCoTrainEstimator):
 
     Attributes
     ----------
-    estimator1_ : regressor object, used on view1
+    estimator1 : regressor object, used on view1
 
-    estimator2_ : regressor object, used on view2
+    estimator2 : regressor object, used on view2
 
     class_name_: string
         The name of the class.
 
-    k_neighbors_ : int
+    k_neighbors : int
         The number of neighbors to be considered for determining
         the mean squared error.
 
@@ -170,19 +170,17 @@ class CTRegressor(BaseCoTrainEstimator):
         random_state=None
     ):
 
-        # initialize a BaseCTEstimator object
-        super().__init__(estimator1, estimator2, random_state)
-
         # If not given, initialize with default KNeighborsRegrssor
         if estimator1 is None:
             estimator1 = KNeighborsRegressor()
         if estimator2 is None:
             estimator2 = KNeighborsRegressor()
 
+        # initialize a BaseCTEstimator object
+        super().__init__(estimator1, estimator2, random_state)
+
         # Initializing the other attributes
-        self.estimator1_ = estimator1
-        self.estimator2_ = estimator2
-        self.k_neighbors_ = k_neighbors
+        self.k_neighbors = k_neighbors
         self.unlabeled_pool_size = unlabeled_pool_size
         self.num_iter = num_iter
 
@@ -211,8 +209,8 @@ class CTRegressor(BaseCoTrainEstimator):
 
         # Taking the str of estimator object
         # returns the class name along with other parameters
-        string1 = str(self.estimator1_)
-        string2 = str(self.estimator2_)
+        string1 = str(self.estimator1)
+        string2 = str(self.estimator2)
 
         # slicing the list to get the name of the estimator
         string1 = string1[: len(to_be_matched)]
@@ -222,7 +220,7 @@ class CTRegressor(BaseCoTrainEstimator):
             raise AttributeError(
                 "Both the estimator needs to be KNeighborsRegressor")
 
-        if self.k_neighbors_ <= 0:
+        if self.k_neighbors <= 0:
             raise ValueError("k_neighbors must be positive")
 
         if self.unlabeled_pool_size <= 0:
@@ -278,8 +276,8 @@ class CTRegressor(BaseCoTrainEstimator):
         L2 = L.copy()
 
         # fitting the estimator object on the train data
-        self.estimator1_.fit(X1[L1], y1[L1])
-        self.estimator2_.fit(X2[L2], y2[L2])
+        self.estimator1.fit(X1[L1], y1[L1])
+        self.estimator2.fit(X2[L2], y2[L2])
 
         # declaring a variable which keeps tracks
         # of the number of iteration performed
@@ -296,13 +294,13 @@ class CTRegressor(BaseCoTrainEstimator):
             it += 1
 
             # list of k nearest neighbors for all unlabeled samples
-            neighbors1 = self.estimator1_.kneighbors(
+            neighbors1 = self.estimator1.kneighbors(
                 X1[unlabeled_pool],
-                n_neighbors=self.k_neighbors_,
+                n_neighbors=self.k_neighbors,
                 return_distance=False)
-            neighbors2 = self.estimator2_.kneighbors(
+            neighbors2 = self.estimator2.kneighbors(
                 X2[unlabeled_pool],
-                n_neighbors=self.k_neighbors_,
+                n_neighbors=self.k_neighbors,
                 return_distance=False)
 
             # Stores the delta value of each view
@@ -316,7 +314,7 @@ class CTRegressor(BaseCoTrainEstimator):
                 new_L1.append(u)
 
                 # Predicts the value of unlabeled index
-                pred = self.estimator1_.predict(np.expand_dims(X1[u], axis=0))
+                pred = self.estimator1.predict(np.expand_dims(X1[u], axis=0))
 
                 # assigning the predicted value to new y
                 new_y1 = y1.copy()
@@ -325,13 +323,13 @@ class CTRegressor(BaseCoTrainEstimator):
                 # prediction array before inclusion of unlabeled index
                 pred_before_inc = []
 
-                pred_before_inc = self.estimator1_.predict((X1[L1])[neigh])
+                pred_before_inc = self.estimator1.predict((X1[L1])[neigh])
 
                 # new estimator for training a regressor model on new L1
                 new_estimator = KNeighborsRegressor()
 
                 # Setting the same parameters as that of estimator1 object
-                new_estimator.set_params(**self.estimator1_.get_params())
+                new_estimator.set_params(**self.estimator1.get_params())
                 new_estimator.fit(X1[new_L1], new_y1[new_L1])
 
                 # prediction array after inclusion of unlabeled index
@@ -356,7 +354,7 @@ class CTRegressor(BaseCoTrainEstimator):
                 # Predicts the value of unlabeled index
                 pred_before_inc = []
 
-                pred = self.estimator2_.predict(
+                pred = self.estimator2.predict(
                     np.expand_dims(X2[u], axis=0))
 
                 # assigning the predicted value to new y
@@ -364,13 +362,13 @@ class CTRegressor(BaseCoTrainEstimator):
                 new_y2[u] = pred
 
                 # prediction array before inclusion of unlabeled index
-                pred_before_inc = self.estimator2_.predict((X2[L2])[neigh])
+                pred_before_inc = self.estimator2.predict((X2[L2])[neigh])
 
                 # new estimator for training a regressor model on new L2
                 new_estimator = KNeighborsRegressor()
 
                 # Setting the same parameters as that of estimator2 object
-                new_estimator.set_params(**self.estimator2_.get_params())
+                new_estimator.set_params(**self.estimator2.get_params())
                 new_estimator.fit(X2[new_L2], new_y2[new_L2])
 
                 # prediction array after inclusion of unlabeled index
@@ -468,13 +466,13 @@ class CTRegressor(BaseCoTrainEstimator):
 
             # including the selected index
             for i in to_include1:
-                pred = self.estimator2_.predict(
+                pred = self.estimator2.predict(
                     np.expand_dims(X2[unlabeled_pool[i]], axis=0))
                 y1[unlabeled_pool[i]] = pred
 
             # including the selected index
             for i in to_include2:
-                pred = self.estimator1_.predict(
+                pred = self.estimator1.predict(
                     np.expand_dims(X1[unlabeled_pool[i]], axis=0))
                 y2[unlabeled_pool[i]] = pred
 
@@ -503,8 +501,8 @@ class CTRegressor(BaseCoTrainEstimator):
             U = [i for i in U if i not in unlabeled_pool]
 
             # fitting the model on new train data
-            self.estimator1_.fit(X1[L1], y1[L1])
-            self.estimator2_.fit(X2[L2], y2[L2])
+            self.estimator1.fit(X1[L1], y1[L1])
+            self.estimator2.fit(X2[L2], y2[L2])
 
         return self
 
@@ -530,8 +528,8 @@ class CTRegressor(BaseCoTrainEstimator):
         X2 = Xs[1]
 
         # predicting the value of each view
-        pred1 = self.estimator1_.predict(X1)
-        pred2 = self.estimator2_.predict(X2)
+        pred1 = self.estimator1.predict(X1)
+        pred2 = self.estimator2.predict(X2)
 
         # Taking the average of the predicted value and returning it
         return (pred1 + pred2) * 0.5
