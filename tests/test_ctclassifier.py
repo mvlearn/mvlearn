@@ -186,8 +186,8 @@ def test_predict_check_p_n(data):
     labels1[15:] = np.nan
     clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels1)
-    assert clf.p_ == 2
-    assert clf.n_ == 1
+    assert clf.p == 2
+    assert clf.n == 1
 
     labels2 = np.zeros(100,)
     labels2[:5] = 6 # 5 "positive"
@@ -195,8 +195,8 @@ def test_predict_check_p_n(data):
     labels2[15:] = np.nan
     clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels2)
-    assert clf.p_ == 1
-    assert clf.n_ == 2
+    assert clf.p == 1
+    assert clf.n == 2
 
     labels1 = np.zeros(100,)
     labels1[:5] = 4 # 5 "negative"
@@ -204,8 +204,8 @@ def test_predict_check_p_n(data):
     labels1[15:] = np.nan
     clf = CTClassifier(p=4, n=3, random_state=0)
     clf.fit(data['random_data'], labels1)
-    assert clf.p_ == 4
-    assert clf.n_ == 3
+    assert clf.p == 4
+    assert clf.n == 3
 
 def test_predict_set_p(data):
     random_seed = 10

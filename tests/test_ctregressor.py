@@ -147,7 +147,7 @@ def test_set_k_neighbors(data):
     ctr = CTRegressor(k_neighbors=k_neighbors, random_state=10)
     ctr.fit(data['random_data'], data['random_labels'])
     pred = (ctr.predict(data['random_test'])).tolist()
-    assert ctr.k_neighbors_ == k_neighbors
+    assert ctr.k_neighbors == k_neighbors
     assert len(truth) == len(pred)
     for i, j in zip(truth, pred):
         assert abs(i-j) < 0.00000001
