@@ -202,7 +202,7 @@ class MultiviewSpectralClustering(BaseCluster):
         # Produce the affinity matrix based on the selected kernel type
         if (self.affinity == 'rbf'):
             sims = rbf_kernel(X, gamma=gamma)
-        elif(self.affinity == 'nearest_neighbors'):
+        elif (self.affinity == 'nearest_neighbors'):
             neighbor = NearestNeighbors(n_neighbors=self.n_neighbors)
             neighbor.fit(X)
             sims = neighbor.kneighbors_graph(X).toarray()

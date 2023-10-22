@@ -219,7 +219,7 @@ class CTClassifier(BaseCoTrainEstimator):
                                  "predict_proba().")
 
         if (self.p is not None and self.p <= 0) or (self.n is not None and
-                                                      self.n <= 0):
+                                                    self.n <= 0):
             raise ValueError("Both p and n must be positive.")
 
         if self.unlabeled_pool_size <= 0:
