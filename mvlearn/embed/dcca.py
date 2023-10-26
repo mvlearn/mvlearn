@@ -211,8 +211,8 @@ class cca_loss():
 
         # Calculate the root inverse of covariance matrices by using
         # eigen decomposition
-        [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
-        [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
+        [D1, V1] = torch.linalg.eigh(SigmaHat11, UPLO='U')
+        [D2, V2] = torch.linalg.eigh(SigmaHat22, UPLO='U')
 
         # Additional code to increase numerical stability
         posInd1 = torch.gt(D1, eps).nonzero()[:, 0]
@@ -240,8 +240,8 @@ class cca_loss():
         else:
             # just the top self.n_components_ singular values are used to
             # compute the loss
-            U, V = torch.symeig(torch.matmul(
-                Tval.t(), Tval), eigenvectors=True)
+            U, V = torch.linalg.eigh(torch.matmul(
+                Tval.t(), Tval), UPLO='U')
             U = U.topk(self.n_components_)[0]
             corr = torch.sum(torch.sqrt(U))
         return -corr
