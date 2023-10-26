@@ -215,7 +215,7 @@ class MVMDS(BaseEmbed):
             # initializes pi for next iteration
             pi = pi - np.dot(q, q.T)
 
-        return(components)
+        return components
 
     def fit(self, Xs, y=None):
         """

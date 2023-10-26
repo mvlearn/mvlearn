@@ -461,7 +461,7 @@ class MultiviewKMeans(BaseCluster):
             max_iter = self.max_iter
 
         # While objective is still decreasing and iterations < max_iter
-        while(max(iter_stall) < self.patience and iter_num < max_iter):
+        while (max(iter_stall) < self.patience and iter_num < max_iter):
 
             for vi in range(2):
                 pre_view = (iter_num + 1) % 2
@@ -471,7 +471,7 @@ class MultiviewKMeans(BaseCluster):
             iter_num += 1
             # Track the number of iterations without improvement
             for view in range(2):
-                if(objective[view] - o_funct[view] > self.tol * np.abs(
+                if (objective[view] - o_funct[view] > self.tol * np.abs(
                         objective[view])):
                     objective[view] = o_funct[view]
                     iter_stall[view] = 0
