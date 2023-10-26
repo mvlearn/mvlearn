@@ -74,7 +74,7 @@ def create_data(seed, class2_mean_center, view1_var, view2_var,
     labels_train = labels_train_full.copy()
     labels_test = labels_test_full.copy()
 
-    return View1_train, View2_train, labels_train, labels_train.copy(),\
+    return View1_train, View2_train, labels_train, labels_train.copy(), \
         View1_test, View2_test, labels_test
 
 ###############################################################################
@@ -221,8 +221,9 @@ for count, iters in enumerate(N_iters):
 
     for seed in range(randomizations):
 
-        View1_train, View2_train, labels_train, labels_train_full, View1_test,\
-            View2_test, labels_test = create_data(seed, 1, .2, .2, N_per_class)
+        View1_train, View2_train, labels_train, labels_train_full, \
+            View1_test, View2_test, labels_test = create_data(
+                seed, 1, .2, .2, N_per_class)
 
         # randomly remove some labels
         np.random.seed(11)
@@ -312,8 +313,9 @@ for count, iters in enumerate(N_iters):
     for seed in range(randomizations):
 
         # Create Data
-        View1_train, View2_train, labels_train, labels_train_full, View1_test,\
-            View2_test, labels_test = create_data(seed, 1, .2, .2, N_per_class)
+        View1_train, View2_train, labels_train, labels_train_full, \
+            View1_test, View2_test, labels_test = create_data(
+                seed, 1, .2, .2, N_per_class)
         View2_train = View1_train.copy()
         View2_test = View1_test.copy()
 
@@ -409,9 +411,9 @@ for count, iters in enumerate(N_iters):
     for seed in range(randomizations):
 
         # Create Data
-        View1_train, View2_train, labels_train, labels_train_full, View1_test,\
-            View2_test, labels_test = create_data(seed, 1, .2, .2, N_per_class,
-                                                  view2_class2_mean_center=0)
+        View1_train, View2_train, labels_train, labels_train_full, \
+            View1_test, View2_test, labels_test = create_data(
+                seed, 1, .2, .2, N_per_class, view2_class2_mean_center=0)
 
         # randomly remove some labels
         np.random.seed(11)
@@ -827,9 +829,9 @@ for count, iters in enumerate(N_iters):
     for seed in range(randomizations):
 
         # Create Data
-        View1_train, View2_train, labels_train, labels_train_full, View1_test,\
-            View2_test, labels_test = create_data(seed, 0, .2, .2, N_per_class,
-                                                  class2_mean_center)
+        View1_train, View2_train, labels_train, labels_train_full, \
+            View1_test, View2_test, labels_test = create_data(
+                seed, 0, .2, .2, N_per_class, class2_mean_center)
 
         # randomly remove some labels
         np.random.seed(11)
