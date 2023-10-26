@@ -4,7 +4,7 @@ version: 2
 jobs:
     build_docs:
       docker:
-        - image: cimg/python
+        - image: cimg/python:3.18.15
       steps:
         - checkout
         - run:
@@ -89,7 +89,7 @@ jobs:
 
     deploy:
       docker:
-        - image: cimg/python
+        - image: cimg/python:3.18.15
       steps:
         - attach_workspace:
             at: /tmp/build
