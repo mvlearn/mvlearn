@@ -196,7 +196,7 @@ class GroupPCA(BaseDecomposer):
         self.individual_pca_ = self.n_individual_components_ is not None
         self.individual_mean_ = [np.mean(X, axis=0) for X in Xs]
         if self.individual_pca_:
-            if type(self.n_individual_components_) == int:
+            if isinstance(self.n_individual_components_, int):
                 one_dimension = True
             else:
                 one_dimension = False
