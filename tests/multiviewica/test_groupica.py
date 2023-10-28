@@ -59,7 +59,7 @@ def test_badsolver():
     "n_individual_components", ["auto", None, 3, [2, 3, 4]]
 )
 @pytest.mark.parametrize("multiview_output", [True, False])
-@pytest.mark.parametrize("whiten", [True, False])
+@pytest.mark.parametrize("whiten", ["unit-variance", False])
 @pytest.mark.parametrize("solver", ["picard", "fastica"])
 def test_transform(
     n_components, n_individual_components, multiview_output, solver, whiten
