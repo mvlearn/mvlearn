@@ -128,7 +128,9 @@ print("Naive Concatenated View Accuracy: {0:.3f}\n".format(
 # Multi-view co-training semi-supervised learning
 rfc0 = RandomForestClassifier(n_estimators=100, bootstrap=True)
 rfc1 = RandomForestClassifier(n_estimators=6, bootstrap=False)
-ctc = CTClassifier(rfc0, rfc1, p=2, n=2, unlabeled_pool_size=20, num_iter=100)
+ctc = CTClassifier(
+    rfc0, rfc1, positive_samples=2, negative_samples=2,
+    unlabeled_pool_size=20, num_iter=100)
 ctc.fit([View0_train, View1_train], labels_train)
 y_pred_ct = ctc.predict([View0_test, View1_test])
 
