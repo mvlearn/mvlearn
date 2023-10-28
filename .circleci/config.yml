@@ -1,10 +1,14 @@
 # Tagging a commit with [circle front] will build the front page and perform test-doc.
 # Tagging a commit with [circle full] will build everything.
 version: 2.1
+orbs:
+  python: circleci/python@2.1.1
 jobs:
     build_docs:
-      docker:
-        - image: cimg/python:3.18.15
+      executor:
+        name: python/default
+        # use Python 3.8
+        tag: '3.8'
       steps:
         - checkout
         - run:
@@ -88,8 +92,10 @@ jobs:
               - html
 
     deploy:
-      docker:
-        - image: cimg/python:3.18.15
+      executor:
+        name: python/default
+        # use Python 3.8
+        tag: '3.8'
       steps:
         - attach_workspace:
             at: /tmp/build
