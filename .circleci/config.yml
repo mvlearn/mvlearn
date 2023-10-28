@@ -54,6 +54,7 @@ jobs:
         - run:
             name: Get Python running
             command: |
+              sudo apt-get update
               sudo apt-get install pandoc
               python -m pip install --user --upgrade --progress-bar off pip
               python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
