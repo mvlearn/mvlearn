@@ -156,7 +156,7 @@ def make_gaussian_mixture(
 
     if callable(transform):
         X = np.asarray([transform(x) for x in latent])
-    elif not type(transform) == str:
+    elif not isinstance(transform, str):
         raise TypeError(
             "'transform' must be of type string or a callable function," +
             f"not {type(transform)}"

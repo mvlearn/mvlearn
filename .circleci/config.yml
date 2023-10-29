@@ -1,10 +1,14 @@
 # Tagging a commit with [circle front] will build the front page and perform test-doc.
 # Tagging a commit with [circle full] will build everything.
-version: 2
+version: 2.1
+orbs:
+  python: circleci/python@2.1.1
 jobs:
     build_docs:
-      docker:
-        - image: circleci/python:3.7-stretch
+      executor:
+        name: python/default
+        # use Python 3.8
+        tag: '3.8'
       steps:
         - checkout
         - run:
@@ -34,22 +38,23 @@ jobs:
               - data-cache-0
               - pip-cache
 
-        - run:
-            name: Spin up Xvfb
-            command: |
-              /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+        # - run:
+        #     name: Spin up Xvfb
+        #     command: |
+        #       which Xvfb
 
         # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
         # https://github.com/golemfactory/golem/issues/1019
-        - run:
-            name: Fix libgcc_s.so.1 pthread_cancel bug
-            command: |
-              sudo apt-get update
-              sudo apt-get install qt5-default
+        # - run:
+        #     name: Fix libgcc_s.so.1 pthread_cancel bug
+        #     command: |
+        #       sudo apt-get update
+        #       sudo apt-get install qt5-default
 
         - run:
             name: Get Python running
             command: |
+              sudo apt-get update
               sudo apt-get install pandoc
               python -m pip install --user --upgrade --progress-bar off pip
               python -m pip install --user --upgrade --progress-bar off -r requirements/base.txt
@@ -88,8 +93,10 @@ jobs:
               - html
 
     deploy:
-      docker:
-        - image: circleci/python:3.6-jessie
+      executor:
+        name: python/default
+        # use Python 3.8
+        tag: '3.8'
       steps:
         - attach_workspace:
             at: /tmp/build
@@ -130,7 +137,7 @@ jobs:
               fi
 
 workflows:
-  version: 2
+  version: 2.1
 
   default:
     jobs:

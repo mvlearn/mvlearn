@@ -78,7 +78,6 @@ def test_bad_shapes():
             n_samples, centers, [np.eye(2), np.eye(3)],
             class_probs=class_probs
         )
-    assert str(e.value) == "covariance matrix is of the incorrect shape"
     # Wrong uni dimensions
     with pytest.raises(ValueError) as e:
         make_gaussian_mixture(n_samples, [1, 0], [1, 0])

@@ -3,6 +3,7 @@
 # Implements multi-view co-training regression for 2-view data.
 
 
+from copy import deepcopy
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error
@@ -50,14 +51,14 @@ class CTRegressor(BaseCoTrainEstimator):
 
     Attributes
     ----------
-    estimator1_ : regressor object, used on view1
+    estimator1 : regressor object, used on view1
 
-    estimator2_ : regressor object, used on view2
+    estimator2 : regressor object, used on view2
 
     class_name_: string
         The name of the class.
 
-    k_neighbors_ : int
+    k_neighbors : int
         The number of neighbors to be considered for determining
         the mean squared error.
 
@@ -170,19 +171,17 @@ class CTRegressor(BaseCoTrainEstimator):
         random_state=None
     ):
 
-        # initialize a BaseCTEstimator object
-        super().__init__(estimator1, estimator2, random_state)
-
         # If not given, initialize with default KNeighborsRegrssor
         if estimator1 is None:
             estimator1 = KNeighborsRegressor()
         if estimator2 is None:
             estimator2 = KNeighborsRegressor()
 
+        # initialize a BaseCTEstimator object
+        super().__init__(estimator1, estimator2, random_state)
+
         # Initializing the other attributes
-        self.estimator1_ = estimator1
-        self.estimator2_ = estimator2
-        self.k_neighbors_ = k_neighbors
+        self.k_neighbors = k_neighbors
         self.unlabeled_pool_size = unlabeled_pool_size
         self.num_iter = num_iter
 
@@ -211,8 +210,8 @@ class CTRegressor(BaseCoTrainEstimator):
 
         # Taking the str of estimator object
         # returns the class name along with other parameters
-        string1 = str(self.estimator1_)
-        string2 = str(self.estimator2_)
+        string1 = str(self.estimator1)
+        string2 = str(self.estimator2)
 
         # slicing the list to get the name of the estimator
         string1 = string1[: len(to_be_matched)]
@@ -222,7 +221,7 @@ class CTRegressor(BaseCoTrainEstimator):
             raise AttributeError(
                 "Both the estimator needs to be KNeighborsRegressor")
 
-        if self.k_neighbors_ <= 0:
+        if self.k_neighbors <= 0:
             raise ValueError("k_neighbors must be positive")
 
         if self.unlabeled_pool_size <= 0:
@@ -262,6 +261,9 @@ class CTRegressor(BaseCoTrainEstimator):
         X1 = Xs[0]
         X2 = Xs[1]
 
+        self.estimator1_ = deepcopy(self.estimator1)
+        self.estimator2_ = deepcopy(self.estimator2)
+
         # Storing the indexes of the unlabeled samples
         U = [i[0] for i in enumerate(y) if np.isnan(i[1])]
 
@@ -298,11 +300,11 @@ class CTRegressor(BaseCoTrainEstimator):
             # list of k nearest neighbors for all unlabeled samples
             neighbors1 = self.estimator1_.kneighbors(
                 X1[unlabeled_pool],
-                n_neighbors=self.k_neighbors_,
+                n_neighbors=self.k_neighbors,
                 return_distance=False)
             neighbors2 = self.estimator2_.kneighbors(
                 X2[unlabeled_pool],
-                n_neighbors=self.k_neighbors_,
+                n_neighbors=self.k_neighbors,
                 return_distance=False)
 
             # Stores the delta value of each view

@@ -2,6 +2,7 @@
 
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
+from copy import deepcopy
 
 from .base import BaseCoTrainEstimator
 from ..utils.utils import check_Xs, check_Xs_y_nan_allowed
@@ -34,7 +35,7 @@ class CTClassifier(BaseCoTrainEstimator):
         Does not need to be of the same type as ``estimator1``, but should
         support predict_proba().
 
-    p : int, optional (default=None)
+    positive_samples : int, optional (default=None)
         The number of positive classifications from the unlabeled_pool
         training set which will be given a positive "label". If None, the
         default is the floor of the ratio of positive to negative examples
@@ -43,7 +44,7 @@ class CTClassifier(BaseCoTrainEstimator):
         labels are 0 or 1, positive is defined as 1, and in general, positive
         is the larger label.
 
-    n : int, optional (default=None)
+    negative_samples : int, optional (default=None)
         The number of negative classifications from the unlabeled_pool
         training set which will be given a negative "label". If None, the
         default is the floor of the ratio of positive to negative examples
@@ -66,20 +67,20 @@ class CTClassifier(BaseCoTrainEstimator):
 
     Attributes
     ----------
-    estimator1_ : classifier object
-        The classifier used on view 1.
+    estimator1 : classifier object
+        The classifier to be used on view 1.
 
-    estimator2_ : classifier object
-        The classifier used on view 2.
+    estimator2 : classifier object
+        The classifier to be used on view 2.
 
     class_name_: string
         The name of the class.
 
-    p_ : int, optional (default=None)
+    positive_samples : int, optional (default=None)
         The number of positive classifications from the unlabeled_pool
         training set which will be given a positive "label" each round.
 
-    n_ : int, optional (default=None)
+    negative_samples : int, optional (default=None)
         The number of negative classifications from the unlabeled_pool
         training set which will be given a negative "label" each round.
 
@@ -145,7 +146,7 @@ class CTClassifier(BaseCoTrainEstimator):
           only the view 1 portion of the data (i.e. Xs[0])
         * Use *L* to train a classifier *h2* (``estimator2``) that considers
           only the view 2 portion of the data (i.e. Xs[1])
-        * Allow *h1* to label *p* (``self.p_``) positive and *n* (``self.n_``)
+        * Allow *h1* to label *p* positive and *n*
           negative samples from view 1 of *U'*
         * Allow *h2* to label *p* positive and *n* negative samples
           from view 2 of *U'*
@@ -167,8 +168,8 @@ class CTClassifier(BaseCoTrainEstimator):
     def __init__(self,
                  estimator1=None,
                  estimator2=None,
-                 p=None,
-                 n=None,
+                 positive_samples=None,
+                 negative_samples=None,
                  unlabeled_pool_size=75,
                  num_iter=50,
                  random_state=None
@@ -177,22 +178,8 @@ class CTClassifier(BaseCoTrainEstimator):
         # initialize a BaseCTEstimator object
         super().__init__(estimator1, estimator2, random_state)
 
-        # if not given, set classifiers as gaussian naive bayes estimators
-        if self.estimator1_ is None:
-            self.estimator1_ = GaussianNB()
-        if self.estimator2_ is None:
-            self.estimator2_ = GaussianNB()
-
-        # If only 1 of p or n is not None, set them equal
-        if (p is not None and n is None):
-            n = p
-            self.p_, self.n_ = p, n
-        elif (p is None and n is not None):
-            p = n
-            self.p_, self.n_ = p, n
-        else:
-            self.p_, self.n_ = p, n
-
+        self.positive_samples = positive_samples
+        self.negative_samples = negative_samples
         self.n_views = 2  # only 2 view learning supported currently
         self.class_name_ = "CTClassifier"
         self.unlabeled_pool_size = unlabeled_pool_size
@@ -212,14 +199,21 @@ class CTClassifier(BaseCoTrainEstimator):
         """
 
         # verify that estimator1 and estimator2 have predict_proba
-        if (not hasattr(self.estimator1_, 'predict_proba') or
-                not hasattr(self.estimator2_, 'predict_proba')):
+        if self.estimator1 is not None and \
+                (not hasattr(self.estimator1, 'predict_proba')):
+            raise AttributeError("Co-training classifier must be initialized "
+                                 "with classifiers supporting "
+                                 "predict_proba().")
+        if self.estimator2 is not None and \
+                (not hasattr(self.estimator2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
 
-        if (self.p_ is not None and self.p_ <= 0) or (self.n_ is not None and
-                                                      self.n_ <= 0):
+        if (self.positive_samples is not None and
+                self.positive_samples <= 0) or \
+                (self.negative_samples is not None and
+                    self.negative_samples <= 0):
             raise ValueError("Both p and n must be positive.")
 
         if self.unlabeled_pool_size <= 0:
@@ -266,19 +260,44 @@ class CTClassifier(BaseCoTrainEstimator):
         X1 = Xs[0]
         X2 = Xs[1]
 
+        # if not given, set classifiers as gaussian naive bayes estimators
+        if self.estimator1 is None:
+            self.estimator1_ = GaussianNB()
+        else:
+            self.estimator1_ = deepcopy(self.estimator1)
+
+        if self.estimator2 is None:
+            self.estimator2_ = GaussianNB()
+        else:
+            self.estimator2_ = deepcopy(self.estimator2)
+
+        # If only 1 of p or n is not None, set them equal
+        p, n = self.positive_samples, self.negative_samples
+        if (p is not None and n is None):
+            n = p
+            self.positive_samples_, self.negative_samples_ = p, n
+        elif (p is None and n is not None):
+            p = n
+            self.positive_samples_, self.negative_samples_ = p, n
+        else:
+            self.positive_samples_, self.negative_samples_ = p, n
+
         # if don't have 2 classes of labeled data, then just fit and return,
         # since can't do any iterations of cotraining
         if self.n_classes > 1:
 
             # if both p & n are none, set as ratio of one class to the other
-            if (self.p_ is None and self.n_ is None):
+            if self.positive_samples_ is None and \
+                    self.negative_samples_ is None:
                 num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
                 num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
                 p_over_n_ratio = num_class_p // num_class_n
                 if p_over_n_ratio > 1:
-                    self.p_, self.n_ = p_over_n_ratio, 1
+                    self.positive_samples_ = p_over_n_ratio
+                    self.negative_samples_ = 1
                 else:
-                    self.n_, self.p_ = num_class_n // num_class_p, 1
+                    self.negative_samples_ = num_class_n // num_class_p
+                    self.positive_samples_ = 1
 
             # the full set of unlabeled samples
             U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
@@ -319,16 +338,16 @@ class CTClassifier(BaseCoTrainEstimator):
 
                 # take the most confident labeled examples from the
                 # unlabeled pool in each category and put them in L
-                for i in (y1_prob[:, 0].argsort())[-self.n_:]:
+                for i in (y1_prob[:, 0].argsort())[-self.negative_samples_:]:
                     if y1_prob[i, 0] > np.log(0.5):
                         n.append(i)
-                for i in (y1_prob[:, 1].argsort())[-self.p_:]:
+                for i in (y1_prob[:, 1].argsort())[-self.positive_samples_:]:
                     if y1_prob[i, 1] > np.log(0.5):
                         p.append(i)
-                for i in (y2_prob[:, 0].argsort())[-self.n_:]:
+                for i in (y2_prob[:, 0].argsort())[-self.negative_samples_:]:
                     if y2_prob[i, 0] > np.log(0.5):
                         n.append(i)
-                for i in (y2_prob[:, 1].argsort())[-self.p_:]:
+                for i in (y2_prob[:, 1].argsort())[-self.positive_samples_:]:
                     if y2_prob[i, 1] > np.log(0.5):
                         p.append(i)
 

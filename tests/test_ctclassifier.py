@@ -103,19 +103,19 @@ def test_predict_zero_classes(data):
 
 def test_zero_p():
     with pytest.raises(ValueError):
-        clf = CTClassifier(GaussianNB(), GaussianNB(), p=0)
+        clf = CTClassifier(GaussianNB(), GaussianNB(), positive_samples=0)
 
 def test_negative_p():
     with pytest.raises(ValueError):
-        clf = CTClassifier(GaussianNB(), GaussianNB(), p=-1)
+        clf = CTClassifier(GaussianNB(), GaussianNB(), positive_samples=-1)
 
 def test_zero_n():
     with pytest.raises(ValueError):
-        clf = CTClassifier(GaussianNB(), GaussianNB(), n=0)
+        clf = CTClassifier(GaussianNB(), GaussianNB(), negative_samples=0)
 
 def test_negative_n():
     with pytest.raises(ValueError):
-        clf = CTClassifier(GaussianNB(), GaussianNB(), n=-1)
+        clf = CTClassifier(GaussianNB(), GaussianNB(), negative_samples=-1)
 
 def test_zero_pool_size():
     with pytest.raises(ValueError):
@@ -186,8 +186,8 @@ def test_predict_check_p_n(data):
     labels1[15:] = np.nan
     clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels1)
-    assert clf.p_ == 2
-    assert clf.n_ == 1
+    assert clf.positive_samples_ == 2
+    assert clf.negative_samples_ == 1
 
     labels2 = np.zeros(100,)
     labels2[:5] = 6 # 5 "positive"
@@ -195,23 +195,23 @@ def test_predict_check_p_n(data):
     labels2[15:] = np.nan
     clf = CTClassifier(random_state=0)
     clf.fit(data['random_data'], labels2)
-    assert clf.p_ == 1
-    assert clf.n_ == 2
+    assert clf.positive_samples_ == 1
+    assert clf.negative_samples_ == 2
 
     labels1 = np.zeros(100,)
     labels1[:5] = 4 # 5 "negative"
     labels1[5:15] = 6 # 10 "positive"
     labels1[15:] = np.nan
-    clf = CTClassifier(p=4, n=3, random_state=0)
+    clf = CTClassifier(positive_samples=4, negative_samples=3, random_state=0)
     clf.fit(data['random_data'], labels1)
-    assert clf.p_ == 4
-    assert clf.n_ == 3
+    assert clf.positive_samples_ == 4
+    assert clf.negative_samples_ == 3
 
 def test_predict_set_p(data):
     random_seed = 10
     gnb1 = GaussianNB()
     gnb2 = GaussianNB()
-    clf = CTClassifier(gnb1, gnb2, p=12, random_state=random_seed)
+    clf = CTClassifier(gnb1, gnb2, positive_samples=12, random_state=random_seed)
     clf.fit(data['random_data'], data['random_labels'])
     y_pred_test = clf.predict(data['random_test'])
     y_pred_prob = clf.predict_proba(data['random_test'])
@@ -234,7 +234,7 @@ def test_predict_set_n(data):
     random_seed = 10
     gnb1 = GaussianNB()
     gnb2 = GaussianNB()
-    clf = CTClassifier(gnb1, gnb2, n=9, random_state=random_seed)
+    clf = CTClassifier(gnb1, gnb2, negative_samples=9, random_state=random_seed)
     clf.fit(data['random_data'], data['random_labels'])
     y_pred_test = clf.predict(data['random_test'])
     y_pred_prob = clf.predict_proba(data['random_test'])
