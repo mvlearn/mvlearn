@@ -178,7 +178,6 @@ class CTClassifier(BaseCoTrainEstimator):
         # initialize a BaseCTEstimator object
         super().__init__(estimator1, estimator2, random_state)
 
-        
         self.positive_samples = positive_samples
         self.negative_samples = negative_samples
         self.n_views = 2  # only 2 view learning supported currently
@@ -200,17 +199,21 @@ class CTClassifier(BaseCoTrainEstimator):
         """
 
         # verify that estimator1 and estimator2 have predict_proba
-        if self.estimator1 is not None and (not hasattr(self.estimator1, 'predict_proba')):
+        if self.estimator1 is not None and \
+                (not hasattr(self.estimator1, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
-        if self.estimator2 is not None and (not hasattr(self.estimator2, 'predict_proba')):
+        if self.estimator2 is not None and \
+                (not hasattr(self.estimator2, 'predict_proba')):
             raise AttributeError("Co-training classifier must be initialized "
                                  "with classifiers supporting "
                                  "predict_proba().")
 
-        if (self.positive_samples is not None and self.positive_samples <= 0) or \
-            (self.negative_samples is not None and self.negative_samples <= 0):
+        if (self.positive_samples is not None and
+                self.positive_samples <= 0) or \
+                (self.negative_samples is not None and
+                    self.negative_samples <= 0):
             raise ValueError("Both p and n must be positive.")
 
         if self.unlabeled_pool_size <= 0:
@@ -284,14 +287,17 @@ class CTClassifier(BaseCoTrainEstimator):
         if self.n_classes > 1:
 
             # if both p & n are none, set as ratio of one class to the other
-            if (self.positive_samples_ is None and self.negative_samples_ is None):
+            if self.positive_samples_ is None and \
+                    self.negative_samples_ is None:
                 num_class_n = sum(1 for y_n in y if y_n == self.classes_[0])
                 num_class_p = sum(1 for y_p in y if y_p == self.classes_[1])
                 p_over_n_ratio = num_class_p // num_class_n
                 if p_over_n_ratio > 1:
-                    self.positive_samples_, self.negative_samples_ = p_over_n_ratio, 1
+                    self.positive_samples_ = p_over_n_ratio
+                    self.negative_samples_ = 1
                 else:
-                    self.negative_samples_, self.positive_samples_ = num_class_n // num_class_p, 1
+                    self.negative_samples_ = num_class_n // num_class_p
+                    self.positive_samples_ = 1
 
             # the full set of unlabeled samples
             U = [i for i, y_i in enumerate(y) if np.isnan(y_i)]
