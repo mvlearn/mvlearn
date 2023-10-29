@@ -118,7 +118,7 @@ def compute_entropy(partitions, labels, k, num_classes):
         for cl in range(num_classes):
             prop = np.sum(labs == cl) * 1.0 / part_size
             ent = 0
-            if(prop != 0):
+            if (prop != 0):
                 ent = - prop * np.log2(prop)
             part_entropy += ent
         part_entropy = part_entropy * part_size / num_examples
